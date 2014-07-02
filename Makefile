@@ -4,9 +4,8 @@
 
 PYTHON ?= python
 NOSETESTS ?= nosetests
-CTAGS ?= ctags
 
-all: clean inplace test test-doc
+all: clean inplace test
 
 clean-pyc:
 	find . -name "*.pyc" | xargs rm -f
@@ -18,10 +17,7 @@ clean-so:
 clean-build:
 	rm -rf build
 
-clean-ctags:
-	rm -f tags
-
-clean: clean-build clean-pyc clean-so clean-ctags
+clean: clean-build clean-pyc clean-so
 
 flake:
 	@if command -v flake8 > /dev/null; then \
