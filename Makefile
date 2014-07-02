@@ -4,8 +4,9 @@
 
 PYTHON ?= python
 NOSETESTS ?= nosetests
+CTAGS ?= ctags
 
-all: clean inplace test
+all: clean inplace test test-doc
 
 clean-pyc:
 	find . -name "*.pyc" | xargs rm -f
@@ -17,7 +18,10 @@ clean-so:
 clean-build:
 	rm -rf build
 
-clean: clean-build clean-pyc clean-so
+clean-ctags:
+	rm -f tags
+
+clean: clean-build clean-pyc clean-so clean-ctags
 
 flake:
 	@if command -v flake8 > /dev/null; then \
@@ -26,16 +30,16 @@ flake:
            echo "Done."; \
 	else \
            echo "flake8 not found, please install it!"; \
-     fi;
+	fi;
 
 
 in: inplace # just a shortcut
 inplace:
-	$(PYTHON) setup.py build_ext -i
+	@$(PYTHON) setup.py build_ext -i
 
 nosetests:
 	rm -f .coverage
-	$(NOSETESTS) pylabs
+	@$(NOSETESTS) pylabs
 
 test: clean nosetests flake
 
