@@ -26,16 +26,16 @@ flake:
            echo "Done."; \
 	else \
            echo "flake8 not found, please install it!"; \
-     fi;
+	fi;
 
 
 in: inplace # just a shortcut
 inplace:
-	$(PYTHON) setup.py build_ext -i
+	@$(PYTHON) setup.py build_ext -i
 
 nosetests:
 	rm -f .coverage
-	$(NOSETESTS) pylabs
+	@$(NOSETESTS) pylabs
 
 test: clean nosetests flake
 

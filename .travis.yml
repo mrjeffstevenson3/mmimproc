@@ -1,0 +1,50 @@
+language: python
+
+python:
+    - "2.7"
+
+env:
+    - PYTHON=2.7 TEST=standard
+    - PYTHON=3.3 TEST=standard
+    - PYTHON=3.3 TEST=extra
+
+virtualenv:
+    system_site_packages: true
+
+before_install:
+    # Easy dependencies (scipy, matplotlib, nose, coverage, coveralls, flake8)
+    - travis_retry sudo apt-get update -qq
+    - if [ "${PYTHON}" == "2.7" ]; then
+        travis_retry sudo apt-get install -qq -y python-nose python-coverage python-scipy python-matplotlib;
+        travis_retry sudo pip install -q coveralls;
+      else
+        wget http://repo.continuum.io/miniconda/Miniconda-2.2.2-Linux-x86_64.sh -O miniconda.sh;
+        chmod +x miniconda.sh;
+        ./miniconda.sh -b;
+        export PATH=/home/$USER/anaconda/bin:$PATH;
+        conda update --yes conda;
+        conda create -n testenv --yes --quiet pip python=$PYTHON;
+        source activate testenv;
+        conda install --yes --quiet scipy matplotlib nose coverage;
+        travis_retry pip install -q coveralls;
+      fi;
+    - travis_retry pip install -q nose-timer;
+    - if [ "${TEST}" == "extra" ]; then
+        travis_retry pip install -q flake8;
+      fi;
+
+install:
+    - if [ "${TEST}" != "extra" ]; then
+        python setup.py install;
+      fi;
+
+script:
+    - if [ "${TEST}" == "extra" ]; then
+        make flake;
+      else
+        nosetests --with-timer --timer-top-n=5;
+      fi;
+
+after_success:
+    # Need to run from source dir to execute appropriate "git" commands
+    coveralls
