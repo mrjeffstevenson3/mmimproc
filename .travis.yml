@@ -47,4 +47,4 @@ script:
 
 after_success:
     # Need to run from source dir to execute appropriate "git" commands
-    # coveralls
+    coveralls

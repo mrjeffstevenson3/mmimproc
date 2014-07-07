@@ -1,0 +1,6 @@
+[run]
+branch = True
+source = pylabs
+include = */pylabs/*
+omit =
+    */setup.py
