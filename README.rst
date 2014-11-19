@@ -12,11 +12,14 @@
 This package is designed for processing multi-modal neuroimaging
 data collected by the Kuhl lab.
 
-Requirements:
+Requirements for the Python environment:
 
 - numpy
 - scipy
 - matplotlib
+
+Requirements for the system:
+
 - Freesurfer
 - FSL
 
@@ -24,6 +27,9 @@ Optional:
 
 - mne-python (for M/EEG data)
 
+There is a useful nibabel tutorial available here:
+
+http://nipy.org/nibabel/gettingstarted.html
 
 Licensing
 ^^^^^^^^^
