@@ -18,6 +18,7 @@ Requirements for the Python environment:
 - `scipy <http://www.scipy.org>`_
 - `matplotlib <http://matplotlib.org>`_
 - `nibabel <http://github.com/nipy/nibabel>`_ (see the `tutorial <http://nipy.org/nibabel/gettingstarted.html>`_)
+- `scikit-learn <http://scikit-learn.org>`_
 
 Requirements for the system:
 
