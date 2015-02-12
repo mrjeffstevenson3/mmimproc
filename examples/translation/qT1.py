@@ -5,10 +5,10 @@ from os import path as op
 
 
 import glob
-import nibabel  # noqa
 import niprov
 
 from pylabs.utils import InTempDir
+from pylabs.conversion import par_to_nii
 
 work_dir = ('/media/DiskArray/shared_data/js/self_control/'
             'hbm_group_data/qT1')
@@ -36,9 +36,8 @@ for subdir in subdirs:
     scalings = ['fp', 'fp', 'fp', 'dv']
     for out_name, scaling in zip(out_names, scalings):
         in_name = out_name[:-3] + '.PAR'
-        cmd = 'nibabel.load(in_name, scaling=scaling).save(out_name)'
-        exec(cmd)
-        niprov.log(cmd, parent=in_name, new=out_name)
+        niprov.record(par_to_nii, args=[in_name, out_name, scaling],
+                      parent=in_name, new=out_name)
 
     print('B1 map file name is %s and T1 reference file name is %s'
           % (b1_map, t1_ref))
