@@ -22,10 +22,13 @@ Requirements for the Python environment:
 
 Requirements for the system:
 
+- `DTIPrep <http://www.nitrc.org/projects/dtiprep/>`_
 - `Freesurfer <https://surfer.nmr.mgh.harvard.edu/fswiki/DownloadAndInstall>`_
 - `FSL <http://fsl.fmrib.ox.ac.uk/fsldownloads/fsldownloadmain.html>`_
+- `Slicer <http://download.slicer.org/>`_
 
 Optional:
 
 - `mne-python <http://github.com/mne-tools/mne-python>`_ (for M/EEG data)
 - `MNE-C <http://www.nmr.mgh.harvard.edu/martinos/userInfo/data/MNE_register>`_ (for M/EEG data)
+- `NODDI <http://mig.cs.ucl.ac.uk/index.php?n=Tutorial.NODDImatlab>`_ (for a different diffusion method)
