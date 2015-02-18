@@ -37,7 +37,7 @@ for subdir in subdirs:
     for out_name, scaling in zip(out_names, scalings):
         in_name = out_name[:-3] + '.PAR'
         niprov.record(par_to_nii, args=[in_name, out_name, scaling],
-                      parent=in_name, new=out_name)
+                      parents=[in_name], new=out_name)
 
     print('B1 map file name is %s and T1 reference file name is %s'
           % (b1_map, t1_ref))
@@ -55,42 +55,71 @@ for subdir in subdirs:
     with InTempDir():
         with open('identity.mat', 'w') as fid:
             fid.write('1 0 0 0\n0 1 0 0\n0 0 1 0\n0 0 0 1\n')
+        niprov.add('identity.mat', transient=True)
 
-        niprov.record('fslhd -x %s > t1ref_temphdr.txt' % t1_ref)
+        niprov.record('fslhd -x %s > t1ref_temphdr.txt' % t1_ref,
+                      parents=t1_ref, new='t1ref_temhdr.txt', transient=True)
+        parents = (t1_ref, t1_10, t1_20)
         niprov.record('fslmerge -t t1flip_all_orig1 %s %s %s'
-                      % (t1_ref, t1_10, t1_20))
+                      % parents, new='t1flip_all_orig1', parents=parents,
+                      transient=True)
         niprov.record('fslmaths t1flip_all_orig1 -mul 1 t1flip_all_orig '
-                      '-odt float')
-        niprov.record('bet %s %s_brain -m' % (t1_ref, t1_ref))
-        niprov.record('fslroi %s b1map_mag 0 1' % b1_map)
-        niprov.record('fslroi %s b1map_phase 2 1' % b1_map)
+                      '-odt float', new='t1flip_all_orig',
+                      parents='t1flip_all_orig1', transient=True)
+        niprov.record('bet %s %s_brain -m' % (t1_ref, t1_ref),
+                      parents=t1_ref, new=t1_ref + '_brain', transient=True)
+        niprov.record('fslroi %s b1map_mag 0 1' % b1_map, new='b1map_mag',
+                      parents=b1_map, transient=True)
+        niprov.record('fslroi %s b1map_phase 2 1' % b1_map, new='b1map_phase',
+                      parents=b1_map, transient=True)
         niprov.record('mcflirt -in t1flip_all_orig -out t1all_reg -mats '
-                      '-plots -refvol 0 -rmsrel -rmsabs')
+                      '-plots -refvol 0 -rmsrel -rmsabs', new='t1all_reg',
+                      parents='t1flip_all_orig', transient=True)
         niprov.record('flirt -in b1map_mag -ref %s -init identity.mat '
                       '-o b1map_mag_upsample -omat b1mag2t1ref.mat'
-                      % t1_ref)
+                      % t1_ref, new=['b1map_mag_upsample', 'b1mag2t1ref.mat'],
+                      parents=['b1map_mag', t1_ref, 'identity.mat'],
+                      transient=True)
         niprov.record('flirt -in b1map_phase -ref %s -applyxfm '
                       '-init b1mag2t1ref.mat -out b1map_phase_reg2t1map'
-                      % t1_ref)
+                      % t1_ref, new='b1map_phase_reg2t1map',
+                      parents=['b1map_phase', t1_ref, 'b1mag2t1ref.mat'],
+                      transient=True)
         niprov.record('fslmaths b1map_phase_reg2t1map -s 5 '
                       '-mas %s_brain_mask b1map_phase_reg2t1map_s5_masked '
-                      '-odt float' % t1_ref)
-        niprov.record('fslchfiletype ANALYZE t1all_reg t1flip_all.hdr')
+                      '-odt float' % t1_ref,
+                      new='b1map_phase_reg2t1map_s5_masked',
+                      parents=[t1_ref + '_brain_mask',
+                               'b1map_phase_reg2t1map'], transient=True)
+        niprov.record('fslchfiletype ANALYZE t1all_reg t1flip_all.hdr',
+                      new='t1all_reg', parents='t1all_reg', transient=True)
         niprov.record('fslchfiletype ANALYZE '
-                      'b1map_phase_reg2t1map_s5_masked out_image.hdr')
-        # XXX hard-coded executable :(
+                      'b1map_phase_reg2t1map_s5_masked out_image.hdr',
+                      new='b1map_phase_reg2t1map_s5_masked',
+                      parents='b1map_phase_reg2t1map_s5_masked',
+                      transinent=True)
+        # XXX hard-coded executable :( I don't actually know the inputs/outputs
         niprov.record('/home/toddr/Software/'
-                      't1flip_with3_with3differentoutputs')
-        niprov.record('fslchfiletype NIFTI t1image_b1corr %s' % qT1)
+                      't1flip_with3_with3differentoutputs',
+                      new=['t1image_b1corr', 't1flip_all_b1corr',
+                           't1image_uncorr', 't1image_intensitycorr'],
+                      parents=['b1map_phase_reg2t1map_s5_masked',
+                               't1all_reg'], transient=True)
+        niprov.record('fslchfiletype NIFTI t1image_b1corr %s' % qT1,
+                      new=qT1, parents='t1image_b1corr')
         niprov.record('fslchfiletype NIFTI t1flip_all_b1corr %s'
-                      % all_t1flips_b1corr)
-        niprov.record('fslchfiletype NIFTI t1image_uncorr %s' % qT1_nob1corr)
+                      % all_t1flips_b1corr, new=all_t1flips_b1corr,
+                      parents='t1flip_all_b1corr')
+        niprov.record('fslchfiletype NIFTI t1image_uncorr %s' % qT1_nob1corr,
+                      new=qT1_nob1corr, parents='t1image_uncorr')
         niprov.record('fslchfiletype NIFTI t1image_intensitycorr %s'
-                      % qT1_intensitycorr)
+                      % qT1_intensitycorr, new=qT1_intensitycorr,
+                      parents='t1image_intensitycorr')
         for fname in (qT1, all_t1flips_b1corr, qT1_nob1corr,
                       qT1_intensitycorr):
-            niprov.record('fslcreatehd t1ref_temphdr.txt %s' % fname)
+            niprov.record('fslcreatehd t1ref_temphdr.txt %s' % fname,
+                          parents=[fname, 't1ref_hemphdr.txt'], new=fname)
 
     qT1_thr = op.join(subdir, subj_name + '_qT1_thr8000_ero')
     niprov.record('fslmaths %s -thr 1 -uthr 8000 -ero %s'
-                  % (qT1, qT1_thr))
+                  % (qT1, qT1_thr), parents=qT1, new=qT1_thr)
