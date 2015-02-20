@@ -10,8 +10,7 @@ import niprov
 from pylabs.utils import InTempDir
 from pylabs.conversion import par_to_nii
 
-work_dir = ('/media/DiskArray/shared_data/js/self_control/'
-            'hbm_group_data/qT1')
+work_dir = os.getcwd()  # must have e.g. scs385 subdirectory here
 niprov.discover(work_dir)
 
 
@@ -23,19 +22,22 @@ for subdir in subdirs:
     # XXX these globs should be replaced by hard-coding the names
     # (with variable substitution), since we should settle on a convention
     t1_ref = glob.glob(op.join(subdir, '*T1_MAP_02B*.PAR'))
+    assert len(t1_ref) == 1
+    t1_ref = t1_ref[0][:-3] + 'nii'
     t1_10 = glob.glob(op.join(subdir, '*T1_MAP_02B*.PAR'))
+    assert len(t1_10) == 1
+    t1_10 = t1_10[0][:-3] + 'nii'
     t1_20 = glob.glob(op.join(subdir, '*T1_MAP_02B*.PAR'))
+    assert len(t1_20) == 1
+    t1_20 = t1_20[0][:-3] + 'nii'
     b1_map = glob.glob(op.join(work_dir, subdir, '*B1MAP_SAG*.PAR'))
-    out_names = [t1_ref, t1_10, t1_20, b1_map]
-    for ni, name in enumerate(out_names):
-        if len(name) != 1:
-            raise IOError('should find exactly one name, found %s' % len(name))
-        out_names[ni] = name[0][:-3] + '.nii'
+    assert len(b1_map) == 1
+    b1_map = b1_map[0][:-3] + 'nii'
 
     # convert from PAR/REC to NIfTI
     scalings = ['fp', 'fp', 'fp', 'dv']
-    for out_name, scaling in zip(out_names, scalings):
-        in_name = out_name[:-3] + '.PAR'
+    for out_name, scaling in zip([t1_ref, t1_10, t1_20, b1_map], scalings):
+        in_name = out_name[:-3] + 'PAR'
         niprov.record(par_to_nii, args=[in_name, out_name, scaling],
                       parents=[in_name], new=out_name)
 
@@ -95,16 +97,14 @@ for subdir in subdirs:
                       new='t1all_reg', parents='t1all_reg', transient=True)
         niprov.record('fslchfiletype ANALYZE '
                       'b1map_phase_reg2t1map_s5_masked out_image.hdr',
-                      new='b1map_phase_reg2t1map_s5_masked',
+                      new='out_image.hdr',
                       parents='b1map_phase_reg2t1map_s5_masked',
-                      transinent=True)
-        # XXX hard-coded executable :( I don't actually know the inputs/outputs
-        niprov.record('/home/toddr/Software/'
-                      't1flip_with3_with3differentoutputs',
+                      transient=True)
+        # XXX I don't actually know the inputs/outputs
+        niprov.record('t1flip_with3_with3differentoutputs',
                       new=['t1image_b1corr', 't1flip_all_b1corr',
                            't1image_uncorr', 't1image_intensitycorr'],
-                      parents=['b1map_phase_reg2t1map_s5_masked',
-                               't1all_reg'], transient=True)
+                      parents=['out_image.hdr', 't1all_reg'], transient=True)
         niprov.record('fslchfiletype NIFTI t1image_b1corr %s' % qT1,
                       new=qT1, parents='t1image_b1corr')
         niprov.record('fslchfiletype NIFTI t1flip_all_b1corr %s'

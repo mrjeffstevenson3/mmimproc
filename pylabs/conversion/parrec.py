@@ -20,6 +20,6 @@ def par_to_nii(in_file, out_file, scaling='fp'):
     """
     if not isinstance(in_file, string_types):
         raise TypeError('in_file must be a str')
-    if op.splitext(in_file).lower() != 'par':
+    if op.splitext(in_file)[1].lower() != '.par':
         raise RuntimeError('Input must be a .par file')
-    nibabel.load(in_file, scaling=scaling).save(out_file)
+    nibabel.save(nibabel.load(in_file, scaling=scaling), out_file)
