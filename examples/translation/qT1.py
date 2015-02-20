@@ -8,7 +8,7 @@ import glob
 import niprov
 
 from pylabs.utils import InTempDir
-from pylabs.conversion import par_to_nii
+from pylabs.conversion import par_to_nii, dump_header
 
 work_dir = os.getcwd()  # must have e.g. scs385 subdirectory here
 niprov.discover(work_dir)
@@ -59,8 +59,8 @@ for subdir in subdirs:
             fid.write('1 0 0 0\n0 1 0 0\n0 0 1 0\n0 0 0 1\n')
         niprov.add('identity.mat', transient=True)
 
-        niprov.record('fslhd -x %s > t1ref_temphdr.txt' % t1_ref,
-                      parents=t1_ref, new='t1ref_temhdr.txt', transient=True)
+        niprov.record(dump_header, args=(t1_ref, 't1ref_temphdr.txt'),
+                      parents=t1_ref, new='t1ref_temphdr.txt', transient=True)
         parents = (t1_ref, t1_10, t1_20)
         niprov.record('fslmerge -t t1flip_all_orig1 %s %s %s'
                       % parents, new='t1flip_all_orig1', parents=parents,
@@ -69,7 +69,8 @@ for subdir in subdirs:
                       '-odt float', new='t1flip_all_orig',
                       parents='t1flip_all_orig1', transient=True)
         niprov.record('bet %s %s_brain -m' % (t1_ref, t1_ref),
-                      parents=t1_ref, new=t1_ref + '_brain', transient=True)
+                      parents=t1_ref, transient=True,
+                      new=[t1_ref + '_brain', t1_ref + '_brain_mask'])
         niprov.record('fslroi %s b1map_mag 0 1' % b1_map, new='b1map_mag',
                       parents=b1_map, transient=True)
         niprov.record('fslroi %s b1map_phase 2 1' % b1_map, new='b1map_phase',
@@ -101,7 +102,7 @@ for subdir in subdirs:
                       parents='b1map_phase_reg2t1map_s5_masked',
                       transient=True)
         # XXX I don't actually know the inputs/outputs
-        niprov.record('t1flip_with3_with3differentoutputs',
+        niprov.record(op.join(work_dir, 't1flip_with3_with3differentoutputs'),
                       new=['t1image_b1corr', 't1flip_all_b1corr',
                            't1image_uncorr', 't1image_intensitycorr'],
                       parents=['out_image.hdr', 't1all_reg'], transient=True)
@@ -118,8 +119,8 @@ for subdir in subdirs:
         for fname in (qT1, all_t1flips_b1corr, qT1_nob1corr,
                       qT1_intensitycorr):
             niprov.record('fslcreatehd t1ref_temphdr.txt %s' % fname,
-                          parents=[fname, 't1ref_hemphdr.txt'], new=fname)
+                          parents=[fname, 't1ref_temphdr.txt'], new=fname)
 
-    qT1_thr = op.join(subdir, subj_name + '_qT1_thr8000_ero')
+    qT1_thr = op.join(subdir, subj_name + '_qT1_thr8000_ero.nii.gz')
     niprov.record('fslmaths %s -thr 1 -uthr 8000 -ero %s'
                   % (qT1, qT1_thr), parents=qT1, new=qT1_thr)
