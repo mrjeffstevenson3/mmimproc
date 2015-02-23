@@ -2,9 +2,12 @@ c fitting program
 c program to create t1image map from 3 different flip angle images
 c here it compile command
 c gfortran t1flip_with3_with3differentoutputs.f -o t1flip_with3_with3differentoutputs -ffixed-line-length-none
-c input files:  t1flip_all.hdr, t1flip_all.img, out_image.hdr, out_image.img
-c output files: t1image_b1corr.hdr, t1image_b1corr.img, s0image_b1corr.hdr, s0image_b1corr.img, t1image_intensitycorr.hdr, t1image_intensitycorr.img
-c output files: t1image_uncorr.hdr, t1image_uncorr.img
+c input files (.hdr, .img):
+c   t1flip_all, t1flip_all.img, out_image.hdr, out_image.img
+c output files (.hdr, .img): 
+c   t1image_b1corr, t1image_intensitycorr, t1image_uncorr
+c   s0image_b1corr, s0image_intensitycorr, s0image_uncorr
+c   t1flip_all_b1corr, out_image
 c The t1flip_all.* contains the combined images of all of the different flip angle images
 c out_image.* contains the coregistered B1map 
 c t1image_b1corr.* contains the t1image using the b1map correction - T1 relaxation time

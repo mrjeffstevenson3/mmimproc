@@ -95,27 +95,30 @@ for subdir in subdirs:
                       parents=[t1_ref + '_brain_mask',
                                'b1map_phase_reg2t1map'], transient=True)
         niprov.record('fslchfiletype ANALYZE t1all_reg t1flip_all.hdr',
-                      new='t1all_reg', parents='t1all_reg', transient=True)
+                      new='t1flip_all', parents='t1all_reg', transient=True)
         niprov.record('fslchfiletype ANALYZE '
                       'b1map_phase_reg2t1map_s5_masked out_image.hdr',
                       new='out_image.hdr',
                       parents='b1map_phase_reg2t1map_s5_masked',
                       transient=True)
-        # XXX I don't actually know the inputs/outputs
         niprov.record(op.join(work_dir, 't1flip_with3_with3differentoutputs'),
-                      new=['t1image_b1corr', 't1flip_all_b1corr',
-                           't1image_uncorr', 't1image_intensitycorr'],
-                      parents=['out_image.hdr', 't1all_reg'], transient=True)
+                      new=['t1image_b1corr', 't1image_intensitycorr',
+                           't1image_uncorr',
+                           's0image_b1corr', 's0image_intensitycorr',
+                           's0image_uncorr',
+                           't1flip_all_b1corr'],
+                      parents=['t1flip_all', 'out_image'],
+                      transient=True)
         niprov.record('fslchfiletype NIFTI t1image_b1corr %s' % qT1,
                       new=qT1, parents='t1image_b1corr')
         niprov.record('fslchfiletype NIFTI t1flip_all_b1corr %s'
                       % all_t1flips_b1corr, new=all_t1flips_b1corr,
                       parents='t1flip_all_b1corr')
-        niprov.record('fslchfiletype NIFTI t1image_uncorr %s' % qT1_nob1corr,
-                      new=qT1_nob1corr, parents='t1image_uncorr')
         niprov.record('fslchfiletype NIFTI t1image_intensitycorr %s'
                       % qT1_intensitycorr, new=qT1_intensitycorr,
                       parents='t1image_intensitycorr')
+        niprov.record('fslchfiletype NIFTI t1image_uncorr %s' % qT1_nob1corr,
+                      new=qT1_nob1corr, parents='t1image_uncorr')
         for fname in (qT1, all_t1flips_b1corr, qT1_nob1corr,
                       qT1_intensitycorr):
             niprov.record('fslcreatehd t1ref_temphdr.txt %s' % fname,
