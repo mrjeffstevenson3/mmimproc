@@ -5,8 +5,8 @@ python:
 
 env:
     - PYTHON=2.7 TEST=standard
-    - PYTHON=3.3 TEST=standard
-    - PYTHON=3.3 TEST=extra
+    - PYTHON=3.4 TEST=standard
+    - PYTHON=3.4 TEST=extra
 
 virtualenv:
     system_site_packages: true
@@ -18,7 +18,7 @@ before_install:
         travis_retry sudo apt-get install -qq -y python-nose python-coverage python-scipy python-matplotlib;
         travis_retry sudo pip install -q coveralls;
       else
-        wget http://repo.continuum.io/miniconda/Miniconda-2.2.2-Linux-x86_64.sh -O miniconda.sh;
+        wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh;
         chmod +x miniconda.sh;
         ./miniconda.sh -b;
         export PATH=/home/$USER/anaconda/bin:$PATH;
@@ -28,7 +28,7 @@ before_install:
         conda install --yes --quiet scipy matplotlib nose coverage;
         travis_retry pip install -q coveralls;
       fi;
-    - travis_retry pip install -q nose-timer;
+    - travis_retry pip install -q nose-timer nibabel six;
     - if [ "${TEST}" == "extra" ]; then
         travis_retry pip install -q flake8;
       fi;

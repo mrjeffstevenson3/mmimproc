@@ -6,7 +6,7 @@
 import os
 
 # we are using a setuptools namespace
-import setuptools  # analysis:ignore
+import setuptools  # noqa, analysis:ignore
 from numpy.distutils.core import setup
 
 descr = """Kuhl lab pipeline functions."""
