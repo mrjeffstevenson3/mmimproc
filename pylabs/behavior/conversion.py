@@ -10,8 +10,6 @@ def csv2fslmat(csvfile, selectSubjects=None):
     data = numpy.loadtxt(csvfile, skiprows=2)
     measures = lines[1].split()[skipCols:]
 
-    #import pdb
-    #pdb.set_trace()
     if selectSubjects is not None:
         allsubjects = data[:,0].astype(int)
         selection = numpy.array([s in selectSubjects for s in allsubjects])
@@ -25,12 +23,14 @@ def csv2fslmat(csvfile, selectSubjects=None):
     os.makedirs('matfiles')
     for m, measure in enumerate(measures):
         c = skipCols+m # column for this measure
-        matfname = '{0}.mat'.format(measure)
-        with open('matfiles/'+matfname, 'w') as matfile:
+        matfname = 'matfiles/{0}.mat'.format(measure)
+        with open(matfname, 'w') as matfile:
             matfile.write('/ContrastName1\t{0}\n'.format(measure))
             matfile.write('/NumWaves\t2\n/NumPoints\t{0}\n'.format(nsubjects))
-            matfile.write('/PPheights\t\t1.000000e+00 1.000000e+00\n')
+            matfile.write('/PPheights\t\t{0} {1}\n'.format(dmdata[:, c].min(),
+                dmdata[:, c].max()))
             matfile.write('\n/Matrix\n')
             for s in range(nsubjects):
                 matfile.write('1.000000e+00	{0}\t\n'.format(dmdata[s, c]))
+        print(matfname)
 
