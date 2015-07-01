@@ -27,10 +27,10 @@ def csv2fslmat(csvfile, selectSubjects=None):
         with open(matfname, 'w') as matfile:
             matfile.write('/ContrastName1\t{0}\n'.format(measure))
             matfile.write('/NumWaves\t2\n/NumPoints\t{0}\n'.format(nsubjects))
-            matfile.write('/PPheights\t\t{0} {1}\n'.format(dmdata[:, c].min(),
+            matfile.write('/PPheights\t\t{0:.8e} {1:.8e}\n'.format(dmdata[:, c].min(),
                 dmdata[:, c].max()))
             matfile.write('\n/Matrix\n')
             for s in range(nsubjects):
-                matfile.write('1.000000e+00	{0}\t\n'.format(dmdata[s, c]))
+                matfile.write('1.000000e+00	{0:.8e}\t\n'.format(dmdata[s, c]))
         print(matfname)
 
