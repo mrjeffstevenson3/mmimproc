@@ -1,9 +1,9 @@
 from nose.tools import (assert_raises, assert_equal, assert_not_equal,
                         assert_true)
 import os, shutil, unittest
-from pylabs.behavior.conversion import csv2fslmat
+from pylabs.correlation.conversion import csv2fslmat
 
-sampledir = 'pylabs/behavior/tests/sampledata/'
+sampledir = 'pylabs/correlation/tests/sampledata/'
 
 def test_basic():
     if os.path.isdir('matfiles'):
