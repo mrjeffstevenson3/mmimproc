@@ -3,13 +3,11 @@ from pylabs.behavior.conversion import csv2fslmat
 csvfile = '/run/user/1000/gvfs/smb-share:domain=WORKGROUP,server=scotty.ilabs.uw.edu,share=js,user=toddr/self_control/hbm_group_data/tbss_19subj/workdir_thr1p5_v3/stats/EF_and_Brain_mar26_2015.csv'
 subjects= [
 317,
-322,
-324,
+318,
 328,
 332,
 334,
 335,
-341,
 347,
 353,
 364,
