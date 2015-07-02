@@ -24,3 +24,12 @@ def test_select_two_subjects():
     with open('matfiles/cardsorttotal.mat') as createdfile:
         with open(sampledir+'cardsorttotal_only2.mat') as correctfile:
             assert_equal(createdfile.readlines(), correctfile.readlines())
+
+
+#def test_select_two_subjects():
+#    if os.path.isdir('matfiles'):
+#        shutil.rmtree('matfiles') # clean up
+#    csvfile = sampledir+'behavior.csv'
+#    csv2fslmat(csvfile=csvfile, selectSubjects=[317, 396])
+#    glob.glob('matfiles/*cardsorttotal*.mat'))
+#c2b08s16d_behaviordescriptiontextstringnospaces.mat

@@ -1,7 +1,8 @@
 import os, numpy
+from pylabs.utils import Filesystem
 
 
-def csv2fslmat(csvfile, selectSubjects=None):
+def csv2fslmat(csvfile, selectSubjects=None, filesys=Filesystem()):
     # Create FSL matrix files for correlation from behavioral data in a csv file
 
     skipCols = 4
@@ -24,7 +25,7 @@ def csv2fslmat(csvfile, selectSubjects=None):
     for m, measure in enumerate(measures):
         c = skipCols+m # column for this measure
         matfname = 'matfiles/{0}.mat'.format(measure)
-        with open(matfname, 'w') as matfile:
+        with filesys.open(matfname, 'w') as matfile:
             matfile.write('/ContrastName1\t{0}\n'.format(measure))
             matfile.write('/NumWaves\t2\n/NumPoints\t{0}\n'.format(nsubjects))
             matfile.write('/PPheights\t\t{0:.8e} {1:.8e}\n'.format(dmdata[:, c].min(),
