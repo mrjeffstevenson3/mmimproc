@@ -24,14 +24,15 @@ def csv2fslmat(csvfile, selectSubjects=None, filesys=Filesystem()):
     os.makedirs('matfiles')
     for m, measure in enumerate(measures):
         c = skipCols+m # column for this measure
-        matfname = 'matfiles/{0}.mat'.format(measure)
-        with filesys.open(matfname, 'w') as matfile:
-            matfile.write('/ContrastName1\t{0}\n'.format(measure))
-            matfile.write('/NumWaves\t2\n/NumPoints\t{0}\n'.format(nsubjects))
-            matfile.write('/PPheights\t\t{0:.8e} {1:.8e}\n'.format(dmdata[:, c].min(),
-                dmdata[:, c].max()))
-            matfile.write('\n/Matrix\n')
-            for s in range(nsubjects):
-                matfile.write('1.000000e+00	{0:.8e}\t\n'.format(dmdata[s, c]))
+        matfname = 'matfiles/c2b{0:0>2d}s{1}d_{2}.mat'.format(m+5,nsubjects,measure)
+        content = ''
+        content += '/ContrastName1\t{0}\n'.format(measure)
+        content += '/NumWaves\t2\n/NumPoints\t{0}\n'.format(nsubjects)
+        content += '/PPheights\t\t{0:.8e} {1:.8e}\n'.format(dmdata[:, c].min(),
+            dmdata[:, c].max())
+        content += '\n/Matrix\n'
+        for s in range(nsubjects):
+            content += '1.000000e+00	{0:.8e}\t\n'.format(dmdata[s, c])
+        filesys.write(matfname, content)
         print(matfname)
 
