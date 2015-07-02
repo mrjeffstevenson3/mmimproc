@@ -41,3 +41,8 @@ def run_subprocess(command):
             raise subprocess.CalledProcessError(p.returncode, command)
 
     return output
+
+class Shell():
+
+    def run(self, cmd):
+        run_subprocess(cmd)
