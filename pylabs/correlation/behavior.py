@@ -1,8 +1,14 @@
 import os, numpy
 from pylabs.utils import Filesystem
 
+class FslMatFile(object):
 
-def csv2fslmat(csvfile, selectSubjects=None, filesys=Filesystem()):
+    def setData(self, data):
+        pass
+
+
+def csv2fslmat(csvfile, selectSubjects=None, demean=True, groupcol=True,
+    filesys=Filesystem()):
     # Create FSL matrix files for correlation from behavioral data in a csv file
 
     skipCols = 4
@@ -19,10 +25,16 @@ def csv2fslmat(csvfile, selectSubjects=None, filesys=Filesystem()):
 
     sdata = data[data[:,0].argsort()] #sort order of subjects
     means = sdata.mean(axis=0) #per-measure average
-    dmdata = (sdata-means) # demeaned data
+    if demean:
+        dmdata = (sdata-means) # demeaned data
+    else:
+        dmdata = sdata
 
-    os.makedirs('matfiles')
+    filesys.makedirs('matfiles')
     for m, measure in enumerate(measures):
+
+        FslMatFile().setData(dmdata[:, skipCols:])
+
         c = skipCols+m # column for this measure
         matfname = 'matfiles/c2b{0:0>2d}s{1}d_{2}.mat'.format(m+5,nsubjects,measure)
         content = ''
