@@ -57,8 +57,13 @@ def test_demeaning():
 
 def test_group_column():
     csvfile = sampledir+'behavior_simple.csv'
-    csv2fslmat(csvfile=csvfile, filesys=Mock(), groupcol=False)
-    # should not add a "group column" of 1s.
+    with patch('pylabs.correlation.behavior.FslMatFile') as FslMatFile:
+        csv2fslmat(csvfile=csvfile, filesys=Mock(), groupcol=False)
+        assert_called_with_array(
+            FslMatFile().setData, numpy.array([[-2],[-1],[0],[1],[2]]))
+        csv2fslmat(csvfile=csvfile, filesys=Mock(), groupcol=True)
+        assert_called_with_array(
+            FslMatFile().setData, numpy.array([[1,-2],[1,-1],[1,0],[1,1],[1,2]]))
 
 def test_filenames_returned():
     pass

@@ -7,7 +7,7 @@ class FslMatFile(object):
         pass
 
 
-def csv2fslmat(csvfile, selectSubjects=None, demean=True, groupcol=True,
+def csv2fslmat(csvfile, selectSubjects=None, demean=True, groupcol=False,
     filesys=Filesystem()):
     # Create FSL matrix files for correlation from behavioral data in a csv file
 
@@ -30,12 +30,20 @@ def csv2fslmat(csvfile, selectSubjects=None, demean=True, groupcol=True,
     else:
         dmdata = sdata
 
+
+
     filesys.makedirs('matfiles')
     for m, measure in enumerate(measures):
 
-        FslMatFile().setData(dmdata[:, skipCols:])
+
 
         c = skipCols+m # column for this measure
+
+        indata = numpy.atleast_2d(dmdata[:, c]).T
+        if groupcol:
+            indata = numpy.hstack((numpy.ones((nsubjects,1)), indata))
+        FslMatFile().setData(indata)
+
         matfname = 'matfiles/c2b{0:0>2d}s{1}d_{2}.mat'.format(m+5,nsubjects,measure)
         content = ''
         content += '/ContrastName1\t{0}\n'.format(measure)
