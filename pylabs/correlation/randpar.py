@@ -5,6 +5,9 @@ from pylabs.utils import Shell
 def multirandpar(images, mats, designfile, niterations=500, shell=Shell()):
     """ randomise_parallel on multiple images and/or multiple predictors
 
+    Expects mask files to exist for each unique image prefix 
+    (underscore-delineated); i.e. "GM_mod_merge.img" would require a "GM_mask"
+
     Args:
         images (list): List of image files
         mats (list): List of behavior data .mat files.
@@ -13,11 +16,13 @@ def multirandpar(images, mats, designfile, niterations=500, shell=Shell()):
         shell (pylabs.utils.Shell): Override to inject a mock for shell calls.
     """
     for image in images:
+        maskfile = '{0}_mask'.format(image.split('_')[0])
         for mat in mats:
             outdir = 'randpar_{0}'.format(image.split('.')[0])
             cmd = 'randomize_parallel'
             cmd += ' -i {0}'.format(image)      #input image
             cmd += ' -o {0}/x'.format(outdir)   #output dir
+            cmd += ' -m {0}'.format(maskfile)         #behavior .mat file
             cmd += ' -d {0}'.format(mat)         #behavior .mat file
             cmd += ' -t {0}'.format(designfile)      #design/ contrast file
             cmd += ' -n {0}'.format(niterations)      #number of iterations

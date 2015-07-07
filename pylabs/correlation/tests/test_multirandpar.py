@@ -42,6 +42,14 @@ class MultiRandParTests(TestCase):
         self.shell.assert_ran_command_matching(
             'randomize_parallel * -n 99*')
 
+    def test_Looks_for_maskfile_based_on_image_prefix(self):
+        imgs = ['typeA_bla.img','typeB_bla.img']
+        multirandpar(imgs, ['a.mat'], 'd.con', shell=self.shell)
+        self.shell.assert_ran_command_matching(
+            'randomize_parallel *-i typeA_bla.img * -m typeA_mask *')
+        self.shell.assert_ran_command_matching(
+            'randomize_parallel *-i typeB_bla.img * -m typeB_mask *')
+
 
 
 
