@@ -2,7 +2,6 @@ from nose.tools import (assert_raises, assert_equal, assert_not_equal,
                         assert_true)
 import os, shutil, unittest
 from mock import Mock, patch
-from hamcrest import anything
 from pylabs.correlation.behavior import csv2fslmat
 import numpy
 
