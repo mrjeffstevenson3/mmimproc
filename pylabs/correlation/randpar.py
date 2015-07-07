@@ -2,7 +2,7 @@
 from pylabs.utils import Shell
 
 
-def multirandpar(images, mats, designfile, niterations=500, shell=Shell()):
+def multirandpar(images, mats, designfile, niterations=50, shell=Shell()):
     """ randomise_parallel on multiple images and/or multiple predictors
 
     Expects mask files to exist for each unique image prefix 
@@ -12,13 +12,14 @@ def multirandpar(images, mats, designfile, niterations=500, shell=Shell()):
         images (list): List of image files
         mats (list): List of behavior data .mat files.
         designfile (str): FSL .con file with design.
-        niterations (int): Number of iterations to run. Defaults to 500.
+        niterations (int): Number of iterations to run. Defaults to 50.
         shell (pylabs.utils.Shell): Override to inject a mock for shell calls.
     """
     for image in images:
         maskfile = '{0}_mask'.format(image.split('_')[0])
+        outdir = 'randpar_{0}'.format(image.split('.')[0])
+        shell.run('mkdir -p {0}'.format(outdir))
         for mat in mats:
-            outdir = 'randpar_{0}'.format(image.split('.')[0])
             cmd = 'randomize_parallel'
             cmd += ' -i {0}'.format(image)      #input image
             cmd += ' -o {0}/x'.format(outdir)   #output dir

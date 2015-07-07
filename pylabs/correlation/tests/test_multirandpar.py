@@ -22,6 +22,14 @@ class MultiRandParTests(TestCase):
         self.shell.assert_ran_command_matching(
             'randomize_parallel *-i one.img *-o randpar_one*/*')
 
+    def test_creates_dirs(self):
+        imgs = ['one.img','two.img']
+        multirandpar(imgs, ['x.mat'], 'd.con', shell=self.shell)
+        self.shell.assert_ran_command_matching(
+            'mkdir -p randpar_one')
+        self.shell.assert_ran_command_matching(
+            'mkdir -p randpar_two')
+
     def test_runs_for_each_image_and_variable_combination(self):
         imgs = ['one.img','two.img']
         mats = ['a.mat','b.mat']
@@ -49,6 +57,8 @@ class MultiRandParTests(TestCase):
             'randomize_parallel *-i typeA_bla.img * -m typeA_mask *')
         self.shell.assert_ran_command_matching(
             'randomize_parallel *-i typeB_bla.img * -m typeB_mask *')
+
+
 
 
 
