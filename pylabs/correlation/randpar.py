@@ -17,14 +17,15 @@ def multirandpar(images, mats, designfile, niterations=50, shell=Shell()):
     """
     for image in images:
         maskfile = '{0}_mask'.format(image.split('_')[0])
-        outdir = 'randpar_{0}'.format(image.split('.')[0])
+        outdir = 'randpar_{0}_{1}'.format(niterations, image.split('.')[0])
         shell.run('mkdir -p {0}'.format(outdir))
         for mat in mats:
+            outfile = '{0}'.format(mat.split('.')[0])
             cmd = 'randomize_parallel'
-            cmd += ' -i {0}'.format(image)      #input image
-            cmd += ' -o {0}/x'.format(outdir)   #output dir
-            cmd += ' -m {0}'.format(maskfile)         #behavior .mat file
-            cmd += ' -d {0}'.format(mat)         #behavior .mat file
+            cmd += ' -i {0}'.format(image)                  #input image
+            cmd += ' -o {0}/{1}'.format(outdir, outfile)   #output dir, file
+            cmd += ' -m {0}'.format(maskfile)               #mask file
+            cmd += ' -d {0}'.format(mat)                #behavior .mat file
             cmd += ' -t {0}'.format(designfile)      #design/ contrast file
             cmd += ' -n {0}'.format(niterations)      #number of iterations
             cmd += ' -T -V'                 #verbose, not sure what T does.

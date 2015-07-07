@@ -7,3 +7,8 @@ for afile in GM_mod_merg_s2.nii.gz WM_mod_merg_s2.nii.gz;
             -n 500 -T -V; 
     done; 
 done
+
+
+#behav_results5000_${afile:0:2}_${afile:12:2}
+#/
+#out_${afile:0:2}_vbm${afile:12:2}_3col_gend_cov_${behav:0:7}

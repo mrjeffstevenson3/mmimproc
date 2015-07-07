@@ -20,15 +20,22 @@ class MultiRandParTests(TestCase):
         imgs = ['one.img','two.img']
         multirandpar(imgs, ['x.mat'], 'd.con', shell=self.shell)
         self.shell.assert_ran_command_matching(
-            'randomize_parallel *-i one.img *-o randpar_one*/*')
+            'randomize_parallel *-i one.img *-o randpar_50_one/*')
 
     def test_creates_dirs(self):
         imgs = ['one.img','two.img']
         multirandpar(imgs, ['x.mat'], 'd.con', shell=self.shell)
         self.shell.assert_ran_command_matching(
-            'mkdir -p randpar_one')
+            'mkdir -p randpar_50_one')
         self.shell.assert_ran_command_matching(
-            'mkdir -p randpar_two')
+            'mkdir -p randpar_50_two')
+
+    def test_output_path_reflects_files_and_options(self):
+        imgs = ['one_foo.img']
+        mats = ['abc_bar.mat']
+        multirandpar(imgs, mats, 'mydesign.con', niterations=77, shell=self.shell)
+        self.shell.assert_ran_command_matching(
+            'randomize_parallel * -o randpar_77_one_foo/abc_bar*')
 
     def test_runs_for_each_image_and_variable_combination(self):
         imgs = ['one.img','two.img']
