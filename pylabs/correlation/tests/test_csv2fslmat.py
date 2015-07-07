@@ -65,6 +65,9 @@ def test_group_column():
         assert_called_with_array(
             FslMatFile().setData, numpy.array([[1,-2],[1,-1],[1,0],[1,1],[1,2]]))
 
+def test_can_pick_columns():
+    pass
+
 def test_filenames_returned():
     pass
 
