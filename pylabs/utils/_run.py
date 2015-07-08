@@ -42,7 +42,8 @@ def run_subprocess(command):
 
     return output
 
-class Shell():
 
-    def run(self, cmd):
-        run_subprocess(cmd)
+class Shell(object):
+
+    def run(self, command):
+        run_subprocess(command)

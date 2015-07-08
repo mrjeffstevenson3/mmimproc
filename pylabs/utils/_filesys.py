@@ -21,6 +21,9 @@ class Filesystem(object):
             lines = fhandle.read().splitlines()
         return lines
 
+    def makedirs(self, dirs):
+        os.makedirs(dirs)
+
     def read(self, path):
         """Read the contents of a textfile.
 
