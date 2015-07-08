@@ -29,3 +29,4 @@ def test_dirs():
 
     assert_equal(os.getcwd(), orig_dir)
     assert_true(not op.isdir(temp_dir))
+
