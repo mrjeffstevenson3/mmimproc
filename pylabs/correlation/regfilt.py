@@ -2,6 +2,7 @@ from pylabs.utils import Shell
 
 
 def multiregfilt(images, mat, shell=Shell()):
+    outfiles = []
     for image in images:
         outfile = '{0[0]}_filt_{1[0]}.{0[1]}'.format(
             image.split('.'), mat.split('.'))
@@ -11,3 +12,5 @@ def multiregfilt(images, mat, shell=Shell()):
         cmd += ' -f "1"'
         cmd += ' -o {0}'.format(outfile)
         shell.run(cmd)
+        outfiles.append(outfile)
+    return outfiles

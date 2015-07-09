@@ -23,3 +23,9 @@ class MultiRegfilterTests(TestCase):
         self.shell.assert_ran_command_matching(
             'regfilt *-o one_filt_xyz.img')
 
+    def test_returns_output_images(self):
+        from pylabs.correlation.regfilt import multiregfilt
+        imgs = ['one.img','two.img']
+        output = multiregfilt(imgs, 'xyz.mat', shell=self.shell)
+        self.assertEqual(output, ['one_filt_xyz.img','two_filt_xyz.img'])
+
