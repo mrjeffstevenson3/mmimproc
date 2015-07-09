@@ -12,18 +12,14 @@ class MultiRegfilterTests(TestCase):
         imgs = ['one.img','two.img']
         multiregfilt(imgs, 'x.mat', shell=self.shell)
         self.shell.assert_ran_command_matching(
-            'regfilt *-i one.img* -d x.mat')
+            'regfilt *-i one.img* -d x.mat*')
+        self.shell.assert_ran_command_matching(
+            'regfilt *-i two.img* -d x.mat*')
 
-
-
-
-# fsl_regfilt -i ${afile} -d gender.mat -f "1" -o filtered_gender_and_delta_${afile}
-
-
-
-
-
-
-
-
+    def test_names_output_appropriately(self):
+        from pylabs.correlation.regfilt import multiregfilt
+        imgs = ['one.img']
+        multiregfilt(imgs, 'xyz.mat', shell=self.shell)
+        self.shell.assert_ran_command_matching(
+            'regfilt *-o one_filt_xyz.img')
 
