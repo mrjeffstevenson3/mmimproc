@@ -3,6 +3,7 @@ from nose.tools import (assert_raises, assert_equal, assert_not_equal,
 import os, shutil, unittest
 from mock import Mock, patch
 from pylabs.correlation.behavior import csv2fslmat
+import pylabs.correlation.behavior
 import numpy
 
 sampledir = 'pylabs/correlation/tests/sampledata/'
@@ -64,8 +65,18 @@ def test_filenames_returned():
             groupcol=False, cols=[3, 4])
     assert_equal(expectedFnames, fnames)
 
+def test_calls_niprov_log_and_passes_opts():
+    opts = Mock()
+    behavmod = pylabs.correlation.behavior.__file__
+    csvfile = sampledir+'behavior_simple.csv'
+    with patch('pylabs.correlation.behavior.niprov') as niprov:
+        fnames = csv2fslmat(csvfile=csvfile, opts=opts, filesys=Mock())
+        niprov.log.assert_any_call(fnames[0], 'csv2fslmat', csvfile, 
+            script=behavmod, opts=opts)
+
 def correctmatfilename(nsubjects):
     return 'matfiles/c2b05s{0}d_cardsorttotal.mat'.format(nsubjects)
 
 def assert_called_with_array(callee, A):
     numpy.testing.assert_equal(callee.call_args[0][0], A)
+
