@@ -39,3 +39,9 @@ nosetests.xml
 
 # created by tests
 matfiles
+
+# Gedit autosave files
+*~
+
+# virtual env
+env/
