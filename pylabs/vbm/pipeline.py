@@ -19,15 +19,17 @@ from niprov.options import NiprovOptions
 opts = NiprovOptions()
 opts.dryrun = True
 
-base = 'self_control/hbm_group_data/'
-csvfile = base+'tbss_19subj/workdir_thr1p5_v3/stats/EF_and_Brain_mar26_2015.csv'
-images = glob.glob('*mod_merge*')
+fs = '/diskArray/mirror/'
+local = '/diskArray/data/scs/'
+vbmdir = 'self_control/hbm_group_data/vbm_17subj/workdir_v1/stats/'
+csvfile = local+'EF_and_Brain_july08_2015_Meq0_delta.csv'
+images = glob.glob(vbmdir+'*mod_merge*')
 
 ## Covariate Filtering
-matfiles = csv2fslmat(csvfile, groupcol=False, cols=[x], opts=opts)
+matfiles = csv2fslmat(csvfile, groupcol=False, cols=[2], opts=opts)
 images = multiregfilt(images, matfiles[0])
 
-matfiles = csv2fslmat(csvfile, groupcol=False, cols=[y], opts=opts)
+matfiles = csv2fslmat(csvfile, groupcol=False, cols=[4], opts=opts)
 images = multiregfilt(images, matfiles[0])
 
 

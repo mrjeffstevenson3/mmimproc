@@ -82,6 +82,5 @@ def csv2fslmat(csvfile, selectSubjects=None, demean=True, groupcol=False,
         fnames.append(matfname)
         mat.saveAs(matfname)
         niprov.log(matfname, 'csv2fslmat', csvfile, script=__file__, opts=opts)
-        print(matfname)
     return fnames
 
