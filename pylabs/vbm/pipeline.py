@@ -16,13 +16,14 @@ from pylabs.correlation.behavior import csv2fslmat
 from pylabs.correlation.regfilt import multiregfilt
 from pylabs.correlation.randpar import multirandpar
 from niprov.options import NiprovOptions
+from pylabs.utils.paths import getlocaldataroot
 opts = NiprovOptions()
 opts.dryrun = True
 
-fs = '/diskArray/mirror/'
-local = '/diskArray/data/scs/'
-vbmdir = 'self_control/hbm_group_data/vbm_17subj/workdir_v1/stats/'
-csvfile = local+'EF_and_Brain_july08_2015_Meq0_delta.csv'
+fs = getlocaldataroot()
+vbmdir = fs+'js/self_control/hbm_group_data/vbm_17subj/workdir_v1/stats/'
+behavdir = fs+'js/self_control/behavioral_data/behav_from_andy_march27_2015/'
+csvfile = behavdir+'EF_and_Brain_july08_2015_Meq0_delta.csv'
 images = glob.glob(vbmdir+'*mod_merge*')
 
 ## Covariate Filtering

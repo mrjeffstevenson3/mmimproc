@@ -53,6 +53,6 @@ if __name__ == "__main__":
           packages=['pylabs', 'pylabs.tests',
                     'pylabs.utils', 'pylabs.utils.tests',
                     ],
-          requires=['niprov >= 0.1.post10']
+          install_requires=['niprov >= 0.1.post10'],
           package_data={},
           scripts=[])
