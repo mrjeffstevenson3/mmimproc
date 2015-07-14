@@ -29,3 +29,10 @@ class MultiRegfilterTests(TestCase):
         output = multiregfilt(imgs, 'xyz.mat', shell=self.shell)
         self.assertEqual(output, ['one_filt_xyz.img','two_filt_xyz.img'])
 
+    def test_outdir_formatting_matfile_path_and_filenames_multiple_dots(self):
+        from pylabs.correlation.regfilt import multiregfilt
+        imgs = ['one.img.x','two.img.x']
+        output = multiregfilt(imgs, 'matfiles/xyz.mat', shell=self.shell)
+        self.assertEqual(output, ['one_filt_xyz.img.x','two_filt_xyz.img.x'])
+
+

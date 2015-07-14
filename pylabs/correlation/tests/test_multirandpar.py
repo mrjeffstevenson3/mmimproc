@@ -24,18 +24,18 @@ class MultiRandParTests(TestCase):
 
     def test_creates_dirs(self):
         imgs = ['one.img','two.img']
-        multirandpar(imgs, ['x.mat'], 'd.con', shell=self.shell)
+        multirandpar(imgs, ['x.mat','y.mat'], 'd.con', shell=self.shell)
         self.shell.assert_ran_command_matching(
-            'mkdir -p randpar_50_one')
+            'mkdir -p randpar_50_one/x')
         self.shell.assert_ran_command_matching(
-            'mkdir -p randpar_50_two')
+            'mkdir -p randpar_50_two/y')
 
     def test_output_path_reflects_files_and_options(self):
-        imgs = ['one_foo.img']
-        mats = ['abc_bar.mat']
+        imgs = ['/dir_sth/else/one_foo.img']
+        mats = ['/matfiles/abc_bar.mat']
         multirandpar(imgs, mats, 'mydesign.con', niterations=77, shell=self.shell)
         self.shell.assert_ran_command_matching(
-            'randomize_parallel * -o randpar_77_one_foo/abc_bar*')
+            'randomize_parallel * -o /dir_sth/else/randpar_77_one_foo/abc_bar*')
 
     def test_runs_for_each_image_and_variable_combination(self):
         imgs = ['one.img','two.img']
@@ -58,17 +58,12 @@ class MultiRandParTests(TestCase):
             'randomize_parallel * -n 99*')
 
     def test_Looks_for_maskfile_based_on_image_prefix(self):
-        imgs = ['typeA_bla.img','typeB_bla.img']
+        imgs = ['/dir_sth/typeA_bla.img','/dir_sth/typeB_bla.img']
         multirandpar(imgs, ['a.mat'], 'd.con', shell=self.shell)
         self.shell.assert_ran_command_matching(
-            'randomize_parallel *-i typeA_bla.img * -m typeA_mask *')
+            'randomize_parallel* -m /dir_sth/typeA_mask *')
         self.shell.assert_ran_command_matching(
-            'randomize_parallel *-i typeB_bla.img * -m typeB_mask *')
-
-
-
-
-
+            'randomize_parallel* -m /dir_sth/typeB_mask *')
 
 
 

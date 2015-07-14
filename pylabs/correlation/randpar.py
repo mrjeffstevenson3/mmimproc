@@ -1,4 +1,5 @@
 # Wrappers to invoke FSL's randomise_parallel routine.
+import os
 from pylabs.utils import Shell
 
 
@@ -16,14 +17,17 @@ def multirandpar(images, mats, designfile, niterations=50, shell=Shell()):
         shell (pylabs.utils.Shell): Override to inject a mock for shell calls.
     """
     for image in images:
-        maskfile = '{0}_mask'.format(image.split('_')[0])
-        outdir = 'randpar_{0}_{1}'.format(niterations, image.split('.')[0])
-        shell.run('mkdir -p {0}'.format(outdir))
+        datadir = os.path.dirname(image)
+        imagename = os.path.basename(image).split('.')[0]
+        maskfile = os.path.join(datadir, imagename.split('_')[0]+'_mask')
+        outdirbase = 'randpar_{0}_{1}'.format(niterations, imagename)
         for mat in mats:
-            outfile = '{0}'.format(mat.split('.')[0])
+            matname = os.path.basename(mat).split('.')[0]
+            outdir = os.path.join(datadir, outdirbase, matname)
+            shell.run('mkdir -p {0}'.format(outdir))
             cmd = 'randomize_parallel'
             cmd += ' -i {0}'.format(image)                  #input image
-            cmd += ' -o {0}/{1}'.format(outdir, outfile)   #output dir, file
+            cmd += ' -o {0}'.format(outdir)   #output dir, file
             cmd += ' -m {0}'.format(maskfile)               #mask file
             cmd += ' -d {0}'.format(mat)                #behavior .mat file
             cmd += ' -t {0}'.format(designfile)      #design/ contrast file

@@ -22,7 +22,8 @@ class Filesystem(object):
         return lines
 
     def makedirs(self, dirs):
-        os.makedirs(dirs)
+        if not os.path.isdir(dirs):
+            os.makedirs(dirs)
 
     def read(self, path):
         """Read the contents of a textfile.
