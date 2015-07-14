@@ -16,7 +16,7 @@ class FslMatFile(object):
         content = ''
         #content += '/ContrastName1\t{0}\n'.format(measure)
         (w,p) = self.data.shape
-        content += '/NumWaves\t2\n/NumPoints\t{0}\n'.format(w,p)
+        content += '/NumWaves\t{1}\n/NumPoints\t{0}\n'.format(w,p)
         content += '/PPheights\t\t{0:.6e} {1:.6e}\n'.format(
             self.data.min(), self.data.max())
         content += '/Matrix\n'
