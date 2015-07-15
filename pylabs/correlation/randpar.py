@@ -1,8 +1,11 @@
 # Wrappers to invoke FSL's randomise_parallel routine.
-from pylabs.utils import Shell
+import os
+from pylabs.utils import Shell, PylabsOptions
+import niprov
 
 
-def multirandpar(images, mats, designfile, niterations=50, shell=Shell()):
+def multirandpar(images, mats, designfile, niterations=50, shell=Shell(), 
+    opts=PylabsOptions()):
     """ randomise_parallel on multiple images and/or multiple predictors
 
     Expects mask files to exist for each unique image prefix 
@@ -15,21 +18,30 @@ def multirandpar(images, mats, designfile, niterations=50, shell=Shell()):
         niterations (int): Number of iterations to run. Defaults to 50.
         shell (pylabs.utils.Shell): Override to inject a mock for shell calls.
     """
+    outfiles = []
     for image in images:
-        maskfile = '{0}_mask'.format(image.split('_')[0])
-        outdir = 'randpar_{0}_{1}'.format(niterations, image.split('.')[0])
-        shell.run('mkdir -p {0}'.format(outdir))
+        datadir = os.path.dirname(image)
+        imagebasename = os.path.basename(image)
+        imagename = os.path.basename(image).split('.')[0]
+        maskfile = os.path.join(datadir, imagename.split('_')[0]+'_mask')
+        resultsubdir = 'randpar_{0}_{1}'.format(niterations, imagename)
         for mat in mats:
-            outfile = '{0}'.format(mat.split('.')[0])
+            matname = os.path.basename(mat).split('.')[0]
+            resultdir = os.path.join(datadir, resultsubdir)
+            shell.run('mkdir -p {0}'.format(resultdir))
+            resultfile = os.path.join(resultdir, 
+                '{0}_{1}'.format(matname, imagebasename))
             cmd = 'randomize_parallel'
             cmd += ' -i {0}'.format(image)                  #input image
-            cmd += ' -o {0}/{1}'.format(outdir, outfile)   #output dir, file
+            cmd += ' -o {0}'.format(resultfile)   #output dir, file
             cmd += ' -m {0}'.format(maskfile)               #mask file
             cmd += ' -d {0}'.format(mat)                #behavior .mat file
             cmd += ' -t {0}'.format(designfile)      #design/ contrast file
             cmd += ' -n {0}'.format(niterations)      #number of iterations
             cmd += ' -T -V'                 #verbose, not sure what T does.
-            shell.run(cmd)
+            niprov.record(cmd, opts=opts)
+            outfiles.append(resultfile)
+    return outfiles
 
 
 
