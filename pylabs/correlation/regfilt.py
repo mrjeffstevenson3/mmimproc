@@ -1,8 +1,9 @@
 import os
-from pylabs.utils import Shell
+from pylabs.utils import Shell, PylabsOptions
+import niprov
 
 
-def multiregfilt(images, mat, shell=Shell()):
+def multiregfilt(images, mat, shell=Shell(), opts=PylabsOptions()):
     outfiles = []
     for image in images:
         imgname = image.split('.')[0]
@@ -14,6 +15,6 @@ def multiregfilt(images, mat, shell=Shell()):
         cmd += ' -d {0}'.format(mat)
         cmd += ' -f "1"'
         cmd += ' -o {0}'.format(outfile)
-        shell.run(cmd)
+        niprov.record(cmd, opts=opts)
         outfiles.append(outfile)
     return outfiles

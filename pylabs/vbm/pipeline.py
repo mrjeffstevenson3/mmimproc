@@ -30,13 +30,13 @@ images = glob.glob(vbmdir+'*mod_merg*')
 
 ## Covariate Filtering
 matfiles = csv2fslmat(csvfile, groupcol=False, cols=[2], opts=opts)
-images = multiregfilt(images, matfiles[0])
+images = multiregfilt(images, matfiles[0], opts=opts)
 
 matfiles = csv2fslmat(csvfile, groupcol=False, cols=[4], opts=opts)
-images = multiregfilt(images, matfiles[0])
+images = multiregfilt(images, matfiles[0], opts=opts)
 
 
 ## Randomize
 designfile = 'scs_design2col.con'
 matfiles = csv2fslmat(csvfile, groupcol=True, opts=opts)
-multirandpar(images, matfiles, designfile, niterations=500)
+multirandpar(images, matfiles, designfile, niterations=500, opts=opts)
