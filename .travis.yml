@@ -8,7 +8,6 @@ addons:
   apt:
     packages:
     - python-nose
-    - python-coverage
     - python-scipy
     - python-matplotlib
 

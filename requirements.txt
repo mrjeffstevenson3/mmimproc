@@ -1,6 +1,9 @@
 coveralls
+coverage
 niprov
+mako
 nose-timer 
 nibabel 
 six
 flake8
+
