@@ -1,6 +1,7 @@
 # Wrappers to invoke FSL's randomise_parallel routine.
 import os
 from pylabs.utils import Shell
+import niprov
 
 
 def multirandpar(images, mats, designfile, niterations=50, shell=Shell()):
@@ -33,7 +34,7 @@ def multirandpar(images, mats, designfile, niterations=50, shell=Shell()):
             cmd += ' -t {0}'.format(designfile)      #design/ contrast file
             cmd += ' -n {0}'.format(niterations)      #number of iterations
             cmd += ' -T -V'                 #verbose, not sure what T does.
-            shell.run(cmd)
+            niprov.record(cmd)
 
 
 
