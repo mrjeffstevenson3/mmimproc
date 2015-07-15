@@ -1,7 +1,15 @@
 language: python
+sudo: false
 
 python:
     - "2.7"
+
+addons:
+  apt:
+    packages:
+    - python-nose
+    - python-scipy
+    - python-matplotlib
 
 env:
     - PYTHON=2.7 TEST=standard
@@ -12,26 +20,7 @@ virtualenv:
     system_site_packages: true
 
 before_install:
-    # Easy dependencies (scipy, matplotlib, nose, coverage, coveralls, flake8)
-    - travis_retry sudo apt-get update -qq
-    - if [ "${PYTHON}" == "2.7" ]; then
-        travis_retry sudo apt-get install -qq -y python-nose python-coverage python-scipy python-matplotlib;
-        travis_retry sudo pip install -q coveralls niprov;
-      else
-        wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh;
-        chmod +x miniconda.sh;
-        ./miniconda.sh -b;
-        export PATH=/home/$USER/anaconda/bin:$PATH;
-        conda update --yes conda;
-        conda create -n testenv --yes --quiet pip python=$PYTHON;
-        source activate testenv;
-        conda install --yes --quiet scipy matplotlib nose coverage;
-        travis_retry pip install -q coveralls niprov;
-      fi;
-    - travis_retry pip install -q nose-timer nibabel six;
-    - if [ "${TEST}" == "extra" ]; then
-        travis_retry pip install -q flake8;
-      fi;
+    - travis_retry pip install -q -r requirements.txt;
 
 install:
     - if [ "${TEST}" != "extra" ]; then
