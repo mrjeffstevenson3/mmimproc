@@ -46,4 +46,4 @@ def run_subprocess(command):
 class Shell(object):
 
     def run(self, command):
-        run_subprocess(command)
+        subprocess.check_call(command.split())

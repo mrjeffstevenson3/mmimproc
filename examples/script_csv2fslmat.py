@@ -1,7 +1,7 @@
 #!/usr/bin/python 
-from pylabs.correlation.conversion import csv2fslmat
-csvfile = '/run/user/1000/gvfs/smb-share:domain=WORKGROUP,server=scotty.ilabs.uw.edu,share=js,user=toddr/self_control/hbm_group_data/tbss_19subj/workdir_thr1p5_v3/stats/EF_and_Brain_mar26_2015.csv'
-subjects= [
+from pylabs.correlation.behavior import csv2fslmat
+csvfile = 'EF_and_Brain_july08_2015_Meq0_delta.csv'
+vbm17= [
 317,
 318,
 328,
@@ -20,4 +20,25 @@ subjects= [
 385,
 396,
 ]
-csv2fslmat(csvfile, selectSubjects=subjects)
+tbss19 = [
+317, 
+322, 
+324, 
+328, 
+332, 
+334, 
+335, 
+341, 
+347, 
+353, 
+364, 
+370, 
+371, 
+376, 
+379, 
+381, 
+384,
+385,
+396,
+]
+csv2fslmat(csvfile, selectSubjects=tbss19, cols=[41], demean=True, groupcol=False)

@@ -1,5 +1,6 @@
 import os, numpy
-from pylabs.utils import Filesystem
+from pylabs.utils import Filesystem, PylabsOptions
+import niprov
 
 
 class FslMatFile(object):
@@ -29,7 +30,7 @@ class FslMatFile(object):
 
 
 def csv2fslmat(csvfile, selectSubjects=None, demean=True, groupcol=False,
-    cols=None, covarcols=None, filesys=Filesystem()):
+    cols=None, covarcols=None, opts=PylabsOptions(), filesys=Filesystem()):
     """Create FSL matrix files from behavioral data in a csv file
 
     Args:
@@ -38,7 +39,8 @@ def csv2fslmat(csvfile, selectSubjects=None, demean=True, groupcol=False,
             consequence). Defaults to all subjects.
         demean (bool): Subtract mean from behavior data. Defaults to True. 
         groupcol (bool): Whether to prepend a column of 1s. Defaults to False.
-        cols (list) : Select columns to to create mat files for
+        cols (list): Select columns to to create mat files for
+        opts (PylabsOptions): General settings
         covarcols (list) : Select columns to covary. All of these are included 
             in each matfile created.
         filesys (pylabs.utils.Filesystem): Pass a mock here for testing purpose.
@@ -84,6 +86,6 @@ def csv2fslmat(csvfile, selectSubjects=None, demean=True, groupcol=False,
             nsubjects,measures[c-1], indata.shape[1])
         fnames.append(matfname)
         mat.saveAs(matfname)
-        print(matfname)
+        niprov.log(matfname, 'csv2fslmat', csvfile, script=__file__, opts=opts)
     return fnames
 
