@@ -17,7 +17,7 @@ class FslMatFile(object):
         content = ''
         #content += '/ContrastName1\t{0}\n'.format(measure)
         (w,p) = self.data.shape
-        content += '/NumWaves\t2\n/NumPoints\t{0}\n'.format(w,p)
+        content += '/NumWaves\t{1}\n/NumPoints\t{0}\n'.format(w,p)
         content += '/PPheights\t\t{0:.6e} {1:.6e}\n'.format(
             self.data.min(), self.data.max())
         content += '/Matrix\n'
@@ -30,7 +30,7 @@ class FslMatFile(object):
 
 
 def csv2fslmat(csvfile, selectSubjects=None, demean=True, groupcol=False,
-    cols=None, opts=PylabsOptions(), filesys=Filesystem()):
+    cols=None, covarcols=None, opts=PylabsOptions(), filesys=Filesystem()):
     """Create FSL matrix files from behavioral data in a csv file
 
     Args:
@@ -41,6 +41,8 @@ def csv2fslmat(csvfile, selectSubjects=None, demean=True, groupcol=False,
         groupcol (bool): Whether to prepend a column of 1s. Defaults to False.
         cols (list): Select columns to to create mat files for
         opts (PylabsOptions): General settings
+        covarcols (list) : Select columns to covary. All of these are included 
+            in each matfile created.
         filesys (pylabs.utils.Filesystem): Pass a mock here for testing purpose.
 
     Returns:
@@ -75,10 +77,13 @@ def csv2fslmat(csvfile, selectSubjects=None, demean=True, groupcol=False,
         indata = numpy.atleast_2d(data[:, c-1]).T
         if groupcol:
             indata = numpy.hstack((numpy.ones((nsubjects,1)), indata))
+        if covarcols:
+            covars = data[:, [cv-1 for cv in covarcols]]
+            indata = numpy.hstack((indata, covars))
         mat = FslMatFile(filesys=filesys)
         mat.setData(indata)
-        matfname = 'matfiles/c2b{0:0>2d}s{1}d_{2}.mat'.format(c,
-            nsubjects,measures[c-1])
+        matfname = 'matfiles/c{3}b{0:0>2d}s{1}d_{2}.mat'.format(c,
+            nsubjects,measures[c-1], indata.shape[1])
         fnames.append(matfname)
         mat.saveAs(matfname)
         niprov.log(matfname, 'csv2fslmat', csvfile, script=__file__, opts=opts)
