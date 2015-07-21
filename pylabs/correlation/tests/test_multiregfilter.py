@@ -32,15 +32,15 @@ class MultiRegfilterTests(TestCase):
         imgs = ['one.img','two.img']
         self.multiregfilt(imgs, 'x.mat')
         self.assert_recorded_command_matching(
-            'regfilt *-i one.img* -d x.mat*', opts=self.opts)
+            'fsl_regfilt *-i one.img* -d x.mat*', opts=self.opts)
         self.assert_recorded_command_matching(
-            'regfilt *-i two.img* -d x.mat*', opts=self.opts)
+            'fsl_regfilt *-i two.img* -d x.mat*', opts=self.opts)
 
     def test_names_output_appropriately(self):
         imgs = ['one.img']
         self.multiregfilt(imgs, 'xyz.mat')
         self.assert_recorded_command_matching(
-            'regfilt *-o one_filt_xyz.img', opts=self.opts)
+            'fsl_regfilt *-o one_filt_xyz.img', opts=self.opts)
 
     def test_returns_output_images(self):
         from pylabs.correlation.regfilt import multiregfilt

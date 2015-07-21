@@ -78,4 +78,4 @@ multirandpar(images, matfiles, designfile, niterations=100, opts=opts)
 # generally fsl command directly to FSLDIR
 # think about working dir context manager because qsub/condor puts files in CWD
 # #V=variant smoothing, T= TFCE threshold free clustering.
-# fsl_regfilt instead of regfilt
+
