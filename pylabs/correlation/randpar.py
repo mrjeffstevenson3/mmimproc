@@ -11,6 +11,8 @@ def multirandpar(images, mats, designfile, niterations=50, shell=Shell(),
     Expects mask files to exist for each unique image prefix 
     (underscore-delineated); i.e. "GM_mod_merge.img" would require a "GM_mask"
 
+    Default options / flags set are TFCE and Variant Smoothing.
+
     Args:
         images (list): List of image files
         mats (list): List of behavior data .mat files.
@@ -38,7 +40,8 @@ def multirandpar(images, mats, designfile, niterations=50, shell=Shell(),
             cmd += ' -d {0}'.format(mat)                #behavior .mat file
             cmd += ' -t {0}'.format(designfile)      #design/ contrast file
             cmd += ' -n {0}'.format(niterations)      #number of iterations
-            cmd += ' -T -V'                 #verbose, not sure what T does.
+            cmd += ' -T'                # T= TFCE threshold free clustering.
+            cmd += ' -V'                            # V=variant smoothing,
             niprov.record(cmd, opts=opts)
             outfiles.append(resultfile)
     return outfiles

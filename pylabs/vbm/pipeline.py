@@ -77,5 +77,4 @@ multirandpar(images, matfiles, designfile, niterations=100, opts=opts)
 #cmd = '            cmd = '/usr/share/fsl/5.0/bin/randomise_parallel'' use FSLDIR global to call randomise
 # generally fsl command directly to FSLDIR
 # think about working dir context manager because qsub/condor puts files in CWD
-# #V=variant smoothing, T= TFCE threshold free clustering.
 
