@@ -1,32 +1,9 @@
-## Raw file conversion
-# nibabel
-## RMS / Concat
-# MRIConcat
-## Skullstripping
-# fslvbm_2_proc_-n
+## Raw file conversion:  nibabel
+## RMS / Concat: MRIConcat
+## Skullstripping: fslvbm_2_proc_-n
 ## Segmentation
 ## Normalizing
 ## From here there is two paths; filter out covariate or include it in model.
-
-subjects = [
-317,
-328,
-332,
-334,
-335,
-347,
-353,
-364,
-371,
-376,
-379,
-381,
-384,
-385,
-396,
-]
-
-
 import os
 import glob
 import niprov
@@ -37,6 +14,9 @@ from niprov.options import NiprovOptions
 from pylabs.utils.paths import getlocaldataroot
 opts = NiprovOptions()
 opts.dryrun = False
+
+subjects = [
+317, 328, 332, 334, 335, 347, 353, 364, 371, 376, 379, 381, 384, 385, 396]
 
 fs = getlocaldataroot()
 vbmdir = fs+'js/self_control/hbm_group_data/vbm_15subj/workdir_v1/stats/'
@@ -58,7 +38,6 @@ designfile = vbmdir+'scs_design2col.con'
 assert os.path.isfile(designfile)
 matfiles = csv2fslmat(csvfile, selectSubjects=subjects, groupcol=True, cols=[5, 21], opts=opts)
 multirandpar(images, matfiles, designfile, niterations=100, opts=opts)
-
 
 #TODO
 # niprov: more verbose record; niprov prints full command
