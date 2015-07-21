@@ -13,7 +13,7 @@ from pylabs.correlation.randpar import multirandpar
 from niprov.options import NiprovOptions
 from pylabs.utils.paths import getlocaldataroot
 opts = NiprovOptions()
-opts.dryrun = False
+opts.dryrun = True
 
 subjects = [
 317, 328, 332, 334, 335, 347, 353, 364, 371, 376, 379, 381, 384, 385, 396]
@@ -24,6 +24,7 @@ behavdir = fs+'js/self_control/behavioral_data/behav_from_andy_march27_2015/'
 csvfile = behavdir+'EF_and_Brain_july08_2015_Meq0_delta.csv'
 niprov.add(csvfile)
 images = glob.glob(vbmdir+'GM_mod_merg_s2.nii.gz')
+[niprov.add(img) for img in images]
 
 ## Covariate Filtering
 matfiles = csv2fslmat(csvfile, selectSubjects=subjects, groupcol=False, cols=[2], demean=False, opts=opts)
