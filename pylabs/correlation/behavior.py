@@ -72,9 +72,11 @@ def csv2fslmat(csvfile, selectSubjects=None, demean=True, groupcol=False,
 
     data = data[data[:,0].argsort()] #sort order of subjects
 
+    demeanflag = ''
     if demean:
         means = data.mean(axis=0) #per-measure average
         data = (data-means) # demeaned data
+        demeanflag = 'd'
 
     fnames = []
     subdirname = 'matfiles' if tag == '' else 'matfiles_'+tag
@@ -89,8 +91,8 @@ def csv2fslmat(csvfile, selectSubjects=None, demean=True, groupcol=False,
             indata = numpy.hstack((indata, covars))
         mat = FslMatFile(filesys=filesys)
         mat.setData(indata)
-        matfname = os.path.join(subdir, 'c{3}b{0:0>2d}s{1}d_{2}.mat'.format(c,
-            nsubjects,measures[c-1], indata.shape[1]))
+        matfname = os.path.join(subdir, 'c{0}b{1:0>2d}s{2}{3}_{4}.mat'.format(
+            indata.shape[1], c, nsubjects, demeanflag, measures[c-1]))
         fnames.append(matfname)
         mat.saveAs(matfname)
         niprov.log(matfname, 'csv2fslmat', csvfile, script=__file__, opts=opts)
