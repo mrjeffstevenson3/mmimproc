@@ -4,7 +4,6 @@ from mock import patch, call, Mock
 import fnmatch
 
 
-
 class MultiRandParTests(TestCase):
 
     def setUp(self):
@@ -79,12 +78,12 @@ class MultiRandParTests(TestCase):
             'randomize_parallel * -n 99*', opts=self.opts)
 
     def test_Looks_for_maskfile_based_on_image_prefix(self):
-        imgs = ['/dir_sth/typeA_bla.img','/dir_sth/typeB_bla.img']
+        imgs = ['/dir_sth/tA_bla.nii.gz','/dir_sth/tB_bla.img']
         self.multirandpar(imgs, ['a.mat'], 'd.con')
         self.assert_recorded_command_matching(
-            'randomize_parallel* -m /dir_sth/typeA_mask *', opts=self.opts)
+            'randomize_parallel* -m /dir_sth/tA_mask.nii.gz *', opts=self.opts)
         self.assert_recorded_command_matching(
-            'randomize_parallel* -m /dir_sth/typeB_mask *', opts=self.opts)
+            'randomize_parallel* -m /dir_sth/tB_mask.img *', opts=self.opts)
 
     def test_returns_outfiles(self):
         imgs = ['one.img','two.img']

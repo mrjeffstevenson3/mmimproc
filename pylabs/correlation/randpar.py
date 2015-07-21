@@ -25,7 +25,8 @@ def multirandpar(images, mats, designfile, niterations=50, shell=Shell(),
         datadir = os.path.dirname(image)
         imagebasename = os.path.basename(image)
         imagename = os.path.basename(image).split('.')[0]
-        maskfile = os.path.join(datadir, imagename.split('_')[0]+'_mask')
+        ext = '.'.join(os.path.basename(image).split('.')[1:])
+        maskfile = os.path.join(datadir, imagename.split('_')[0]+'_mask.'+ext)
         resultsubdir = 'randpar_{0}_{1}'.format(niterations, imagename)
         for mat in mats:
             matname = os.path.basename(mat).split('.')[0]
