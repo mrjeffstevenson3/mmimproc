@@ -56,7 +56,8 @@ images = multiregfilt(images, matfiles[0], opts=opts)
 
 
 ## Randomize
-designfile = '/media/DiskArray/shared_data/js/self_control/hbm_group_data/vbm_15subj/workdir_v1/stats/matfiles/scs_design2col.con'
+designfile = vbmdir+'scs_design2col.con'
+assert os.path.isfile(designfile)
 matfiles = csv2fslmat(csvfile, selectSubjects=subjects, groupcol=True, cols=[5, 21], opts=opts)
 multirandpar(images, matfiles, designfile, niterations=100, opts=opts)
 
@@ -66,14 +67,12 @@ multirandpar(images, matfiles, designfile, niterations=100, opts=opts)
 # niprov .discover on stats dir
 # randpar output FILEname include niterations, image filename
 # multiregfilt multiple
-# fsl_regfilt
 # full path for matfiles when passing to fsl
 # check if fsl can deal with being called not from data directory
 # csv2matfiles demean flag doesnt affect filename
 # F flag quotation screws up niprov record f="1"
 # mask filename convention = WM_mask.nii.gz for VBM
 # custom matfiles dir name
-# move designfile to stats dir
 #cmd = '            cmd = '/usr/share/fsl/5.0/bin/randomise_parallel'' use FSLDIR global to call randomise
 # generally fsl command directly to FSLDIR
 # think about working dir context manager because qsub/condor puts files in CWD
