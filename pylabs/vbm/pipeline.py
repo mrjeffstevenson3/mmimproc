@@ -4,14 +4,13 @@
 ## Segmentation
 ## Normalizing
 ## From here there is two paths; filter out covariate or include it in model.
-import os
-import glob
+import os, glob
 import niprov
 from pylabs.correlation.behavior import csv2fslmat
 from pylabs.correlation.regfilt import multiregfilt
 from pylabs.correlation.randpar import multirandpar
-from niprov.options import NiprovOptions
 from pylabs.utils.paths import getlocaldataroot
+from niprov.options import NiprovOptions
 opts = NiprovOptions()
 opts.dryrun = True
 
@@ -30,11 +29,7 @@ images = glob.glob(vbmdir+'GM_mod_merg_s2.nii.gz')
 filterargs = {'selectSubjects':subjects, 'groupcol':False, 'demean':False, 
     'workdir':vbmdir, 'opts':opts} # preset csv2fslmat arguments
 matfiles = csv2fslmat(csvfile, tag='filt_gender', cols=[2], **filterargs)
-matfiles = [os.path.join(os.getcwd(),m) for m in matfiles]
 images = multiregfilt(images, matfiles[0], opts=opts)
-
-#matfiles = csv2fslmat(csvfile, tag='filt_delta', cols=[4], **filterargs)
-#images = multiregfilt(images, matfiles[0], opts=opts)
 
 ## Randomize
 designfile = vbmdir+'scs_design2col.con'
@@ -49,7 +44,6 @@ multirandpar(images, matfiles, designfile, niterations=100, opts=opts)
 # regfilt: multiregfilt multiplevbmdir
 # regfilt, randpar: full path for matfiles when passing to fsl
 # regfilt: F flag quotation screws up niprov record f="1"
-# csv2matfiles: demean flag doesnt affect filename
 # randpar: output FILEname include niterations, image filename
 # randpar:  cmd = '/usr/share/fsl/5.0/bin/randomise_parallel'' use FSLDIR global to call randomise
 # randpar: think about working dir context manager because qsub/condor puts files in CWD
