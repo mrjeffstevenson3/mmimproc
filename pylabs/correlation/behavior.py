@@ -30,8 +30,8 @@ class FslMatFile(object):
 
 
 def csv2fslmat(csvfile, selectSubjects=None, demean=True, groupcol=False,
-    cols=None, covarcols=None, tag='', opts=PylabsOptions(),
-    filesys=Filesystem()):
+    cols=None, covarcols=None, tag='', workdir=os.getcwd(), 
+    opts=PylabsOptions(), filesys=Filesystem()):
     """Create FSL matrix files from behavioral data in a csv file
 
     Args:
@@ -45,6 +45,8 @@ def csv2fslmat(csvfile, selectSubjects=None, demean=True, groupcol=False,
             in each matfile created.
         tag (str): String to identify this set of matfiles. Used in the matfiles 
             subdirectory name. Defaults to an empty string.
+        workdir (str): Root dir in which to create matfiles subdir. Defaults 
+            to current directory.
         opts (PylabsOptions): General settings
         filesys (pylabs.utils.Filesystem): Pass a mock here for testing purpose.
 
@@ -76,7 +78,8 @@ def csv2fslmat(csvfile, selectSubjects=None, demean=True, groupcol=False,
 
     fnames = []
     subdirname = 'matfiles' if tag == '' else 'matfiles_'+tag
-    filesys.makedirs(subdirname)
+    subdir = os.path.join(workdir, subdirname)
+    filesys.makedirs(subdir)
     for c in cols:
         indata = numpy.atleast_2d(data[:, c-1]).T
         if groupcol:
@@ -86,8 +89,7 @@ def csv2fslmat(csvfile, selectSubjects=None, demean=True, groupcol=False,
             indata = numpy.hstack((indata, covars))
         mat = FslMatFile(filesys=filesys)
         mat.setData(indata)
-        matfname = os.path.join(subdirname,
-            'c{3}b{0:0>2d}s{1}d_{2}.mat'.format(c,
+        matfname = os.path.join(subdir, 'c{3}b{0:0>2d}s{1}d_{2}.mat'.format(c,
             nsubjects,measures[c-1], indata.shape[1]))
         fnames.append(matfname)
         mat.saveAs(matfname)
