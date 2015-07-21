@@ -30,7 +30,8 @@ class FslMatFile(object):
 
 
 def csv2fslmat(csvfile, selectSubjects=None, demean=True, groupcol=False,
-    cols=None, covarcols=None, opts=PylabsOptions(), filesys=Filesystem()):
+    cols=None, covarcols=None, tag='', opts=PylabsOptions(),
+    filesys=Filesystem()):
     """Create FSL matrix files from behavioral data in a csv file
 
     Args:
@@ -40,9 +41,11 @@ def csv2fslmat(csvfile, selectSubjects=None, demean=True, groupcol=False,
         demean (bool): Subtract mean from behavior data. Defaults to True. 
         groupcol (bool): Whether to prepend a column of 1s. Defaults to False.
         cols (list): Select columns to to create mat files for
-        opts (PylabsOptions): General settings
-        covarcols (list) : Select columns to covary. All of these are included 
+        covarcols (list): Select columns to covary. All of these are included 
             in each matfile created.
+        tag (str): String to identify this set of matfiles. Used in the matfiles 
+            subdirectory name. Defaults to an empty string.
+        opts (PylabsOptions): General settings
         filesys (pylabs.utils.Filesystem): Pass a mock here for testing purpose.
 
     Returns:
@@ -72,7 +75,8 @@ def csv2fslmat(csvfile, selectSubjects=None, demean=True, groupcol=False,
         data = (data-means) # demeaned data
 
     fnames = []
-    filesys.makedirs('matfiles')
+    subdirname = 'matfiles' if tag == '' else 'matfiles_'+tag
+    filesys.makedirs(subdirname)
     for c in cols:
         indata = numpy.atleast_2d(data[:, c-1]).T
         if groupcol:
@@ -82,8 +86,9 @@ def csv2fslmat(csvfile, selectSubjects=None, demean=True, groupcol=False,
             indata = numpy.hstack((indata, covars))
         mat = FslMatFile(filesys=filesys)
         mat.setData(indata)
-        matfname = 'matfiles/c{3}b{0:0>2d}s{1}d_{2}.mat'.format(c,
-            nsubjects,measures[c-1], indata.shape[1])
+        matfname = os.path.join(subdirname,
+            'c{3}b{0:0>2d}s{1}d_{2}.mat'.format(c,
+            nsubjects,measures[c-1], indata.shape[1]))
         fnames.append(matfname)
         mat.saveAs(matfname)
         niprov.log(matfname, 'csv2fslmat', csvfile, script=__file__, opts=opts)

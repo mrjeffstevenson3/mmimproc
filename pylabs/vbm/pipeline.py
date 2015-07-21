@@ -27,27 +27,29 @@ images = glob.glob(vbmdir+'GM_mod_merg_s2.nii.gz')
 [niprov.add(img) for img in images]
 
 ## Covariate Filtering
-matfiles = csv2fslmat(csvfile, selectSubjects=subjects, groupcol=False, cols=[2], demean=False, opts=opts)
+filteropts = {'selectSubjects':subjects, 'groupcol':False, 'demean':False, 
+    'opts':opts} # preset csv2fslmat arguments
+matfiles = csv2fslmat(csvfile, tag='filt_gender', cols=[2], **filteropts)
 matfiles = [os.path.join(os.getcwd(),m) for m in matfiles]
 images = multiregfilt(images, matfiles[0], opts=opts)
 
-#matfiles = csv2fslmat(csvfile, selectSubjects=subjects, groupcol=False, cols=[4], opts=opts)
+#matfiles = csv2fslmat(csvfile, tag='filt_delta', cols=[4], **filteropts)
 #images = multiregfilt(images, matfiles[0], opts=opts)
 
 ## Randomize
 designfile = vbmdir+'scs_design2col.con'
 assert os.path.isfile(designfile)
-matfiles = csv2fslmat(csvfile, selectSubjects=subjects, groupcol=True, cols=[5, 21], opts=opts)
+corropts = {'selectSubjects':subjects, 'groupcol':True, 'opts':opts}
+matfiles = csv2fslmat(csvfile, tag='vars', cols=[5, 21], **corropts)
 multirandpar(images, matfiles, designfile, niterations=100, opts=opts)
 
 #TODO
 # niprov: more verbose record; niprov prints full command
-# pipeline: niprov .discover on stats dir
-# regfilt: multiregfilt multiple
+# regfilt: multiregfilt multiplevbmdir
 # regfilt, randpar: full path for matfiles when passing to fsl
 # regfilt: F flag quotation screws up niprov record f="1"
 # csv2matfiles: demean flag doesnt affect filename
-# csv2matfiles: custom matfiles dir name
+# csv2matfiles: returns full path
 # randpar: output FILEname include niterations, image filename
 # randpar:  cmd = '/usr/share/fsl/5.0/bin/randomise_parallel'' use FSLDIR global to call randomise
 # randpar: think about working dir context manager because qsub/condor puts files in CWD

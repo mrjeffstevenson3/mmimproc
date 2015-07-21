@@ -90,6 +90,15 @@ def test_calls_niprov_log_and_passes_opts():
         niprov.log.assert_any_call(fnames[0], 'csv2fslmat', csvfile, 
             script=behavmod, opts=opts)
 
+def test_uses_tag_argument_to_name_matfiles_subdir():
+    csvfile = sampledir+'behavior_simple.csv'
+    expectedFnames = ['matfiles_helloworld/c1b03s5d_age.mat',
+        'matfiles_helloworld/c1b04s5d_DOT.mat']
+    with patch('pylabs.correlation.behavior.FslMatFile') as FslMatFile:
+        fnames = csv2fslmat(csvfile=csvfile, tag='helloworld', 
+            filesys=Mock(), demean=False, groupcol=False, cols=[3, 4])
+    assert_equal(expectedFnames, fnames)
+
 def correctmatfilename(nsubjects):
     return 'matfiles/c2b05s{0}d_cardsorttotal.mat'.format(nsubjects)
 
