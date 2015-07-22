@@ -43,5 +43,4 @@ multirandpar(images, matfiles, designfile, niterations=100, workdir=qsubdir,
 
 #TODO
 # niprov: more verbose record; niprov prints full command
-# randpar: think about working dir context manager because qsub/condor puts files in CWD
 
