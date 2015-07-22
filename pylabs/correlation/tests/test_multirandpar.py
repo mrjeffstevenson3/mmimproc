@@ -1,6 +1,6 @@
 from unittest import TestCase
 from pylabs.utils import MockShell
-from mock import patch, call, Mock
+from mock import patch, call, Mock, MagicMock
 import fnmatch
 
 
@@ -12,12 +12,14 @@ class MultiRandParTests(TestCase):
         self.opts = Mock()
         self.bins = Mock()
         self.bins.randpar = 'randparbin'
+        self.context = Mock()
+        self.context.return_value = MagicMock()
 
     def multirandpar(self, *args, **kwargs):
         from pylabs.correlation.randpar import multirandpar
         with patch('pylabs.correlation.randpar.niprov') as self.niprov:
-            return multirandpar(*args, shell=self.shell, opts=self.opts, binaries=self.bins, 
-                **kwargs)
+            return multirandpar(*args, shell=self.shell, opts=self.opts, 
+                binaries=self.bins, context=self.context,  **kwargs)
 
     def assert_recorded_command_matching(self, needle, **kwargs):
         allCalls = self.niprov.record.call_args_list
@@ -103,6 +105,33 @@ class MultiRandParTests(TestCase):
         self.multirandpar(['bla.img'], ['a.mat'], 'd.con')
         self.assert_recorded_command_matching(
             'abracadabra *', opts=self.opts)
+
+    def test_Wraps_command_in_workingdir_context_manager(self):
+        from pylabs.correlation.randpar import multirandpar
+        workdir = '/foo/bar/bla'
+        with patch('pylabs.correlation.randpar.niprov') as self.niprov:
+            ctx = MockWorkingContext(self.niprov.record)
+            self.context.return_value = ctx
+            multirandpar(['bla.img'], ['a.mat'], 'd.con', workdir=workdir, 
+                shell=self.shell, opts=self.opts, binaries=self.bins, 
+                context=self.context)
+        self.assertTrue(ctx.entered, 'Did not open context.')
+        self.context.assert_called_with(workdir)
+
+class MockWorkingContext(object):
+
+    def __init__(self, inner):
+        self.encapsulated = inner
+        self.entered = False
+
+    def __enter__(self):
+        self.entered = True
+        assert not self.encapsulated.called, (
+            "Inner object called before context activated")
+
+    def __exit__(self,a ,b ,c):
+        assert self.encapsulated.called, (
+            "Inner object not called while context active")
 
 
 

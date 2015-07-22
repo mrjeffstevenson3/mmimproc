@@ -19,6 +19,7 @@ subjects = [
 
 fs = getlocaldataroot()
 vbmdir = fs+'js/self_control/hbm_group_data/vbm_15subj/workdir_v1/stats/'
+qsubdir = vbmdir+'qsubs'
 behavdir = fs+'js/self_control/behavioral_data/behav_from_andy_march27_2015/'
 csvfile = behavdir+'EF_and_Brain_july08_2015_Meq0_delta.csv'
 niprov.add(csvfile)
@@ -37,7 +38,8 @@ assert os.path.isfile(designfile)
 corrargs = {'selectSubjects':subjects, 'groupcol':True, 'workdir':vbmdir, 
     'opts':opts}
 matfiles = csv2fslmat(csvfile, tag='vars', cols=[5, 21], **corrargs)
-multirandpar(images, matfiles, designfile, niterations=100, opts=opts)
+multirandpar(images, matfiles, designfile, niterations=100, workdir=qsubdir, 
+    opts=opts)
 
 #TODO
 # niprov: more verbose record; niprov prints full command

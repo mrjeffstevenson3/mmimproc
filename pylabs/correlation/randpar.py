@@ -1,11 +1,12 @@
 # Wrappers to invoke FSL's randomise_parallel routine.
 import os
-from pylabs.utils import Shell, PylabsOptions, Binaries
+from pylabs.utils import Shell, PylabsOptions, Binaries, WorkingContext
 import niprov
 
 
-def multirandpar(images, mats, designfile, niterations=50, shell=Shell(), 
-    binaries=Binaries(), opts=PylabsOptions()):
+def multirandpar(images, mats, designfile, niterations=50, workdir=os.getcwd(),
+    shell=Shell(), binaries=Binaries(), context=WorkingContext, 
+    opts=PylabsOptions()):
     """ randomise_parallel on multiple images and/or multiple predictors
 
     Expects mask files to exist for each unique image prefix 
@@ -18,7 +19,12 @@ def multirandpar(images, mats, designfile, niterations=50, shell=Shell(),
         mats (list): List of behavior data .mat files.
         designfile (str): FSL .con file with design.
         niterations (int): Number of iterations to run. Defaults to 50.
+        workdir (str): Root dir in which to create matfiles subdir. Defaults 
+            to current directory.
         shell (pylabs.utils.Shell): Override to inject a mock for shell calls.
+        binaries (pylabs.utils.Binaries): Provides paths to binaries
+        context (pylabs.utils.WorkingContext): Helps switching to working dir
+        opts (pylabs.utils.PylabsOptions): General settings.
     """
     outfiles = []
     for image in images:
@@ -43,7 +49,8 @@ def multirandpar(images, mats, designfile, niterations=50, shell=Shell(),
             cmd += ' -n {0}'.format(niterations)      #number of iterations
             cmd += ' -T'                # T= TFCE threshold free clustering.
             cmd += ' -V'                            # V=variant smoothing,
-            niprov.record(cmd, opts=opts)
+            with context(workdir):
+                niprov.record(cmd, opts=opts)
             outfiles.append(resultfile)
     return outfiles
 
