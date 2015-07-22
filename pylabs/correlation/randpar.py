@@ -19,8 +19,8 @@ def multirandpar(images, mats, designfile, niterations=50, workdir=os.getcwd(),
         mats (list): List of behavior data .mat files.
         designfile (str): FSL .con file with design.
         niterations (int): Number of iterations to run. Defaults to 50.
-        workdir (str): Root dir in which to create matfiles subdir. Defaults 
-            to current directory.
+        workdir (str): Will use context to switch to this directory during 
+            processing.
         shell (pylabs.utils.Shell): Override to inject a mock for shell calls.
         binaries (pylabs.utils.Binaries): Provides paths to binaries
         context (pylabs.utils.WorkingContext): Helps switching to working dir
