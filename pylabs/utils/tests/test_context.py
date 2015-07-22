@@ -34,3 +34,15 @@ class WorkingContextTests(TestCase):
             except ValueError:
                 osm.chdir.assert_called_with(d1)
 
+    def test_If_newdir_doesnt_exist_creates_it(self):
+        from pylabs.utils._context import WorkingContext
+        d1 = '/tmp/current'
+        d2 = '/tmp/bla'
+        with patch('pylabs.utils._context.os') as osm:
+            osm.getcwd.return_value = d1
+            osm.path.isdir.return_value = False
+            with WorkingContext(d2):
+                osm.makedirs.assert_called_with(d2)
+
+
+
