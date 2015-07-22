@@ -42,6 +42,3 @@ matfiles = csv2fslmat(csvfile, tag='vars', cols=[5, 21], **corrargs)
 multirandpar(images, matfiles, designfile, niterations=100, workdir=qsubdir, 
     opts=opts)
 
-#TODO
-# niprov: more verbose record; niprov prints full command
-
