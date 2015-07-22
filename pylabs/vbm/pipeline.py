@@ -13,6 +13,7 @@ from pylabs.utils.paths import getlocaldataroot
 from niprov.options import NiprovOptions
 opts = NiprovOptions()
 opts.dryrun = True
+opts.verbose = True
 
 subjects = [
 317, 328, 332, 334, 335, 347, 353, 364, 371, 376, 379, 381, 384, 385, 396]
