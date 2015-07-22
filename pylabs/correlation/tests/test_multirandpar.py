@@ -10,11 +10,14 @@ class MultiRandParTests(TestCase):
         self.shell = MockShell()
         self.niprov = None
         self.opts = Mock()
+        self.bins = Mock()
+        self.bins.randpar = 'randparbin'
 
     def multirandpar(self, *args, **kwargs):
         from pylabs.correlation.randpar import multirandpar
         with patch('pylabs.correlation.randpar.niprov') as self.niprov:
-            return multirandpar(*args, shell=self.shell, opts=self.opts, **kwargs)
+            return multirandpar(*args, shell=self.shell, opts=self.opts, binaries=self.bins, 
+                **kwargs)
 
     def assert_recorded_command_matching(self, needle, **kwargs):
         allCalls = self.niprov.record.call_args_list
@@ -31,15 +34,15 @@ class MultiRandParTests(TestCase):
         imgs = ['one.img','two.img']
         self.multirandpar(imgs, ['x.mat'], 'd.con')
         self.assert_recorded_command_matching(
-            'randomize_parallel *-i one.img*', opts=self.opts)
+            'randparbin *-i one.img*', opts=self.opts)
         self.assert_recorded_command_matching(
-            'randomize_parallel *-i two.img*', opts=self.opts)
+            'randparbin *-i two.img*', opts=self.opts)
 
     def test_uses_separate_output_dir_per_image(self):
         imgs = ['one.img','two.img']
         self.multirandpar(imgs, ['x.mat'], 'd.con')
         self.assert_recorded_command_matching(
-            'randomize_parallel *-i one.img *-o randpar_50_one/*', opts=self.opts)
+            'randparbin *-i one.img *-o randpar_50_one/*', opts=self.opts)
 
     def test_creates_dirs(self):
         imgs = ['one.img','two.img']
@@ -54,7 +57,7 @@ class MultiRandParTests(TestCase):
         mats = ['/matfiles/abc_bar.mat']
         self.multirandpar(imgs, mats, 'mydesign.con', niterations=77)
         self.assert_recorded_command_matching(
-            'randomize_parallel *'
+            'randparbin *'
             ' -o /dir_sth/else/randpar_77_one_foo/randpar_77_abc_bar_one_foo.img*', 
             opts=self.opts)
 
@@ -63,28 +66,28 @@ class MultiRandParTests(TestCase):
         mats = ['a.mat','b.mat']
         self.multirandpar(imgs, mats, 'd.con')
         self.assert_recorded_command_matching(
-            'randomize_parallel *-i one.img *-d a.mat*', opts=self.opts)
+            'randparbin *-i one.img *-d a.mat*', opts=self.opts)
         self.assert_recorded_command_matching(
-            'randomize_parallel *-i one.img *-d b.mat*', opts=self.opts)
+            'randparbin *-i one.img *-d b.mat*', opts=self.opts)
         self.assert_recorded_command_matching(
-            'randomize_parallel *-i two.img *-d a.mat*', opts=self.opts)
+            'randparbin *-i two.img *-d a.mat*', opts=self.opts)
         self.assert_recorded_command_matching(
-            'randomize_parallel *-i two.img *-d b.mat*', opts=self.opts)
+            'randparbin *-i two.img *-d b.mat*', opts=self.opts)
 
     def test_specifies_number_of_iterations(self):
         imgs = ['one.img']
         mats = ['a.mat']
         self.multirandpar(imgs, mats, 'd.con', niterations=99)
         self.assert_recorded_command_matching(
-            'randomize_parallel * -n 99*', opts=self.opts)
+            'randparbin * -n 99*', opts=self.opts)
 
     def test_Looks_for_maskfile_based_on_image_prefix(self):
         imgs = ['/dir_sth/tA_bla.nii.gz','/dir_sth/tB_bla.img']
         self.multirandpar(imgs, ['a.mat'], 'd.con')
         self.assert_recorded_command_matching(
-            'randomize_parallel* -m /dir_sth/tA_mask.nii.gz *', opts=self.opts)
+            'randparbin* -m /dir_sth/tA_mask.nii.gz *', opts=self.opts)
         self.assert_recorded_command_matching(
-            'randomize_parallel* -m /dir_sth/tB_mask.img *', opts=self.opts)
+            'randparbin* -m /dir_sth/tB_mask.img *', opts=self.opts)
 
     def test_returns_outfiles(self):
         imgs = ['one.img','two.img']
@@ -94,6 +97,12 @@ class MultiRandParTests(TestCase):
                 'randpar_50_one/randpar_50_y_one.img',
                 'randpar_50_two/randpar_50_x_two.img',
                 'randpar_50_two/randpar_50_y_two.img'])
+
+    def test_Uses_binaries_object_to_pick_executable(self):
+        self.bins.randpar = 'abracadabra'
+        self.multirandpar(['bla.img'], ['a.mat'], 'd.con')
+        self.assert_recorded_command_matching(
+            'abracadabra *', opts=self.opts)
 
 
 
