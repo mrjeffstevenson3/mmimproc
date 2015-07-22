@@ -13,7 +13,7 @@ def multiregfilt(images, mat, shell=Shell(), opts=PylabsOptions()):
         cmd = 'fsl_regfilt'
         cmd += ' -i {0}'.format(image)
         cmd += ' -d {0}'.format(mat)
-        cmd += ' -f "1"'
+        cmd += ' -f 1'
         cmd += ' -o {0}'.format(outfile)
         niprov.record(cmd, opts=opts)
         outfiles.append(outfile)
