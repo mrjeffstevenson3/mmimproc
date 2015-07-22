@@ -55,7 +55,8 @@ class MultiRandParTests(TestCase):
         self.multirandpar(imgs, mats, 'mydesign.con', niterations=77)
         self.assert_recorded_command_matching(
             'randomize_parallel *'
-            ' -o /dir_sth/else/randpar_77_one_foo/abc_bar_one_foo.img*', opts=self.opts)
+            ' -o /dir_sth/else/randpar_77_one_foo/randpar_77_abc_bar_one_foo.img*', 
+            opts=self.opts)
 
     def test_runs_for_each_image_and_variable_combination(self):
         imgs = ['one.img','two.img']
@@ -89,10 +90,10 @@ class MultiRandParTests(TestCase):
         imgs = ['one.img','two.img']
         out = self.multirandpar(imgs, ['x.mat','y.mat'], 'd.con')
         self.assertEqual(out,
-            ['randpar_50_one/x_one.img',
-                'randpar_50_one/y_one.img',
-                'randpar_50_two/x_two.img',
-                'randpar_50_two/y_two.img'])
+            ['randpar_50_one/randpar_50_x_one.img',
+                'randpar_50_one/randpar_50_y_one.img',
+                'randpar_50_two/randpar_50_x_two.img',
+                'randpar_50_two/randpar_50_y_two.img'])
 
 
 

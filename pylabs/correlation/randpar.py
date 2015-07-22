@@ -32,8 +32,8 @@ def multirandpar(images, mats, designfile, niterations=50, shell=Shell(),
             matname = os.path.basename(mat).split('.')[0]
             resultdir = os.path.join(datadir, resultsubdir)
             shell.run('mkdir -p {0}'.format(resultdir))
-            resultfile = os.path.join(resultdir, 
-                '{0}_{1}'.format(matname, imagebasename))
+            resultfile = os.path.join(resultdir, 'randpar_{0}_{1}_{2}'.format(
+                niterations, matname, imagebasename))
             cmd = 'randomize_parallel'
             cmd += ' -i {0}'.format(image)                  #input image
             cmd += ' -o {0}'.format(resultfile)   #output dir, file
@@ -43,6 +43,7 @@ def multirandpar(images, mats, designfile, niterations=50, shell=Shell(),
             cmd += ' -n {0}'.format(niterations)      #number of iterations
             cmd += ' -T'                # T= TFCE threshold free clustering.
             cmd += ' -V'                            # V=variant smoothing,
+            print(cmd)
             niprov.record(cmd, opts=opts)
             outfiles.append(resultfile)
     return outfiles

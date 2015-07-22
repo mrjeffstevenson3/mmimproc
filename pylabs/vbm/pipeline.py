@@ -41,7 +41,6 @@ multirandpar(images, matfiles, designfile, niterations=100, opts=opts)
 
 #TODO
 # niprov: more verbose record; niprov prints full command
-# randpar: output FILEname include niterations, image filename
 # randpar:  cmd = '/usr/share/fsl/5.0/bin/randomise_parallel'' use FSLDIR global to call randomise
 # randpar: think about working dir context manager because qsub/condor puts files in CWD
 
