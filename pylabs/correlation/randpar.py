@@ -50,7 +50,7 @@ def multirandpar(images, mats, designfile, niterations=50, workdir=os.getcwd(),
             cmd += ' -T'                # T= TFCE threshold free clustering.
             cmd += ' -V'                            # V=variant smoothing,
             with context(workdir):
-                niprov.record(cmd, opts=opts)
+                niprov.record(cmd, transient=True, opts=opts)
             outfiles.append(resultfile)
     return outfiles
 

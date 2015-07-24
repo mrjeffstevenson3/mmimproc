@@ -20,7 +20,7 @@ class MultiRandParTests(TestCase):
         with patch('pylabs.correlation.randpar.niprov') as self.niprov:
             return multirandpar(*args, shell=self.shell, opts=self.opts, 
                 binaries=self.bins, context=self.context,  **kwargs)
-
+#, transient=True
     def assert_recorded_command_matching(self, needle, **kwargs):
         allCalls = self.niprov.record.call_args_list
         for C in allCalls:
@@ -36,15 +36,15 @@ class MultiRandParTests(TestCase):
         imgs = ['one.img','two.img']
         self.multirandpar(imgs, ['x.mat'], 'd.con')
         self.assert_recorded_command_matching(
-            'randparbin *-i one.img*', opts=self.opts)
+            'randparbin *-i one.img*', transient=True, opts=self.opts)
         self.assert_recorded_command_matching(
-            'randparbin *-i two.img*', opts=self.opts)
+            'randparbin *-i two.img*', transient=True, opts=self.opts)
 
     def test_uses_separate_output_dir_per_image(self):
         imgs = ['one.img','two.img']
         self.multirandpar(imgs, ['x.mat'], 'd.con')
         self.assert_recorded_command_matching(
-            'randparbin *-i one.img *-o randpar_50_one/*', opts=self.opts)
+            'randparbin *-i one.img *-o randpar_50_one/*', transient=True, opts=self.opts)
 
     def test_creates_dirs(self):
         imgs = ['one.img','two.img']
@@ -61,35 +61,35 @@ class MultiRandParTests(TestCase):
         self.assert_recorded_command_matching(
             'randparbin *'
             ' -o /dir_sth/else/randpar_77_one_foo/randpar_77_abc_bar_one_foo.img*', 
-            opts=self.opts)
+            transient=True, opts=self.opts)
 
     def test_runs_for_each_image_and_variable_combination(self):
         imgs = ['one.img','two.img']
         mats = ['a.mat','b.mat']
         self.multirandpar(imgs, mats, 'd.con')
         self.assert_recorded_command_matching(
-            'randparbin *-i one.img *-d a.mat*', opts=self.opts)
+            'randparbin *-i one.img *-d a.mat*', transient=True, opts=self.opts)
         self.assert_recorded_command_matching(
-            'randparbin *-i one.img *-d b.mat*', opts=self.opts)
+            'randparbin *-i one.img *-d b.mat*', transient=True, opts=self.opts)
         self.assert_recorded_command_matching(
-            'randparbin *-i two.img *-d a.mat*', opts=self.opts)
+            'randparbin *-i two.img *-d a.mat*', transient=True, opts=self.opts)
         self.assert_recorded_command_matching(
-            'randparbin *-i two.img *-d b.mat*', opts=self.opts)
+            'randparbin *-i two.img *-d b.mat*', transient=True, opts=self.opts)
 
     def test_specifies_number_of_iterations(self):
         imgs = ['one.img']
         mats = ['a.mat']
         self.multirandpar(imgs, mats, 'd.con', niterations=99)
         self.assert_recorded_command_matching(
-            'randparbin * -n 99*', opts=self.opts)
+            'randparbin * -n 99*', transient=True, opts=self.opts)
 
     def test_Looks_for_maskfile_based_on_image_prefix(self):
         imgs = ['/dir_sth/tA_bla.nii.gz','/dir_sth/tB_bla.img']
         self.multirandpar(imgs, ['a.mat'], 'd.con')
         self.assert_recorded_command_matching(
-            'randparbin* -m /dir_sth/tA_mask.nii.gz *', opts=self.opts)
+            'randparbin* -m /dir_sth/tA_mask.nii.gz *', transient=True, opts=self.opts)
         self.assert_recorded_command_matching(
-            'randparbin* -m /dir_sth/tB_mask.img *', opts=self.opts)
+            'randparbin* -m /dir_sth/tB_mask.img *', transient=True, opts=self.opts)
 
     def test_returns_outfiles(self):
         imgs = ['one.img','two.img']
@@ -104,7 +104,7 @@ class MultiRandParTests(TestCase):
         self.bins.randpar = 'abracadabra'
         self.multirandpar(['bla.img'], ['a.mat'], 'd.con')
         self.assert_recorded_command_matching(
-            'abracadabra *', opts=self.opts)
+            'abracadabra *', transient=True, opts=self.opts)
 
     def test_Wraps_command_in_workingdir_context_manager(self):
         from pylabs.correlation.randpar import multirandpar
