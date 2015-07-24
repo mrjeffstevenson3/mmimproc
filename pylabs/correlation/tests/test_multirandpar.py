@@ -91,6 +91,15 @@ class MultiRandParTests(TestCase):
         self.assert_recorded_command_matching(
             'randparbin* -m /dir_sth/tB_mask.img *', transient=True, opts=self.opts)
 
+    def test_If_masks_dict_passed_uses_this(self):
+        imgs = ['one.img','two.img']
+        mymasks = {'one.img':'m1.img','two.img':'m2.img'}
+        self.multirandpar(imgs, ['a.mat'], 'd.con', masks=mymasks)
+        self.assert_recorded_command_matching(
+            'randparbin*-i one.img *-m m1.img *', transient=True, opts=self.opts)
+        self.assert_recorded_command_matching(
+            'randparbin*-i two.img *-m m2.img *', transient=True, opts=self.opts)
+
     def test_returns_outfiles(self):
         imgs = ['one.img','two.img']
         out = self.multirandpar(imgs, ['x.mat','y.mat'], 'd.con')

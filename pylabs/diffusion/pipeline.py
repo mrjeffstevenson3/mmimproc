@@ -19,15 +19,18 @@ tbssdir = fs+'js/self_control/hbm_group_data/tbss_19subj/workdir_thr1p5_v3/stats
 qsubdir = tbssdir+'qsubdir'
 behavdir = fs+'js/self_control/behavioral_data/behav_from_andy_march27_2015/'
 csvfile = behavdir+'EF_and_Brain_july08_2015_Meq0_delta.csv'
+maskfile = tbssdir+'mean_FA_skeletonised_mask.nii.gz'
+masks = {img: maskfile for img in skellist} # Mask is the same for all images
 niprov.add(csvfile)
 images = [tbssdir+i for i in skellist]
 [niprov.add(img) for img in images]
+
 
 ## Randomize
 designfile = tbssdir+'scs_design4col.con'
 assert os.path.isfile(designfile)
 matfiles = csv2fslmat(csvfile, tag='gender_and_dti_delta_cov', cols=range(5, 39), 
     covarcols=[2, 41], selectSubjects=subjects, groupcol=True, workdir=tbssdir, opts=opts)
-multirandpar(images, matfiles, designfile, niterations=500, tbss=True, 
-    workdir=qsubdir, opts=opts)
+multirandpar(images, matfiles, designfile, masks=masks, niterations=500, 
+    tbss=True, workdir=qsubdir, opts=opts)
 

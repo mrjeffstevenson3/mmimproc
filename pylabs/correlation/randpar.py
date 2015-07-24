@@ -4,9 +4,9 @@ from pylabs.utils import Shell, PylabsOptions, Binaries, WorkingContext
 import niprov
 
 
-def multirandpar(images, mats, designfile, niterations=50, workdir=os.getcwd(),
-    tbss=False, shell=Shell(), binaries=Binaries(), context=WorkingContext, 
-    opts=PylabsOptions()):
+def multirandpar(images, mats, designfile, masks=None, niterations=50, 
+    workdir=os.getcwd(), tbss=False, shell=Shell(), binaries=Binaries(), 
+    context=WorkingContext, opts=PylabsOptions()):
     """ randomise_parallel on multiple images and/or multiple predictors
 
     Expects mask files to exist for each unique image prefix 
@@ -23,6 +23,10 @@ def multirandpar(images, mats, designfile, niterations=50, workdir=os.getcwd(),
         images (list): List of image files
         mats (list): List of behavior data .mat files.
         designfile (str): FSL .con file with design.
+        masks (dict): Optional dictionary with keys corresponding to images, and
+            values the path(s) to the respective mask file to use. Defaults to 
+            None, in which case mask files will be assumed to follow a naming 
+            scheme (see above).
         niterations (int): Number of iterations to run. Defaults to 50.
         workdir (str): Will use context to switch to this directory during 
             processing.
@@ -51,7 +55,10 @@ def multirandpar(images, mats, designfile, niterations=50, workdir=os.getcwd(),
             cmd = binaries.randpar
             cmd += ' -i {0}'.format(image)                  #input image
             cmd += ' -o {0}'.format(resultfile)   #output dir, file
-            cmd += ' -m {0}'.format(maskfile)               #mask file
+            if masks is None:
+                cmd += ' -m {0}'.format(maskfile) #follow naming scheme 
+            else:
+                cmd += ' -m {0}'.format(masks[image]) #masks specified in arg
             cmd += ' -d {0}'.format(mat)                #behavior .mat file
             cmd += ' -t {0}'.format(designfile)      #design/ contrast file
             cmd += ' -n {0}'.format(niterations)      #number of iterations
