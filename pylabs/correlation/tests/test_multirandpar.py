@@ -32,7 +32,7 @@ class MultiRandParTests(TestCase):
                     'All calls:\n'+strcalls).format(call(needle, **kwargs))
             raise AssertionError(msg)
 
-    def test_runs_randpar_on_each_image_with_separate_output_dir(self):
+    def test_runs_randpar_on_each_image(self):
         imgs = ['one.img','two.img']
         self.multirandpar(imgs, ['x.mat'], 'd.con')
         self.assert_recorded_command_matching(
@@ -40,19 +40,14 @@ class MultiRandParTests(TestCase):
         self.assert_recorded_command_matching(
             'randparbin *-i two.img*', transient=True, opts=self.opts)
 
-    def test_uses_separate_output_dir_per_image(self):
+    def test_uses_outdir_arg_to_store_resultfiles(self):
         imgs = ['one.img','two.img']
-        self.multirandpar(imgs, ['x.mat'], 'd.con')
+        self.multirandpar(imgs, ['x.mat'], 'd.con',outdir='/randpar/myexp/')
         self.assert_recorded_command_matching(
-            'randparbin *-i one.img *-o randpar_50_one/*', transient=True, opts=self.opts)
-
-    def test_creates_dirs(self):
-        imgs = ['one.img','two.img']
-        self.multirandpar(imgs, ['x.mat','y.mat'], 'd.con')
+            'randparbin *-i one.img *-o /randpar/myexp/*', transient=True, 
+            opts=self.opts)
         self.shell.assert_ran_command_matching(
-            'mkdir -p randpar_50_one')
-        self.shell.assert_ran_command_matching(
-            'mkdir -p randpar_50_two')
+            'mkdir -p /randpar/myexp/')
 
     def test_output_path_reflects_files_and_options(self):
         imgs = ['/dir_sth/else/one_foo.img']
@@ -60,7 +55,7 @@ class MultiRandParTests(TestCase):
         self.multirandpar(imgs, mats, 'mydesign.con', niterations=77)
         self.assert_recorded_command_matching(
             'randparbin *'
-            ' -o /dir_sth/else/randpar_77_one_foo/randpar_77_abc_bar_one_foo.img*', 
+            ' -o /dir_sth/else/randpar_77_abc_bar_one_foo.img*', 
             transient=True, opts=self.opts)
 
     def test_runs_for_each_image_and_variable_combination(self):
@@ -104,10 +99,10 @@ class MultiRandParTests(TestCase):
         imgs = ['one.img','two.img']
         out = self.multirandpar(imgs, ['x.mat','y.mat'], 'd.con')
         self.assertEqual(out,
-            ['randpar_50_one/randpar_50_x_one.img',
-                'randpar_50_one/randpar_50_y_one.img',
-                'randpar_50_two/randpar_50_x_two.img',
-                'randpar_50_two/randpar_50_y_two.img'])
+            ['randpar_50_x_one.img',
+                'randpar_50_y_one.img',
+                'randpar_50_x_two.img',
+                'randpar_50_y_two.img'])
 
     def test_Uses_binaries_object_to_pick_executable(self):
         self.bins.randpar = 'abracadabra'

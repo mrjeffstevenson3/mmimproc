@@ -5,8 +5,8 @@ import niprov
 
 
 def multirandpar(images, mats, designfile, masks=None, niterations=50, 
-    workdir=os.getcwd(), tbss=False, shell=Shell(), binaries=Binaries(), 
-    context=WorkingContext, opts=PylabsOptions()):
+    workdir=os.getcwd(), outdir=None, tbss=False, shell=Shell(), 
+    binaries=Binaries(), context=WorkingContext, opts=PylabsOptions()):
     """ randomise_parallel on multiple images and/or multiple predictors
 
     Expects mask files to exist for each unique image prefix 
@@ -30,6 +30,8 @@ def multirandpar(images, mats, designfile, masks=None, niterations=50,
         niterations (int): Number of iterations to run. Defaults to 50.
         workdir (str): Will use context to switch to this directory during 
             processing.
+        outdir (str): Where to store resulting files. Defaults to the directory
+            where the input image file is.
         tbss (bool): Set to true for TBSS analyzed data, which will set the TFCE
             flag for randomise to T2, meaning 2 dimensional clustering. 
             Defaults to False.
@@ -41,14 +43,16 @@ def multirandpar(images, mats, designfile, masks=None, niterations=50,
     outfiles = []
     for image in images:
         datadir = os.path.dirname(image)
+        if outdir is None:
+            resultdir = datadir
+        else:
+            resultdir = outdir
         imagebasename = os.path.basename(image)
         imagename = os.path.basename(image).split('.')[0]
         ext = '.'.join(os.path.basename(image).split('.')[1:])
         maskfile = os.path.join(datadir, imagename.split('_')[0]+'_mask.'+ext)
-        resultsubdir = 'randpar_{0}_{1}'.format(niterations, imagename)
         for mat in mats:
             matname = os.path.basename(mat).split('.')[0]
-            resultdir = os.path.join(datadir, resultsubdir)
             shell.run('mkdir -p {0}'.format(resultdir))
             resultfile = os.path.join(resultdir, 'randpar_{0}_{1}_{2}'.format(
                 niterations, matname, imagebasename))
