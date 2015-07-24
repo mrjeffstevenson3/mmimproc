@@ -118,6 +118,14 @@ class MultiRandParTests(TestCase):
         self.assertTrue(ctx.entered, 'Did not open context.')
         self.context.assert_called_with(workdir)
 
+    def test_TFCE_flag_dependent_on_TBSS_flag(self):
+        self.multirandpar(['one.img'], ['a.mat'], 'd.con')
+        self.assert_recorded_command_matching(
+            'randparbin * -T *', transient=True, opts=self.opts)
+        self.multirandpar(['one.img'], ['a.mat'], 'd.con', tbss=True)
+        self.assert_recorded_command_matching(
+            'randparbin * --T2 *', transient=True, opts=self.opts)
+
 class MockWorkingContext(object):
 
     def __init__(self, inner):

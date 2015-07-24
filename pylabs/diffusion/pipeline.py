@@ -28,6 +28,6 @@ designfile = tbssdir+'scs_design4col.con'
 assert os.path.isfile(designfile)
 matfiles = csv2fslmat(csvfile, tag='gender_and_dti_delta_cov', cols=range(5, 39), 
     covarcols=[2, 41], selectSubjects=subjects, groupcol=True, workdir=tbssdir, opts=opts)
-multirandpar(images, matfiles, designfile, niterations=500, workdir=qsubdir,
-    opts=opts)
+multirandpar(images, matfiles, designfile, niterations=500, tbss=True, 
+    workdir=qsubdir, opts=opts)
 
