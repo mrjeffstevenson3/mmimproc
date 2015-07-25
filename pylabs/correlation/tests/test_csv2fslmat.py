@@ -11,7 +11,7 @@ cd = os.getcwd()
 
 
 def test_saves_with_filename():
-    correctmatfilename = os.path.join(cd, 'matfiles/c1b05s5d_cardsorttotal.mat')
+    correctmatfilename = os.path.join(cd, 'c1b05s5d_cardsorttotal.mat')
     csvfile = sampledir+'behavior_simple.csv'
     with patch('pylabs.correlation.behavior.FslMatFile') as FslMatFile:
         csv2fslmat(csvfile=csvfile, filesys=Mock())
@@ -24,7 +24,7 @@ def test_formatted_filename():
     csvfile = sampledir+'behavior.csv'
     csv2fslmat(csvfile=csvfile, selectSubjects=[317, 396], filesys=filesys)
     assert_equal(filesys.write.call_args[0][0],
-        os.path.join(cd,'matfiles/c1b38s2d_inhtot.mat'))
+        os.path.join(cd,'c1b38s2d_inhtot.mat'))
 
 def test_demeaning():
     csvfile = sampledir+'behavior_simple.csv'
@@ -62,8 +62,8 @@ def test_can_pick_columns():
 
 def test_Can_add_covariate_columns():
     csvfile = sampledir+'behavior_simple.csv'
-    expectedFnames = [os.path.join(cd, 'matfiles/c3b03s5_age.mat'),
-                      os.path.join(cd, 'matfiles/c3b04s5_DOT.mat')]
+    expectedFnames = [os.path.join(cd, 'c3b03s5_age.mat'),
+                      os.path.join(cd, 'c3b04s5_DOT.mat')]
     with patch('pylabs.correlation.behavior.FslMatFile') as FslMatFile:
         fnames = csv2fslmat(csvfile=csvfile, filesys=Mock(), demean=False, 
             groupcol=False, cols=[3, 4], covarcols=[2, 3])
@@ -77,8 +77,8 @@ def test_Can_add_covariate_columns():
 
 def test_filenames_returned():
     csvfile = sampledir+'behavior_simple.csv'
-    expectedFnames = [os.path.join(cd, 'matfiles/c1b03s5_age.mat'),
-                    os.path.join(cd, 'matfiles/c1b04s5_DOT.mat')]
+    expectedFnames = [os.path.join(cd, 'c1b03s5_age.mat'),
+                    os.path.join(cd, 'c1b04s5_DOT.mat')]
     with patch('pylabs.correlation.behavior.FslMatFile') as FslMatFile:
         fnames = csv2fslmat(csvfile=csvfile, filesys=Mock(), demean=False, 
             groupcol=False, cols=[3, 4])
@@ -93,33 +93,24 @@ def test_calls_niprov_log_and_passes_opts():
         niprov.log.assert_any_call(fnames[0], 'csv2fslmat', csvfile, 
             script=behavmod, opts=opts)
 
-def test_uses_tag_argument_to_name_matfiles_subdir():
-    csvfile = sampledir+'behavior_simple.csv'
-    expectedFnames = [os.path.join(cd, 'matfiles_helloworld/c1b03s5_age.mat'),
-        os.path.join(cd, 'matfiles_helloworld/c1b04s5_DOT.mat')]
-    with patch('pylabs.correlation.behavior.FslMatFile') as FslMatFile:
-        fnames = csv2fslmat(csvfile=csvfile, tag='helloworld', 
-            filesys=Mock(), demean=False, groupcol=False, cols=[3, 4])
-    assert_equal(expectedFnames, fnames)
-
 def test_can_override_working_dir_where_to_put_matfiles():
     csvfile = sampledir+'behavior_simple.csv'
     wdir = '/foo/bar/bla/'
-    expectedFnames = [os.path.join(wdir, 'matfiles/c1b03s5_age.mat'),
-        os.path.join(wdir, 'matfiles/c1b04s5_DOT.mat')]
+    expectedFnames = [os.path.join(wdir, 'c1b03s5_age.mat'),
+        os.path.join(wdir, 'c1b04s5_DOT.mat')]
     with patch('pylabs.correlation.behavior.FslMatFile') as FslMatFile:
         fnames = csv2fslmat(csvfile=csvfile, filesys=Mock(), demean=False, 
-            groupcol=False, cols=[3, 4], workdir=wdir)
+            groupcol=False, cols=[3, 4], outdir=wdir)
     assert_equal(expectedFnames, fnames)
 
 def test_demean_flag_is_represented_in_filename():
     csvfile = sampledir+'behavior_simple.csv'
 
     with patch('pylabs.correlation.behavior.FslMatFile') as FslMatFile:
-        expectedFnames = [os.path.join(cd, 'matfiles/c1b03s5_age.mat')]
+        expectedFnames = [os.path.join(cd, 'c1b03s5_age.mat')]
         fnames = csv2fslmat(csvfile=csvfile, filesys=Mock(), demean=False, cols=[3])
         assert_equal(expectedFnames, fnames)
-        expectedFnames = [os.path.join(cd, 'matfiles/c1b03s5d_age.mat')]
+        expectedFnames = [os.path.join(cd, 'c1b03s5d_age.mat')]
         fnames = csv2fslmat(csvfile=csvfile, filesys=Mock(), demean=True, cols=[3])
         assert_equal(expectedFnames, fnames)
 
