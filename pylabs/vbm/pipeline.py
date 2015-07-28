@@ -47,5 +47,5 @@ matfiles = csv2fslmat(csvfile, cols=[5, 21], selectSubjects=subjects,
 randparfiles = multirandpar(images, matfiles, designfile, niterations=100, 
     workdir=qsubdir, outdir=resultdir, opts=opts)
 
-waitForFiles(randparfiles)
+waitForFiles(randparfiles, interval=5) # every 5 seconds check if files done.
 report()
