@@ -1,7 +1,7 @@
 import nibabel, numpy
 
 
-def report(image, atlas):
+def report(image, atlas, table=None):
     """Report on statistics based on atlas regions
 
     Args:
@@ -17,13 +17,18 @@ def report(image, atlas):
     """
     threshold = .95
 
-    print(nibabel.load(image).shape)
-    print(nibabel.load(atlas).shape)
-    print(numpy.unique(nibabel.load(atlas).get_data()))
-    print(numpy.unique(nibabel.load(image).get_data()))
-
-# TODO:
-# opts.visualize
-# for each region, count supra-threshold voxels
-
+    statsimg = nibabel.load(image)
+    atlasimg = nibabel.load(atlas)
+    if not statsimg.shape == atlasimg.shape:
+        raise ValueError("Input image and atlas must have same dimensions")
+    atlasImgData = atlasimg.get_data()
+    statsImgData = statsimg.get_data()
+    regionIndices = numpy.unique(atlasImgData)
+    tabledata = []
+    for r in regionIndices:
+        regionMask = atlasImgData == r
+        regionData = statsImgData[regionMask]
+        kSignificant = (regionData > threshold).sum()
+        tabledata.append(kSignificant)
+    table.setData(tabledata)
 
