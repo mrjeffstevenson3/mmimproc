@@ -1,0 +1,812 @@
+ #!/bin/bash
+# this is a topup, eddy current, motion QA preprocessing pipeline for probabilistic DTI.
+# this script assumes that DTI data was converted with mri convert or mcverter. and has js file nomenclature.
+# full pipeline: b1 correction on (we)mempr then freesurfer and vbm mempr for brains3, bedpost, qT1, TBSS. 
+# then registration into common space for classification analysis
+# changed to median filter for tensor
+
+# 1st define functions for script.
+# progress bar:
+update_progress_bar () 
+{ 
+    if [ $# -eq 1 ]; then
+        if [[ $1 == [0-9]* ]]; then
+            if [ $1 -ge 0 ]; then
+                if [ $1 -le 100 ]; then
+                    local val=$1;
+                    local max=100;
+                    echo -n "[";
+                    for j in $(seq $max);
+                    do
+                        if [ $j -lt $val ]; then
+                            echo -n "=";
+                        else
+                            if [ $j -eq $max ]; then
+                                echo -n "]";
+                            else
+                                echo -n ".";
+                            fi;
+                        fi;
+                    done;
+                    echo -ne " "$val"%\r";
+                    if [ $val -eq $max ]; then
+                        echo "";
+                    fi;
+                fi;
+            fi;
+        fi;
+    fi
+}
+
+
+######################
+#  File $1 is formatted with the "printf" string $2
+######################
+function format_topup_nums {
+	rm -f toddtmp.txt
+    #  Get the number of lines in the file
+    LINE_INFO_ARRAY=( `wc -l $1` );
+    NUM_LINES=${LINE_INFO_ARRAY[0]};
+    for ((LINE_NUM=1; LINE_NUM<=$NUM_LINES; LINE_NUM=$LINE_NUM+1)); do
+        SED_REGEX="${LINE_NUM}q;d"
+        NEXT_LINE=`sed $SED_REGEX $1`;
+        LINE_ARRAY=( $NEXT_LINE );
+        NUM_WORDS=$topup_numdirs;
+        for ((WORD_NUM=0; WORD_NUM<$NUM_WORDS; WORD_NUM=$WORD_NUM+1)); do
+            printf "$2 " ${LINE_ARRAY[$WORD_NUM]} >> toddtmp.txt
+        done
+        printf "\n" >> toddtmp.txt;
+     done
+}
+function format_topdn_nums {
+	rm -f toddtmp.txt
+    #  Get the number of lines in the file
+    LINE_INFO_ARRAY=( `wc -l $1` );
+    NUM_LINES=${LINE_INFO_ARRAY[0]};
+    for ((LINE_NUM=1; LINE_NUM<=$NUM_LINES; LINE_NUM=$LINE_NUM+1)); do
+        SED_REGEX="${LINE_NUM}q;d"
+        NEXT_LINE=`sed $SED_REGEX $1`;
+        LINE_ARRAY=( $NEXT_LINE );
+        NUM_WORDS=$topdn_numdirs;
+        for ((WORD_NUM=0; WORD_NUM<$NUM_WORDS; WORD_NUM=$WORD_NUM+1)); do
+            printf "$2 " ${LINE_ARRAY[$WORD_NUM]} >> toddtmp.txt
+        done
+        printf "\n" >> toddtmp.txt;
+     done
+}
+
+function format_del_topup_nums {
+	rm -f toddtmp.txt
+	IFS=' '
+    #  Get the number of lines in the file
+    LINE_INFO_ARRAY=( `wc -l $1` );
+    NUM_LINES=${LINE_INFO_ARRAY[0]};
+    echo NUM_LINES=${NUM_LINES} from ${LINE_INFO_ARRAY[@]}
+    for ((LINE_NUM=1; LINE_NUM<=$NUM_LINES; LINE_NUM=$LINE_NUM+1)); do
+        SED_REGEX="${LINE_NUM}q;d" 				# this takes only LINE_NUM, quits sed and deletes rest of variable
+        echo in line num ${LINE_NUM} SED_REGEX = ${SED_REGEX}
+        NEXT_LINE=`sed $SED_REGEX $1`; echo NEXT_LINE = ${NEXT_LINE};	# variable with line to process
+        LINE_ARRAY=( $NEXT_LINE ); echo LINE_ARRAY = ${LINE_ARRAY[@]};	# array version of variable for looping
+        NUM_WORDS=$topup_numdirs; echo NUM_WORDS = ${NUM_WORDS}			# number of elements, eg. vols, to loop over
+        for ((WORD_NUM=0; WORD_NUM<$NUM_WORDS; WORD_NUM=$WORD_NUM+1)); do		# loops over each bvec and or bval
+        print_switch="yes"													# set initial condition to print=yes
+        	    for adel_vol in ${topup_bvec_del_sort[@]}; do
+        	    if [ ${adel_vol} -eq ${WORD_NUM} ]						# test if delete vol number = vol number
+					then
+					print_switch="no"									# then disable printing for this vol
+           		fi
+           		done
+        if [ ${print_switch} == "yes" ]									# if print switch is unaffected by delete test
+        then
+			printf "$2 " ${LINE_ARRAY[$WORD_NUM]} >> toddtmp.txt		# add array value to temp file
+			echo col ${WORD_NUM} is `printf "$2 " ${LINE_ARRAY[$WORD_NUM]}`
+		fi
+        done
+        printf "\n" >> toddtmp.txt;										# add end of line char ar end of line loop
+    done
+}
+
+function format_del_topdn_nums {
+	rm -f toddtmp.txt
+	IFS=' '
+    #  Get the number of lines in the file
+    LINE_INFO_ARRAY=( `wc -l $1` );
+    NUM_LINES=${LINE_INFO_ARRAY[0]};
+    echo NUM_LINES=${NUM_LINES} from ${LINE_INFO_ARRAY[@]}
+    for ((LINE_NUM=1; LINE_NUM<=$NUM_LINES; LINE_NUM=$LINE_NUM+1)); do
+        SED_REGEX="${LINE_NUM}q;d" 				# this takes only LINE_NUM, quits sed and deletes rest of variable
+        echo in line num ${LINE_NUM} SED_REGEX = ${SED_REGEX}
+        NEXT_LINE=`sed $SED_REGEX $1`; echo NEXT_LINE = ${NEXT_LINE};	# variable with line to process
+        LINE_ARRAY=( $NEXT_LINE ); echo LINE_ARRAY = ${LINE_ARRAY[@]};	# array version of variable for looping
+        NUM_WORDS=$topdn_numdirs; echo NUM_WORDS = ${NUM_WORDS}			# number of elements, eg. vols, to loop over
+        for ((WORD_NUM=0; WORD_NUM<$NUM_WORDS; WORD_NUM=$WORD_NUM+1)); do		# loops over each bvec and or bval
+        print_switch="yes"													# set initial condition to print=yes
+        	    for adel_vol in ${topdn_bvec_del_sort[@]}; do
+        	    if [ ${adel_vol} -eq ${WORD_NUM} ]						# test if delete vol number = vol number
+					then
+					print_switch="no"									# then disable printing for this vol
+           		fi
+           		done
+        if [ ${print_switch} == "yes" ]									# if print switch is unaffected by delete test
+        then
+			printf "$2 " ${LINE_ARRAY[$WORD_NUM]} >> toddtmp.txt		# add array value to temp file
+			echo col ${WORD_NUM} is `printf "$2 " ${LINE_ARRAY[$WORD_NUM]}`
+		fi
+        done
+        printf "\n" >> toddtmp.txt;										# add end of line char ar end of line loop
+    done
+}
+
+
+if [ $# -lt 4 -o $# -gt 5 ]
+	then
+		echo number of arguments found is $#
+		echo 'usage: bash diff_preproc_script_v7 <project name> <subject ID> <topup#vols> <topdown#vols> <alphalevel>'
+		echo Wrong number of Arguments supplied.
+		echo Need project name, subject ID in the form of xxx123 and number of topup and topdown volumes for acqparams and index and alphalevel for qa.
+		exit
+fi
+if [ ! -d ${1} ]
+	then
+	echo ${1} project does not exists! ? typo? here is a list in base directory:
+	ls -d */
+	exit
+fi
+if [ ! -d ${1}/${2} ]
+	then
+	echo ${2} subject does not exists! ? typo? here is a list in project directory:
+	ls -d ${1}/*/
+	exit
+fi
+export TODDSW=/home/toddr/Software; echo Current software directory is $TODDSW
+BVAL=1850
+version=1
+basedir=${PWD}
+projname=$1
+subjid=$2
+topup_numdirs=$3
+topdn_numdirs=$4
+workdir="workdir_${topup_numdirs}up_${topdn_numdirs}dn_v${version}"
+filter='-fmedian'
+filtertxt='mf'
+tot_numdirs=`echo "${topup_numdirs} + ${topdn_numdirs}" | bc`
+alphalevel=$5
+field_strength=3.0
+gyromagnetic_ratio=42.57
+proton_water_fat_shift=3.4
+echo -e "base dirercory=${basedir}\\nproject name=${projname}\\nSubject ID=${subjid}\\nalpha level for QA=${alphalevel}"
+if [ `echo "$(cat ${basedir}/${projname}/${subjid}/basedir.txt)_"` == "_" -o ! -f ${basedir}/${projname}/${subjid}/basedir.txt ]
+	then
+	echo basedir.txt is empty or missing. correcting now
+	echo ${basedir} > ${basedir}/${projname}/${subjid}/basedir.txt
+fi
+if [ "${basedir}" != `cat ${basedir}/${projname}/${subjid}/basedir.txt` ]
+	then
+	echo 'Base directory does not match existing basedir.txt file for subject. Press c to continue, o to overwrite, a to abort: '
+	echo "basedir.txt=$(cat ${basedir}/${projname}/${subjid}/basedir.txt) while Current Base dir=${basedir}"
+	echo -n "Press c to continue, o to overwrite basedir.txt with ${basedir}, a to abort: "
+		read baseresp
+		case $baseresp in
+		c)
+		basedir=${PWD}
+		;;
+		o)
+		basedir=${PWD}
+		rm -f ${basedir}/${projname}/${subjid}/basedir.txt
+		echo ${basedir} > ${basedir}/${projname}/${subjid}/basedir.txt
+		;;
+		a)
+		echo Abort selected. stopping now.
+		exit
+		;;
+		*)
+		echo -n 'Neither of these options selected. Press c to continue, o to overwrite, a to abort.'
+		exit 1
+		;;
+		esac
+fi
+if [ "${projname}" != `cat ${basedir}/${projname}/${subjid}/projname.txt` -o ! -f ${basedir}/${projname}/${subjid}/projname.txt ]
+	then
+	echo -n 'Project name does not match existing projname.txt file for subject. Press c to continue, o to overwrite, a to abort: '
+		read projresp
+		case $projresp in
+		c)
+		projname=$1
+		;;
+		o)
+		projname=$1
+		rm -f ${basedir}/${projname}/${subjid}/projname.txt
+		echo ${projname} > ${basedir}/${projname}/${subjid}/projname.txt
+		;;
+		a)
+		echo Abort selected. stopping now.
+		exit
+		;;
+		*)
+		echo -n 'None of these options selected. Press c to continue, o to overwrite, a to abort. Exiting'
+		exit 1
+		;;
+		esac
+fi
+if [ "${subjid}" != `cat ${basedir}/${projname}/${subjid}/subjid.txt` ]
+	then
+	echo -n 'Subject name does not match existing subjid.txt file for subject. Press c to continue, o to overwrite, a to abort: '
+		read subjresp
+		case $subjresp in
+		c)
+		subjid=$2
+		;;
+		o)
+		subjid=$2
+		rm -f ${basedir}/${projname}/${subjid}/subjid.txt
+		echo ${subjid} > ${basedir}/${projname}/${subjid}/subjid.txt
+		;;
+		a)
+		echo Abort selected. stopping now.
+		exit
+		;;
+		*)
+		echo -n 'None of these options selected. Press c to continue, o to overwrite, a to abort. Exiting'
+		exit 1
+		;;
+		esac
+fi
+if [ -d ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir} ]
+	then
+	echo found previous workdir version. upping version number.
+	while [ -d ${basedir}/${projname}/${subjid}/${subjid}_diff/workdir_${topup_numdirs}up_${topdn_numdirs}dn_v${version} ]
+		do
+		version=`echo "$version + 1" | bc`
+		done
+	workdir="workdir_${topup_numdirs}up_${topdn_numdirs}dn_v${version}"
+fi
+mkdir -p ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}
+echo ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir} > ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}/workdir.txt
+
+# if [ -d ${basedir}/${projname}/${subjid}/${subjid}_edicom/xnat/${subjid}/SCANS ]
+# 	then
+# 	files=`imglob ${basedir}/${projname}/${subjid}/${subjid}_nii/xnat/*`
+# 	if [ `echo $files | wc -w |  awk {'print $4" "$2" "$1'}` -lt 1 ]
+# 		then
+# 		echo found edicoms from xnat but no nifti files. will try to convert.
+# 		DICOM_SOURCE=${basedir}/${projname}/${subjid}/${subjid}_edicom/xnat/${subjid}/SCANS
+# 		TARGET=${basedir}/${projname}/${subjid}/${subjid}_nii/xnat
+# 		mcverter -o $TARGET -f fsl -n -d -r -F -PatientName+PatientId-SeriesDate-SeriesTime-StudyId-StudyDescription+SeriesNumber-SequenceName+ProtocolName-SeriesDescription $DICOM_SOURCE
+# 		else
+# 		echo found some nifti files. skipping dicom convertion. 
+# 	fi
+# fi
+# files=`imglob ${basedir}/${projname}/${subjid}/${subjid}_nii/xnat/*`
+# if [ `echo $files | wc -w |  awk {'print $4" "$2" "$1'}` -lt 2 ]
+# 	then
+# 	echo trouble finding all the nii files under one directory ${basedir}/${projname}/${subjid}/${subjid}_nii/xnat
+# 	echo here is the directory list, then i am stopping.
+# 	ls ${basedir}/${projname}/${subjid}/${subjid}_nii/xnat/*
+# 	exit
+# fi
+
+if [ `imglob ${basedir}/${projname}/${subjid}/${subjid}_nii/philips/*TOPUP* | wc -l` -eq 0 -o `imglob ${basedir}/${projname}/${subjid}/${subjid}_nii/philips/*TOPDN* | wc -l` -eq  0 ]
+	then
+	echo can not find top up or down files in philips nii folder. looking in xnat nii folder.
+	elif [ `imglob ${basedir}/${projname}/${subjid}/${subjid}_nii/xnat/*TOPUP* | wc -l` -eq 0 -o `imglob ${basedir}/${projname}/${subjid}/${subjid}_nii/xnat/*TOPDN* | wc -l` -eq  0 ]
+		then
+		echo can not find top up or down files in xnat nii folder. looking in xnat parrec folder.
+		elif [ `imglob ${basedir}/${projname}/${subjid}/${subjid}_nii/parrec/*TOPUP* | wc -l` -eq 0 -o `imglob ${basedir}/${projname}/${subjid}/${subjid}_nii/parrec/*TOPDN* | wc -l` -eq  0 ]
+		    then
+		    echo missing TOPUP and or TOPDN nii files in any nii folder. stopping program!
+		    exit
+fi
+if [ ! -f ${basedir}/${projname}/${subjid}/${subjid}_parrec/*TOPUP*.PAR -o ! -f ${basedir}/${projname}/${subjid}/${subjid}_parrec/*TOPDN*.PAR ]
+    then
+    echo "Missing PAR files for TOPUP or TOPDN in ${basedir}/${projname}/${subjid}/${subjid}_parrec. stopping now."
+    exit
+fi
+copy_done='no'
+if [ `imglob ${basedir}/${projname}/${subjid}/${subjid}_nii/philips/*TOPUP* | wc -w` -eq 1 -a `imglob ${basedir}/${projname}/${subjid}/${subjid}_nii/philips/*TOPDN* | wc -w` -eq 1 ]
+	then
+		imcp ${basedir}/${projname}/${subjid}/${subjid}_nii/philips/*TOPUP* ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}
+		imcp ${basedir}/${projname}/${subjid}/${subjid}_nii/philips/*TOPDN* ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}
+		cp ${basedir}/${projname}/${subjid}/${subjid}_nii/philips/*TOPUP*bvecs* ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}
+		cp ${basedir}/${projname}/${subjid}/${subjid}_nii/philips/*TOPUP*bvals* ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}
+		cp ${basedir}/${projname}/${subjid}/${subjid}_nii/philips/*TOPDN*bvecs* ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}
+		cp ${basedir}/${projname}/${subjid}/${subjid}_nii/philips/*TOPDN*bvals* ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}
+		cp ${basedir}/${projname}/${subjid}/${subjid}_parrec/*TOPUP*.PAR ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}
+		cp ${basedir}/${projname}/${subjid}/${subjid}_parrec/*TOPDN*.PAR ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}
+		copy_done='yes'
+		echo files copied from philips nii dir to ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}
+fi
+if [ "${copy_done}" == 'no' -a `imglob ${basedir}/${projname}/${subjid}/${subjid}_nii/xnat/*TOPUP* | wc -w` -eq 1 -a `imglob ${basedir}/${projname}/${subjid}/${subjid}_nii/xnat/*TOPDN* | wc -w` -eq  1 ]
+	then
+	imcp ${basedir}/${projname}/${subjid}/${subjid}_nii/xnat/*TOPUP* ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}
+	imcp ${basedir}/${projname}/${subjid}/${subjid}_nii/xnat/*TOPDN* ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}
+	cp ${basedir}/${projname}/${subjid}/${subjid}_nii/xnat/*TOPUP*bvecs* ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}
+	cp ${basedir}/${projname}/${subjid}/${subjid}_nii/xnat/*TOPUP*bvals* ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}
+	cp ${basedir}/${projname}/${subjid}/${subjid}_nii/xnat/*TOPDN*bvecs* ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}
+	cp ${basedir}/${projname}/${subjid}/${subjid}_nii/xnat/*TOPDN*bvals* ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}
+	cp ${basedir}/${projname}/${subjid}/${subjid}_parrec/*TOPUP*.PAR ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}
+	cp ${basedir}/${projname}/${subjid}/${subjid}_parrec/*TOPDN*.PAR ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}
+	copy_done='yes'
+	echo files copied from xnat nii dir to ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}
+fi
+if [ "${copy_done}" == 'no' -a `imglob ${basedir}/${projname}/${subjid}/${subjid}_nii/parrec/*TOPUP* | wc -w` -eq 1 -a `imglob ${basedir}/${projname}/${subjid}/${subjid}_nii/parrec/*TOPDN* | wc -w` -eq  1 ]
+	then
+	imcp ${basedir}/${projname}/${subjid}/${subjid}_nii/parrec/*TOPUP* ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}
+	imcp ${basedir}/${projname}/${subjid}/${subjid}_nii/parrec/*TOPDN* ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}
+	cp ${basedir}/${projname}/${subjid}/${subjid}_nii/parrec/*TOPUP*bvecs* ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}
+	cp ${basedir}/${projname}/${subjid}/${subjid}_nii/parrec/*TOPUP*bvals* ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}
+	cp ${basedir}/${projname}/${subjid}/${subjid}_nii/parrec/*TOPDN*bvecs* ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}
+	cp ${basedir}/${projname}/${subjid}/${subjid}_nii/parrec/*TOPDN*bvals* ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}
+	cp ${basedir}/${projname}/${subjid}/${subjid}_parrec/*TOPUP*.PAR ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}
+	cp ${basedir}/${projname}/${subjid}/${subjid}_parrec/*TOPDN*.PAR ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}
+	copy_done='yes'
+	echo files copied from parrec nii dir to ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}
+fi
+if [ "${copy_done}" == 'no' ]
+	then
+	echo can not find or too many TOPUP and or TOPDN nii files. please check. stopping program!
+	exit
+fi
+cd ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}
+if [ `ls *TOPUP*.nii* | wc -l` -eq 1 -a `ls *TOPDN*.nii* | wc -l` -eq  1 ]
+	then
+	TOPUP=`ls *TOPUP*.nii*`
+	TOPDN=`ls *TOPDN*.nii*`
+	else
+	echo too many TOPUP and or TOPDN nii files. stopping program!
+	exit
+fi
+if [ `cat *TOPUP*bvecs* | wc -l` -eq 3 -a `cat *TOPUP*bvals* | wc -l` -eq  1 ]
+	then
+		TOPUPbvecs=`ls *TOPUP*bvecs*`
+		TOPUPbvals=`ls *TOPUP*bvals*`
+	else
+		echo problem with TOPUP bval and or bvec files. missing cr or too many. please fix and rerun.
+		exit
+fi
+if [ `cat *TOPDN*bvecs* | wc -l` -eq 3 -a `cat *TOPDN*bvals* | wc -l` -eq  1 ]
+	then
+		TOPDNbvecs=`ls *TOPDN*bvecs*`
+		TOPDNbvals=`ls *TOPDN*bvals*`
+	else
+		echo problem with TOPDOWN bval and or bvec files. missing cr or too many. please fix and rerun.
+		exit
+fi
+if [ `ls *TOPUP*.PAR | wc -l` -eq 1 -a `ls *TOPDN*.PAR | wc -l` -eq  1 ]
+	then
+	TOPUP_PAR=`ls *TOPUP*.PAR`
+	TOPDN_PAR=`ls *TOPDN*.PAR`
+	else
+	echo too many TOPUP and or TOPDN PAR files. stopping program!
+	exit
+fi
+if [ $# -eq 4 ]
+	then
+		echo -n 'No alpha level set. Enter the alpha level between 3 and 4 for qa. Return for default=3.0: '
+		read alphalevel
+		if [ "${alphalevel}_" == '_' ]
+		then
+			alphalevel='3.0'
+			echo alpha level reset to default of 3.0
+		fi
+fi
+trace='yes'
+TOPUP_vols=`fslhd -x ${TOPUP} | grep 'nt =' | awk -F\' '{print $(NF-1)}'`
+TOPDN_vols=`fslhd -x ${TOPDN} | grep 'nt =' | awk -F\' '{print $(NF-1)}'`
+if [ ${TOPUP_vols} -eq ${topup_numdirs} ]
+    then
+    trace='no'
+fi
+if [ "${trace}" == 'yes' ]
+    then
+    TOPUP_vols=`echo "${TOPUP_vols} - 1" | bc `
+    total_vols=`echo "${TOPUP_vols} + ${TOPDN_vols}" | bc `
+    elif [ "${trace}" == 'no' ]
+    then
+    total_vols=`echo "${TOPUP_vols} + ${TOPDN_vols}" | bc `
+fi
+echo -e "tot_numdirs=${tot_numdirs}\\nTOPUP_vols=${TOPUP_vols}\\nTOPDN_vols=${TOPDN_vols}\\ntotal_vols=${total_vols}\\n"
+if [ "${total_vols}" != "${tot_numdirs}" ]
+	then
+	echo discrepancy between total TOPUP TOPDN volumes entered and actual number of volumes aquired excluding trace. stopping now.
+	exit
+fi
+echo "trace=${trace}"
+rm -f ${basedir}/index.txt ${basedir}/acqparams.txt
+indx1=""; indx2=""; for ((i=1; i<=${TOPUP_vols}; i+=1)); do indx1="$indx1 1"; done; for ((i=1; i<=${TOPDN_vols}; i+=1)); do indx2="$indx2 2"; done; echo ${indx1} ${indx2} > ${basedir}/index.txt
+acqparams_topup=""; acqparams_topdn="";
+echo_train_length_topup=`awk ' /EPI factor / {print $7} ' $TOPUP_PAR`
+echo_train_length_topdn=`awk ' /EPI factor / {print $7} ' $TOPDN_PAR`
+water_fat_shift_topup=`awk ' /Water Fat shift / {print $7} ' $TOPUP_PAR`
+water_fat_shift_topdn=`awk ' /Water Fat shift / {print $7} ' $TOPDN_PAR`
+topup_dwell_time=` echo "scale=12; ( ${echo_train_length_topup} - 1 ) * ( ${water_fat_shift_topup} / (( ${gyromagnetic_ratio} * ${proton_water_fat_shift} * ${field_strength} ) * ( ${echo_train_length_topup} + 1 ))) " | tr -d $'\r' | bc -l `
+topdn_dwell_time=` echo "scale=12; ( ${echo_train_length_topdn} - 1 ) * ( ${water_fat_shift_topdn} / (( ${gyromagnetic_ratio} * ${proton_water_fat_shift} * ${field_strength} ) * ( ${echo_train_length_topdn} + 1 ))) " | tr -d $'\r' | bc -l `
+echo -e "0 1 0 0$topup_dwell_time\\n0 -1 0 0$topdn_dwell_time\\n" > ${basedir}/acqparams.txt
+rm -f alphalevel.txt
+echo ${alphalevel} > alphalevel.txt
+echo ${version} > version.txt
+echo -e version is set to `cat version.txt` and alpha level is set to `cat alphalevel.txt`
+echo ${subjid} in ${projname} passes all tests.
+echo dti files to process are
+echo -e $TOPUP\\n$TOPDN\\n$TOPUPbvecs\\n$TOPDNbvecs\\n$TOPUPbvals\\n$TOPDNbvals\\n$topup_dwell_time\\n$topdn_dwell_time
+cp ${basedir}/index.txt ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}/index${tot_numdirs}.txt
+cp ${basedir}/acqparams.txt ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}/acqparams${tot_numdirs}.txt
+cd ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}
+if [ ! -e index${tot_numdirs}.txt -o ! -e acqparams${tot_numdirs}.txt ]
+	then
+	echo missing index${tot_numdirs}.txt and or acqparams${tot_numdirs}.txt files in ${basedir}. stopping now.
+	exit
+fi
+format_topup_nums $TOPUPbvecs "%3.9f"
+cp toddtmp.txt topup_bvecs${topup_numdirs}
+format_topup_nums $TOPUPbvals "%3.0f"
+cp toddtmp.txt topup_bvals${topup_numdirs}
+format_topdn_nums $TOPDNbvecs "%3.9f"
+cp toddtmp.txt topdn_bvecs${topdn_numdirs}
+format_topdn_nums $TOPDNbvals "%3.0f"
+cp toddtmp.txt topdn_bvals${topdn_numdirs}
+paste topup_bvecs${topup_numdirs} topdn_bvecs${topdn_numdirs} > bvecs
+tr -d '\n' < topup_bvals${topup_numdirs} > bvals
+cat topdn_bvals${topdn_numdirs} >> bvals
+echo "${workdir} contents are:"
+cat index${tot_numdirs}.txt acqparams${tot_numdirs}.txt
+ls -lt
+fslroi $TOPUP b0_topup 0 1
+fslroi $TOPDN b0_topdn 0 1
+fslmerge -t b0_topup_dn b0_topup b0_topdn
+topup_qsub="${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}/${subjid}_topup_qsub.sh"
+rm -f ${topup_qsub}
+echo "topup --imain=b0_topup_dn --datain=acqparams${tot_numdirs}.txt  --config=b02b0.cnf --out=b0_topup_dn_output --iout=b0_topup_dn_output_unwarped" >> ${topup_qsub}
+echo "fslmaths b0_topup_dn_output_unwarped -Tmean b0_tmean_output_unwarped" >> ${topup_qsub}
+echo "bet2 b0_tmean_output_unwarped b0_tmean_output_unwarped_brain -m -f 0.3" >> ${topup_qsub}
+echo "fslroi $TOPUP datatopup${topup_numdirs} 0 ${topup_numdirs}" >> ${topup_qsub}
+echo "fslroi $TOPDN datatopdn${topdn_numdirs} 0 ${topdn_numdirs}" >> ${topup_qsub}
+echo "fslmerge -t data datatopup${topup_numdirs} datatopdn${topdn_numdirs}" >> ${topup_qsub}
+chmod u+x ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}/${subjid}_topup_qsub.sh
+topup_id=`${FSLDIR}/bin/fsl_sub -T 10 -N topup ./${subjid}_topup_qsub.sh`
+echo "submitting topup condor job for ${subjid} at `date`. Should take 10 min. TOPUP JOB ID: $topup_id"
+rm -f ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}/${subjid}_eddy_qsub.sh
+echo "submitting eddy to condor at `date`"
+echo "eddy --imain=data --mask=b0_tmean_output_unwarped_brain_mask --acqp=acqparams${tot_numdirs}.txt --index=index${tot_numdirs}.txt --bvecs=bvecs --bvals=bvals --topup=b0_topup_dn_output --out=eddy_corrected_data" >> ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}/${subjid}_eddy_qsub.sh
+chmod u+x ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}/${subjid}_eddy_qsub.sh
+eddy_id=`${FSLDIR}/bin/fsl_sub -T 40 -N eddy -j $topup_id ./${subjid}_eddy_qsub.sh`
+echo "eddy correction condor job for ${subjid} submitted at `date`. Should take 30 min. EDDY JOB ID: $eddy_id"
+diffqa_qsub="${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}/${subjid}_diffqa_qsub.sh"
+rm -f ${diffqa_qsub}
+cp ${TODDSW}/plotqc.m ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}
+cp ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}/index${tot_numdirs}.txt ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}/index.txt
+echo "Project ${projname} Subject ${subjid} DTI QA Report version ${workdir} Completed on `date`" > report_title.txt
+echo "echo working in \${PWD}" >> ${diffqa_qsub}
+echo "imrm dti_short" >> ${diffqa_qsub}
+echo "fslhd -x eddy_corrected_data \> eddy_corrected_data_hdr.txt" >> ${diffqa_qsub}
+echo "fslchfiletype ANALYZE eddy_corrected_data dtishort" >> ${diffqa_qsub}
+echo "${TODDSW}/dti_qc_correlation" >> ${diffqa_qsub}
+echo "octave ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}/plotqc.m" >> ${diffqa_qsub}
+chmod u+x ${diffqa_qsub}
+diffqa_id=`${FSLDIR}/bin/fsl_sub -T 20 -N diffqa -j $eddy_id ./${subjid}_diffqa_qsub.sh`
+echo "dti qa condor job for ${subjid} submitted at `date`. Should take 10 min. DIFF QA JOB ID: $diffqa_id"
+topup_status=`condor_q | grep $topup_id`
+eddy_status=`condor_q | grep $eddy_id`
+diffqa_status=`condor_q | grep $diffqa_id`
+echo -e "topup status is: \\n${topup_status}"
+echo -e "eddy status is: \\n${eddy_status}"
+echo -e "diff QA status is: \\n${diffqa_status}"
+echo
+echo "waiting for topup qsub to finish. less than 10 min. `date`"
+until [ "${diffqa_status}_" == '_' ]		# outer loop is diff qa qsub
+	do
+	until [ "${eddy_status}_" == '_' ]		# middle loop is 1st pass eddy qsub		
+		do
+		until [ "${topup_status}_" == '_' ]	# inner loop is topup qsub
+			do
+				sleep 3
+				echo -ne .
+				topup_status=`condor_q | grep $topup_id`
+				if [ "${topup_status}_" == '_' ]
+					then
+						echo -ne ".\r"
+						echo "topup exited condor at `date`"
+						echo "now starting 1st pass eddy current correction at `date`"
+				fi
+			done
+		sleep 3
+		echo -ne .
+		eddy_status=`condor_q | grep $eddy_id`
+		if [ "${eddy_status}_" == '_' ]
+		then
+			echo -ne ".\r"
+			echo "first pass eddy correction exited condor at `date`"
+			echo "now starting diffusion qa at `date`"
+		fi
+		done
+	sleep 1
+	echo -ne .
+	diffqa_status=`condor_q | grep $diffqa_id`
+	if [ "${diffqa_status}_" == '_' ]
+	then
+		echo -ne ".\r"
+		echo "diff qa exited condor at `date`"
+	fi
+	done
+sleep 3	
+echo "Finished progress bar."
+gedit qcreport.txt &
+eog qcreport.jpg &
+fslview eddy_corrected_data -b 0,200 ${TOPDN} -b 0,200 ${TOPUP} -b 0,200 &
+cat qcreport.txt
+echo "please review displayed data to choose wisely which directions to delete."
+IFS=', '
+read -e -a topup_delete -p "Enter ${subjid} 4 digit Volume Numbers to delete from 0001, to 00${topup_numdirs} for TOPUP. Type 0, if none: "
+read -e -a topdn_delete -p "Enter ${subjid} 4 digit Volume Numbers to delete from 0001, to 00${topdn_numdirs} for TOPDOWN. Type 0, if none: "
+IFS=' '
+echo "topupdel num=${#topup_delete[@]} topupdel0=${topup_delete[0]} and all topupdel is ${topup_delete[@]}"
+echo "topdndel num=${#topdn_delete[@]} topdndel0=${topdn_delete[0]} and all topdndel is ${topdn_delete[@]}"
+echo -e "\n" >> qcreport.txt
+echo "below is the manual input to delete bad volumes from top up and top down."  >> qcreport.txt
+echo "actual topup num of vols deleted=${#topup_delete[@]}. the following topup directions have been removed: ${topup_delete[@]}" >> qcreport.txt; IFS=' '
+echo "actual topdown num of vols deleted=${#topdn_delete[@]}. the following topdown directions have been removed: ${topdn_delete[@]}"  >> qcreport.txt; IFS=' '
+cp qcreport.txt ${subjid}_qcreport_v${version}.txt
+cp qcreport.jpg ${subjid}_qcreport_v${version}.jpg
+version2=${version}
+echo ${version2} > ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}/version2.txt
+if [ -d ${basedir}/${projname}/${subjid}/${subjid}_bedpost/workdir_v${version2} -o -d ${basedir}/${projname}/${subjid}/${subjid}_fsl_dtifit/workdir_v${version2} ]
+		then
+			echo found previous bedpost or dtifit workdir version. upping version number.
+			while [ -d ${basedir}/${projname}/${subjid}/${subjid}_bedpost/workdir_v${version2} -o -d ${basedir}/${projname}/${subjid}/${subjid}_fsl_dtifit/workdir_v${version2} ]
+			do
+			version2=$[$(cat ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}/version2.txt) + 1 ]
+			echo ${version2} > ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}/version2.txt
+			done
+		fi
+workdir2="workdir_v$(cat ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}/version2.txt)"
+echo ${workdir2} > ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}/workdir2.txt
+mkdir -p ${basedir}/${projname}/${subjid}/${subjid}_bedpost/${workdir2}
+mkdir -p ${basedir}/${projname}/${subjid}/${subjid}_fsl_dtifit/${workdir2}
+echo "new diff and bedpost workdir version is ${workdir2}"
+echo "new bedpost dir is: ${basedir}/${projname}/${subjid}/${subjid}_bedpost/$(cat ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}/workdir2.txt)"
+echo "new fsl dtifit dir is: ${basedir}/${projname}/${subjid}/${subjid}_fsl_dtifit/$(cat ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}/workdir2.txt)"
+if [ "${topup_delete[0]}" == "0" -a "${topdn_delete[0]}" == "0" ];
+	then 
+		echo All dti volumes pass qa. procceding to bedpost and dtifit; 
+		imcp ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}/eddy_corrected_data ${basedir}/${projname}/${subjid}/${subjid}_bedpost/${workdir2}/data.nii.gz
+		imcp ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}/eddy_corrected_data ${basedir}/${projname}/${subjid}/${subjid}_fsl_dtifit/${workdir2}/data.nii.gz
+		cp ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}/bvecs ${basedir}/${projname}/${subjid}/${subjid}_bedpost/${workdir2}/bvecs
+		cp ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}/bvecs ${basedir}/${projname}/${subjid}/${subjid}_fsl_dtifit/${workdir2}/bvecs
+		cp ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}/bvals ${basedir}/${projname}/${subjid}/${subjid}_bedpost/${workdir2}/bvals
+		cp ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}/bvals ${basedir}/${projname}/${subjid}/${subjid}_fsl_dtifit/${workdir2}/bvals
+		imcp ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}/b0_tmean_output_unwarped_brain_mask ${basedir}/${projname}/${subjid}/${subjid}_bedpost/${workdir2}/nodif_brain_mask
+		imcp ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}/b0_tmean_output_unwarped_brain_mask ${basedir}/${projname}/${subjid}/${subjid}_fsl_dtifit/${workdir2}/nodif_brain_mask
+		cd ${basedir}/${projname}/${subjid}/${subjid}_bedpost
+		echo starting bedpost at `date`
+		bedpostx ${workdir2} -n 2
+		cd ${basedir}/${projname}/${subjid}/${subjid}_fsl_dtifit/${workdir2}
+		dtifit --data=data --mask=nodif_brain_mask.nii.gz --bvals=bvals --bvecs=bvecs --out=${subjid}_unfiltered --save_tensor
+		fslmaths ${subjid}_unfiltered_tensor ${filter} ${subjid}_${filtertxt}_tensor
+		fslmaths ${subjid}_${filtertxt}_tensor -tensor_decomp ${subjid}_${filtertxt}
+		fslmaths ${subjid}_${filtertxt}_L2 -add ${subjid}_${filtertxt}_L3 -div 2.0 ${subjid}_${filtertxt}_RA
+		fslroi data data_xdwi 1 1
+		fslroi data data_ydwi 2 1
+		fslroi data data_zdwi 3 1
+		fslmaths data_xdwi -add data_ydwi -add data_zdwi -div 3 ${filter} data_trace_${filtertxt}
+		fslmaths ${subjid}_unfiltered_S0 ${filter} -div data_trace_${filtertxt} -log -div ${BVAL} ${subjid}_${filtertxt}_ADC
+		stop2=`imglob ${subjid}_${filtertxt}_* | wc -w`;
+		stop=`echo "${stop2} - 2" | bc`;
+		IFS=$' ';i=0; 
+		for f in `imglob ${subjid}_${filtertxt}_*`;
+		do 
+		if [ $i -le $stop ]
+		 then
+			declare -a dtifit_outfiles[${i}]="${f}";
+			dtimeas=${f/*_/};
+			imcp ${basedir}/${projname}/${subjid}/${subjid}_fsl_dtifit/${workdir2}/${f} ${basedir}/${projname}/${subjid}/${subjid}_tbss/${dtimeas}/${subjid}_FA
+			i=$(($i + 1));
+		fi 
+		done
+		echo ${subjid} dti fit for project ${projname} completed successfully at `date`. bedpost may still be running because it takes longer.
+		condor_q | head; echo; condor_q | tail
+		exit
+	else
+		if [ "${topup_delete[0]}" == "0" ]			# if no vols to delete
+		then
+			cd ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}
+			fslroi ${TOPUP} topup_goodvols 0 ${topup_numdirs}		# this gets rid of trace
+			num_good_topup_vols=${topup_numdirs}
+			indx1=""; for ((i=1; i<=$num_good_topup_vols; i+=1)); do indx1="$indx1 1"; done
+			declare -a topup_bvec_del_sort=-1
+			echo ${topup_bvec_del_sort[@]}
+			format_del_topup_nums $TOPUPbvecs "%3.9f"
+			cp toddtmp.txt topup_good_bvecs${num_good_topup_vols}
+			format_del_topup_nums $TOPUPbvals "%3.0f"
+			cp toddtmp.txt topup_good_bvals${num_good_topup_vols}
+		elif [ ${#topup_delete[@]} -gt 0 -a "${topup_delete[0]}" != "0" ]		# if vols entered to delete
+		then
+			echo fixing topup vols;
+			cd ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}
+			mkdir -p topup_nobadvols
+			IFS=$'\n'
+			declare -a topup_del_sort=( $( echo ${topup_delete[@]} | tr ' ' '\n' | sort -g | sed s/^0/grot0/g ) )
+			IFS=' '
+			imcp $TOPUP ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}/topup_nobadvols/orig_topup
+			cd ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}/topup_nobadvols
+			fslsplit orig_topup grot
+			imrm ${topup_del_sort[@]} grot00${topup_numdirs} grot0${topup_numdirs}        # this gets rid of trace
+			fslmerge -t topup_goodvols `imglob grot*`
+			imcp topup_goodvols ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}
+			cd ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}
+			# new index file made here for part 1 topup
+			topup_num_del_vols="${#topup_del_sort[@]}"
+			num_good_topup_vols=`echo "${topup_numdirs} - ${topup_num_del_vols}" | bc `
+			indx1=""; for ((i=1; i<=$num_good_topup_vols; i+=1)); do indx1="$indx1 1"; done
+			IFS=$'\n'
+			declare -a topup_bvec_del_sort=( $( echo ${topup_delete[@]} | tr ' ' '\n' | sort -g ) )
+			IFS=' '
+			format_del_topup_nums $TOPUPbvecs "%3.9f"
+			cp toddtmp.txt topup_good_bvecs${num_good_topup_vols}
+			format_del_topup_nums $TOPUPbvals "%3.0f"
+			cp toddtmp.txt topup_good_bvals${num_good_topup_vols}
+		else
+			echo "topup delete volume numbers not understood. topup_delete=${topup_delete[@]}"
+			echo "should be either \"0\" or \"00##\". exiting now."
+			exit
+		fi	
+		if [ ${#topdn_delete[@]} -gt 0 -a "${topdn_delete[0]}" != "0" ]
+		then
+			echo fixing topdown vols;
+			cd ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}
+			mkdir -p topdn_nobadvols
+			IFS=$'\n'
+			declare -a topdn_del_sort=( $( echo ${topdn_delete[@]} | tr ' ' '\n' | sort -g | sed s/^0/grot0/g ) )
+			IFS=' '
+			imcp $TOPDN ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}/topdn_nobadvols/orig_topdn
+			cd ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}/topdn_nobadvols
+			fslsplit orig_topdn grot
+			imrm ${topdn_del_sort[@]}
+			fslmerge -t topdn_goodvols `imglob grot*`
+			imcp topdn_goodvols ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}
+			cd ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}
+			# new index file made here for part 2 topdown
+			topdn_num_del_vols=`echo ${topdn_del_sort[@]} | wc -w `
+			num_good_topdn_vols=`echo "${topdn_numdirs} - ${topdn_num_del_vols}" | bc `	
+			indx2="";for ((i=1; i<=$num_good_topdn_vols; i+=1)); do indx2="$indx2 2"; done
+			IFS=$'\n'
+			declare -a topdn_bvec_del_sort=( $( echo ${topdn_delete[@]} | tr ' ' '\n' | sort -g ) )
+			IFS=$' '
+			echo ${topdn_bvec_del_sort[@]}
+			format_del_topdn_nums $TOPDNbvecs "%3.9f"
+			cp toddtmp.txt topdn_good_bvecs${num_good_topdn_vols}
+			format_del_topdn_nums $TOPDNbvals "%3.0f"
+			cp toddtmp.txt topdn_good_bvals${num_good_topdn_vols}			
+		elif [ "${topdn_delete[0]}" == "0" ]
+		then
+			cd ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}
+			imcp ${TOPDN} topdn_goodvols
+			num_good_topdn_vols=${topdn_numdirs}
+			indx2="";for ((i=1; i<=$num_good_topdn_vols; i+=1)); do indx2="$indx2 2"; done
+			declare -a topdn_bvec_del_sort=-1
+			echo ${topdn_bvec_del_sort[@]}
+			format_del_topdn_nums $TOPDNbvecs "%3.9f"
+			cp toddtmp.txt topdn_good_bvecs${num_good_topdn_vols}
+			format_del_topdn_nums $TOPDNbvals "%3.0f"
+			cp toddtmp.txt topdn_good_bvals${num_good_topdn_vols}
+		else
+			echo "topdown delete volume numbers not understood. topdn_delete="${topdn_delete[@]}"
+			echo "should be either \"0\" or \"00##\". exiting now.
+			exit		
+		fi
+	tot_num_good_vols=`echo ${indx1} ${indx2} | wc -w `
+	echo ${indx1} ${indx2} > index_${tot_num_good_vols}good_vols.txt
+	paste topup_good_bvecs${num_good_topup_vols} topdn_good_bvecs${num_good_topdn_vols} > ${tot_num_good_vols}good_bvecs
+	tr -d '\n' < topup_good_bvals${num_good_topup_vols} > ${tot_num_good_vols}good_bvals
+	cat topdn_good_bvals${num_good_topdn_vols} >> ${tot_num_good_vols}good_bvals
+	fslmerge -t motion_free_data topup_goodvols topdn_goodvols
+fi
+echo new input files in ${PWD} are:
+ls -l *goodvols.nii.gz motion_free_data.nii.gz
+echo index file index_${tot_num_good_vols}good_vols.txt has `cat index_${tot_num_good_vols}good_vols.txt | wc -w` vols and looks like:
+cat index_${tot_num_good_vols}good_vols.txt
+echo good total bvals file ${tot_num_good_vols}good_bvals looks like:
+cat ${tot_num_good_vols}good_bvals
+echo good total bvals file ${tot_num_good_vols}good_bvecs looks like:
+cat ${tot_num_good_vols}good_bvecs
+
+motion_free_eddy_qsub="${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}/${subjid}_motion_free_eddy_qsub.sh"
+rm -f ${motion_free_eddy_qsub}
+cat > ${motion_free_eddy_qsub} << EOF
+#!/bin/bash
+#$ -cwd
+# pull all current environment variables into the script
+#$ -V
+IFS=' '
+if [ \${PWD} != ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir} ]
+	then
+	cd ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}
+	echo problem with working directory. trying to correct from \${PWD} to ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}
+fi
+echo starting eddy at `date`
+eddy --imain=motion_free_data --mask=b0_tmean_output_unwarped_brain_mask --acqp=acqparams${tot_numdirs}.txt --index=index_${tot_num_good_vols}good_vols.txt --bvecs=${tot_num_good_vols}good_bvecs --bvals=${tot_num_good_vols}good_bvals --topup=b0_topup_dn_output --out=motion_free_eddy_corrected_data
+version2=\$(cat ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}/version2.txt)
+workdir2=\$(cat ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}/workdir2.txt)
+cd ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}
+echo workdir is ${workdir} and workdir2 is \$(cat ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}/workdir2.txt) and current directory is \${PWD}.
+imcp ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}/motion_free_eddy_corrected_data ${basedir}/${projname}/${subjid}/${subjid}_bedpost/\${workdir2}/data.nii.gz
+cp ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}/${tot_num_good_vols}good_bvecs ${basedir}/${projname}/${subjid}/${subjid}_bedpost/\${workdir2}/bvecs
+cp ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}/${tot_num_good_vols}good_bvals ${basedir}/${projname}/${subjid}/${subjid}_bedpost/\${workdir2}/bvals
+imcp ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}/b0_tmean_output_unwarped_brain_mask.nii.gz ${basedir}/${projname}/${subjid}/${subjid}_bedpost/\${workdir2}/nodif_brain_mask.nii.gz
+
+EOF
+
+	chmod u+x ${motion_free_eddy_qsub}
+	nomo_eddy_id=`${FSLDIR}/bin/fsl_sub -T 40 -N nomo_eddy -j $diffqa_id ${motion_free_eddy_qsub}`
+	echo motion free eddy correction condor job submitten at `date`. NOMO EDDY JOB ID: $nomo_eddy_id
+
+motion_free_bedpost_qsub="${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}/${subjid}_motion_free_bedpost_qsub.sh"
+rm -f ${motion_free_bedpost_qsub}
+workdir2=$(cat ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}/workdir2.txt)
+cd ${basedir}/${projname}/${subjid}/${subjid}_bedpost
+echo "bedpostx ${workdir2} -n 2" > ${motion_free_bedpost_qsub}
+chmod u+x ${motion_free_bedpost_qsub}
+motion_free_bedpost_id=`${FSLDIR}/bin/fsl_sub -T 40 -N nomo_bedpost -j $nomo_eddy_id -t ${motion_free_bedpost_qsub}`
+echo ${subjid}_motion_free_bedpost_qsub.sh submitted to condor queue at `date`. Bedpost ID=$motion_free_bedpost_id
+
+motion_free_diff_qsub="${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}/${subjid}_motion_free_diff_qsub.sh"
+rm -f ${motion_free_diff_qsub}
+cat > ${motion_free_diff_qsub} << EOF2
+#!/bin/bash
+#$ -cwd
+# pull all current environment variables into the script
+#$ -V
+
+
+if [ \${PWD} != ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir} ]
+	then
+	cd ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}
+	echo problem with working directory. trying to correct.
+fi
+version2=\$(cat ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}/version2.txt)
+workdir2=\$(cat ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}/workdir2.txt)
+echo workdir is ${workdir} and version ${version2} for workdir2 is \$(cat ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}/workdir2.txt) in the file and and \${workdir2} as current variable. print current directory is \${PWD}.
+imcp ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}/motion_free_eddy_corrected_data ${basedir}/${projname}/${subjid}/${subjid}_fsl_dtifit/\${workdir2}/data.nii.gz
+cp ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}/${tot_num_good_vols}good_bvecs ${basedir}/${projname}/${subjid}/${subjid}_fsl_dtifit/\${workdir2}/bvecs
+cp ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}/${tot_num_good_vols}good_bvals ${basedir}/${projname}/${subjid}/${subjid}_fsl_dtifit/\${workdir2}/bvals
+imcp ${basedir}/${projname}/${subjid}/${subjid}_diff/${workdir}/b0_tmean_output_unwarped_brain_mask.nii.gz ${basedir}/${projname}/${subjid}/${subjid}_fsl_dtifit/\${workdir2}/nodif_brain_mask.nii.gz
+cd ${basedir}/${projname}/${subjid}/${subjid}_fsl_dtifit/\${workdir2}
+dtifit --data=data --mask=nodif_brain_mask.nii.gz --bvals=bvals --bvecs=bvecs --out=${subjid}_unfiltered --save_tensor
+fslmaths ${subjid}_unfiltered_tensor ${filter} ${subjid}_nomo_${filtertxt}_tensor
+fslmaths ${subjid}_nomo_${filtertxt}_tensor -tensor_decomp ${subjid}_nomo_${filtertxt}
+fslmaths ${subjid}_nomo_${filtertxt}_L2 -add ${subjid}_nomo_${filtertxt}_L3 -div 2.0 ${subjid}_nomo_${filtertxt}_RA
+fslroi data data_xdwi 1 1
+fslroi data data_ydwi 2 1
+fslroi data data_zdwi 3 1
+fslmaths data_xdwi -add data_ydwi -add data_zdwi -div 3 ${filter} data_trace_${filtertxt}
+fslmaths ${subjid}_unfiltered_S0 ${filter} -div data_trace_${filtertxt} -log -div ${BVAL} ${subjid}_nomo_${filtertxt}_ADC
+stop2=\`imglob ${subjid}_nomo_${filtertxt}_* | wc -w\`;
+stop=\`echo "\${stop2} - 2" | bc\`;
+IFS=\$' ';i=0; 
+for f in \`imglob ${subjid}_nomo_${filtertxt}_*\`;
+do 
+if [ \$i -le \$stop ]
+ then
+	declare -a dtifit_outfiles[\${i}]="\${f}";
+	dtimeas=\${f/*_/};
+	imcp ${basedir}/${projname}/${subjid}/${subjid}_fsl_dtifit/\${workdir2}/\${f} ${basedir}/${projname}/${subjid}/${subjid}_tbss/\${dtimeas}/${subjid}_FA
+	i=\$((\$i + 1));
+fi 
+done
+echo ${motion_free_diff_qsub} completed successfully at `date`.
+echo motion free dtifit is completed but bedpost takes a lot longer.
+
+EOF2
+
+
+	chmod u+x ${motion_free_diff_qsub}
+	motion_free_diff_id=`${FSLDIR}/bin/fsl_sub -T 40 -N nomo_diff -j $nomo_eddy_id ${motion_free_diff_qsub}`
+	echo ${subjid}_motion_free_diff_qsub.sh submitted to condor queue at `date`. DTIfit ID=$motion_free_diff_id
+	echo remember bedpost takes a lot longer than dtifit. you can use "condor_q | grep $motion_free_bedpost_id" to view condor status of bedpost.
+	echo and  "condor_q | grep $motion_free_diff_id" to view condor status of fsl dtifit diffusion images. see below.
+	echo to check bedpost run: 'ps aux | grep 'xfibres''
+	echo Bedpost condor stat:
+	condor_q | grep $motion_free_bedpost_id
+	echo DTIfit condor stat:
+	condor_q | grep $motion_free_diff_id
+	echo xfibres process list
+	ps aux | grep 'xfibres'
+	
