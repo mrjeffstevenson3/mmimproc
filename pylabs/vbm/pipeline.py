@@ -10,7 +10,9 @@ import niprov
 from pylabs.correlation.behavior import csv2fslmat
 from pylabs.correlation.regfilt import multiregfilt
 from pylabs.correlation.randpar import multirandpar
+from pylabs.correlation.atlas import report
 from pylabs.utils.paths import getlocaldataroot
+from pylabs.utils.timing import waitForFiles
 from niprov.options import NiprovOptions
 opts = NiprovOptions()
 opts.dryrun = True
@@ -42,6 +44,8 @@ designfile = vbmdir+'scs_design2col.con'
 assert os.path.isfile(designfile)
 matfiles = csv2fslmat(csvfile, cols=[5, 21], selectSubjects=subjects, 
     groupcol=True, outdir=matfiledir, opts=opts)
-multirandpar(images, matfiles, designfile, niterations=100, workdir=qsubdir, 
-    outdir=resultdir, opts=opts)
+randparfiles = multirandpar(images, matfiles, designfile, niterations=100, 
+    workdir=qsubdir, outdir=resultdir, opts=opts)
 
+waitForFiles(randparfiles)
+report()
