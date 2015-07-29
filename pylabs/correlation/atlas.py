@@ -2,7 +2,7 @@ import nibabel, numpy
 from pylabs.utils.tables import TablePublisher
 
 
-def report(image, atlas, regionnames=None, table=TablePublisher()):
+def report(image, atlas, regionnames=None, threshold = .95, table=TablePublisher()):
     """Report on statistics based on atlas regions
 
     Args:
@@ -10,13 +10,13 @@ def report(image, atlas, regionnames=None, table=TablePublisher()):
         atlas (str): Path to atlas
         regionnames (list): List of labels for the atlas regions. Must be in the 
             order of the atlas indices. Should include a label for 0.
+        threshold (float): Voxel threshold to use when counting. Defaults to 0.95
         opts (PylabsOptions): General settings
         table (TablePublisher): Table interface
 
     Returns:
         list: path to .csv file created.
     """
-    threshold = .95
     # Gather data
     statsimg = nibabel.load(image)
     atlasimg = nibabel.load(atlas)

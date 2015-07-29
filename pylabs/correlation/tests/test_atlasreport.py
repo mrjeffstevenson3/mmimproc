@@ -40,6 +40,14 @@ class AtlasReportTests(TestCase):
         self.atlasreport('stats','atlas')
         self.table.setData.assert_called_with([0, 2, 1])
 
+    def test_Threshold_can_be_adapted(self):
+        self.img.get_data.return_value = self.array3d(
+            [.3, .4, .5, .96, .6, .97, .998])
+        self.atlasimg.get_data.return_value = self.array3d(
+            [ 1,  1,  3,   3,  2,   2,  2])
+        self.atlasreport('stats','atlas',threshold=.98)
+        self.table.setData.assert_called_with([0, 1, 0])
+
     def test_If_given_regionnames_passes_them_to_table(self):
         self.atlasreport('stats','atlas')
         assert not self.table.setRowHeaders.called
