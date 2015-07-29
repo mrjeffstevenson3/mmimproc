@@ -40,6 +40,17 @@ class AtlasReportTests(TestCase):
         self.atlasreport('stats','atlas')
         self.table.setData.assert_called_with([0, 2, 1])
 
+    def test_If_given_regionnames_passes_them_to_table(self):
+        self.atlasreport('stats','atlas')
+        assert not self.table.setRowHeaders.called
+        self.atlasreport('stats','atlas',regionnames=['a','b','c'])
+        self.table.setRowHeaders.assert_called_with(['a','b','c'])
+
+    def test_Publishes_table_after_setting_attributes(self):
+        self.atlasreport('stats','atlas',regionnames=['a'])
+        self.table.assert_has_calls(
+            [call.setData([]), call.setRowHeaders(['a']), call.publish()])
+   
     def array3d(self, vector):
         return numpy.array([[vector]])
 
