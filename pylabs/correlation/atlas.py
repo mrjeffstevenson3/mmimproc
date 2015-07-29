@@ -1,7 +1,8 @@
 import nibabel, numpy
+from pylabs.utils.tables import TablePublisher
 
 
-def report(image, atlas, table=None):
+def report(image, atlas, table=TablePublisher()):
     """Report on statistics based on atlas regions
 
     Args:
