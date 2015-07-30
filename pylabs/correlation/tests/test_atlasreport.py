@@ -1,6 +1,7 @@
 from unittest import TestCase
 from mock import patch, call, Mock, MagicMock
 import numpy
+from numpy.testing import assert_array_equal
 
 
 class AtlasReportTests(TestCase):
@@ -10,10 +11,14 @@ class AtlasReportTests(TestCase):
         self.nibabel = None
         self.opts = Mock()
         self.bins = Mock()
-        self.table = Mock()
+        self.table = MockTable()
         self.img = Mock()
         self.img.shape = (1,1,0)
-        self.img.get_data.return_value = []
+        self.img.get_data.return_value = self.array3d([])
+        self.img2 = Mock()
+        self.img2.shape = (1,1,0)
+        self.img2.get_data.return_value = self.array3d([])
+        self.inputImages = [self.img]
         self.atlasimg = Mock()
         self.atlasimg.shape = (1,1,0)
         self.atlasimg.get_data.return_value = []
@@ -23,44 +28,75 @@ class AtlasReportTests(TestCase):
         with patch('pylabs.correlation.randpar.niprov') as self.niprov:
             with patch('pylabs.correlation.atlas.nibabel') as self.nibabel:
                 self.nibabel.load.side_effect = (lambda f: 
-                    self.atlasimg if 'atlas' in f else self.img)
+                    self.atlasimg if 'atlas' in f else self.inputImages.pop(0))
                 return report(*args, table=self.table, **kwargs)
 
     def test_Raises_error_if_atlas_image_different_size(self):
         self.img.shape = (1,2,3)
         self.atlasimg.shape = (3,2,1)
         with self.assertRaisesRegexp(ValueError, 'dimensions'):
-            self.atlasreport('stats.img','atlas.img')
+            self.atlasreport(['stats.img'],'atlas.img')
 
     def test_Counts_number_of_superthreshold_voxels_per_region(self):
         self.img.get_data.return_value = self.array3d(
             [.3, .4, .5, .96, .6, .97, .998])
         self.atlasimg.get_data.return_value = self.array3d(
             [ 1,  1,  3,   3,  2,   2,  2])
-        self.atlasreport('stats','atlas')
-        self.table.setData.assert_called_with([0, 2, 1])
+        self.atlasreport(['stats'],'atlas')
+        assert_array_equal(self.table.data, numpy.array([[0], [2], [1]]))
 
     def test_Threshold_can_be_adapted(self):
         self.img.get_data.return_value = self.array3d(
             [.3, .4, .5, .96, .6, .97, .998])
         self.atlasimg.get_data.return_value = self.array3d(
             [ 1,  1,  3,   3,  2,   2,  2])
-        self.atlasreport('stats','atlas',threshold=.98)
-        self.table.setData.assert_called_with([0, 1, 0])
+        self.atlasreport(['stats'],'atlas',threshold=.98)
+        assert_array_equal(self.table.data, numpy.array([[0], [1], [0]]))
 
     def test_If_given_regionnames_passes_them_to_table(self):
-        self.atlasreport('stats','atlas')
-        assert not self.table.setRowHeaders.called
-        self.atlasreport('stats','atlas',regionnames=['a','b','c'])
-        self.table.setRowHeaders.assert_called_with(['a','b','c'])
+        self.atlasreport(['stats'],'atlas')
+        assert not self.table.setRowHeadersCalled
+        self.inputImages = [self.img] #reset 
+        self.atlasreport(['stats'],'atlas',regionnames=['a','b','c'])
+        self.assertEqual(self.table.rowHeaders, ['a','b','c'])
 
     def test_Publishes_table_after_setting_attributes(self):
-        self.atlasreport('stats','atlas',regionnames=['a'])
-        self.table.assert_has_calls(
-            [call.setData([]), call.setRowHeaders(['a']), call.publish()])
+        self.atlasreport(['stats'],'atlas',regionnames=['a'])
+        self.assertEqual(self.table.calls, ['setData', 'setRowHeaders', 'publish'])
+
+    def test_Takes_multiple_images_and_makes_them_into_cols(self):
+        self.inputImages = [self.img, self.img2]
+        self.img.get_data.return_value = self.array3d(
+            [.3, .4, .5, .96, .6, .97])
+        self.img2.get_data.return_value = self.array3d(
+            [.96, .97, .5, .67, .99, .2])
+        self.atlasimg.get_data.return_value = self.array3d(
+            [ 1,  1,  2,   2,  3,   3])
+        self.atlasreport(['s1','s2'], 'atlas', regionnames=['a'])
+        assert_array_equal(self.table.data, numpy.array([[0, 2], [1, 0], [1, 1]]))
    
     def array3d(self, vector):
         return numpy.array([[vector]])
+
+class MockTable(object):
+
+    def __init__(self):
+        self.setDataCalled = False
+        self.setRowHeadersCalled = False
+        self.calls = []
+
+    def setData(self, data):
+        self.data = data
+        self.setDataCalled = True
+        self.calls.append('setData')
+
+    def setRowHeaders(self, headers):
+        self.rowHeaders = headers
+        self.setRowHeadersCalled = True
+        self.calls.append('setRowHeaders')
+
+    def publish(self):
+        self.calls.append('publish')
 
 
 

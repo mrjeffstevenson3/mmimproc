@@ -2,7 +2,7 @@ import nibabel, numpy
 from pylabs.utils.tables import TablePublisher
 
 
-def report(image, atlas, regionnames=None, threshold = .95, table=TablePublisher()):
+def report(images, atlas, regionnames=None, threshold = .95, table=TablePublisher()):
     """Report on statistics based on atlas regions
 
     Args:
@@ -18,19 +18,24 @@ def report(image, atlas, regionnames=None, threshold = .95, table=TablePublisher
         list: path to .csv file created.
     """
     # Gather data
-    statsimg = nibabel.load(image)
     atlasimg = nibabel.load(atlas)
-    if not statsimg.shape == atlasimg.shape:
-        raise ValueError("Input image and atlas must have same dimensions")
     atlasImgData = atlasimg.get_data()
-    statsImgData = statsimg.get_data()
     regionIndices = numpy.unique(atlasImgData)
-    tabledata = []
-    for r in regionIndices:
-        regionMask = atlasImgData == r
-        regionData = statsImgData[regionMask]
-        kSignificant = (regionData > threshold).sum()
-        tabledata.append(kSignificant)
+    regionMasks = []
+    for index in regionIndices:
+        regionMasks.append(atlasImgData == index)
+
+    tabledata = numpy.full([len(regionIndices), len(images)],numpy.nan)
+    for i, image in enumerate(images):
+        statsimg = nibabel.load(image)
+        if not statsimg.shape == atlasimg.shape:
+            raise ValueError("Input image and atlas must have same dimensions")
+        statsImgData = statsimg.get_data()
+
+        for r, regionMask in enumerate(regionMasks):
+            regionData = statsImgData[regionMask]
+            kSignificant = (regionData > threshold).sum()
+            tabledata[r, i] = kSignificant
     # Create table
     table.setData(tabledata)
     if regionnames:
