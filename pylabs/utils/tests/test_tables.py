@@ -55,3 +55,19 @@ class TableTests(TestCase):
             sys.stdout.write.assert_any_call   ('  A B C\n')
         finally:
             sys.stdout = sys.__stdout__
+
+    def test_TerminalTable_pads_columns(self):
+        try:
+            from pylabs.utils.tables import TerminalTable
+            sys.stdout = Mock()
+            tt = TerminalTable()
+            tt.setRowHeaders(['a1','b123','c12'])
+            tt.setColumnHeaders(['A','B','C'])
+            tt.setData([[1,2,3],[4,5,6],[7,8,9]])
+            tt.publish()
+            sys.stdout.write.assert_any_call   ('     A B C\n')
+            sys.stdout.write.assert_any_call   ('a1   1 2 3\n')
+            sys.stdout.write.assert_any_call   ('b123 4 5 6\n')
+            sys.stdout.write.assert_any_call   ('c12  7 8 9\n')
+        finally:
+            sys.stdout = sys.__stdout__

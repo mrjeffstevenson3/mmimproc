@@ -33,14 +33,16 @@ class TerminalTable(object):
         self.colHeaders = headers
 
     def publish(self):
-        line = '  '+' '.join(self.colHeaders)+'\n'
+        rowheaderwidth = len(max(self.rowHeaders, key=len))
+        line = ' '*rowheaderwidth
+        line += ' '+' '.join(self.colHeaders)+'\n'
         sys.stdout.write(line)
         for r, row in enumerate(self.data):
-            line = self.rowHeaders[r]
+            line = self.rowHeaders[r].ljust(rowheaderwidth)
             if not isinstance(row, (list, tuple)):
                 row = [row]
             for col in row:
-                cell = ' {0}'.format(col)
+                cell = ' {0}'.format(int(col))
                 line += cell
             line += '\n'
             sys.stdout.write(line)
