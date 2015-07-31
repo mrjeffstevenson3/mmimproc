@@ -18,6 +18,7 @@ def report(images, atlas, regionnames=None, threshold = .95, table=TablePublishe
         list: path to .csv file created.
     """
     # Gather data
+    print('Loading atlas..')
     atlasimg = nibabel.load(atlas)
     atlasImgData = atlasimg.get_data()
     regionIndices = numpy.unique(atlasImgData)
@@ -27,6 +28,7 @@ def report(images, atlas, regionnames=None, threshold = .95, table=TablePublishe
 
     tabledata = numpy.full([len(regionIndices), len(images)],numpy.nan)
     for i, image in enumerate(images):
+        print('Loading image {0} of {1}..'.format(i+1, len(images)))
         statsimg = nibabel.load(image)
         if not statsimg.shape == atlasimg.shape:
             raise ValueError("Input image and atlas must have same dimensions")
