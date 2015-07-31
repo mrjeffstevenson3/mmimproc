@@ -6,7 +6,7 @@ def report(images, atlas, regionnames=None, threshold = .95, table=TablePublishe
     """Report on statistics based on atlas regions
 
     Args:
-        image (str): List of paths to images with statistic.
+        image (list): List of paths to images with statistic.
         atlas (str): Path to atlas
         regionnames (list): List of labels for the atlas regions. Must be in the 
             order of the atlas indices. Should include a label for 0.
