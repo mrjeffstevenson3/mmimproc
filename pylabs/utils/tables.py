@@ -13,6 +13,9 @@ class TablePublisher(object):
     def setRowHeaders(self, headers):
         self.tables[0].setRowHeaders(headers)
 
+    def setColumnHeaders(self, headers):
+        self.tables[0].setColumnHeaders(headers)
+
     def publish(self):
         self.tables[0].publish()
 
@@ -26,7 +29,12 @@ class TerminalTable(object):
     def setRowHeaders(self, headers):
         self.rowHeaders = headers
 
+    def setColumnHeaders(self, headers):
+        self.colHeaders = headers
+
     def publish(self):
+        line = '  '+' '.join(self.colHeaders)+'\n'
+        sys.stdout.write(line)
         for r, row in enumerate(self.data):
             line = self.rowHeaders[r]
             if not isinstance(row, (list, tuple)):

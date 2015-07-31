@@ -62,7 +62,8 @@ class AtlasReportTests(TestCase):
 
     def test_Publishes_table_after_setting_attributes(self):
         self.atlasreport(['stats'],'atlas',regionnames=['a'])
-        self.assertEqual(self.table.calls, ['setData', 'setRowHeaders', 'publish'])
+        self.assertEqual(self.table.calls, 
+            ['setData', 'setRowHeaders', 'setColumnHeaders', 'publish'])
 
     def test_Takes_multiple_images_and_makes_them_into_cols(self):
         self.inputImages = [self.img, self.img2]
@@ -74,6 +75,11 @@ class AtlasReportTests(TestCase):
             [ 1,  1,  2,   2,  3,   3])
         self.atlasreport(['s1','s2'], 'atlas', regionnames=['a'])
         assert_array_equal(self.table.data, numpy.array([[0, 2], [1, 0], [1, 1]]))
+
+    def test_Can_sepcify_name_segment_to_use_as_column_header(self):
+        self.inputImages = [self.img, self.img2]
+        self.atlasreport(['a_b_c','d_e_f'], 'atlas', relevantImageFilenameSegment=1)
+        self.assertEqual(self.table.colHeaders, ['b','e'])
    
     def array3d(self, vector):
         return numpy.array([[vector]])
@@ -84,6 +90,8 @@ class MockTable(object):
         self.setDataCalled = False
         self.setRowHeadersCalled = False
         self.calls = []
+        self.colHeaders = None
+        self.rowHeaders = None
 
     def setData(self, data):
         self.data = data
@@ -94,6 +102,10 @@ class MockTable(object):
         self.rowHeaders = headers
         self.setRowHeadersCalled = True
         self.calls.append('setRowHeaders')
+
+    def setColumnHeaders(self, headers):
+        self.colHeaders = headers
+        self.calls.append('setColumnHeaders')
 
     def publish(self):
         self.calls.append('publish')

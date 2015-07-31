@@ -2,7 +2,8 @@ import nibabel, numpy
 from pylabs.utils.tables import TablePublisher
 
 
-def report(images, atlas, regionnames=None, threshold = .95, table=TablePublisher()):
+def report(images, atlas, regionnames=None, threshold = .95,
+    relevantImageFilenameSegment=0, table=TablePublisher()):
     """Report on statistics based on atlas regions
 
     Args:
@@ -11,6 +12,9 @@ def report(images, atlas, regionnames=None, threshold = .95, table=TablePublishe
         regionnames (list): List of labels for the atlas regions. Must be in the 
             order of the atlas indices. Should include a label for 0.
         threshold (float): Voxel threshold to use when counting. Defaults to 0.95
+        relevantImageFilenameSegment (int): If the input stats image filename is
+            broken up along underscores, which part of it to use as a column 
+            header. Defaults to 0. (first element)
         opts (PylabsOptions): General settings
         table (TablePublisher): Table interface
 
@@ -18,6 +22,7 @@ def report(images, atlas, regionnames=None, threshold = .95, table=TablePublishe
         list: path to .csv file created.
     """
     # Gather data
+    cols = [image.split('_')[relevantImageFilenameSegment] for image in images]
     print('Loading atlas..')
     atlasimg = nibabel.load(atlas)
     atlasImgData = atlasimg.get_data()
@@ -42,5 +47,6 @@ def report(images, atlas, regionnames=None, threshold = .95, table=TablePublishe
     table.setData(tabledata)
     if regionnames:
         table.setRowHeaders(regionnames)
+    table.setColumnHeaders(cols)
     table.publish()
 

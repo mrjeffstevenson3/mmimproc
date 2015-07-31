@@ -10,4 +10,5 @@ labelsfile = 'data/mori1.txt'
 with open(labelsfile) as labelsfh:
     labels = [line.split()[1] for line in labelsfh.readlines()]
 
-atlasreport([statfile], atlasfile, regionnames=labels)
+atlasreport([statfile], atlasfile, regionnames=labels, 
+    relevantImageFilenameSegment=3)

@@ -25,6 +25,8 @@ class TableTests(TestCase):
         tp.tables[0].setRowHeaders.assert_called_with(['a','b','c'])
         tp.publish()
         tp.tables[0].publish.assert_called_with()
+        tp.setColumnHeaders(['a','b','d'])
+        tp.tables[0].setColumnHeaders.assert_called_with(['a','b','d'])
 
     def test_TerminalTable_prints_rows_on_publish(self):
         try:
@@ -32,9 +34,24 @@ class TableTests(TestCase):
             sys.stdout = Mock()
             tt = TerminalTable()
             tt.setRowHeaders(['a','b'])
+            tt.setColumnHeaders(['A','B'])
             tt.setData([[1,2],[3,4]])
             tt.publish()
             sys.stdout.write.assert_called_with('b 3 4\n') # last call is last row
             sys.stdout.write.assert_any_call   ('a 1 2\n')
+        finally:
+            sys.stdout = sys.__stdout__
+
+    def test_TerminalTable_prints_column_headers(self):
+        try:
+            from pylabs.utils.tables import TerminalTable
+            sys.stdout = Mock()
+            tt = TerminalTable()
+            tt.setRowHeaders(['a'])
+            tt.setColumnHeaders(['A','B','C'])
+            tt.setData([[1,2,3],])
+            tt.publish()
+            sys.stdout.write.assert_called_with('a 1 2 3\n') # last call is last row
+            sys.stdout.write.assert_any_call   ('  A B C\n')
         finally:
             sys.stdout = sys.__stdout__
