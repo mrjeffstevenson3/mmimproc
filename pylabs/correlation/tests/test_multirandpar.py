@@ -55,7 +55,7 @@ class MultiRandParTests(TestCase):
         self.multirandpar(imgs, mats, 'mydesign.con', niterations=77)
         self.assert_recorded_command_matching(
             'randparbin *'
-            ' -o /dir_sth/else/randpar_77_abc_bar_one_foo.img*', 
+            ' -o /dir_sth/else/randpar_n77_one_foo_abc_bar*',
             transient=True, opts=self.opts)
 
     def test_runs_for_each_image_and_variable_combination(self):
@@ -99,10 +99,10 @@ class MultiRandParTests(TestCase):
         imgs = ['one.img','two.img']
         out = self.multirandpar(imgs, ['x.mat','y.mat'], 'd.con')
         self.assertEqual(out,
-            ['randpar_50_x_one.img',
-                'randpar_50_y_one.img',
-                'randpar_50_x_two.img',
-                'randpar_50_y_two.img'])
+            ['randpar_n50_one_x',
+                'randpar_n50_one_y',
+                'randpar_n50_two_x',
+                'randpar_n50_two_y'])
 
     def test_Uses_binaries_object_to_pick_executable(self):
         self.bins.randpar = 'abracadabra'
