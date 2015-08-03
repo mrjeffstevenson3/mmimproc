@@ -54,8 +54,8 @@ def multirandpar(images, mats, designfile, masks=None, niterations=50,
         for mat in mats:
             matname = os.path.basename(mat).split('.')[0]
             shell.run('mkdir -p {0}'.format(resultdir))
-            resultfile = os.path.join(resultdir, 'randpar_{0}_{1}_{2}'.format(
-                niterations, matname, imagebasename))
+            resultfile = os.path.join(resultdir, 'randpar_n{0}_{1}_{2}'.format(
+                niterations, imagename, matname))
             cmd = binaries.randpar
             cmd += ' -i {0}'.format(image)                  #input image
             cmd += ' -o {0}'.format(resultfile)   #output dir, file
