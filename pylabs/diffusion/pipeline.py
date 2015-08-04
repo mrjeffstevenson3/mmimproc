@@ -34,52 +34,22 @@ niprov.add(csvfile)
 
 
 ## Randomize n500 test run
-# designfile = tbssdir+'scs_design4col.con'
-# assert os.path.isfile(designfile)
-# matfiles = csv2fslmat(csvfile, cols=range(5, 39), covarcols=[2, 41],
-#     selectSubjects=subjects, groupcol=True, outdir=matfiledir, opts=opts)
-# multirandpar(images, matfiles, designfile, masks=masks, niterations=500,
-#     tbss=True, workdir=qsubdir, outdir=resultdir, opts=opts)
+designfile = tbssdir+'scs_design4col.con'
+assert os.path.isfile(designfile)
+matfiles = csv2fslmat(csvfile, cols=range(5, 39), covarcols=[2, 41],
+ selectSubjects=subjects, groupcol=True, outdir=matfiledir, opts=opts)
+randparfiles = multirandpar(images, matfiles, designfile, masks=masks, niterations=500,
+     tbss=True, workdir=qsubdir, outdir=resultdir, opts=opts)
+
+waitForFiles(randparfiles, interval=5) # every 5 seconds check if files done.
 
 # find significant results from n500 run to pass along to n5000
-pthresh = 0.05
-corrpfiles = glob.glob(resultdir+'/*_corrp_tstat*.nii.gz')
-sig_results_fullpath = []
-with open(resultdir+'/sig_results_list_fullpath.txt', 'w') as outfile_fullpath:
-    for astat in corrpfiles:
-        statcmd = 'fslstats '+astat+' -R'
-        statout1 = subprocess.Popen(statcmd, shell=True, stdout=subprocess.PIPE)
-        statout2 = statout1.stdout.read()
-        statout3 = statout2.split()
-        pval = 1 - float(statout3[1])
-        if pval <= pthresh:
-            print('+++++ found p='+' '+str(pval)+' in file '+os.path.basename(astat).split('.')[0])
-            outfile_fullpath.write(astat+'\n')
-            sig_results_fullpath.append(astat)
+images, matfiles = select_significant(resultdir, tbssdir, 'diffusion')
 
-with open(resultdir+'/sig_results_list.txt', 'w') as sig_results:
-     for fp in sig_results_fullpath:
-         f = fp.split('/')[-1]
-         sig_results.write(f+'\n')
+report()
 
-
-resultsfile = pathjoin(resultdir,'/sig_results_list_hard_behav_meas.txt')
-with open(resultsfile) as aresultfile:
-    lines = aresultfile.read().splitlines()
-
-
-designfile = tbssdir+'scs_design4col.con'
-matfiledir = pathjoin(tbssdir,'matfiles/matfiles_gender_and_dti_delta_cov')
 exptag='gender_and_dti_delta_cov_4col_n5000_select'
 resultdir = pathjoin(tbssdir,'randomise_runs',exptag)
-for line in lines:
-    fields = line.split('_')
-    matfiles = [ pathjoin(matfiledir, fields[2]+'_'+fields[3]+'.mat') ]
-    images = [tbssdir+imgtemplate.format(fields[5]) ]
-
 randparfiles = multirandpar(images, matfiles, designfile, masks=masks, niterations=5000,
     tbss=True, workdir=qsubdir, outdir=resultdir, opts=opts)
 
-
-waitForFiles(randparfiles, interval=5) # every 5 seconds check if files done.
-report()
