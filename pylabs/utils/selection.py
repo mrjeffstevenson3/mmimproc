@@ -1,5 +1,8 @@
+import glob, subprocess, os
+from os.path import join as pathjoin
 
-def select_significant(resultdir, imgdir, modality)
+
+def select_significant(resultdir, imgdir, matfiledir, modality):
     pthresh = 0.05
     corrpfiles = glob.glob(resultdir+'/*_corrp_tstat*.nii.gz')
     sig_results_fullpath = []
@@ -21,7 +24,7 @@ def select_significant(resultdir, imgdir, modality)
             sig_results.write(f+'\n')
 
 
-    resultsfile = pathjoin(resultdir,'/sig_results_list.txt')
+    resultsfile = pathjoin(resultdir,'sig_results_list.txt')
     with open(resultsfile) as aresultfile:
         lines = aresultfile.read().splitlines()
 
