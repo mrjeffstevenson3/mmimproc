@@ -13,7 +13,7 @@ from pylabs.correlation.randpar import multirandpar
 from pylabs.correlation.atlas import report, atlaslabels
 from pylabs.utils.paths import getlocaldataroot
 from pylabs.utils.timing import waitForFiles
-from pylabs.utils.selection import select_significant
+from pylabs.utils.selection import select, withVoxelsOverThresholdOf
 from niprov.options import NiprovOptions
 opts = NiprovOptions()
 opts.dryrun = True
@@ -51,16 +51,16 @@ matfiles = csv2fslmat(csvfile, cols=subcols, covarcols=[2, 43], selectSubjects=s
 randparfiles = multirandpar(images, matfiles, designfile, niterations=500, 
     workdir=qsubdir, outdir=resultdir, opts=opts)
 
-randparfiles = [f+'_tfce_corrp_tstat1.nii.gz' for f in randparfiles]
-waitForFiles(randparfiles, interval=5) # every 5 seconds check if files done.
+corrPfiles = [f+'_tfce_corrp_tstat1.nii.gz' for f in randparfiles]
+waitForFiles(corrPfiles, interval=5) # every 5 seconds check if files done.
 
 # find significant results from n500 run to pass along to n5000
+selectedCorrPfiles = select(corrPfiles, withVoxelsOverThresholdOf(.95))
 #images, matfiles = select_significant(resultdir, vbmdir, matfiledir, 'vbm')
 
 atlasfile = 'JHU_MNI_SS_WMPM_Type_I_matched.nii.gz'
 atlas = pathjoin('data','atlases',atlasfile)
-#corepfiles = [f+'_tfce_corrp_tstat1.nii.gz' for f in randparfiles]
-report(randparfiles, atlas, atlaslabels(atlasfile))
+report(selectedCorrPfiles, atlas, atlaslabels(atlasfile))
 
 exptag='randpar_n5000_gender_and_vbm_delta_cov_fm_sig_n500_4col_vbm'
 resultdir = pathjoin(vbmdir,'randomise_runs',exptag)

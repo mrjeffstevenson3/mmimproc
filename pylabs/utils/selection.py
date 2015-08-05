@@ -58,11 +58,16 @@ def select_significant(resultdir, imgdir, matfiledir, modality):
 #          sig_results_fslviewcmd.write(f+' -b '+str(1 - pthresh)+',1 ')
 #      sig_results_fslviewcmd.write('\n')
 import nibabel
+import numpy
 
 
 def withVoxelsOverThresholdOf(threshold):
-    pass
+    def inner(filepath):
+        img = nibabel.load(filepath)
+        data = img.get_data()
+        return numpy.any(data > threshold)
+    return inner
 
 def select(files, criterium):
-    pass
+    return [f for f in files if criterium(f)]
 
