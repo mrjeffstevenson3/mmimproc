@@ -1,5 +1,6 @@
 import nibabel, numpy
 from pylabs.utils.tables import TablePublisher
+from pylabs.utils import Filesystem
 
 
 def report(images, atlas, regionnames=None, threshold = .95,
@@ -49,4 +50,7 @@ def report(images, atlas, regionnames=None, threshold = .95,
         table.setRowHeaders(regionnames)
     table.setColumnHeaders(cols)
     table.publish()
+
+def atlaslabels(atlasfilename, filesys=Filesystem()):
+    return filesys.readlines('data/atlaslabels/{0}.txt'.format(atlasfilename))
 

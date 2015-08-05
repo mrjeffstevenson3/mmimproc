@@ -10,7 +10,7 @@ import niprov
 from pylabs.correlation.behavior import csv2fslmat
 from pylabs.correlation.regfilt import multiregfilt
 from pylabs.correlation.randpar import multirandpar
-from pylabs.correlation.atlas import report
+from pylabs.correlation.atlas import report, atlaslabels
 from pylabs.utils.paths import getlocaldataroot
 from pylabs.utils.timing import waitForFiles
 from pylabs.utils.selection import select_significant
@@ -55,9 +55,12 @@ randparfiles = [f+'_tfce_corrp_tstat1.nii.gz' for f in randparfiles]
 waitForFiles(randparfiles, interval=5) # every 5 seconds check if files done.
 
 # find significant results from n500 run to pass along to n5000
-images, matfiles = select_significant(resultdir, vbmdir, matfiledir, 'vbm')
+#images, matfiles = select_significant(resultdir, vbmdir, matfiledir, 'vbm')
 
-#report()
+atlasfile = 'JHU_MNI_SS_WMPM_Type_I_matched.nii.gz'
+atlas = pathjoin('data','atlases',atlasfile)
+#corepfiles = [f+'_tfce_corrp_tstat1.nii.gz' for f in randparfiles]
+report(randparfiles, atlas, atlaslabels(atlasfile))
 
 exptag='randpar_n5000_gender_and_vbm_delta_cov_fm_sig_n500_4col_vbm'
 resultdir = pathjoin(vbmdir,'randomise_runs',exptag)
