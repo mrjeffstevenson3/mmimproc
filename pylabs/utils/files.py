@@ -1,10 +1,11 @@
+import os
 
 
 def deconstructRandparFiles(corrPfiles):
     matnames = []
     imgnames = []
     for corrPfile in corrPfiles:
-        fields = corrPfile.split('_')
+        fields = os.path.basename(corrPfile).split('_')
         matname = '_'.join(fields[-5:-3])
         matname += '.mat'
         matnames.append(matname)
