@@ -2,6 +2,10 @@ import sys
 
 
 class TablePublisher(object):
+    """Abstract class that forwards table generation calls to specific Tables.
+
+        Currently uses only TerminalTable.
+    """
 
     def __init__(self):
         self.tables = []
@@ -21,6 +25,10 @@ class TablePublisher(object):
 
 
 class TerminalTable(object):
+    """Implements Table interface to print out a table on the commandline.
+
+        Limited by the number of rows in the terminal.
+    """
 # rows, columns = os.popen('stty size', 'r').read().split()
 
     def setData(self, data):
