@@ -8,6 +8,7 @@ from pylabs.correlation.atlas import report, atlaslabels
 from pylabs.utils.paths import getlocaldataroot
 from pylabs.utils.timing import waitForFiles
 from pylabs.utils.selection import select, withVoxelsOverThresholdOf
+from pylabs.utils.files import deconstructRandparFiles
 from niprov.options import NiprovOptions
 opts = NiprovOptions()
 opts.dryrun = True
@@ -47,7 +48,9 @@ waitForFiles(corrPfiles, interval=5) # every 5 seconds check if files done.
 
 # find significant results from n500 run to pass along to n5000
 selectedCorrPfiles = select(corrPfiles, withVoxelsOverThresholdOf(.95))
-#images, matfiles, corrPfiles = select_significant(resultdir, tbssdir, matfiledir, 'diffusion')
+imagenames, matfilenames = deconstructRandparFiles(selectedCorrPfiles)
+images = [pathjoin(vbmdir, i) for i in imagenames]
+matfiles = [pathjoin(matfiledir, m) for m in matfilenames]
 
 atlasfile = 'JHU_MNI_SS_WMPM_Type_I_matched.nii.gz'
 atlas = pathjoin('data','atlases',atlasfile)
