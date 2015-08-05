@@ -4,7 +4,7 @@ from pylabs.utils import Shell, PylabsOptions, Binaries, WorkingContext
 import niprov
 
 
-def multirandpar(images, mats, designfile, masks=None, niterations=50, 
+def multirandpar(imageMatCombinations, designfile, masks=None, niterations=50, 
     workdir=os.getcwd(), outdir=None, tbss=False, shell=Shell(), 
     binaries=Binaries(), context=WorkingContext, opts=PylabsOptions()):
     """ randomise_parallel on multiple images and/or multiple predictors
@@ -20,8 +20,8 @@ def multirandpar(images, mats, designfile, masks=None, niterations=50,
      white matter skeleton), you should use the --T2 option."
 
     Args:
-        images (list): List of image files
-        mats (list): List of behavior data .mat files.
+        imageMatCombinations (dict): Dictionary with as keys the images and as 
+		values the list of behavior .mat files to use for that image.
         designfile (str): FSL .con file with design.
         masks (dict): Optional dictionary with keys corresponding to images, and
             values the path(s) to the respective mask file to use. Defaults to 
@@ -41,7 +41,7 @@ def multirandpar(images, mats, designfile, masks=None, niterations=50,
         opts (pylabs.utils.PylabsOptions): General settings.
     """
     outfiles = []
-    for image in images:
+    for image in imageMatCombinations.keys():
         datadir = os.path.dirname(image)
         if outdir is None:
             resultdir = datadir
@@ -51,7 +51,7 @@ def multirandpar(images, mats, designfile, masks=None, niterations=50,
         imagename = os.path.basename(image).split('.')[0]
         ext = '.'.join(os.path.basename(image).split('.')[1:])
         maskfile = os.path.join(datadir, imagename.split('_')[0]+'_mask.'+ext)
-        for mat in mats:
+        for mat in imageMatCombinations[image]:
             matname = os.path.basename(mat).split('.')[0]
             shell.run('mkdir -p {0}'.format(resultdir))
             resultfile = os.path.join(resultdir, 'randpar_n{0}_{1}_{2}'.format(
