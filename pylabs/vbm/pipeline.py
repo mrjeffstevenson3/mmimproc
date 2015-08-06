@@ -30,9 +30,9 @@ niprov.add(csvfile)
 images = glob.glob(statsdir+'?M_mod_merg_s4.nii.gz')
 [niprov.add(img) for img in images]
 
-exptag='gender_and_vbm_delta_cov_4col_vbm_n500'
+exptag='randpar_n500_gender_and_vbm_delta_cov_4col_vbm'
 matfiledir = pathjoin(statsdir,'matfiles','matfiles_'+exptag)
-resultdir = pathjoin(statsdir,'randpar',exptag)
+resultdir = pathjoin(statsdir,'randomise_runs',exptag)
 qsubdir = pathjoin(resultdir, 'qsubdir_defunctcommands')
 
 ## Covariate Filtering
@@ -53,7 +53,7 @@ randparfiles = multirandpar(combs, designfile, niterations=500,
 
 corrPfiles = [f+'_tfce_corrp_tstat1.nii.gz' for f in randparfiles]
 corrPfiles += [f+'_tfce_corrp_tstat2.nii.gz' for f in randparfiles]
-waitForFiles(corrPfiles, interval=5) # every 5 seconds check if files done.
+#waitForFiles(corrPfiles, interval=5) # every 5 seconds check if files done.
 
 selectedCorrPfiles = select(corrPfiles, withVoxelsOverThresholdOf(.95))
 
