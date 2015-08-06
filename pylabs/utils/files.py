@@ -2,6 +2,8 @@ import os
 
 
 def deconstructRandparFiles(corrPfiles, matdir=None, imgdir=None):
+    """Create dictionary of image + matfiles combinations from list of results
+    """
     combs = {}
     for corrPfile in corrPfiles:
         fields = os.path.basename(corrPfile).split('_')
