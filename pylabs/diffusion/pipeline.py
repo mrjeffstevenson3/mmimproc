@@ -14,25 +14,26 @@ opts = NiprovOptions()
 opts.dryrun = True
 opts.verbose = True
 
-exptag='filter_gender_and_dti_delta_n500'
-
-subjects= [ 317, 322, 324, 328, 332, 334, 335, 341, 347, 353, 364, 370, 371, 
+subjects = [317, 322, 324, 328, 332, 334, 335, 341, 347, 353, 364, 370, 371, 
     376, 379, 381, 384, 385, 396 ]
+
+fs = getlocaldataroot()
+statsdir = fs+'self_control/hbm_group_data/tbss_19subj/workdir_thr1p5_v3/stats/'
+behavdir = fs+'self_control/behavioral_data/behav_from_andy_march27_2015/'
+csvfile = behavdir+'EF_and_Brain_july08_2015_Meq0_delta.csv'
+niprov.add(csvfile)
+maskfile = statsdir+'mean_FA_skeletonised_mask.nii.gz'
+masks = {img: maskfile for img in images} # Mask is the same for all images
 imgtemplate = 'all_{0}_skeletonised.nii.gz'
 measures = ['F1', 'F2', 'FA', 'L1', 'MD', 'MO', 'RA', 'AD', 'L2', 'L3']
 skellist = [imgtemplate.format(m) for m in measures]
-fs = getlocaldataroot()
-tbssdir = fs+'self_control/hbm_group_data/tbss_19subj/workdir_thr1p5_v3/stats/'
-matfiledir = pathjoin(tbssdir,'matfiles','matfiles_'+exptag)
-resultdir = pathjoin(tbssdir,'randpar',exptag)
-qsubdir = resultdir+'qsubdir_defunctcommands'
-behavdir = fs+'self_control/behavioral_data/behav_from_andy_march27_2015/'
-csvfile = behavdir+'EF_and_Brain_july08_2015_Meq0_delta.csv'
-maskfile = tbssdir+'mean_FA_skeletonised_mask.nii.gz'
-images = [tbssdir+i for i in skellist]
-masks = {img: maskfile for img in images} # Mask is the same for all images
-niprov.add(csvfile)
+images = [statsdir+i for i in skellist]
 [niprov.add(img) for img in images]
+
+exptag='filter_gender_and_dti_delta_n500'
+matfiledir = pathjoin(statsdir,'matfiles','matfiles_'+exptag)
+resultdir = pathjoin(statsdir,'randpar',exptag)
+qsubdir = pathjoin(resultdir, 'qsubdir_defunctcommands')
 
 ## Covariate Filtering
 matfiles = csv2fslmat(csvfile, cols=[2], covarcols=[41], selectSubjects=subjects,
@@ -40,10 +41,10 @@ matfiles = csv2fslmat(csvfile, cols=[2], covarcols=[41], selectSubjects=subjects
 images = multiregfilt(images, matfiles[0], opts=opts)
 
 ## Randomize n500 test run
-designfile = tbssdir+'scs_design2col.con'
+designfile = statsdir+'scs_design2col.con'
 assert os.path.isfile(designfile)
 collist = range(5, 8)+range(18, 32)
-matfiles = csv2fslmat(csvfile, cols=collist, selectSubjects=subjects, 
+matfiles = csv2fslmat(csvfile, cols=collist, selectSubjects=subjects,
     groupcol=True, outdir=matfiledir, opts=opts)
 masks = {img: maskfile for img in images} # Mask is the same for all images
 combs = {img:matfiles for img in images}
@@ -60,11 +61,11 @@ selectedCorrPfiles = select(corrPfiles, withVoxelsOverThresholdOf(.95))
 #atlas = pathjoin('data','atlases',atlasfile)
 #report(selectedCorrPfiles, atlas, atlaslabels(atlasfile))
 
-combs = deconstructRandparFiles(selectedCorrPfiles)
+combs = deconstructRandparFiles(selectedCorrPfiles, matdir=matfiledir, imgdir=statsdir)
 
-opts.dryrun = False
+opts.dryrun = True
 exptag='filtered_gender_and_dti_delta_2col_n5000_select'
-resultdir = pathjoin(tbssdir,'randomise_runs',exptag)
+resultdir = pathjoin(statsdir,'randomise_runs',exptag)
 masks = {img: maskfile for img in combs.keys()} # Mask is the same for all images
 randparfiles = multirandpar(combs, designfile, masks=masks, niterations=5000,
     tbss=True, workdir=qsubdir, outdir=resultdir, opts=opts)
