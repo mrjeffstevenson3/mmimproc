@@ -49,7 +49,8 @@ class TerminalTable(object):
         for r in range(rows):
             line = self.rowHeaders[r].ljust(rowheaderwidth)
             for c in range(cols):
-                cell = ' {0}'.format(self.data[r,c])
+                columnwidth = len(self.colHeaders[c])
+                cell = ' {0:{w}}'.format(int(self.data[r,c]), w=columnwidth)
                 line += cell
             line += '\n'
             sys.stdout.write(line)
