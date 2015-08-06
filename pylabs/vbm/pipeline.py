@@ -10,6 +10,7 @@ from pylabs.utils.timing import waitForFiles
 from pylabs.utils.selection import select, withVoxelsOverThresholdOf
 from pylabs.utils.files import deconstructRandparFiles
 from niprov.options import NiprovOptions
+from pylabs.vbm.upsample import upsample1mm
 opts = NiprovOptions()
 opts.dryrun = True
 opts.verbose = True
@@ -57,9 +58,11 @@ waitForFiles(corrPfiles, interval=5) # every 5 seconds check if files done.
 
 selectedCorrPfiles = select(corrPfiles, withVoxelsOverThresholdOf(.95))
 
-#atlasfile = 'JHU_MNI_SS_WMPM_Type_I_matched.nii.gz'
-#atlas = pathjoin('data','atlases',atlasfile)
-#report(selectedCorrPfiles, atlas, atlaslabels(atlasfile))
+selectedCorrPfiles1mm = upsample1mm(selectedCorrPfiles, opts=opts)
+atlasfile = 'JHU_MNI_SS_WMPM_Type_I_matched.nii.gz'
+atlas = pathjoin('data','atlases',atlasfile)
+report(selectedCorrPfiles1mm, atlas, atlaslabels(atlasfile), 
+    relevantImageFilenameSegment=-5)
 
 combs = deconstructRandparFiles(selectedCorrPfiles, matdir=matfiledir, imgdir=statsdir)
 

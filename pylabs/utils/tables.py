@@ -2,6 +2,10 @@ import sys
 
 
 class TablePublisher(object):
+    """Abstract class that forwards table generation calls to specific Tables.
+
+        Currently uses only TerminalTable.
+    """
 
     def __init__(self):
         self.tables = []
@@ -21,6 +25,10 @@ class TablePublisher(object):
 
 
 class TerminalTable(object):
+    """Implements Table interface to print out a table on the commandline.
+
+        Limited by the number of rows in the terminal.
+    """
 # rows, columns = os.popen('stty size', 'r').read().split()
 
     def setData(self, data):
@@ -37,12 +45,12 @@ class TerminalTable(object):
         line = ' '*rowheaderwidth
         line += ' '+' '.join(self.colHeaders)+'\n'
         sys.stdout.write(line)
-        for r, row in enumerate(self.data):
+        rows, cols = self.data.shape
+        for r in range(rows):
             line = self.rowHeaders[r].ljust(rowheaderwidth)
-            if not isinstance(row, (list, tuple)):
-                row = [row]
-            for col in row:
-                cell = ' {0}'.format(int(col))
+            for c in range(cols):
+                columnwidth = len(self.colHeaders[c])
+                cell = ' {0:{w}}'.format(int(self.data[r,c]), w=columnwidth)
                 line += cell
             line += '\n'
             sys.stdout.write(line)
