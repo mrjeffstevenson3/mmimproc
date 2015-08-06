@@ -45,12 +45,11 @@ class TerminalTable(object):
         line = ' '*rowheaderwidth
         line += ' '+' '.join(self.colHeaders)+'\n'
         sys.stdout.write(line)
-        for r, row in enumerate(self.data):
+        rows, cols = self.data.shape
+        for r in range(rows):
             line = self.rowHeaders[r].ljust(rowheaderwidth)
-            if not isinstance(row, (list, tuple)):
-                row = [row]
-            for col in row:
-                cell = ' {0}'.format(int(col))
+            for c in range(cols):
+                cell = ' {0}'.format(self.data[r,c])
                 line += cell
             line += '\n'
             sys.stdout.write(line)
