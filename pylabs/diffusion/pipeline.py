@@ -54,25 +54,18 @@ corrPfiles = [f+'_tfce_corrp_tstat1.nii.gz' for f in randparfiles]
 corrPfiles += [f+'_tfce_corrp_tstat2.nii.gz' for f in randparfiles]
 waitForFiles(corrPfiles, interval=5) # every 5 seconds check if files done.
 
-# find significant results from n500 run to pass along to n5000
 selectedCorrPfiles = select(corrPfiles, withVoxelsOverThresholdOf(.95))
-imagenames, matfilenames = deconstructRandparFiles(selectedCorrPfiles)
-images = [pathjoin(tbssdir, i) for i in imagenames]
-matfiles = [pathjoin(matfiledir, m) for m in matfilenames]
-combs = {}
-for img, mat in zip(images, matfiles):
-    if not img in combs:
-        combs[img] = []
-    combs[img].append(mat)	
 
 #atlasfile = 'JHU_MNI_SS_WMPM_Type_I_matched.nii.gz'
 #atlas = pathjoin('data','atlases',atlasfile)
 #report(selectedCorrPfiles, atlas, atlaslabels(atlasfile))
 
+combs = deconstructRandparFiles(selectedCorrPfiles)
+
 opts.dryrun = False
 exptag='filtered_gender_and_dti_delta_2col_n5000_select'
 resultdir = pathjoin(tbssdir,'randomise_runs',exptag)
-masks = {img: maskfile for img in images} # Mask is the same for all images
+masks = {img: maskfile for img in combs.keys()} # Mask is the same for all images
 randparfiles = multirandpar(combs, designfile, masks=masks, niterations=5000,
     tbss=True, workdir=qsubdir, outdir=resultdir, opts=opts)
 
