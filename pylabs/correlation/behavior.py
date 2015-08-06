@@ -1,32 +1,7 @@
 import os, numpy
 from pylabs.utils import Filesystem, PylabsOptions
+from pylabs.correlation.fslmatfile import FslMatFile
 import niprov
-
-
-class FslMatFile(object):
-    # Fsl Matrix (.mat) file.
-
-    def __init__(self, filesys=Filesystem()):
-        self.filesys = filesys
-
-    def setData(self, data):
-        # Data to write to the file as a numpy array. Must be 2d.
-        self.data = data
-
-    def saveAs(self, fname):
-        content = ''
-        #content += '/ContrastName1\t{0}\n'.format(measure)
-        (w,p) = self.data.shape
-        content += '/NumWaves\t{1}\n/NumPoints\t{0}\n'.format(w,p)
-        content += '/PPheights\t\t{0:.6e} {1:.6e}\n'.format(
-            self.data.min(), self.data.max())
-        content += '/Matrix\n'
-        for r in range(self.data.shape[0]):
-            for c in range(self.data[r,:].size):
-                content += '{0:.6e}\t'.format(self.data[r, c])
-            content += '\n'
-        self.filesys.write(fname, content)
-        print(fname)
 
 
 def csv2fslmat(csvfile, selectSubjects=None, demean=True, groupcol=False,
