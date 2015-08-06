@@ -58,10 +58,11 @@ waitForFiles(corrPfiles, interval=5) # every 5 seconds check if files done.
 
 selectedCorrPfiles = select(corrPfiles, withVoxelsOverThresholdOf(.95))
 
-selectedCorrPfiles1mm = upsample1mm(selectedCorrPfiles)
-atlasfile = 'JHU-ICBM-tracts-maxprob-thr0-1mm_newATR1_newCC21_LR_cerebellum.nii.gz'
+selectedCorrPfiles1mm = upsample1mm(selectedCorrPfiles, opts=opts)
+atlasfile = 'JHU_MNI_SS_WMPM_Type_I_matched.nii.gz'
 atlas = pathjoin('data','atlases',atlasfile)
-report(selectedCorrPfiles1mm, atlas, atlaslabels(atlasfile))
+report(selectedCorrPfiles1mm, atlas, atlaslabels(atlasfile), 
+    relevantImageFilenameSegment=-5)
 
 combs = deconstructRandparFiles(selectedCorrPfiles, matdir=matfiledir, imgdir=statsdir)
 
