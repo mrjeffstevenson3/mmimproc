@@ -23,7 +23,7 @@ behavdir = fs+'self_control/behavioral_data/behav_from_andy_march27_2015/'
 csvfile = behavdir+'EF_and_Brain_july08_2015_Meq0_delta.csv'
 niprov.add(csvfile)
 maskfile = statsdir+'mean_FA_skeletonised_mask.nii.gz'
-masks = {img: maskfile for img in images} # Mask is the same for all images
+
 imgtemplate = 'all_{0}_skeletonised.nii.gz'
 measures = ['F1', 'F2', 'FA', 'L1', 'MD', 'MO', 'RA', 'AD', 'L2', 'L3']
 skellist = [imgtemplate.format(m) for m in measures]
