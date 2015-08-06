@@ -53,7 +53,7 @@ randparfiles = multirandpar(combs, designfile, niterations=500,
 
 corrPfiles = [f+'_tfce_corrp_tstat1.nii.gz' for f in randparfiles]
 corrPfiles += [f+'_tfce_corrp_tstat2.nii.gz' for f in randparfiles]
-#waitForFiles(corrPfiles, interval=5) # every 5 seconds check if files done.
+waitForFiles(corrPfiles, interval=5) # every 5 seconds check if files done.
 
 selectedCorrPfiles = select(corrPfiles, withVoxelsOverThresholdOf(.95))
 
