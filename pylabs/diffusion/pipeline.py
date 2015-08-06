@@ -57,9 +57,10 @@ waitForFiles(corrPfiles, interval=5) # every 5 seconds check if files done.
 
 selectedCorrPfiles = select(corrPfiles, withVoxelsOverThresholdOf(.95))
 
-#atlasfile = 'JHU_MNI_SS_WMPM_Type_I_matched.nii.gz'
-#atlas = pathjoin('data','atlases',atlasfile)
-#report(selectedCorrPfiles, atlas, atlaslabels(atlasfile))
+atlasfile = 'JHU_MNI_SS_WMPM_Type_I_matched.nii.gz'
+atlas = pathjoin('data','atlases',atlasfile)
+report(selectedCorrPfiles, atlas, atlaslabels(atlasfile),
+    relevantImageFilenameSegment=-4)
 
 combs = deconstructRandparFiles(selectedCorrPfiles, matdir=matfiledir, imgdir=statsdir)
 
