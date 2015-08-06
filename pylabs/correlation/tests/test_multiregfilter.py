@@ -10,12 +10,16 @@ class MultiRegfilterTests(TestCase):
         self.shell = MockShell()
         self.niprov = None
         self.opts = Mock()
+        self.matfile = Mock()
+        self.matfile.numwaves = 1
 
     def multiregfilt(self, *args, **kwargs):
         import pylabs.correlation.regfilt
         with patch('pylabs.correlation.regfilt.niprov') as self.niprov:
-            return pylabs.correlation.regfilt.multiregfilt(
-                *args, shell=self.shell, opts=self.opts, **kwargs)
+            with patch('pylabs.correlation.regfilt.FslMatFile') as self.FslMatFile:
+                self.FslMatFile.return_value = self.matfile
+                return pylabs.correlation.regfilt.multiregfilt(
+                    *args, shell=self.shell, opts=self.opts, **kwargs)
 
     def assert_recorded_command_matching(self, needle, **kwargs):
         allCalls = self.niprov.record.call_args_list
@@ -43,15 +47,27 @@ class MultiRegfilterTests(TestCase):
             'fsl_regfilt *-o one_filt_xyz.img', opts=self.opts)
 
     def test_returns_output_images(self):
-        from pylabs.correlation.regfilt import multiregfilt
         imgs = ['one.img','two.img']
         output = self.multiregfilt(imgs, 'xyz.mat')
         self.assertEqual(output, ['one_filt_xyz.img','two_filt_xyz.img'])
 
     def test_outdir_formatting_matfile_path_and_filenames_multiple_dots(self):
-        from pylabs.correlation.regfilt import multiregfilt
         imgs = ['one.img.x','two.img.x']
         output = self.multiregfilt(imgs, 'matfiles/xyz.mat')
         self.assertEqual(output, ['one_filt_xyz.img.x','two_filt_xyz.img.x'])
 
-
+    def test_Opens_matfile_to_determine_f_flag(self):
+        imgs = ['one.img','two.img']
+        self.matfile.numwaves = 1
+        self.multiregfilt(imgs, 'xyz.mat')
+        self.FslMatFile.assert_called_with('xyz.mat')
+        self.assert_recorded_command_matching(
+            'fsl_regfilt *-f \"1\"*', opts=self.opts)
+        self.matfile.numwaves = 2
+        self.multiregfilt(imgs, 'xyz.mat')
+        self.assert_recorded_command_matching(
+            'fsl_regfilt *-f \"1,2\"*', opts=self.opts)
+        self.matfile.numwaves = 3
+        self.multiregfilt(imgs, 'xyz.mat')
+        self.assert_recorded_command_matching(
+            'fsl_regfilt *-f \"1,2,3\"*', opts=self.opts)
