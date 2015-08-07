@@ -18,11 +18,16 @@ csvfile = join(behavdir,'EF_and_Brain_july08_2015_Meq0_delta.csv')
 niprov.add(csvfile)
 
 ## VBM
+vbmsubjects = [
+317, 328, 332, 334, 335, 347, 353, 364, 371, 376, 379, 381, 384, 385, 396]
 vbmdir = join(fs,'self_control/hbm_group_data/vbm_15subj/workdir_v1/stats/')
-images += glob.glob(join(vbmdir, '?M_mod_merg_s4.nii.gz'))
-# selectedCorrPfiles1mm = upsample1mm(selectedCorrPfiles, opts=opts)
+#vbmimgs2mm = glob.glob(join(vbmdir, '?M_mod_merg_s4.nii.gz'))
+#images += upsample1mm(vbmimgs2mm, opts=opts) # is this correct for 4D files?
+images += glob.glob(join(vbmdir, '?M_mod_merg_s4_1mm.nii.gz'))
 
 ## TBSS
+tbsssubjects = [317, 322, 324, 328, 332, 334, 335, 341, 347, 353, 364, 370, 371, 
+    376, 379, 381, 384, 385, 396 ]
 tbssdir = join(fs,'self_control/hbm_group_data/tbss_19subj/workdir_thr1p5_v3/stats/')
 imgtemplate = 'all_{0}_skeletonised.nii.gz'
 measures = ['F1', 'F2', 'FA', 'L1', 'MD', 'MO', 'RA', 'AD', 'L2', 'L3']
@@ -31,7 +36,9 @@ images += [join(tbssdir,i) for i in skellist]
 
 ## FMRI
 fmridir = join(fs,'self_control/hbm_group_data/fmri')
-images += glob.glob(join(fmridir, 'analyze', '*_Congruent_gt_Incongruent.hdr'))
+fmriimages = glob.glob(join(fmridir, 'analyze', '*_Congruent_gt_Incongruent.hdr'))
+images += fmriimages
+fmrisubjects = sorted([os.path.basename(i)[:3] for i in fmriimages])
 
 ## MM
 #[niprov.add(img) for img in images]
