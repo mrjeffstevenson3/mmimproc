@@ -11,6 +11,7 @@ opts.verbose = True
 fs = getlocaldataroot()
 resultdir = join(fs,'self_control/hbm_group_data/mmpa/')
 images = []
+measures = []
 
 ## Behavior
 behavdir = join(fs,'self_control/behavioral_data/behav_from_andy_march27_2015/')
@@ -24,26 +25,29 @@ vbmdir = join(fs,'self_control/hbm_group_data/vbm_15subj/workdir_v1/stats/')
 #vbmimgs2mm = glob.glob(join(vbmdir, '?M_mod_merg_s4.nii.gz'))
 #images += upsample1mm(vbmimgs2mm, opts=opts) # is this correct for 4D files?
 images += glob.glob(join(vbmdir, '?M_mod_merg_s4_1mm.nii.gz'))
+measures += [os.path.basename(i)[:2] for i in images]
 
 ## TBSS
 tbsssubjects = [317, 322, 324, 328, 332, 334, 335, 341, 347, 353, 364, 370, 371, 
     376, 379, 381, 384, 385, 396 ]
 tbssdir = join(fs,'self_control/hbm_group_data/tbss_19subj/workdir_thr1p5_v3/stats/')
 imgtemplate = 'all_{0}_skeletonised.nii.gz'
-measures = ['F1', 'F2', 'FA', 'L1', 'MD', 'MO', 'RA', 'AD', 'L2', 'L3']
-skellist = [imgtemplate.format(m) for m in measures]
+tbssmeasures = ['F1', 'F2', 'FA', 'L1', 'MD', 'MO', 'RA', 'AD', 'L2', 'L3']
+measures += tbssmeasures
+skellist = [imgtemplate.format(m) for m in tbssmeasures]
 images += [join(tbssdir,i) for i in skellist]
 
 ## FMRI
 fmridir = join(fs,'self_control/hbm_group_data/fmri')
 fmriimages = glob.glob(join(fmridir, 'analyze', '*_Congruent_gt_Incongruent.hdr'))
 images += fmriimages
-fmrisubjects = sorted([os.path.basename(i)[:3] for i in fmriimages])
+fmrisubjects = sorted([int(os.path.basename(i)[:3]) for i in fmriimages])
 
 ## MM
 #[niprov.add(img) for img in images]
+commonSubjects = set.intersection(*map(set, 
+    [fmrisubjects, vbmsubjects, tbsssubjects]))
+
 for i in images:
     print(i)
-
-
 
