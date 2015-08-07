@@ -1,6 +1,7 @@
 import os, glob
 from os.path import join
 import niprov
+import nibabel, numpy
 from pylabs.utils.paths import getlocaldataroot
 from niprov.options import NiprovOptions
 from pylabs.vbm.upsample import upsample1mm
@@ -38,10 +39,13 @@ skellist = [imgtemplate.format(m) for m in tbssmeasures]
 images += [join(tbssdir,i) for i in skellist]
 
 ## FMRI
+## assuming fmri pipeline has ran.
 fmridir = join(fs,'self_control/hbm_group_data/fmri')
 fmriimages = glob.glob(join(fmridir, 'analyze', '*_Congruent_gt_Incongruent.hdr'))
+img = nibabel.load(fmriimages[0])
 images += fmriimages
 fmrisubjects = sorted([int(os.path.basename(i)[:3]) for i in fmriimages])
+# remap. http://brainmap.wustl.edu/help/mapper.html
 
 ## MM
 #[niprov.add(img) for img in images]
@@ -50,4 +54,15 @@ commonSubjects = set.intersection(*map(set,
 
 for i in images:
     print(i)
+
+nsubjects = len(commonSubjects)
+nmeasures = len(measures)
+spatialdims = (182, 218, 182)
+# subjects * measures * x * y * z
+data = numpy.zeros((nsubjects, nmeasures)+spatialdims)
+for s, subjectid in enumerate(commonSubjects):
+    for m, measure in enumerate(measures):
+        pass
+
+
 
