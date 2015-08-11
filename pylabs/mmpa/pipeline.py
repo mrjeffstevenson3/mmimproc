@@ -11,8 +11,10 @@ opts.verbose = True
 
 fs = getlocaldataroot()
 resultdir = join(fs,'self_control/hbm_group_data/mmpa/')
+mmpaDataFile = join(resultdir, 'data.npy')
 images = []
 measures = []
+measureSubjects = []
 
 ## Behavior
 behavdir = join(fs,'self_control/behavioral_data/behav_from_andy_march27_2015/')
@@ -25,8 +27,10 @@ vbmsubjects = [
 vbmdir = join(fs,'self_control/hbm_group_data/vbm_15subj/workdir_v1/stats/')
 #vbmimgs2mm = glob.glob(join(vbmdir, '?M_mod_merg_s4.nii.gz'))
 #images += upsample1mm(vbmimgs2mm, opts=opts) # is this correct for 4D files?
-images += glob.glob(join(vbmdir, '?M_mod_merg_s4_1mm.nii.gz'))
+vbmimages = glob.glob(join(vbmdir, '?M_mod_merg_s4_1mm.nii.gz'))
+images += vbmimages
 measures += [os.path.basename(i)[:2] for i in images]
+measureSubjects += [vbmsubjects]*len(vbmimages)
 
 ## TBSS
 tbsssubjects = [317, 322, 324, 328, 332, 334, 335, 341, 347, 353, 364, 370, 371, 
@@ -37,32 +41,44 @@ tbssmeasures = ['F1', 'F2', 'FA', 'L1', 'MD', 'MO', 'RA', 'AD', 'L2', 'L3']
 measures += tbssmeasures
 skellist = [imgtemplate.format(m) for m in tbssmeasures]
 images += [join(tbssdir,i) for i in skellist]
+measureSubjects += [tbsssubjects]*len(tbssmeasures)
 
 ## FMRI
-## assuming fmri pipeline has ran.
 fmridir = join(fs,'self_control/hbm_group_data/fmri')
-fmriimages = glob.glob(join(fmridir, 'analyze', '*_Congruent_gt_Incongruent.hdr'))
-img = nibabel.load(fmriimages[0])
+#hdrfilterOneContrast = join(fmridir, 'analyze', '*_Congruent_gt_Incongruent.hdr')
+#hdrimagesOneContrast = sorted(glob.glob(hdrfilterOneContrast))
+#fmrisubjects = sorted([int(os.path.basename(i)[:3]) for i in hdrimagesOneContrast])
+fmrisubjects = [317, 318, 332, 334, 335, 347, 353, 364, 370, 371, 376, 379,
+ 381, 384, 385, 396]
+## assuming fmri pipeline has ran.
+contrasts = ['Congruent', 'Incongruent']
+fmriimages = [join(fmridir, c+'.nii.gz') for c in contrasts]
 images += fmriimages
-fmrisubjects = sorted([int(os.path.basename(i)[:3]) for i in fmriimages])
+measures += [c[:2] for c in contrasts]
+measureSubjects += [fmrisubjects]*len(contrasts)
 # remap. http://brainmap.wustl.edu/help/mapper.html
 
 ## MM
-#[niprov.add(img) for img in images]
+[niprov.add(img) for img in images]
 commonSubjects = set.intersection(*map(set, 
     [fmrisubjects, vbmsubjects, tbsssubjects]))
-
-for i in images:
-    print(i)
 
 nsubjects = len(commonSubjects)
 nmeasures = len(measures)
 spatialdims = (182, 218, 182)
 # subjects * measures * x * y * z
 data = numpy.zeros((nsubjects, nmeasures)+spatialdims)
-for s, subjectid in enumerate(commonSubjects):
-    for m, measure in enumerate(measures):
-        pass
+for m, measure in enumerate(measures):
+    print('Loading data for measure {0} of {1}'.format(m+1, len(measures)))
+    img = nibabel.load(images[m])
+    measureData = img.get_data()
+    for s, subjectid in enumerate(commonSubjects):
+        measureSubjectIndex = measureSubjects[m].index(subjectid)
+        data[s, m, :, :, :] = measureData[:,:,:, measureSubjectIndex]
+print('Saving data..')
+numpy.save(mmpaDataFile, data)
+niprov.log(mmpaDataFile, 'data to one file', images)
+
 
 
 
