@@ -4,12 +4,12 @@ import niprov
 import nibabel, numpy
 from pylabs.utils.paths import getlocaldataroot
 from niprov.options import NiprovOptions
-from pylabs.conversion.analyze import analyze2nifti
-from pylabs.vbm.upsample import upsample1mm
-from pylabs.transformations.standard import standardize2mni, space2mni
+from pylabs.utils import Filesystem
+from pylabs.transformations.standard import standardizeBasedOnAbsoluteMask
 opts = NiprovOptions()
 opts.dryrun = False
 opts.verbose = True
+filesys = Filesystem()
 
 fs = getlocaldataroot()
 
@@ -17,23 +17,18 @@ fs = getlocaldataroot()
 contrasts = ['Congruent','Incongruent',
     'Congruent_gt_Incongruent','Incongruent_gt_Congruent']
 fmridir = join(fs,'self_control/hbm_group_data/fmri')
-niftidir = join(fmridir,'nifti')
-os.mkdir(niftidir)
 mnidir = join(fmridir,'nifti_mni')
-os.mkdir(mnidir)
+filesys.makedirs(mnidir)
 mnidims = [182, 218, 182]
 
 
+hdrfilter = join(fmridir, 'analyze', '*.hdr')
+images = sorted(glob.glob(hdrfilter))
+[niprov.add(i) for i in images]
+images = [standardizeBasedOnAbsoluteMask(i, mnidir, opts=opts) for i in images]
 
 def getContrast(filename):
     return '_'.join(os.path.basename(filename).split('.')[0].split('_')[1:])
-
-hdrfilter = join(fmridir, 'analyze', '*.hdr')
-hdrimages = sorted(glob.glob(hdrfilter))
-[niprov.add(i) for i in hdrimages]
-images = analyze2nifti(hdrimages, niftidir, opts=opts)
-images = standardizeBasedOnAbsolute(images, mnidir, opts=opts)
-
 
 for contrast in contrasts:
     print('Grouping contrast '+contrast)
