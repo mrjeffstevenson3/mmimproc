@@ -4,6 +4,7 @@ import niprov
 from nipype.interfaces import fsl
 from pylabs.utils import PylabsOptions
 import pylabs.transformations.masks as masks
+from pylabs.utils.paths import tempfile
 
 
 def standardizeBasedOnAbsoluteMask(image, outdir=None, opts=PylabsOptions()):
@@ -28,6 +29,7 @@ def standardizeBasedOnAbsoluteMask(image, outdir=None, opts=PylabsOptions()):
     flt.inputs.reference = template
     flt.inputs.out_file = outfile
     flt.inputs.in_matrix_file = matfile
+    flt.inputs.out_matrix_file = tempfile(extension='.mat')
     flt.inputs.apply_xfm = True
     result = flt.run() 
     niprov.log(outfile, 'standardized with FLIRT', image, code=flt.cmdline,

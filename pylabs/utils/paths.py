@@ -1,4 +1,5 @@
-import socket
+import os, socket
+import petname
 
 
 def getlocaldataroot():
@@ -14,3 +15,7 @@ def getlocaldataroot():
         return '/redshirt_array/data/'
     else:
         raise ValueError('Don''t know where data root is on this computer.')
+
+
+def tempfile(extension='.tmp'):
+    return os.path.join('/var/tmp',petname.Generate(3,'-')+extension)

@@ -7,4 +7,5 @@ nibabel
 six
 flake8
 nipype
+petname
 
