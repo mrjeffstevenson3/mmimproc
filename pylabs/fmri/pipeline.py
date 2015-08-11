@@ -4,7 +4,9 @@ import niprov
 import nibabel, numpy
 from pylabs.utils.paths import getlocaldataroot
 from niprov.options import NiprovOptions
-from pylabs.transformations.standard import standardize2mni
+from pylabs.conversion.analyze import analyze2nifti
+from pylabs.vbm.upsample import upsample1mm
+from pylabs.transformations.standard import standardize2mni, space2mni
 opts = NiprovOptions()
 opts.dryrun = False
 opts.verbose = True
@@ -15,7 +17,10 @@ fs = getlocaldataroot()
 contrasts = ['Congruent','Incongruent',
     'Congruent_gt_Incongruent','Incongruent_gt_Congruent']
 fmridir = join(fs,'self_control/hbm_group_data/fmri')
-mnidir = join(fmridir,'nifti')
+niftidir = join(fmridir,'nifti')
+os.mkdir(niftidir)
+mnidir = join(fmridir,'nifti_mni')
+os.mkdir(mnidir)
 mnidims = [182, 218, 182]
 
 
@@ -26,7 +31,8 @@ def getContrast(filename):
 hdrfilter = join(fmridir, 'analyze', '*.hdr')
 hdrimages = sorted(glob.glob(hdrfilter))
 [niprov.add(i) for i in hdrimages]
-images = standardize2mni(hdrimages, mnidir, opts=opts)
+images = analyze2nifti(hdrimages, niftidir, opts=opts)
+images = standardizeBasedOnAbsolute(images, mnidir, opts=opts)
 
 
 for contrast in contrasts:
