@@ -36,7 +36,7 @@ measureSubjects += [vbmsubjects]*len(vbmimages)
 tbsssubjects = [317, 322, 324, 328, 332, 334, 335, 341, 347, 353, 364, 370, 371, 
     376, 379, 381, 384, 385, 396 ]
 tbssdir = join(fs,'self_control/hbm_group_data/tbss_19subj/workdir_thr1p5_v3/stats/')
-imgtemplate = 'all_{0}_skeletonised.nii.gz'
+imgtemplate = 'all_{0}.nii.gz'
 tbssmeasures = ['F1', 'F2', 'FA', 'L1', 'MD', 'MO', 'RA', 'AD', 'L2', 'L3']
 measures += tbssmeasures
 skellist = [imgtemplate.format(m) for m in tbssmeasures]
@@ -45,18 +45,14 @@ measureSubjects += [tbsssubjects]*len(tbssmeasures)
 
 ## FMRI
 fmridir = join(fs,'self_control/hbm_group_data/fmri')
-#hdrfilterOneContrast = join(fmridir, 'analyze', '*_Congruent_gt_Incongruent.hdr')
-#hdrimagesOneContrast = sorted(glob.glob(hdrfilterOneContrast))
-#fmrisubjects = sorted([int(os.path.basename(i)[:3]) for i in hdrimagesOneContrast])
 fmrisubjects = [317, 318, 332, 334, 335, 347, 353, 364, 370, 371, 376, 379,
  381, 384, 385, 396]
-## assuming fmri pipeline has ran.
+## assuming fmri pipeline has ran (standardizing and combining subjects)
 contrasts = ['Congruent', 'Incongruent']
 fmriimages = [join(fmridir, c+'.nii.gz') for c in contrasts]
 images += fmriimages
 measures += [c[:2] for c in contrasts]
 measureSubjects += [fmrisubjects]*len(contrasts)
-# remap. http://brainmap.wustl.edu/help/mapper.html
 
 ## MM
 [niprov.add(img) for img in images]
