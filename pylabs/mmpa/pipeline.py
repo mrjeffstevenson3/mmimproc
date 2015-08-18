@@ -12,6 +12,7 @@ opts.verbose = True
 fs = getlocaldataroot()
 resultdir = join(fs,'self_control/hbm_group_data/mmpa/')
 mmpaDataFile = join(resultdir, 'data.npy')
+mmpaMetadataFile = join(resultdir, 'metadata.pkl')
 images = []
 measures = []
 measureSubjects = []
@@ -62,7 +63,7 @@ commonSubjects = set.intersection(*map(set,
 nsubjects = len(commonSubjects)
 nmeasures = len(measures)
 spatialdims = (182, 218, 182)
-# subjects * measures * x * y * z
+## subjects * measures * x * y * z
 data = numpy.zeros((nsubjects, nmeasures)+spatialdims)
 for m, measure in enumerate(measures):
     print('Loading data for measure {0} of {1}'.format(m+1, len(measures)))
@@ -74,6 +75,13 @@ for m, measure in enumerate(measures):
 print('Saving data..')
 numpy.save(mmpaDataFile, data)
 niprov.log(mmpaDataFile, 'data to one file', images)
+
+picklevars = {}
+picklevars['measures'] = measures
+picklevars['subjects'] = commonSubjects
+import pickle
+pickle.dump(picklevars, open(mmpaMetadataFile, "wb"))
+
 
 
 
