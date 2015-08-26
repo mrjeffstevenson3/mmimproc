@@ -6,4 +6,6 @@ nose-timer
 nibabel 
 six
 flake8
+nipype
+petname
 

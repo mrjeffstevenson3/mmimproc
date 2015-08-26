@@ -1,10 +1,11 @@
 import os, nibabel
+from os.path import join
 import niprov
 from dipy.align.reslice import reslice
 from pylabs.utils import PylabsOptions
 
 
-def upsample1mm(images, opts=PylabsOptions()):
+def upsample1mm(images, outdir=None, opts=PylabsOptions()):
     """ Resample images to 1mm isotropic
 
     Uses dipy.align.reslice
@@ -12,7 +13,11 @@ def upsample1mm(images, opts=PylabsOptions()):
     outimages = []
     for image in images:
         imagebasename = os.path.basename(image)
-        outimage = image.replace('.nii.gz','_1mm.nii.gz')
+        if outdir:
+            outimage = join(outdir, imagebasename.replace('.nii.gz',
+                '_1mm.nii.gz'))
+        else:
+            outimage = image.replace('.nii.gz','_1mm.nii.gz')
         print('Upsampling '+imagebasename)
         img = nibabel.load(image)
         data = img.get_data()
