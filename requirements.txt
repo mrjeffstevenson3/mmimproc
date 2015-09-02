@@ -3,6 +3,8 @@ coverage
 niprov
 mako
 nose-timer 
+numpy
+scipy
 nibabel 
 six
 flake8
