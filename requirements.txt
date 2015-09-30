@@ -10,5 +10,4 @@ six
 flake8
 nipype
 petname
-zope.interface>=4
 
