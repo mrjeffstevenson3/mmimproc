@@ -20,7 +20,7 @@ virtualenv:
     system_site_packages: true
 
 before_install:
-    - travis_retry pip install -q -r requirements.txt;
+    - travis_retry pip install -r requirements.txt;
 
 install:
     - if [ "${TEST}" != "extra" ]; then
