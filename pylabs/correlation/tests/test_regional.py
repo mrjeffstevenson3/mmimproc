@@ -11,25 +11,20 @@ class RegionalTests(TestCase):
         self.nibabel = None
         self.opts = Mock()
         self.bins = Mock()
-        self.table = MockTable()
         self.img = Mock()
         self.img.shape = (1,1,0)
         self.img.get_data.return_value = self.array3d([])
-        self.img2 = Mock()
-        self.img2.shape = (1,1,0)
-        self.img2.get_data.return_value = self.array3d([])
-        self.inputImages = [self.img]
         self.atlasimg = Mock()
         self.atlasimg.shape = (1,1,0)
         self.atlasimg.get_data.return_value = []
 
-    def atlasreport(self, *args, **kwargs):
+    def statsByRegion(self, *args, **kwargs):
         from pylabs.correlation.atlas import report
         with patch('pylabs.correlation.randpar.niprov') as self.niprov:
             with patch('pylabs.correlation.atlas.nibabel') as self.nibabel:
                 self.nibabel.load.side_effect = (lambda f: 
-                    self.atlasimg if 'atlas' in f else self.inputImages.pop(0))
-                return report(*args, table=self.table, **kwargs)
+                    self.atlasimg if 'atlas' in f else self.img)
+                return statsByRegion(*args, table=self.table, **kwargs)
 
     def test_Raises_error_if_atlas_image_different_size(self):
         self.img.shape = (1,2,3)
