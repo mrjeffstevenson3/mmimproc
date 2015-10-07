@@ -1,7 +1,7 @@
 from unittest import TestCase
 from mock import patch, call, Mock, MagicMock
 import numpy
-from numpy.testing import assert_array_equal
+from numpy.testing import assert_array_equal, assert_array_almost_equal
 
 
 class RegionalTests(TestCase):
@@ -30,6 +30,14 @@ class RegionalTests(TestCase):
         self.atlasimg.shape = (3,2,1)
         with self.assertRaisesRegexp(ValueError, 'dimensions'):
             self.statsByRegion(['stats.img'],'atlas.img')
+
+    def test_Average(self):
+        self.img.get_data.return_value = self.array3d(
+            [.3, .4, .5, .6, .6, .7, .8])
+        self.atlasimg.get_data.return_value = self.array3d(
+            [ 1,  1,  3,   3,  2,   2,  2])
+        out = self.statsByRegion(['stats.img'],'atlas.img')
+        assert_array_almost_equal(numpy.array([0.35, 0.7, 0.55]), out['average'])
 
 #    def test_Counts_number_of_superthreshold_voxels_per_region(self):
 #        self.img.get_data.return_value = self.array3d(

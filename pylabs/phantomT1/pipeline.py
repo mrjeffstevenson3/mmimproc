@@ -1,7 +1,7 @@
 from nipype.interfaces import fsl
 from pylabs.regional import statsByRegion
 
-vialAtlas =  = fsl.Info.standard_image('MNI152_T1_1mm_brain.nii.gz')
+vialAtlas = fsl.Info.standard_image('MNI152_T1_1mm_brain.nii.gz')
 
 # find phantom raw files
 # process raw files
