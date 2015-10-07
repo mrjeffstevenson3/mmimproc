@@ -55,4 +55,5 @@ if __name__ == "__main__":
                     ],
           install_requires=['niprov >= 0.1.post10'],
           package_data={},
-          scripts=[])
+          scripts=[],
+          test_suite="tests",)

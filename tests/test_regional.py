@@ -19,18 +19,17 @@ class RegionalTests(TestCase):
         self.atlasimg.get_data.return_value = []
 
     def statsByRegion(self, *args, **kwargs):
-        from pylabs.correlation.atlas import report
-        with patch('pylabs.correlation.randpar.niprov') as self.niprov:
-            with patch('pylabs.correlation.atlas.nibabel') as self.nibabel:
-                self.nibabel.load.side_effect = (lambda f: 
-                    self.atlasimg if 'atlas' in f else self.img)
-                return statsByRegion(*args, table=self.table, **kwargs)
+        from pylabs.regional import statsByRegion
+        with patch('pylabs.regional.nibabel') as self.nibabel:
+            self.nibabel.load.side_effect = (lambda f: 
+                self.atlasimg if 'atlas' in f else self.img)
+            return statsByRegion(*args, **kwargs)
 
     def test_Raises_error_if_atlas_image_different_size(self):
         self.img.shape = (1,2,3)
         self.atlasimg.shape = (3,2,1)
         with self.assertRaisesRegexp(ValueError, 'dimensions'):
-            self.atlasreport(['stats.img'],'atlas.img')
+            self.statsByRegion(['stats.img'],'atlas.img')
 
 #    def test_Counts_number_of_superthreshold_voxels_per_region(self):
 #        self.img.get_data.return_value = self.array3d(
