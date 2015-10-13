@@ -1,5 +1,5 @@
-from niprov.options import NiprovOptions
+import niprov
 
 
-class PylabsOptions(NiprovOptions):
+class PylabsOptions(niprov.Configuration):
     pass
