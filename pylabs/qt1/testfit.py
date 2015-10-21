@@ -41,6 +41,14 @@ for coords in data.keys():
     plt.plot(X, Y, 'bo')
     plt.savefig('testT1fit.png')
 
+    lastval = 10000000
+    for x in numpy.arange(0,5000,.1):
+        y = func(x, *popt)
+        if lastval < y:
+            print('zerocrossing: {0}'.format(x))
+            break
+        lastval = y
+
 # todo polarity restoration
 
 #y = S0 (1-V*e pow())
@@ -48,3 +56,5 @@ for coords in data.keys():
 # 80,63,0  1727
 # 46,65,0  1113
 # 46,30,0   688
+
+zerocrossing = c * ln(a/b) 
