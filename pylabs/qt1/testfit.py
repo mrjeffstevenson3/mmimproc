@@ -2,6 +2,7 @@ import os, glob, collections
 from os.path import join
 import numpy
 from scipy.optimize import curve_fit
+import matplotlib.pyplot as plt
 
 path = 'data/phantomsampledata/'
 
@@ -32,6 +33,13 @@ for coords in data.keys():
     print('   fitted parameters: a {0} b {1} c {2}'.format(*popt))
 
 
+
+    # plot development over time for each vial
+    Xrange = numpy.arange(5000)
+    fit = [func(x, *popt) for x in Xrange]
+    plt.plot(Xrange, fit) 
+    plt.plot(X, Y, 'bo')
+    plt.savefig('testT1fit.png')
 
 # todo polarity restoration
 
