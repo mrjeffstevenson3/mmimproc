@@ -16,7 +16,7 @@ class RegionalTests(TestCase):
         self.img.get_data.return_value = self.array3d([])
         self.atlasimg = Mock()
         self.atlasimg.shape = (1,1,0)
-        self.atlasimg.get_data.return_value = []
+        self.atlasimg.get_data.return_value = self.array3d([])
 
     def statsByRegion(self, *args, **kwargs):
         from pylabs.regional import statsByRegion
@@ -26,10 +26,20 @@ class RegionalTests(TestCase):
             return statsByRegion(*args, **kwargs)
 
     def test_Raises_error_if_atlas_image_different_size(self):
-        self.img.shape = (1,2,3)
-        self.atlasimg.shape = (3,2,1)
+        self.img.get_data.return_value = self.array3d(
+            [[.3, .4],[ .5, .6], [.6, .7]])
+        self.atlasimg.get_data.return_value = self.array3d(
+            [[ 1,  1,  3],[3,  2,   2]])
         with self.assertRaisesRegexp(ValueError, 'dimensions'):
             self.statsByRegion(['stats.img'],'atlas.img')
+
+    def test_If_two_volumes_assumes_complex_and_uses_first(self):
+        self.img.shape = (3,2,1,2)
+        self.atlasimg.shape = (3,2,1)
+        self.img.get_data.return_value =  numpy.array([[[[3,30]],[[4,40]]],[[[3,30]],[[4,40]]]])
+        self.atlasimg.get_data.return_value = numpy.array([[[0],[0]],[[0],[0]]])
+        out = self.statsByRegion(['stats.img'],'atlas.img')
+        assert_array_almost_equal(numpy.array([3.5]), out['average'])
 
     def test_Average(self):
         self.img.get_data.return_value = self.array3d(

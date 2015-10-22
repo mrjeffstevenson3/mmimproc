@@ -20,7 +20,7 @@ for session in sessions:
 for scantype in scansByType.keys():
     print('{0} {1}'.format(scantype.ljust(25), len(scansByType[scantype])))
 
-atlasfile = 'all_seir_t1map_mni_mask.nii.gz'
+atlasfile = 'all_seir_t1map_mni_mask_1slice.nii.gz'
 vialAtlas = join('data','phantoms',atlasfile)
 labels = atlaslabels(atlasfile)
 nvials = len(labels)
