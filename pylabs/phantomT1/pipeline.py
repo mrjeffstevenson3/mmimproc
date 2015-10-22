@@ -20,8 +20,8 @@ for session in sessions:
 for scantype in scansByType.keys():
     print('{0} {1}'.format(scantype.ljust(25), len(scansByType[scantype])))
 
-atlasfile = 'JHU_MNI_SS_WMPM_Type_I_matched.nii.gz'
-vialAtlas = join('data','atlases',atlasfile)
+atlasfile = 'all_seir_t1map_mni_mask.nii.gz'
+vialAtlas = join('data','phantoms',atlasfile)
 labels = atlaslabels(atlasfile)
 nvials = len(labels)
 # loop over scantypes here..
@@ -39,3 +39,5 @@ for t, phantom in enumerate(scans):
 # plot development over time for each vial
 plt.plot(numpy.arange(ntimepoints), vialTimeseries) 
 plt.show()
+
+# data/phantoms/all_seir_t1map_mni_mask.nii.gz
