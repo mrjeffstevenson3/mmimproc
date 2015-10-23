@@ -1,9 +1,14 @@
+import warnings
 import numpy
 import nibabel
 from scipy.optimize import curve_fit
 
 
+def irformula(x, a, b, c):
+    return numpy.abs(a * (1 - b * numpy.exp(-x/c)))
+
 def t1fitCombinedFile(combinedFile, X, scantype='IR'):
+    X = numpy.array(X)
     t1filename = combinedFile.replace('.nii','_t1.nii')
     img = nibabel.load(combinedFile)
     nx = len(X)
@@ -11,12 +16,34 @@ def t1fitCombinedFile(combinedFile, X, scantype='IR'):
     if not nx == ny:
         msg = 'Number of parameters ({0}) does not match number of images ({1}).'
         raise ValueError(msg.format(nx, ny))
+    dims = img.shape[:3]
+    t1data = numpy.zeros(dims)
+    data = img.get_data()
+    for x in range(dims[0]):
+        for y in range(dims[1]):
+            for z in range(dims[2]):
+                Y = data[x, y, z, :]
+                try:
+                    with warnings.catch_warnings():
+                        warnings.simplefilter("ignore")
+                        if scantype == 'IR':
+                            ai = Y[X.argmax()]
+                            bi = 2
+                            ci = 1000
+                            p0=[ai, bi, ci]
+                            popt, pcov = curve_fit(irformula, X, Y, p0=p0)
+                            t1data[x,y,z] = popt[2]
+                        else:
+                            raise ValueError('Unknown scantype: '+scantype)
+                except RuntimeError:
+                    pass
+    t1img = nibabel.Nifti1Image(t1data, img.get_affine())
+    nibabel.save(t1img, t1filename)
     return t1filename
 
 
 
-def irformula(x, a, b, c):
-    return numpy.abs(a * (1 - b * numpy.exp(-x/c)))
+
 
 
 #for coords in data.keys():
