@@ -7,9 +7,10 @@ from scipy.optimize import curve_fit
 def irformula(x, a, b, c):
     return numpy.abs(a * (1 - b * numpy.exp(-x/c)))
 
-def t1fitCombinedFile(combinedFile, X, scantype='IR'):
+def t1fitCombinedFile(combinedFile, X, scantype='IR', t1filename=None):
     X = numpy.array(X)
-    t1filename = combinedFile.replace('.nii','_t1.nii')
+    if t1filename is None:
+        t1filename = combinedFile.replace('.nii','_t1.nii')
     img = nibabel.load(combinedFile)
     nx = len(X)
     ny = img.shape[3]
