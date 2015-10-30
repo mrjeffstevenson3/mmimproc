@@ -2,6 +2,8 @@ import os, sys
 from glob import glob
 from os.path import join as pathjoin
 import collections
+import cPickle, cloud
+from cloud.serialization.cloudpickle import dumps
 from nipype.interfaces import fsl
 from nipype.interfaces.fsl import ExtractROI
 from nipype.interfaces.fsl import ImageMaths
@@ -119,6 +121,8 @@ for dir in phantdirs:
         if scandate != sdate:
             print "Error! found date discrepancy in "+parfile
         TR = int(seir_tr)
+        if TR ==6999:
+            TR = 7000
         seir_counter[seir_ti] += 1
         print parfile, seir_ti, seir_tr, seir_counter.get(seir_ti)
         if seir_ti < 100:
@@ -306,4 +310,5 @@ for dir in phantdirs:
             conv_scans[scandate]['b1map'][0].append(file_pair)
 
 print conv_scans
-
+with open(pathjoin('/'.join(phantdirs[0].split('/')[0:-1]), 'conv_scans_dict.txt'), "wb") as f:
+    f.write(dumps(conv_scans))
