@@ -1,11 +1,25 @@
-import os
+import os, sys
 from glob import glob
 from os.path import join as pathjoin
+import collections
+import cPickle, cloud
+from cloud.serialization.cloudpickle import dumps
+from nipype.interfaces import fsl
+from nipype.interfaces.fsl import ExtractROI
+from nipype.interfaces.fsl import ImageMaths
+from nipype.interfaces.fsl import SpatialFilter
+from nipype.interfaces.fsl import BinaryMaths
+from nipype.interfaces.fsl import SwapDimensions
+from nipype.interfaces.fsl import FLIRT
+from nipype.interfaces.fsl import ApplyXfm
 import niprov
 import nibabel
-from pylabs.conversion.parrec import par_to_nii
+import numpy as np
+import numpy.linalg as npl
+import nibabel.parrec as pr
 from nibabel.volumeutils import fname_ext_ul_case
 from nibabel.filename_parser import splitext_addext
+from pylabs.conversion.parrec import par_to_nii
 from pylabs.correlation.behavior import csv2fslmat
 from pylabs.correlation.regfilt import multiregfilt
 from pylabs.correlation.randpar import multirandpar
@@ -18,95 +32,283 @@ from niprov.options import NiprovOptions
 from pylabs.utils._options import PylabsOptions
 opts = NiprovOptions()
 _opts = PylabsOptions()
-#_opts.nb_radiolo
-opts.dryrun = True
+opts.dryrun = False
 opts.verbose = True
 
+def sort_par_glob (parglob):
+    return sorted(parglob, key=lambda f: int(f.split('_')[-2]))
+
 fs = getlocaldataroot()
-phantdirs = glob(pathjoin(fs, 'phantom_qT1_disc/phantom_qT1_*'))
+phantdirs = sorted(glob(pathjoin(fs, 'phantom_qT1_disc/phantom_qT1_*')), key=lambda f: int(f.split('_')[-1]))
+scanner = phantdirs[0].split('/')[-2]
+scanner = str(scanner.split('_')[-1])
+fslroi = ExtractROI()
+fslfilter = SpatialFilter()
+fslmaths = BinaryMaths()
+fslswapdim = SwapDimensions()
+fslflirt = FLIRT()
+fslapplyxfm = ApplyXfm()
+conv_scans = collections.defaultdict(lambda: collections.defaultdict(lambda: collections.defaultdict(list)))
+
 for dir in phantdirs:
-    phantB1parfile = glob(pathjoin(dir, 'source_parrec/*B1MAP*.PAR'))
-    phantSPGRparfiles = glob(pathjoin(dir, 'source_parrec/*T1_MAP*.PAR'))
-    phantSEIRparfiles = glob(pathjoin(dir, 'source_parrec/*__IR*_128_*.PAR'))
-    phantSEIREPIparfiles = glob(pathjoin(dir, 'source_parrec/*_SEIREPI_*.PAR'))
-    outdir = pathjoin(dir, 'fitted_spgr_qT1')
-    if not os.path.exists(outdir):
-        os.makedirs(outdir)
-    par_to_nii(infile=phantB1parfile[0], outdir=outdir, outfilename='orig_b1map', scaling='dv')
-    c02, c04, c10, c15, c20, c30 = 1, 1, 1, 1, 1, 1
+    spgrdir = pathjoin(dir, 'fitted_spgr_qT1')
+    seirdir = pathjoin(dir, 'fitted_seir_qT1')
+    seirhsdir = pathjoin(dir, 'fitted_seirhs_qT1')
+    seirepidir = pathjoin(dir, 'fitted_seirepi_qT1')
+    tseirdir = pathjoin(dir, 'fitted_tseir_qT1')
+    sdate = dir.split('/')[-1].split('_')[-1]
+    if dir and not os.path.exists(spgrdir):
+        os.makedirs(spgrdir)
+    if scanner == 'disc':
+        phantB1parfile = sort_par_glob(glob(pathjoin(dir, 'source_parrec/*B1MAP*.PAR')))
+        phantSPGRparfiles = sort_par_glob(glob(pathjoin(dir, 'source_parrec/*T1_MAP*.PAR')))
+        phantSEIRparfiles = sort_par_glob(glob(pathjoin(dir, 'source_parrec/*__IR*_128_*.PAR')))
+        phantSEIREPIparfiles = sort_par_glob(glob(pathjoin(dir, 'source_parrec/*_SEIREPI_*.PAR')))
+        phantTSEIRparfiles = sort_par_glob(glob(pathjoin(dir, 'source_parrec/*_IRTSE*.PAR')))
+
+    if scanner == 'slu':
+        phantSPGRparfiles = sort_par_glob(glob(pathjoin(dir, 'source_parrec/*3D_SPGR_*.PAR')))
+        phantSEIRparfiles = sort_par_glob(glob(pathjoin(dir, 'source_parrec/*_IR*_128_CLEAR*.PAR')))
+        phantSEIREPIparfiles = sort_par_glob(glob(pathjoin(dir, 'source_parrec/*_9shots_EPI11_*.PAR')))
+        phantSEIRHSparfiles = sort_par_glob(glob(pathjoin(dir, 'source_parrec/*_IR*_128_HS*.PAR')))
+        phantTSEIRparfiles = sort_par_glob(glob(pathjoin(dir, 'source_parrec/*_IRTSE*.PAR')))
+
+    scaling = 'fp'
+    spgr_counter = collections.defaultdict(int)
     for parfile in phantSPGRparfiles:
         parbasename = os.path.basename(parfile)
-        parname = os.path.basename(parfile).split('.')[0]
-        parname = parname.replace('-', '_')
-        iter_fields = iter(parname.split('_'))
-        for fields in iter_fields:
-            next(iter_fields, None)
-            next(iter_fields, None)
-            next(iter_fields, None)
-            next(iter_fields, None)
-            if fields[0:2] == '02':
-                outspgrfile = str('orig_spgr_flip_02_'+str(c02))
-                c02 +=1
-            if fields[0:2] == '04':
-                outspgrfile = str('orig_spgr_flip_04_'+str(c04))
-                c04 +=1
-            if fields[0:2] == '10':
-                outspgrfile = str('orig_spgr_flip_10_'+str(c10))
-                c10 +=1
-            if fields[0:2] == '15':
-                outspgrfile = str('orig_spgr_flip_15_'+str(c15))
-                c15 +=1
-            if fields[0:2] == '20':
-                outspgrfile = str('orig_spgr_flip_20_'+str(c20))
-                c20 +=1
-            if fields[0:2] == '30':
-                outspgrfile = str('orig_spgr_flip_30_'+str(c30))
-                c30 +=1
-        outdir = pathjoin(dir, 'fitted_spgr_qT1')
-        if not os.path.exists(outdir):
-            os.makedirs(outdir)
-        par_to_nii(infile=parfile, outdir=outdir, outfilename=outspgrfile, scaling='fp')
-    outdir = pathjoin(dir, 'fitted_seir_qT1')
-    if not os.path.exists(outdir):
-        os.makedirs(outdir)
-    ir500, ir1500, ir3000 = 1, 1, 1
+        infile = fname_ext_ul_case(parfile)
+        pr_img = pr.load(infile, permit_truncated=False, scaling=scaling)
+        pr_hdr = pr_img.header
+        flipangle = int(pr_hdr.__getattribute__('image_defs')[0][29])
+        spgr_tr = int(pr_hdr.__getattribute__('general_info').get('repetition_time'))
+        scandate = pr_hdr.__getattribute__('general_info').get('exam_date').split('/')[0].strip().replace(".","")
+        if scandate != sdate:
+            print "Error! found date discrepancy in "+parfile
+        TR = int(spgr_tr)
+        spgr_counter[flipangle] += 1
+        print parfile, flipangle, spgr_tr, spgr_counter.get(flipangle)
+        if flipangle < 10:
+            outspgrfile = 'orig_spgr_fa_0'+str(flipangle)+'_'+str(spgr_counter.get(flipangle))
+        if flipangle >= 10:
+            outspgrfile = 'orig_spgr_fa_'+str(flipangle)+'_'+str(spgr_counter.get(flipangle))
+        if parfile and not os.path.exists(spgrdir):
+            os.makedirs(spgrdir)
+        par_to_nii(infile=parfile, outdir=spgrdir, outfilename=outspgrfile, scaling=scaling)
+        if scandate == '20141108':
+            if flipangle < 10:
+                swap_spgr = fslswapdim.run(in_file=pathjoin(spgrdir, 'orig_spgr_fa_0'+str(flipangle)+'_'+str(spgr_counter.get(flipangle))+'.nii'), new_dims=('-x', 'y', 'z'), out_file=pathjoin(spgrdir, 'swap_spgr_fa_0'+str(flipangle)+'_'+str(spgr_counter.get(flipangle))+'.nii'), output_type='NIFTI' )
+                outspgrfile = 'swap_spgr_fa_0'+str(flipangle)+'_'+str(spgr_counter.get(flipangle))
+            if flipangle >= 10:
+                swap_spgr = fslswapdim.run(in_file=pathjoin(spgrdir, 'orig_spgr_fa_'+str(flipangle)+'_'+str(spgr_counter.get(flipangle))+'.nii'), new_dims=('-x', 'y', 'z'), out_file=pathjoin(spgrdir, 'swap_spgr_fa_'+str(flipangle)+'_'+str(spgr_counter.get(flipangle))+'.nii'), output_type='NIFTI' )
+                outspgrfile = 'swap_spgr_fa_'+str(flipangle)+'_'+str(spgr_counter.get(flipangle))
+        file_fa_pair = (outspgrfile, flipangle)
+        conv_scans[scandate]['spgr'][TR].append(file_fa_pair)
+
+
+        #b1corrected_spgr = fslmaths.run(in_file=pathjoin(spgrdir, outspgrfile+'.nii.gz'), operand_file=pathjoin(spgrdir, b1mapfile+'.nii.gz',  output_datatype='float'))
+
+    scaling = 'fp'
+    seir_counter = collections.defaultdict(int)
     for parfile in phantSEIRparfiles:
         parbasename = os.path.basename(parfile)
-        parname = os.path.basename(parfile).split('.')[0]
-        for fields in parname.split('_'):
-            if fields == '__IR500_128':
-                outirfile = str('orig_seir_ti_0500_'+str(i50))
-                ir500 +=1
-            if fields == '__IR1500_128':
-                outirfile = str('orig_seir_ti_1500_'+str(i50))
-                ir1500 +=1
-            if fields == '__IR3000_128':
-                outirfile = str('orig_seir_ti_3000_'+str(i50))
-                ir3000 +=1
-        if not os.path.exists(outdir):
-            os.makedirs(outdir)
-        par_to_nii(infile=parfile, outdir=outdir, outfilename=outspgrfile, scaling='dv')
-    outdir = pathjoin(dir, 'fitted_seirepi_qT1')
-    i50, i400, i1200, i2400, i4000 = 1, 1, 1, 1, 1
+        infile = fname_ext_ul_case(parfile)
+        pr_img = pr.load(infile, permit_truncated=False, scaling=scaling)
+        pr_hdr = pr_img.header
+        seir_ti = int(pr_hdr.__getattribute__('image_defs')[0][34])
+        seir_tr = int(pr_hdr.__getattribute__('general_info').get('repetition_time'))
+        scandate = pr_hdr.__getattribute__('general_info').get('exam_date').split('/')[0].strip().replace(".", "")
+        if scandate != sdate:
+            print "Error! found date discrepancy in "+parfile
+        TR = int(seir_tr)
+        if TR ==6999:
+            TR = 7000
+        seir_counter[seir_ti] += 1
+        print parfile, seir_ti, seir_tr, seir_counter.get(seir_ti)
+        if seir_ti < 100:
+            outseirfile = 'orig_seir_ti_00'+str(seir_ti)+'_'+str(seir_counter.get(seir_ti))
+        if seir_ti >= 100 and seir_ti < 1000:
+            outseirfile = 'orig_seir_ti_0'+str(seir_ti)+'_'+str(seir_counter.get(seir_ti))
+        if seir_ti >= 1000:
+            outseirfile = 'orig_seir_ti_'+str(seir_ti)+'_'+str(seir_counter.get(seir_ti))
+        if parfile and not os.path.exists(seirdir):
+            os.makedirs(seirdir)
+        par_to_nii(infile=parfile, outdir=seirdir, outfilename=outseirfile, scaling=scaling)
+        if scandate == '20141108':
+            if seir_ti < 100:
+                swap_seir = fslswapdim.run(in_file=pathjoin(seirdir, 'orig_seir_ti_00'+str(seir_ti)+'_'+str(seir_counter.get(seir_ti))+'.nii'), new_dims=('-x', 'y', 'z'), out_file=pathjoin(seirdir, 'orig_seir_ti_00'+str(seir_ti)+'_'+str(seir_counter.get(seir_ti))+'.nii'), output_type='NIFTI' )
+                outseirfile = 'swap_seir_ti_00'+str(seir_ti)+'_'+str(seir_counter.get(seir_ti))
+            if seir_ti >= 100 and seir_ti < 1000:
+                swap_seir = fslswapdim.run(in_file=pathjoin(seirdir, 'orig_seir_ti_0'+str(seir_ti)+'_'+str(seir_counter.get(seir_ti))+'.nii'), new_dims=('-x', 'y', 'z'), out_file=pathjoin(seirdir, 'orig_seir_ti_0'+str(seir_ti)+'_'+str(seir_counter.get(seir_ti))+'.nii'), output_type='NIFTI' )
+                outseirfile = 'swap_seir_ti_0'+str(seir_ti)+'_'+str(seir_counter.get(seir_ti))
+            if seir_ti >= 1000:
+                swap_seir = fslswapdim.run(in_file=pathjoin(seirdir, 'orig_seir_ti_'+str(seir_ti)+'_'+str(seir_counter.get(seir_ti))+'.nii'), new_dims=('-x', 'y', 'z'), out_file=pathjoin(seirdir, 'orig_seir_ti_00'+str(seir_ti)+'_'+str(seir_counter.get(seir_ti))+'.nii'), output_type='NIFTI' )
+                outseirfile = 'swap_seir_ti_'+str(seir_ti)+'_'+str(seir_counter.get(seir_ti))
+        file_ti_pair = (outseirfile, int(seir_ti))
+        conv_scans[scandate]['seir'][TR].append(file_ti_pair)
+
+    if scanner == 'slu':
+        scaling = 'fp'
+        if not os.path.exists(seirhsdir):
+            os.makedirs(seirhsdir)
+        seirhs_counter = collections.defaultdict(int)
+        for parfile in phantSEIRHSparfiles:
+            parbasename = os.path.basename(parfile)
+            infile = fname_ext_ul_case(parfile)
+            pr_img = pr.load(infile, permit_truncated=False, scaling=scaling)
+            pr_hdr = pr_img.header
+            seirhs_ti = int(pr_hdr.__getattribute__('image_defs')[0][34])
+            seirhs_tr = int(pr_hdr.__getattribute__('general_info').get('repetition_time'))
+            scandate = pr_hdr.__getattribute__('general_info').get('exam_date').split('/')[0].strip().replace(".","")
+            TR = int(seirhs_tr)
+            if scandate != sdate:
+                print "Error! found date discrepancy in "+parfile
+            seirhs_counter[seirhs_ti] += 1
+            if seirhs_ti < 100:
+                outseirhsfile = 'orig_seirhs_ti_00'+str(seirhs_ti)+'_'+str(seirhs_counter.get(seirhs_ti))
+            if seirhs_ti >= 100 and invtime < 1000:
+                outseirhsfile = 'orig_seirhs_ti_0'+str(seirhs_ti)+'_'+str(seirhs_counter.get(seirhs_ti))
+            if seirhs_ti >= 1000:
+                outseirhsfile = 'orig_seirhs_ti_'+str(seirhs_ti)+'_'+str(seirhs_counter.get(seirhs_ti))
+            if parfile and not os.path.exists(seirhsdir):
+                os.makedirs(seirhsdir)
+            par_to_nii(infile=parfile, outdir=seirhsdir, outfilename=outseirhsfile, scaling=scaling)
+            if scandate == '20141108':
+                if seirhs_ti < 100:
+                    swap_seirhs = fslswapdim.run(in_file=pathjoin(seirhsdir, 'orig_seirhs_ti_00'+str(seirhs_ti)+'_'+str(seirhs_counter.get(seirhs_ti))+'.nii'), new_dims=('-x', 'y', 'z'), out_file=pathjoin(seirhsdir, 'swap_seirhs_ti_00'+str(seirhs_ti)+'_'+str(seirhs_counter.get(seirhs_ti))+'.nii'), output_type='NIFTI' )
+                    outseirhsfile = 'swap_seirhs_ti_'+str(seirhs_ti)+'_'+str(seirhs_counter.get(seirhs_ti))
+                if seirhs_ti >= 100 and seirhs_ti < 1000:
+                    swap_seirhs = fslswapdim.run(in_file=pathjoin(seirhsdir, 'orig_seirhs_ti_0'+str(seirhs_ti)+'_'+str(seirhs_counter.get(seirhs_ti))+'.nii'), new_dims=('-x', 'y', 'z'), out_file=pathjoin(seirhsdir, 'swap_seirhs_ti_0'+str(seirhs_ti)+'_'+str(seirhs_counter.get(seirhs_ti))+'.nii'), output_type='NIFTI' )
+                    outseirhsfile = 'swap_seirhs_ti_'+str(seirhs_ti)+'_'+str(seirhs_counter.get(seirhs_ti))
+                if seirhs_ti >= 1000:
+                    swap_seirhs = fslswapdim.run(in_file=pathjoin(seirhsdir, 'orig_seirhs_ti_'+str(seirhs_ti)+'_'+str(seirhs_counter.get(seirhs_ti))+'.nii'), new_dims=('-x', 'y', 'z'), out_file=pathjoin(seirhsdir, 'swap_seirhs_ti_'+str(seirhs_ti)+'_'+str(seirhs_counter.get(seirhs_ti))+'.nii'), output_type='NIFTI' )
+                    outseirhsfile = 'swap_seirhs_ti_'+str(seirhs_ti)+'_'+str(seirhs_counter.get(seirhs_ti))
+            file_seirhs_pair = (outseirhsfile, seirhs_ti)
+            conv_scans[scandate]['seirhs'][TR].append(file_seirhs_pair)
+
+    scaling = 'fp'
+    if not os.path.exists(seirepidir):
+        os.makedirs(seirepidir)
+    seirepi_counter = collections.defaultdict(int)
     for parfile in phantSEIREPIparfiles:
         parbasename = os.path.basename(parfile)
-        parname = os.path.basename(parfile).split('.')[0]
-        for fields in parname.split('_'):
-            if fields == 'TI0050':
-                outirfile = str('orig_seirepi_ti_0050_'+str(i50))
-                i50 +=1
-            if fields == 'TI0400':
-                outirfile = str('orig_seirepi_ti_0400_'+str(i50))
-                i400 +=1
-            if fields == 'TI1200':
-                outirfile = str('orig_seirepi_ti_1200_'+str(i50))
-                i1200 +=1
-            if fields == 'TI2400':
-                outirfile = str('orig_seirepi_ti_2400_'+str(i50))
-                i2400 +=1
-            if fields == 'TI4000':
-                outirfile = str('orig_seirepi_ti_4000_'+str(i50))
-                i4000 +=1
-        if not os.path.exists(outdir):
-            os.makedirs(outdir)
-        par_to_nii(infile=parfile, outdir=outdir, outfilename=outspgrfile, scaling='dv')
+        infile = fname_ext_ul_case(parfile)
+        pr_img = pr.load(infile, permit_truncated=False, scaling=scaling)
+        pr_hdr = pr_img.header
+        seirepi_ti = int(pr_hdr.__getattribute__('image_defs')[0][34])
+        seirepi_tr = int(pr_hdr.__getattribute__('general_info').get('repetition_time'))
+        scandate = pr_hdr.__getattribute__('general_info').get('exam_date').split('/')[0].strip().replace(".","")
+        if scandate != sdate:
+            print "Error! found date discrepancy in "+parfile
+        TR = int(seirepi_tr)
+        seirepi_counter[seirepi_ti] += 1
+        print parfile, seirepi_ti, seirepi_tr, seirepi_counter.get(seirepi_ti)
+        if seirepi_ti < 100:
+            outseirepifile = 'orig_seirepi_ti_00'+str(seirepi_ti)+'_'+str(seirepi_counter.get(seirepi_ti))
+        if seirepi_ti >= 100 and seirepi_ti < 1000:
+            outseirepifile = 'orig_seirepi_ti_0'+str(seirepi_ti)+'_'+str(seirepi_counter.get(seirepi_ti))
+        if seir_ti >= 1000:
+            outseirepifile = 'orig_seirepi_ti_'+str(seirepi_ti)+'_'+str(seirepi_counter.get(seirepi_ti))
+        if parfile and not os.path.exists(seirepidir):
+            os.makedirs(seirepidir)
+        par_to_nii(infile=parfile, outdir=seirepidir, outfilename=outseirepifile, scaling=scaling)
+        if scandate == '20141108':
+            if seirepi_ti < 100:
+                swap_seirepi = fslswapdim.run(in_file=pathjoin(seirepidir, 'orig_seirepi_ti_00'+str(seirepi_ti)+'_'+str(seirepi_counter.get(seirepi_ti))+'.nii'), new_dims=('-x', 'y', 'z'), out_file=pathjoin(seirepidir, 'swap_seirepi_ti_00'+str(seirepi_ti)+'_'+str(seirepi_counter.get(seirepi_ti))+'.nii'), output_type='NIFTI' )
+                outseirepifile = 'swap_seirepi_ti_00'+str(seirepi_ti)+'_'+str(seirepi_counter.get(seirepi_ti))
+            if seirepi_ti >= 100 and seirepi_ti < 1000:
+                swap_seirepi = fslswapdim.run(in_file=pathjoin(seirepidir, 'orig_seirepi_ti_0'+str(seirepi_ti)+'_'+str(seirepi_counter.get(seirepi_ti))+'.nii'), new_dims=('-x', 'y', 'z'), out_file=pathjoin(seirepidir, 'swap_seirepi_ti_0'+str(seirepi_ti)+'_'+str(seirepi_counter.get(seirepi_ti))+'.nii'), output_type='NIFTI' )
+                outseirepifile = 'swap_seirepi_ti_0'+str(seirepi_ti)+'_'+str(seirepi_counter.get(seirepi_ti))
+            if seir_ti >= 1000:
+                swap_seirepi = fslswapdim.run(in_file=pathjoin(seirepidir, 'orig_seirepi_ti_'+str(seirepi_ti)+'_'+str(seirepi_counter.get(seirepi_ti))+'.nii'), new_dims=('-x', 'y', 'z'), out_file=pathjoin(seirepidir, 'swap_seirepi_ti_'+str(seirepi_ti)+'_'+str(seirepi_counter.get(seirepi_ti))+'.nii'), output_type='NIFTI' )
+                outseirepifile = 'swap_seirepi_ti_'+str(seirepi_ti)+'_'+str(seirepi_counter.get(seirepi_ti))
+        file_seirepi_pair = (outseirepifile, seirepi_ti)
+        conv_scans[scandate]['seirepi'][TR].append(file_seirepi_pair)
+
+
+    scaling = 'fp'
+    tseir_counter = collections.defaultdict(int)
+    for parfile in phantTSEIRparfiles:
+        parbasename = os.path.basename(parfile)
+        infile = fname_ext_ul_case(parfile)
+        pr_img = pr.load(infile, permit_truncated=False, scaling=scaling)
+        pr_hdr = pr_img.header
+        tseir_ti = int(pr_hdr.__getattribute__('image_defs')[0][34])
+        tseir_tr = int(pr_hdr.__getattribute__('general_info').get('repetition_time'))
+        scandate = pr_hdr.__getattribute__('general_info').get('exam_date').split('/')[0].strip().replace(".","")
+        TR = int(tseir_tr)
+        if scandate != sdate:
+            print "Error! found date discrepancy in "+parfile
+        tseir_counter[tseir_ti] += 1
+        print parfile, tseir_ti, tseir_tr, tseir_counter.get(tseir_ti)
+        if tseir_ti < 100:
+            outtseirfile = 'orig_tseir_ti_00'+str(tseir_ti)+'_'+str(tseir_counter.get(tseir_ti))
+        if tseir_ti >= 100 and tseir_ti < 1000:
+            outtseirfile = 'orig_tseir_ti_0'+str(tseir_ti)+'_'+str(tseir_counter.get(tseir_ti))
+        if tseir_ti >= 1000:
+            outtseirfile = 'orig_tseir_ti_'+str(tseir_ti)+'_'+str(tseir_counter.get(tseir_ti))
+        if parfile and not os.path.exists(tseirdir):
+            os.makedirs(tseirdir)
+        par_to_nii(infile=parfile, outdir=tseirdir, outfilename=outtseirfile, scaling=scaling)
+        if scandate == '20141108':
+            if tseir_ti < 100:
+                swap_tseir = fslswapdim.run(in_file=pathjoin(tseirdir, 'orig_tseir_ti_00'+str(tseir_ti)+'_'+str(tseir_counter.get(tseir_ti))+'.nii'), new_dims=('-x', 'y', 'z'), out_file=pathjoin(tseirdir, 'swap_tseir_ti_00'+str(tseir_ti)+'_'+str(tseir_counter.get(tseir_ti))+'.nii'), output_type='NIFTI' )
+                outtseirfile = 'swap_tseir_ti_00'+str(tseir_ti)+'_'+str(tseir_counter.get(tseir_ti))
+            if tseir_ti >= 100 and tseir_ti < 1000:
+                swap_tseir = fslswapdim.run(in_file=pathjoin(tseirdir, 'orig_tseir_ti_0'+str(tseir_ti)+'_'+str(tseir_counter.get(tseir_ti))+'.nii'), new_dims=('-x', 'y', 'z'), out_file=pathjoin(tseirdir, 'swap_tseir_ti_0'+str(tseir_ti)+'_'+str(tseir_counter.get(tseir_ti))+'.nii'), output_type='NIFTI' )
+                outtseirfile = 'swap_tseir_ti_0'+str(tseir_ti)+'_'+str(tseir_counter.get(tseir_ti))
+            if tseir_ti >= 1000:
+                swap_tseir = fslswapdim.run(in_file=pathjoin(tseirdir, 'orig_tseir_ti_'+str(tseir_ti)+'_'+str(tseir_counter.get(tseir_ti))+'.nii'), new_dims=('-x', 'y', 'z'), out_file=pathjoin(tseirdir, 'swap_tseir_ti_'+str(tseir_ti)+'_'+str(tseir_counter.get(tseir_ti))+'.nii'), output_type='NIFTI' )
+                outtseirfile = 'swap_tseir_ti_'+str(tseir_ti)+'_'+str(tseir_counter.get(tseir_ti))
+        file_tseir_pair = (outtseirfile, tseir_ti)
+        conv_scans[scandate]['tseir'][TR].append(file_tseir_pair)
+
+
+#prepare b1 map for correction
+    if scanner == 'disc':
+        b1map_counter = collections.defaultdict(int)
+        for parfile in phantB1parfile:
+            scaling = 'dv'
+            parbasename = os.path.basename(parfile)
+            infile = fname_ext_ul_case(parfile)
+            pr_img = pr.load(infile, permit_truncated=False, scaling=scaling)
+            pr_hdr = pr_img.header
+            scandate = pr_hdr.__getattribute__('general_info').get('exam_date').split('/')[0].strip().replace(".", "")
+            if scandate != sdate:
+                print "Error! found date discrepancy in "+parfile
+            b1map_counter[scandate] += 1
+            outb1mapfile = str('orig_b1map_'+str(b1map_counter.get(scandate)))
+            par_to_nii(infile=parfile, outdir=spgrdir, outfilename=outb1mapfile, scaling='dv')
+            if scandate == '20141108':
+                swap_b1map = fslswapdim.run(in_file=pathjoin(spgrdir, outb1mapfile+'.nii'), new_dims=('-x', 'y', 'z'), out_file=pathjoin(spgrdir, 'swap_b1map_phase_'+str(b1map_counter.get(scandate))+'.nii'), output_type='NIFTI' )
+                outb1mapfile = 'swap_b1map_phase_'+str(b1map_counter.get(scandate))
+            orig_b1map_phase = fslroi.run(in_file=pathjoin(spgrdir, outb1mapfile+'.nii'), roi_file=pathjoin(spgrdir, 'orig_b1map_phase_'+str(b1map_counter.get(scandate))+'.nii.gz'), t_min=2, t_size=1)
+            orig_b1map_mag = fslroi.run(in_file=pathjoin(spgrdir, outb1mapfile+'.nii'),
+                                        roi_file=pathjoin(spgrdir, 'orig_b1map_mag_'+str(b1map_counter.get(scandate))+'.nii.gz'),
+                                        t_min=0, t_size=1)
+            fslfilter.inputs.in_file = pathjoin(spgrdir, 'orig_b1map_phase_'+str(b1map_counter.get(scandate))+'.nii.gz')
+            fslfilter.inputs.out_file = pathjoin(spgrdir, 'b1map_phase_medfilt6_'+str(b1map_counter.get(scandate))+'.nii.gz')
+            fslfilter.inputs.kernel_shape = 'box'
+            fslfilter.inputs.kernel_size = 6
+            fslfilter.inputs.operation = 'median'
+            fslfilter.run()
+            mfilt_b1map_phase_sl16 = fslroi.run(in_file=pathjoin(spgrdir, 'b1map_phase_medfilt6_'+str(b1map_counter.get(scandate))+'.nii.gz'),
+                                                roi_file=pathjoin(spgrdir, 'b1map_phase_medfilt6_sl16_'+str(b1map_counter.get(scandate))+'.nii.gz'),
+                                                x_min=0, x_size=-1, y_min=0, y_size=-1, z_min=15, z_size=1)
+            b1mapfile_1sl = 'b1map_phase_medfilt6_sl16_'+str(b1map_counter.get(scandate))
+            b1mapfile = 'b1map_phase_medfilt6_'+str(b1map_counter.get(scandate))
+            fslapplyxfm.inputs.in_file = pathjoin(spgrdir, b1mapfile+'.nii.gz')
+            fslapplyxfm.inputs.reference = pathjoin(spgrdir, outspgrfile+'.nii')
+            fslapplyxfm.inputs.out_file = pathjoin(spgrdir, b1mapfile+'_reg2spgr.nii.gz')
+            fslapplyxfm.inputs.in_matrix_file = str(os.environ.get('FSLDIR'))+'/etc/flirtsch/ident.mat'
+            fslapplyxfm.inputs.interp = 'nearestneighbour'
+            fslapplyxfm.inputs.apply_xfm = True
+            b1mapfile_reg2spgr = fslapplyxfm.run()
+            if b1map_counter.get(scandate) > 1:
+                print 'Danger more than one b1 map file detected! '+parfile
+            file_pair = (b1mapfile, b1mapfile_1sl, 'orig_b1map_mag_'+str(b1map_counter.get(scandate)))
+            conv_scans[scandate]['b1map'][0].append(file_pair)
+
+print conv_scans
+with open(pathjoin('/'.join(phantdirs[0].split('/')[0:-1]), 'conv_scans_dict.txt'), "wb") as f:
+    f.write(dumps(conv_scans))

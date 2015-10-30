@@ -41,7 +41,7 @@ def error(msg, exit_code):
     sys.stderr.write(msg + '\n')
     sys.exit(exit_code)
 #defaults
-verbose = True
+verbose = False
 
 def printmessage(msg, indent=0):
     if verbose:
