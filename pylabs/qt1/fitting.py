@@ -9,6 +9,7 @@ def irformula(x, a, b, c):
     return numpy.abs(a * (1 - b * exp(-x/c)))
 
 def spgrformula(x, a, b):
+    TR = spgrformula.TR
     return a * ((1-exp(-TR/b))/(1-cos(x)*exp(-TR/b))) * sin(x)
 
 def t1fit(files, X, maskfile=None, scantype='IR', t1filename=None):
@@ -62,7 +63,7 @@ def t1fit(files, X, maskfile=None, scantype='IR', t1filename=None):
                     ai = Y[X.argmax()]  # S0
                     bi = 1000           # T1
                     p0=[ai, bi]
-                    TR = 2000
+                    spgrformula.TR = 2000
                     popt, pcov = curve_fit(spgrformula, X, Y, p0=p0)
                     t1data[v] = popt[1]
                 else:
