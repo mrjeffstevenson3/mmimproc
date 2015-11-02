@@ -2,10 +2,14 @@ import warnings
 import numpy
 import nibabel
 from scipy.optimize import curve_fit
+from numpy import exp, cos, sin
 
 
 def irformula(x, a, b, c):
-    return numpy.abs(a * (1 - b * numpy.exp(-x/c)))
+    return numpy.abs(a * (1 - b * exp(-x/c)))
+
+def spgrformula(x, a, b):
+    return a * ((1-exp(-TR/b))/(1-cos(x)*exp(-TR/b))) * sin(x)
 
 def t1fit(files, X, maskfile=None, scantype='IR', t1filename=None):
     if t1filename is None:
@@ -41,19 +45,26 @@ def t1fit(files, X, maskfile=None, scantype='IR', t1filename=None):
     t1data = numpy.zeros(data[0].shape)
     for v in range(nvoxels):
         Y = [image[v] for image in data]
-        if maskfile is not None
+        if maskfile is not None:
             if not mask[v]:
                 continue
         try:
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
                 if scantype == 'IR':
-                    ai = Y[X.argmax()]
-                    bi = 2
-                    ci = 1000
+                    ai = Y[X.argmax()]  # S0
+                    bi = 2              # 'z'
+                    ci = 1000           # T1
                     p0=[ai, bi, ci]
                     popt, pcov = curve_fit(irformula, X, Y, p0=p0)
                     t1data[v] = popt[2]
+                elif scantype == 'SPGR':
+                    ai = Y[X.argmax()]  # S0
+                    bi = 1000           # T1
+                    p0=[ai, bi]
+                    TR = 2000
+                    popt, pcov = curve_fit(spgrformula, X, Y, p0=p0)
+                    t1data[v] = popt[1]
                 else:
                     raise ValueError('Unknown scantype: '+scantype)
         except RuntimeError:
@@ -62,23 +73,6 @@ def t1fit(files, X, maskfile=None, scantype='IR', t1filename=None):
     t1img = nibabel.Nifti1Image(t1data, affine)
     nibabel.save(t1img, t1filename)
     return t1filename
-
-
-
-
-
-
-#for coords in data.keys():
-#    print('Running for coordinates: '+coords)
-#    X = numpy.array(data[coords]['x'])
-#    Y = numpy.array(data[coords]['y'])
-
-
-#    ai = Y[0]
-#    bi = 2 # -Y[0]*2
-#    ci = 1000
-#    popt, pcov = curve_fit(irformula, X, Y, p0=[ai, bi, ci])
-#    print('   fitted parameters: a {0} b {1} c {2}'.format(*popt))
 
 
 
