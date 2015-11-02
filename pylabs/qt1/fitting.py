@@ -3,6 +3,7 @@ import numpy
 import nibabel
 from scipy.optimize import curve_fit
 from numpy import exp, cos, sin
+from pylabs.utils import progress
 
 
 def irformula(x, a, b, c):
@@ -45,6 +46,7 @@ def t1fit(files, X, maskfile=None, scantype='IR', t1filename=None):
     nvoxels = data[0].size
     t1data = numpy.zeros(data[0].shape)
     for v in range(nvoxels):
+        progress.progressbar(v, nvoxels)
         Y = [image[v] for image in data]
         if maskfile is not None:
             if not mask[v]:
