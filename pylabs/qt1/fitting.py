@@ -7,51 +7,47 @@ from scipy.optimize import curve_fit
 def irformula(x, a, b, c):
     return numpy.abs(a * (1 - b * numpy.exp(-x/c)))
 
-def t1fitCombinedFile(combinedFile, X, scantype='IR', t1filename=None):
+def t1fit(files, X, scantype='IR', t1filename=None):
     if t1filename is None:
-        t1filename = combinedFile.replace('.nii','_t1.nii')
-    img = nibabel.load(combinedFile)
-    affine = img.get_affine()
-    data = img.get_data()
-    t1fit(data, X, scantype=scantype, t1filename=t1filename, affine=affine)
+        t1filename = 't1_fit.nii.gz'
 
-def t1fitSeparateFiles(files, X, scantype='IR', t1filename=None):
-    imgs = [nibabel.load(f) for f in files]
-    anImg = imgs[0]
+    if isinstance(files, basestring):
+        anImg = nibabel.load(files)
+        imageDimensions = anImg.shape[:-1]
+        data = [anImg.get_data()[...,i].ravel() for i in range(anImg.shape[-1])]
+    else:
+        anImg = nibabel.load(files[0])
+        imageDimensions = anImg.shape
+        data = [nibabel.load(f).get_data().ravel() for f in files]
     affine = anImg.get_affine()
-    nimgs = len(imgs)
-    data = numpy.zeros((anImg.shape+(nimgs,)))
-    for i, img in enumerate(imgs):
-        data[:,:,:,i] = img.get_data()
-    t1fit(data, X, scantype=scantype, t1filename=t1filename, affine=affine)
-
-def t1fit(data, X, scantype='IR', t1filename=None, affine=None):
     X = numpy.array(X)
     nx = len(X)
-    ny = data.shape[3]
+    ny = len(data)
+    msg = 'Fitting {0} points with image dimensions {1}.'
+    print(msg.format(nx, imageDimensions))
     if not nx == ny:
         msg = 'Number of parameters ({0}) does not match number of images ({1}).'
         raise ValueError(msg.format(nx, ny))
-    dims = data.shape[:3]
-    t1data = numpy.zeros(dims)
-    for x in range(dims[0]):
-        for y in range(dims[1]):
-            for z in range(dims[2]):
-                Y = data[x, y, z, :]
-                try:
-                    with warnings.catch_warnings():
-                        warnings.simplefilter("ignore")
-                        if scantype == 'IR':
-                            ai = Y[X.argmax()]
-                            bi = 2
-                            ci = 1000
-                            p0=[ai, bi, ci]
-                            popt, pcov = curve_fit(irformula, X, Y, p0=p0)
-                            t1data[x,y,z] = popt[2]
-                        else:
-                            raise ValueError('Unknown scantype: '+scantype)
-                except RuntimeError:
-                    pass
+
+    nvoxels = data[0].size
+    t1data = numpy.zeros(data[0].shape)
+    for v in range(nvoxels):
+        Y = [image[v] for image in data]
+        try:
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                if scantype == 'IR':
+                    ai = Y[X.argmax()]
+                    bi = 2
+                    ci = 1000
+                    p0=[ai, bi, ci]
+                    popt, pcov = curve_fit(irformula, X, Y, p0=p0)
+                    t1data[v] = popt[2]
+                else:
+                    raise ValueError('Unknown scantype: '+scantype)
+        except RuntimeError:
+            pass
+    t1data = t1data.reshape(imageDimensions)
     t1img = nibabel.Nifti1Image(t1data, affine)
     nibabel.save(t1img, t1filename)
     return t1filename
