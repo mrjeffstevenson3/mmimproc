@@ -7,7 +7,7 @@ from scipy.optimize import curve_fit
 def irformula(x, a, b, c):
     return numpy.abs(a * (1 - b * numpy.exp(-x/c)))
 
-def t1fit(files, X, scantype='IR', t1filename=None):
+def t1fit(files, X, maskfile=None, scantype='IR', t1filename=None):
     if t1filename is None:
         t1filename = 't1_fit.nii.gz'
 
@@ -19,6 +19,14 @@ def t1fit(files, X, scantype='IR', t1filename=None):
         anImg = nibabel.load(files[0])
         imageDimensions = anImg.shape
         data = [nibabel.load(f).get_data().ravel() for f in files]
+
+    if maskfile is not None:
+        maskImg = nibabel.load(maskfile)
+        if maskImg.shape != imageDimensions:
+            errmsg = 'Mask dimensions {0} not the same as image {1}.'
+            raise ValueError(errmsg.format(maskImg.shape, imageDimensions))
+        mask = maskImg.get_data().ravel()
+
     affine = anImg.get_affine()
     X = numpy.array(X)
     nx = len(X)
@@ -33,6 +41,9 @@ def t1fit(files, X, scantype='IR', t1filename=None):
     t1data = numpy.zeros(data[0].shape)
     for v in range(nvoxels):
         Y = [image[v] for image in data]
+        if maskfile is not None
+            if not mask[v]:
+                continue
         try:
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
