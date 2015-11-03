@@ -77,6 +77,7 @@ def t1fit(files, X, TR=None, maskfile=None, scantype='IR', t1filename=None):
                     raise ValueError('Unknown scantype: '+scantype)
         except RuntimeError:
             pass
+    print('Done.')
     t1data = t1data.reshape(imageDimensions)
     t1img = nibabel.Nifti1Image(t1data, affine)
     nibabel.save(t1img, t1filename)
