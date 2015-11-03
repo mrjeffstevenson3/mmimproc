@@ -18,14 +18,17 @@ with open(imageDictFile) as dfile:
 t1fitImages = defaultdict(lambda: defaultdict(dict)) # method, TR, date
 for sessionString in images.keys():
     date = datetime.datetime.strptime(sessionString, '%Y%m%d').date()
-    sessiondir = subdir = join(datadir,'phantom_qT1_{0}'.format(sessionString))
+    sessiondir = join(datadir,'phantom_qT1_{0}'.format(sessionString))
     for method in images[sessionString].keys():
         if method == 'b1map':
             continue
         subdir = join(sessiondir,'fitted_{0}_qT1'.format(method))
         for TR in images[sessionString][method]:
+            msg = 'Working on session: {0} method: {1} TR: {2}'
+            print(msg.format(date, method.upper(), TR))
             series = images[sessionString][method][TR]
             if len(series) < 3:
+                print('--> Skipping scan, only {0} files'.format(len(series)))
                 continue
             files, X = zip(*sorted(series, key=lambda s: s[1]))
             files = [join(subdir, f+'.nii') for f in files]
