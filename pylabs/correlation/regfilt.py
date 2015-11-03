@@ -15,8 +15,11 @@ def multiregfilt(images, matfile, shell=Shell(), opts=PylabsOptions()):
         cmd = 'fsl_regfilt'
         cmd += ' -i {0}'.format(image)
         cmd += ' -d {0}'.format(matfile)
-        filterindices = ','.join([str(c) for c in range(1, 1 + mat.numwaves)])
-        cmd += ' -f \"{0}\"'.format(filterindices)
+        if mat.numwaves == 1:
+            cmd += ' -f 1'
+        if mat.numwaves > 1:
+           filterindices = ','.join([str(c) for c in range(1, 1 + mat.numwaves)])
+           cmd += ' -f \"{0}\"'.format(filterindices)
         cmd += ' -o {0}'.format(outfile)
         niprov.record(cmd, opts=opts)
         outfiles.append(outfile)
