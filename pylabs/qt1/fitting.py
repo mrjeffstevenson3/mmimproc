@@ -13,7 +13,7 @@ def spgrformula(x, a, b):
     TR = spgrformula.TR
     return a * ((1-exp(-TR/b))/(1-cos(x)*exp(-TR/b))) * sin(x)
 
-def t1fit(files, X, maskfile=None, scantype='IR', t1filename=None):
+def t1fit(files, X, TR=None, maskfile=None, scantype='IR', t1filename=None):
     if t1filename is None:
         t1filename = 't1_fit.nii.gz'
 
@@ -32,6 +32,9 @@ def t1fit(files, X, maskfile=None, scantype='IR', t1filename=None):
             errmsg = 'Mask dimensions {0} not the same as image {1}.'
             raise ValueError(errmsg.format(maskImg.shape, imageDimensions))
         mask = maskImg.get_data().ravel()
+
+    if (scantype == 'SPGR') and (TR is None):
+        raise ValueError('SPGR fitting requires TR argument.')
 
     affine = anImg.get_affine()
     X = numpy.array(X)
@@ -65,7 +68,7 @@ def t1fit(files, X, maskfile=None, scantype='IR', t1filename=None):
                     ai = Y[X.argmax()]  # S0
                     bi = 1000           # T1
                     p0=[ai, bi]
-                    spgrformula.TR = 2000
+                    spgrformula.TR = TR
                     popt, pcov = curve_fit(spgrformula, X, Y, p0=p0)
                     t1data[v] = popt[1]
                 else:
