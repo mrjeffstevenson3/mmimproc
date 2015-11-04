@@ -1,5 +1,5 @@
 from __future__ import print_function
-import os, fnmatch, glob, collections, datetime, cPickle
+import os, fnmatch, glob, collections, datetime, cPickle, sys
 from os.path import join
 from collections import defaultdict
 import numpy
@@ -9,68 +9,106 @@ from pylabs.correlation.atlas import atlaslabels
 from pylabs.utils.paths import getlocaldataroot
 from pylabs.qt1.fitting import t1fit
 
+skipExisting = True
+
 ### FITTING
 
-datadir = join(getlocaldataroot(),'phantom_qT1_disc')
-imageDictFile = join(datadir,'conv_scans_dict.txt')
+rootdir = join(getlocaldataroot(),'phantom_qT1_disc')
+imageDictFile = join(rootdir,'conv_scans_dict.txt')
 with open(imageDictFile) as dfile:
     images = cPickle.load(dfile)
-t1fitImages = defaultdict(lambda: defaultdict(dict)) # method, TR, date
-for sessionString in images.keys():
-    date = datetime.datetime.strptime(sessionString, '%Y%m%d').date()
-    sessiondir = join(datadir,'phantom_qT1_{0}'.format(sessionString))
-    for method in images[sessionString].keys():
-        if method == 'b1map':
-            continue
-        subdir = join(sessiondir,'fitted_{0}_qT1'.format(method))
-        for TR in images[sessionString][method]:
-            msg = 'Working on session: {0} method: {1} TR: {2}'
-            print(msg.format(date, method.upper(), TR))
-            series = images[sessionString][method][TR]
-            if len(series) < 3:
-                print('--> Skipping scan, only {0} files'.format(len(series)))
-                continue
-            files, X = zip(*sorted(series, key=lambda s: s[1]))
-            files = [join(subdir, f+'.nii') for f in files]
-            outdir = join(datadir, 'T1_{0}_TR{1}'.format(method, TR))
-            if not os.path.isdir(outdir):
-                os.mkdir(outdir)
-            fname = 'T1_{0}_TR{1}_{2}'.format(method, TR, sessionString)
-            t1filepath = join(outdir, fname)
-            if method.upper() == 'SPGR':
-                t1fit(files, X, t1filename=t1filepath, scantype='SPGR', TR=TR)
-            else:
-                t1fit(files, X, t1filename=t1filepath)
-            t1fitImages[method][TR][date] = t1filepath
+
+## Reformat multi-level dict into dict keyed by tuples
+runs = {}
+for dateString in images.keys():
+    for method in images[dateString].keys():
+        for TR in images[dateString][method]:
+            for imageTuple in images[dateString][method][TR]:
+                runIndex = int(imageTuple[0].split('_')[-1])
+                runKey = (dateString, method, TR, runIndex)
+                if not runKey in runs:
+                    runs[runKey] = []
+                runs[runKey].append(imageTuple)
+
+t1fitTimeseries = defaultdict(dict) # (method, TR, run) : {date: t1file}
+
+for key, run in runs.items():
+    dateString = key[0]
+    date = datetime.datetime.strptime(dateString, '%Y%m%d').date()
+    method = key[1]
+    TR = key[2]
+    runIndex = key[3]
+
+    if method == 'b1map':
+        continue
+
+    msg = 'Working on session: {0} method: {1} TR: {2} Run: {3}'
+    print(msg.format(date, method.upper(), TR, runIndex))
+
+    datadir = join(rootdir,
+        'phantom_qT1_{0}'.format(dateString),
+        'fitted_{0}_qT1'.format(method))
+    outdir = join(rootdir, 'T1_{0}_TR{1}'.format(method, TR))
+    if not os.path.isdir(outdir):
+        os.mkdir(outdir)
+    fnameTemplate = 'T1_{0}_TR{1}_{2}_{3}.nii.gz'
+    fname = fnameTemplate.format(method, TR, dateString, runIndex)
+    t1filepath = join(outdir, fname)
+
+    if skipExisting and os.path.isfile(t1filepath):
+        print('--> File exists, skipping scan.'.format(len(run)))
+        if not date in t1fitTimeseries[(method, TR)]:
+            t1fitTimeseries[(method, TR)][date] = t1filepath
+
+    if len(run) < 3:
+        print('--> Skipping scan, only {0} files'.format(len(run)))
+        continue
+    files, X = zip(*sorted(run, key=lambda s: s[1]))
+    files = [join(datadir, f+'.nii') for f in files]
+    try:
+        if method.upper() == 'SPGR':
+            t1fit(files, X, t1filename=t1filepath, scantype='SPGR', TR=TR)
+        else:
+            t1fit(files, X, t1filename=t1filepath)
+    except Exception as ex:
+        print('\n--> Error during fitting: ', ex)
+    else:
+        if not date in t1fitTimeseries[(method, TR)]:
+            t1fitTimeseries[(method, TR)][date] = t1filepath
+        else:
+            print('--> Already have a run fitted for this date, '+
+                'this image not passed on down pipeline.')
 
 
-### ATLASSING
+
+#### ATLASSING
 
 atlasfile = 't1_phantom_mask_course.nii.gz'
 vialAtlas = join('data','atlases',atlasfile)
 labels = atlaslabels(atlasfile)
 nvials = len(labels)
 
-for method in t1fitImages.keys():
-    for TR in t1fitImages[method].keys():
-        plotname = '{0}_{1}.png'.format(method, TR)
-        sessions = t1fitImages[method][TR]
+for key, timeseries in t1fitTimeseries.items():
+    method = key[0]
+    TR = key[1]
 
-        dates = sorted(sessions.keys())
-        scansInOrder = [sessions[d] for d in dates]
-        ntimepoints = len(dates)
-        vialTimeseries = numpy.zeros((ntimepoints, nvials))
-        for t, scan in enumerate(scansInOrder):
-            print('Sampling vials for scan {0} of {1}'.format(t,ntimepoints))
-            regionalStats = statsByRegion(scan, vialAtlas)
-            vialTimeseries[t, :] = regionalStats['average']
+    plotname = '{0}_{1}.png'.format(method, TR)
 
-        # Get rid of background
-        vialTimeseries = numpy.delete(vialTimeseries, 0, 1)
-        del labels[0]
+    dates = sorted(timeseries.keys())
+    scansInOrder = [timeseries[d] for d in dates]
+    ntimepoints = len(dates)
+    vialTimeseries = numpy.zeros((ntimepoints, nvials))
+    for t, scan in enumerate(scansInOrder):
+        print('Sampling vials for scan {0} of {1}'.format(t,ntimepoints))
+        regionalStats = statsByRegion(scan, vialAtlas)
+        vialTimeseries[t, :] = regionalStats['average']
 
-        # plot development over time for each vial
-        lines = plt.plot(dates, vialTimeseries) 
-        plt.legend(lines, labels, loc=8)
-        plt.savefig(plotname)
+    # Get rid of background
+    vialTimeseries = numpy.delete(vialTimeseries, 0, 1)
+    del labels[0]
+
+    # plot development over time for each vial
+    lines = plt.plot(dates, vialTimeseries) 
+    plt.legend(lines, labels, loc=8)
+    plt.savefig(plotname)
 
