@@ -59,6 +59,7 @@ for key, run in runs.items():
         print('--> File exists, skipping scan.'.format(len(run)))
         if not date in t1fitTimeseries[(method, TR)]:
             t1fitTimeseries[(method, TR)][date] = t1filepath
+        continue
 
     if len(run) < 3:
         print('--> Skipping scan, only {0} files'.format(len(run)))
