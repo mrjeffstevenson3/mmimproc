@@ -14,9 +14,14 @@ def spgrformula(x, a, b):
     TR = spgrformula.TR
     return a * ((1-exp(-TR/b))/(1-cos(x)*exp(-TR/b))) * sin(x)
 
-def t1fit(files, X, TR=None, maskfile=None, scantype='IR', t1filename=None):
+def t1fit(files, X, TR=None, maskfile=None, scantype='IR', t1filename=None, voiCoords=None):
     if t1filename is None:
         t1filename = 't1_fit.nii.gz'
+
+    voisByIndex = {}
+    if voiCoords:
+        vois = numpy.ravel_multi_index(voiCoords)
+        voisByIndex = {vois[c]:voiCoords[c,:] for c in range(vois.size)}
 
     if isinstance(files, basestring):
         anImg = nibabel.load(files)
@@ -64,17 +69,21 @@ def t1fit(files, X, TR=None, maskfile=None, scantype='IR', t1filename=None):
                     bi = 2              # 'z'
                     ci = 1000           # T1
                     p0=[ai, bi, ci]
-                    popt, pcov = curve_fit(irformula, X, Y, p0=p0)
-                    t1data[v] = popt[2]
+                    formula = irformula
+                    poi = 2
                 elif scantype == 'SPGR':
                     ai = Y[X.argmax()]  # S0
                     bi = 1000           # T1
                     p0=[ai, bi]
                     spgrformula.TR = TR
-                    popt, pcov = curve_fit(spgrformula, X, Y, p0=p0)
-                    t1data[v] = popt[1]
+                    formula = spgrformula
+                    poi = 1
                 else:
                     raise ValueError('Unknown scantype: '+scantype)
+                popt, pcov = curve_fit(formula, X, Y, p0=p0)
+                t1data[v] = popt[poi]
+                if v in voisByIndex:
+                    plotFit(formula, popt, X, Y, t1filename, voisByIndex[v])
         except RuntimeError:
             pass
     print(' ')
@@ -84,14 +93,18 @@ def t1fit(files, X, TR=None, maskfile=None, scantype='IR', t1filename=None):
     return t1filename
 
 
+def plotFit(formula, popt, X, Y, filepath, coords):
+    filename = os.path.basename(filepath).split('.')[0]
+    plotname = '{0}_{1}_fitplot.png'.format(filename, '_'.join(coords))
+    plotpath = join(os.path.dirname(filepath), plotname)
+    Xrange = numpy.arange(1000)
+    fit = [formula(x, *popt) for x in Xrange]
+    plt.plot(Xrange, fit) 
+    plt.plot(X, Y, 'bo')
+    plt.savefig(plotpath)
 
-#    # plot development over time for each vial
-#    Xrange = numpy.arange(5000)
-#    fit = [func(x, *popt) for x in Xrange]
-#    plt.plot(Xrange, fit) 
-#    plt.plot(X, Y, 'bo')
-#    plt.savefig('testT1fit.png')
 
+## zerocrossing
 #    lastval = 10000000
 #    for x in numpy.arange(0,5000,.1):
 #        y = func(x, *popt)
