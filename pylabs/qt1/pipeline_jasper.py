@@ -11,6 +11,10 @@ from pylabs.qt1.fitting import t1fit
 
 skipExisting = True
 
+vialCoords = numpy.array([[64,175,90],[127,174,90],[33,143,90],[95,144,90],
+[156,143,90],[64,113,90],[126,114,90],[33,82,90],[96,82,90],[157,82,90],
+[65,51,90],[127,52,90]])
+
 ### FITTING
 
 rootdir = join(getlocaldataroot(),'phantom_qT1_disc')
@@ -68,9 +72,10 @@ for key, run in runs.items():
     files = [join(datadir, f+'.nii') for f in files]
     try:
         if method.upper() == 'SPGR':
-            t1fit(files, X, t1filename=t1filepath, scantype='SPGR', TR=TR)
+            t1fit(files, X, t1filename=t1filepath, voiCoords=vialCoords,
+                scantype='SPGR', TR=TR)
         else:
-            t1fit(files, X, t1filename=t1filepath)
+            t1fit(files, X, t1filename=t1filepath, voiCoords=vialCoords)
     except Exception as ex:
         print('\n--> Error during fitting: ', ex)
     else:

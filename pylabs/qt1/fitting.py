@@ -14,14 +14,11 @@ def spgrformula(x, a, b):
     TR = spgrformula.TR
     return a * ((1-exp(-TR/b))/(1-cos(x)*exp(-TR/b))) * sin(x)
 
-def t1fit(files, X, TR=None, maskfile=None, scantype='IR', t1filename=None, voiCoords=None):
+def t1fit(files, X, TR=None, maskfile=None, scantype='IR', t1filename=None, 
+    voiCoords=None):
+
     if t1filename is None:
         t1filename = 't1_fit.nii.gz'
-
-    voisByIndex = {}
-    if voiCoords:
-        vois = numpy.ravel_multi_index(voiCoords)
-        voisByIndex = {vois[c]:voiCoords[c,:] for c in range(vois.size)}
 
     if isinstance(files, basestring):
         anImg = nibabel.load(files)
@@ -29,7 +26,9 @@ def t1fit(files, X, TR=None, maskfile=None, scantype='IR', t1filename=None, voiC
         data = [anImg.get_data()[...,i].ravel() for i in range(anImg.shape[-1])]
     else:
         anImg = nibabel.load(files[0])
-        imageDimensions = anImg.shape
+        if len(anImg.shape) > 3:
+            raise ValueError('Image has 4 dimensions.')
+        imageDimensions = anImg.shape 
         data = [nibabel.load(f).get_data().ravel() for f in files]
 
     if maskfile is not None:
@@ -41,6 +40,12 @@ def t1fit(files, X, TR=None, maskfile=None, scantype='IR', t1filename=None, voiC
 
     if (scantype == 'SPGR') and (TR is None):
         raise ValueError('SPGR fitting requires TR argument.')
+
+    voisByIndex = {}
+    if voiCoords is not None:
+        multi_index = tuple([numpy.array(d) for d in voiCoords.T.tolist()])
+        vois = numpy.ravel_multi_index(multi_index, imageDimensions)
+        voisByIndex = {vois[c]:voiCoords[c,:] for c in range(vois.size)}
 
     affine = anImg.get_affine()
     X = numpy.array(X)
