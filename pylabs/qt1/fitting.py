@@ -1,4 +1,4 @@
-import warnings
+import os, warnings
 import numpy
 import nibabel
 from scipy.optimize import curve_fit
@@ -26,8 +26,6 @@ def t1fit(files, X, TR=None, maskfile=None, scantype='IR', t1filename=None,
         data = [anImg.get_data()[...,i].ravel() for i in range(anImg.shape[-1])]
     else:
         anImg = nibabel.load(files[0])
-        if len(anImg.shape) > 3:
-            raise ValueError('Image has 4 dimensions.')
         imageDimensions = anImg.shape 
         data = [nibabel.load(f).get_data().ravel() for f in files]
 
@@ -42,10 +40,12 @@ def t1fit(files, X, TR=None, maskfile=None, scantype='IR', t1filename=None,
         raise ValueError('SPGR fitting requires TR argument.')
 
     voisByIndex = {}
-    if voiCoords is not None:
-        multi_index = tuple([numpy.array(d) for d in voiCoords.T.tolist()])
-        vois = numpy.ravel_multi_index(multi_index, imageDimensions)
-        voisByIndex = {vois[c]:voiCoords[c,:] for c in range(vois.size)}
+## This gets complicated because we don't know if any dimensions are complex instead of spatial
+#    if voiCoords is not None:
+#        multi_index = tuple([numpy.array(d) for d in voiCoords.T.tolist()])
+#        # how many coord dims? this is the number of spatial dims for ravel_index
+#        vois = numpy.ravel_multi_index(multi_index, imageDimensions)
+#        voisByIndex = {vois[c]:voiCoords[c,:] for c in range(vois.size)}
 
     affine = anImg.get_affine()
     X = numpy.array(X)
@@ -99,6 +99,8 @@ def t1fit(files, X, TR=None, maskfile=None, scantype='IR', t1filename=None,
 
 
 def plotFit(formula, popt, X, Y, filepath, coords):
+    import pdb
+    pdb.set_trace()
     filename = os.path.basename(filepath).split('.')[0]
     plotname = '{0}_{1}_fitplot.png'.format(filename, '_'.join(coords))
     plotpath = join(os.path.dirname(filepath), plotname)
