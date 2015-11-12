@@ -1,87 +1,117 @@
-import warnings
+import os, warnings
 import numpy
 import nibabel
 from scipy.optimize import curve_fit
+from numpy import exp, cos, sin
+from pylabs.utils import progress
+from datetime import datetime
 
 
 def irformula(x, a, b, c):
-    return numpy.abs(a * (1 - b * numpy.exp(-x/c)))
+    return numpy.abs(a * (1 - b * exp(-x/c)))
 
-def t1fitCombinedFile(combinedFile, X, scantype='IR', t1filename=None):
+def spgrformula(x, a, b):
+    TR = spgrformula.TR
+    return a * ((1-exp(-TR/b))/(1-cos(x)*exp(-TR/b))) * sin(x)
+
+def t1fit(files, X, TR=None, maskfile=None, scantype='IR', t1filename=None, 
+    voiCoords=None):
+
     if t1filename is None:
-        t1filename = combinedFile.replace('.nii','_t1.nii')
-    img = nibabel.load(combinedFile)
-    affine = img.get_affine()
-    data = img.get_data()
-    t1fit(data, X, scantype=scantype, t1filename=t1filename, affine=affine)
+        t1filename = 't1_fit.nii.gz'
 
-def t1fitSeparateFiles(files, X, scantype='IR', t1filename=None):
-    imgs = [nibabel.load(f) for f in files]
-    anImg = imgs[0]
+    if isinstance(files, basestring):
+        anImg = nibabel.load(files)
+        imageDimensions = anImg.shape[:-1]
+        data = [anImg.get_data()[...,i].ravel() for i in range(anImg.shape[-1])]
+    else:
+        anImg = nibabel.load(files[0])
+        imageDimensions = anImg.shape 
+        data = [nibabel.load(f).get_data().ravel() for f in files]
+
+    if maskfile is not None:
+        maskImg = nibabel.load(maskfile)
+        if maskImg.shape != imageDimensions:
+            errmsg = 'Mask dimensions {0} not the same as image {1}.'
+            raise ValueError(errmsg.format(maskImg.shape, imageDimensions))
+        mask = maskImg.get_data().ravel()
+
+    if (scantype == 'SPGR') and (TR is None):
+        raise ValueError('SPGR fitting requires TR argument.')
+
+    voisByIndex = {}
+## This gets complicated because we don't know if any dimensions are complex instead of spatial
+#    if voiCoords is not None:
+#        multi_index = tuple([numpy.array(d) for d in voiCoords.T.tolist()])
+#        # how many coord dims? this is the number of spatial dims for ravel_index
+#        vois = numpy.ravel_multi_index(multi_index, imageDimensions)
+#        voisByIndex = {vois[c]:voiCoords[c,:] for c in range(vois.size)}
+
     affine = anImg.get_affine()
-    nimgs = len(imgs)
-    data = numpy.zeros((anImg.shape+(nimgs,)))
-    for i, img in enumerate(imgs):
-        data[:,:,:,i] = img.get_data()
-    t1fit(data, X, scantype=scantype, t1filename=t1filename, affine=affine)
-
-def t1fit(data, X, scantype='IR', t1filename=None, affine=None):
     X = numpy.array(X)
     nx = len(X)
-    ny = data.shape[3]
+    ny = len(data)
+    msg = 'Fitting {0} points with image dimensions {1}.'
+    print(msg.format(nx, imageDimensions))
     if not nx == ny:
         msg = 'Number of parameters ({0}) does not match number of images ({1}).'
         raise ValueError(msg.format(nx, ny))
-    dims = data.shape[:3]
-    t1data = numpy.zeros(dims)
-    for x in range(dims[0]):
-        for y in range(dims[1]):
-            for z in range(dims[2]):
-                Y = data[x, y, z, :]
-                try:
-                    with warnings.catch_warnings():
-                        warnings.simplefilter("ignore")
-                        if scantype == 'IR':
-                            ai = Y[X.argmax()]
-                            bi = 2
-                            ci = 1000
-                            p0=[ai, bi, ci]
-                            popt, pcov = curve_fit(irformula, X, Y, p0=p0)
-                            t1data[x,y,z] = popt[2]
-                        else:
-                            raise ValueError('Unknown scantype: '+scantype)
-                except RuntimeError:
-                    pass
+
+    nvoxels = data[0].size
+    t1data = numpy.zeros(data[0].shape)
+    start = datetime.now()
+    for v in range(nvoxels):
+        progress.progressbar(v, nvoxels, start)
+        Y = [image[v] for image in data]
+        if maskfile is not None:
+            if not mask[v]:
+                continue
+        try:
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                if scantype == 'IR':
+                    ai = Y[X.argmax()]  # S0
+                    bi = 2              # 'z'
+                    ci = 1000           # T1
+                    p0=[ai, bi, ci]
+                    formula = irformula
+                    poi = 2
+                elif scantype == 'SPGR':
+                    ai = Y[X.argmax()]  # S0
+                    bi = 1000           # T1
+                    p0=[ai, bi]
+                    spgrformula.TR = TR
+                    formula = spgrformula
+                    poi = 1
+                else:
+                    raise ValueError('Unknown scantype: '+scantype)
+                popt, pcov = curve_fit(formula, X, Y, p0=p0)
+                t1data[v] = popt[poi]
+                if v in voisByIndex:
+                    plotFit(formula, popt, X, Y, t1filename, voisByIndex[v])
+        except RuntimeError:
+            pass
+    print(' ')
+    t1data = t1data.reshape(imageDimensions)
     t1img = nibabel.Nifti1Image(t1data, affine)
     nibabel.save(t1img, t1filename)
     return t1filename
 
 
+def plotFit(formula, popt, X, Y, filepath, coords):
+    import pdb
+    pdb.set_trace()
+    filename = os.path.basename(filepath).split('.')[0]
+    plotname = '{0}_{1}_fitplot.png'.format(filename, '_'.join(coords))
+    plotpath = join(os.path.dirname(filepath), plotname)
+    Xrange = numpy.arange(1000)
+    fit = [formula(x, *popt) for x in Xrange]
+    plt.plot(Xrange, fit) 
+    plt.plot(X, Y, 'bo')
+    plt.savefig(plotpath)
 
 
-
-
-#for coords in data.keys():
-#    print('Running for coordinates: '+coords)
-#    X = numpy.array(data[coords]['x'])
-#    Y = numpy.array(data[coords]['y'])
-
-
-#    ai = Y[0]
-#    bi = 2 # -Y[0]*2
-#    ci = 1000
-#    popt, pcov = curve_fit(irformula, X, Y, p0=[ai, bi, ci])
-#    print('   fitted parameters: a {0} b {1} c {2}'.format(*popt))
-
-
-
-#    # plot development over time for each vial
-#    Xrange = numpy.arange(5000)
-#    fit = [func(x, *popt) for x in Xrange]
-#    plt.plot(Xrange, fit) 
-#    plt.plot(X, Y, 'bo')
-#    plt.savefig('testT1fit.png')
-
+## zerocrossing
 #    lastval = 10000000
 #    for x in numpy.arange(0,5000,.1):
 #        y = func(x, *popt)
