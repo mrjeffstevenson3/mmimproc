@@ -4,7 +4,8 @@ import numpy
 concentrationsFile = 'data/T1_phantom_vials_percGel_gdEDTA_concentrations.csv'
 concentrations = numpy.loadtxt(concentrationsFile)
 
-# read in temperature values by vial and session
+# read in temperature values by session
+import temperaturedata
 
 # establish model
 
