@@ -1,34 +1,39 @@
 from os.path import join
 import glob, datetime
+from datetime import datetime
 import numpy
-import matplotlib.pyplot as plt
+fpath = 'data/T1_phantom_temperature_readings_inventory.csv'
 
-def decodeDatetime(rawstr):
-    fmt ='%m/%d/%y @ %I:%M%p'
-    datetimeStr = rawstr.strip('\t\n').replace('/201','/1')
-    return datetime.datetime.strptime(datetimeStr, fmt)
+class TemperatureRecord(object):
 
-def decodeTemp(rawstr):
-    return float(rawstr.strip('\t\n')[:-1])
+    def __init__(self, cols):
+        self.valid = False
+        self.date = None
+        self.temps = []
+        for c, strval in enumerate(cols):
+            if strval == '':
+                continue
+            if c == 0:
+                self.date = datetime.strptime(strval, '%m/%d/%Y').date()
+            elif c in [2, 4]:
+                self.temps.append(float(strval))
+        if self.date and (len(self.temps) > 1):
+            self.valid = True
 
-tempsdir = '/diskArray/data/scs/phantom_temp_readings'
-sessions = {}
-for fpath in glob.glob(join(tempsdir,'*temp.txt')):
+    def averageTemperature(self):
+        return sum(self.temps)/len(self.temps)
+
+
+def getSessionRecords():
     with open(fpath) as tempfile:
         lines = tempfile.readlines()
-    sessionDate = decodeDatetime(lines[3]).date()
-    dt1 = decodeDatetime(lines[3])
-    T1 = decodeTemp(lines[4])
-    dt2 = decodeDatetime(lines[7])
-    T2 = decodeTemp(lines[8])
-    sessions[sessionDate] = (dt1, T1, dt2, T2)
+    sessions = {}
+    for line in lines[1:]:
+        record = TemperatureRecord(line.split(','))
+        if record.valid:
+            sessions[record.date] = record
+    return sessions
 
-#temps = numpy.zeros(len(sessions), 2)
-for session in sessions.values():
-    duration = session[2] - session[0]
-    X = [0, duration.total_seconds()]
-    Y = [session[1], session[3]]
-    plt.plot(X, Y) 
+if __name__ == '__main__':
+    sessions = getSessionRecords()
 
-
-plt.show()

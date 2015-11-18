@@ -6,6 +6,7 @@ concentrations = numpy.loadtxt(concentrationsFile)
 
 # read in temperature values by session
 import temperaturedata
+sessions = temperaturedata.getSessionRecords()
 
 # establish model
 
