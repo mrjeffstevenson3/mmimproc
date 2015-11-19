@@ -1,18 +1,18 @@
 import numpy, math
 
-# read in constants (concentrations per vial etc)
+## read in constants (concentrations per vial etc)
 concentrationsFile = 'data/T1_phantom_vials_percGel_gdEDTA_concentrations.csv'
 concentrations = numpy.loadtxt(concentrationsFile)
 
-# read in temperature values by session
+## read in temperature values by session
 import pylabs.qt1.temperaturedata
 sessions = temperaturedata.getSessionRecords()
 
-# establish model
-import pylabs.qt1.model
-
-# calculate expected T1 by vial and session
-
+## calculate expected T1 by vial and session
+tempCelcius = sessions.values()[0].averageTemperature()
+T = tempCelcius + 273.15
+from pylabs.qt1.model import expectedT1
+expectedT1(T=T, gel=concentrations[0,1], gado=concentrations[0,2])
 
 ## plot T1 by vial for different temperatures
 ## plot observed
