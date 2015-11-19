@@ -49,7 +49,7 @@ def speciesBC(T, TAUC, WI, species):
     C2  = 8.00E+09              # BD11
     BETA = 1.7                  # BD12
 
-    J = 1 #range(1,50)                              # C1
+    J = numpy.arange(50) + 1                        # C1
 
     EZ = EXP(-6.907+0.27631*(J-1))                  # C2
     TM1EZ = EZ * TM1                                # C3
@@ -118,12 +118,12 @@ def gadolinium(T, B0, nmGado):
     S3 = S1                                                 #E14
     S4 = S2*13/7                                            #E15
     T1M =1/(AA*(S1+S2)+Z)                                   #E16
-    T2M =1/(0.5*AA*(4*TC+S4+S5)+Z)                          #E17
+    T2M =1/(0.5*AA*(4*TC+S3+S4)+Z)                          #E17
     T1P =Q*nmGado/(55500*(T1M+TM))                          #E18
     T2P =Q*nmGado/(55500*(T2M+TM))                          #E19
     T1GAD =1/(T1P+1/T10+TOS)                                #E20
     T2GAD =1/(T2P+1/T20+TOS2)                               #E21
 
-    return (t1g, t2g, WI)
+    return (T1GAD, T2GAD, WI)
 
 
