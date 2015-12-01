@@ -5,6 +5,7 @@ from os.path import join as pathjoin
 import fnmatch, collections, datetime, cPickle, cloud
 import numpy as np
 import scipy.ndimage
+from dipy.segment.mask import median_otsu
 import nibabel
 import nibabel.parrec as pr
 import nibabel.nifti1 as nifti1
@@ -32,7 +33,7 @@ def error(msg, exit_code):
 verbose = True
 prov = Context()
 
-def phantom_B1_midslice_par2mni(parfile, datadict, outdir=None, exceptions=None, outfilename=None, run=1,
+def phantom_B1_midslice_par2mni(parfile, datadict, outdir=None, exceptions=None, outfilename=None,
                                 verbose=True, scaling='dv', minmax=('parse', 'parse'), origin='scanner', overwrite=True):
 
     prov.add(parfile)
@@ -76,16 +77,34 @@ def phantom_B1_midslice_par2mni(parfile, datadict, outdir=None, exceptions=None,
     slice_mag218 = scipy.ndimage.zoom(in_slice_mag, mnizoomfactor, order=0)
     slice_phase218 = scipy.ndimage.zoom(in_slice_phase, mnizoomfactor, order=0)
     slice_mag_mni = slice_mag218[18:200,:]
-    #use np.ma to create a mask
-    slice_mag_mni_mask = slice_mag_mni > 250
+    #use dipy and ndimage to create a mask
+    slice_mag_mni_masked, slice_mag_mni_mask = median_otsu(slice_mag_mni, 7, 1)
+    slice_mag_mni_mask = scipy.ndimage.morphology.binary_dilation(slice_mag_mni_mask, iterations=2)
     slice_phase_raw_mni = slice_phase218[18:200,:]
     slice_phase_mf_mni = scipy.ndimage.filters.median_filter(slice_phase_raw_mni, 6)
     slice_phase_mf_mni = slice_phase_mf_mni * slice_mag_mni_mask
 
     if scandate not in exceptions:
         slice_phase_mf_mni = np.fliplr(slice_phase_mf_mni)
-        slice_mag_mni = np.fliplr(slice_mag_mni)
+        slice_mag_mni_masked = np.fliplr(slice_mag_mni_masked)
+        slice_mag_mni_mask = np.fliplr(slice_mag_mni_mask)
 
+    mydate = datetime.datetime.strptime(scandate, '%Y%m%d').date()
+    mymethod = 'b1map'
+    partialkey = (mydate, mymethod+'_phase', tr)
+    runkeys = [key for key in datadict.keys() if key[:3] == partialkey]
+    for run in range(1,len(runkeys)+1):
+        exvalues = datadict[partialkey+(run,)]
+        for exvalue in exvalues:
+            if contrast == exvalue[1]:
+                break;
+        else:
+            break;   # if you just want the run number  # case 2 key found but value/contrast does not exist eg new file
+    else:
+        run = len(runkeys) + 1 # need to make new run    case 1, case 3
+
+    slice_mag_mni_mask_nimg = nifti1.Nifti1Image(slice_mag_mni_mask.astype(np.float32), mni_affine)
+    nibabel.save(slice_mag_mni_mask_nimg, outfilename+'_mag_mask_'+str(run)+'.nii')
 
     nimg_p = nifti1.Nifti1Image(slice_phase_mf_mni, mni_affine, pr_hdr)
     nhdr_p = nimg_p.header
@@ -102,7 +121,7 @@ def phantom_B1_midslice_par2mni(parfile, datadict, outdir=None, exceptions=None,
     nibabel.save(nimg_p, outfilename+'_phase_'+str(run)+'.nii')
     prov.log(outfilename+'_phase_'+str(run)+'.nii', 'median filter 1sl mni b1 phase', parfile)
 
-    nimg_m = nifti1.Nifti1Image(slice_mag_mni, mni_affine, pr_hdr)
+    nimg_m = nifti1.Nifti1Image(slice_mag_mni_masked, mni_affine, pr_hdr)
     nhdr_m = nimg_m.header
     nhdr_m.set_data_dtype(out_dtype)
     nhdr_m.set_slope_inter(slope, intercept)
@@ -126,25 +145,21 @@ def phantom_B1_midslice_par2mni(parfile, datadict, outdir=None, exceptions=None,
     nibabel.save(nimg_m, outfilename+'_mag_'+str(run)+'.nii')
 
     prov.log(outfilename+'_mag_'+str(run)+'.nii', '1sl mni b1 mag', parfile)
-    key = [(datetime.datetime.strptime(scandate, '%Y%m%d').date(), 'b1map_phase', tr, run), (datetime.datetime.strptime(scandate, '%Y%m%d').date(), 'b1map_mag', tr, run)]
-    value = [(outfilename+'_phase_'+str(run)+'.nii', 'phase'), (outfilename+'_mag_'+str(run)+'.nii', 'magnitude')]
+
+    key = [(mydate, mymethod+'_phase', tr, run), (mydate, mymethod+'_mag', tr, run), (mydate, mymethod+'_mag_mask', tr, run)]  # case 3 = found key value pair exists we have repeat run   # case 1 = no key exists eg new file/run for loop never runs
+    value = [(outfilename+'_phase_'+str(run)+'.nii', 'phase'), (outfilename+'_mag_'+str(run)+'.nii', 'magnitude'), (outfilename+'_mag_mask_'+str(run)+'.nii', 'mask')]
+
     if verbose:
         print key, value
     return key, value
 
-
-
-
-
-def phantom_midslice_par2mni(parfile, method, datadict, outdir=None, exceptions=None, outfilename=None, run=1,
+def phantom_midslice_par2mni(parfile, datadict, method, outdir=None, exceptions=None, outfilename=None,
                                 verbose=True, scaling='fp', minmax=('parse', 'parse'), origin='scanner', overwrite=True):
-
     prov.add(parfile)
     key, value = [''], ['']
     if outdir and not os.path.exists(outdir):
         os.makedirs(outdir)
     outfilename = pathjoin(outdir, outfilename)
-    parbasename = os.path.basename(parfile)
     infile = fname_ext_ul_case(parfile)
     pr_img = pr.load(infile, permit_truncated=False, scaling=scaling)
     pr_hdr = pr_img.header
@@ -172,79 +187,37 @@ def phantom_midslice_par2mni(parfile, method, datadict, outdir=None, exceptions=
     elif max_slices == 1:
         mid_slice_num = 1
 
-
-    if len(pr_hdr._shape) == 4 and pr_hdr._shape[3] == 2 and method != 'orig_spgr':
-        key, value = [''], ['']
-        #moving to RAS space
-        ornt = io_orientation(np.diag([-1, 1, 1, 1]).dot(pr_img.affine))
-        t_aff = inv_ornt_aff(ornt, pr_img.shape)
-        affine = np.dot(pr_img.affine, t_aff)
-        in_data_ras = apply_orientation(in_data, affine)
-
+    if method == 'orig_spgr' and len(pr_hdr._shape) == 3:
+        in_data = np.expand_dims(in_data, 3)
+        xdim, ydim, zdim, tdim = [i for i in itertools.chain(iter(pr_hdr._shape), [1])]
+    if len(pr_hdr._shape) == 4:
         xdim, ydim, zdim, tdim = [i for i in iter(pr_hdr._shape)]
-        in_slice_mag = in_data_ras[:,:, mid_slice_num-1, 0]
-        in_slice_real = in_data_ras[:,:, mid_slice_num-1,1]
-        mnizoomfactor = 218/float(ydim)
-        slice_mag218 = scipy.ndimage.zoom(in_slice_mag, mnizoomfactor, order=0)
-        slice_real218 = scipy.ndimage.zoom(in_slice_real, mnizoomfactor, order=0)
-        slice_mag_mni = slice_mag218[18:200,:]
-#        slice_mag_mni_mask = slice_mag_mni > 250               #not sure i need masking here
-        slice_real_mni = slice_real218[18:200,:]
-#        slice_real_mni = slice_real_mni * slice_mag_mni_mask               #not sure i need masking here
-
-
-        if scandate not in exceptions:
-            slice_real_mni = np.fliplr(slice_real_mni)
-
-        nimg_r = nifti1.Nifti1Image(slice_real_mni, mni_affine, pr_hdr)
-        nimg_r.set_qform(mni_affine)
-        nimg_r.set_sform(mni_affine)
-        nhdr_r = nimg_r.header
-        nhdr_r.set_data_dtype(out_dtype)
-        nhdr_r.set_slope_inter(slope, intercept)
-        with open(infile, 'r') as fobj:
-            hdr_dump = fobj.read()
-            dump_ext = nifti1.Nifti1Extension('comment', hdr_dump)
-        nhdr_r.extensions.append(dump_ext)
-        if 'parse' in minmax:
-            # need to get the scaled data
-            if verbose == True:
-                printmessage('Loading (and scaling) the data to determine value range')
-        if minmax[0] == 'parse':
-            nhdr_r['cal_min'] = in_data.min() * slope + intercept
-        else:
-            nhdr_r['cal_min'] = float(minmax[0])
-        if minmax[1] == 'parse':
-            nhdr_r['cal_max'] = in_data.max() * slope + intercept
-        else:
-            nhdr_r['cal_max'] = float(minmax[1])
-        nibabel.save(nimg_r, outfilename+'_real_1slmni_'+str(run)+'.nii')
-        prov.log(outfilename+'_real_1slmni_'+str(run)+'.nii', 'real component of '+outfilename, parfile,)
-        key = [(datetime.datetime.strptime(scandate, '%Y%m%d').date(), method+'_real', tr, run)]
-        value = [(outfilename+'_real_1slmni_'+str(run)+'.nii', contrast)]
-
-
-    elif method == 'orig_spgr':
-        if len(pr_hdr._shape) == 3:
-            in_data = np.expand_dims(in_data, 3)
-            xdim, ydim, zdim, tdim = [i for i in itertools.chain(iter(pr_hdr._shape), [1])]
-        elif len(pr_hdr._shape) == 4:
-            xdim, ydim, zdim, tdim = [i for i in iter(pr_hdr._shape)]
-        #moving to RAS space
-        ornt = io_orientation(np.diag([-1, 1, 1, 1]).dot(pr_img.affine))
-        t_aff = inv_ornt_aff(ornt, pr_img.shape)
-        affine = np.dot(pr_img.affine, t_aff)
-        in_data_ras = apply_orientation(in_data, affine)
-
-
-        in_slice_mag = in_data_ras[:,:, mid_slice_num-1, 0]
-        mnizoomfactor = 218/float(ydim)
-        slice_mag218 = scipy.ndimage.zoom(in_slice_mag, mnizoomfactor, order=0)
-        slice_mag_mni = slice_mag218[18:200,:]
+    #moving to RAS space
+    ornt = io_orientation(np.diag([-1, 1, 1, 1]).dot(pr_img.affine))
+    t_aff = inv_ornt_aff(ornt, pr_img.shape)
+    affine = np.dot(pr_img.affine, t_aff)
+    in_data_ras = apply_orientation(in_data, affine)
+    in_slice_mag = in_data_ras[:,:, mid_slice_num-1, 0]
+    mnizoomfactor = 218/float(ydim)
+    slice_mag218 = scipy.ndimage.zoom(in_slice_mag, mnizoomfactor, order=0)
+    slice_mag_mni = slice_mag218[18:200,:]
 
     if scandate not in exceptions:
         slice_mag_mni = np.fliplr(slice_mag_mni)
 
+    mydate = datetime.datetime.strptime(scandate, '%Y%m%d').date()
+    mymethod = method+'_mag'
+    partialkey = (mydate, mymethod, tr)
+    runkeys = [key for key in datadict.keys() if key[:3] == partialkey]
+    for run in range(1,len(runkeys)+1):
+        exvalues = datadict[partialkey+(run,)]
+        for exvalue in exvalues:
+            if contrast == exvalue[1]:
+                break;
+        else:
+            break;   # if you just want the run number  # case 2 key found but value/contrast does not exist eg new file
+    else:
+        run = len(runkeys) + 1 # need to make new run    case 1, case 3
 
     nimg_m = nifti1.Nifti1Image(slice_mag_mni, mni_affine, pr_hdr)
     nhdr_m = nimg_m.header
@@ -269,8 +242,60 @@ def phantom_midslice_par2mni(parfile, method, datadict, outdir=None, exceptions=
         nhdr_m['cal_max'] = float(minmax[1])
     nibabel.save(nimg_m, outfilename+'_mag_1slmni_'+str(run)+'.nii')
     prov.log(outfilename+'_mag_1slmni_'+str(run)+'.nii', 'magnitude of '+outfilename, parfile)
-    key += [(datetime.datetime.strptime(scandate, '%Y%m%d').date(), method+'_mag', tr, run)]
-    value += [(outfilename+'_mag_1slmni_'+str(run)+'.nii', contrast)]
+
+
+    if len(pr_hdr._shape) == 4 and pr_hdr._shape[3] == 2 and method != 'orig_spgr':
+        in_slice_real = in_data_ras[:,:, mid_slice_num-1,1]
+        slice_real218 = scipy.ndimage.zoom(in_slice_real, mnizoomfactor, order=0)
+        slice_real_mni = slice_real218[18:200,:]
+        if scandate not in exceptions:
+            slice_real_mni = np.fliplr(slice_real_mni)
+
+        mydate = datetime.datetime.strptime(scandate, '%Y%m%d').date()
+        mymethod = method+'_real'
+        partialkey = (mydate, mymethod, tr)
+
+        runkeys = [key for key in datadict.keys() if key[:3] == partialkey]
+        for run in range(1,len(runkeys)+1):
+            exvalues = datadict[partialkey+(run,)]
+            for exvalue in exvalues:
+                if contrast == exvalue[1]:
+                    break;
+            else:
+                break;   # if you just want the run number  # case 2 key found but value/contrast does not exist eg new file
+        else:
+            run = len(runkeys) + 1 # need to make new run    case 1, case 3
+
+        nimg_r = nifti1.Nifti1Image(slice_real_mni, mni_affine, pr_hdr)
+        nhdr_r = nimg_r.header
+        nhdr_r.set_data_dtype(out_dtype)
+        nhdr_r.set_slope_inter(slope, intercept)
+        with open(infile, 'r') as fobj:
+            hdr_dump = fobj.read()
+            dump_ext = nifti1.Nifti1Extension('comment', hdr_dump)
+        nhdr_r.extensions.append(dump_ext)
+        if 'parse' in minmax:
+            # need to get the scaled data
+            if verbose == True:
+                printmessage('Loading (and scaling) the data to determine value range')
+        if minmax[0] == 'parse':
+            nhdr_r['cal_min'] = in_data.min() * slope + intercept
+        else:
+            nhdr_r['cal_min'] = float(minmax[0])
+        if minmax[1] == 'parse':
+            nhdr_r['cal_max'] = in_data.max() * slope + intercept
+        else:
+            nhdr_r['cal_max'] = float(minmax[1])
+        nibabel.save(nimg_r, outfilename+'_real_1slmni_'+str(run)+'.nii')
+        prov.log(outfilename+'_real_1slmni_'+str(run)+'.nii', 'real component of '+outfilename, parfile,)
+
+        key = [(mydate, method+'_mag', tr, run), (mydate, mymethod, tr, run),]
+        value = [(outfilename+'_mag_1slmni_'+str(run)+'.nii', contrast), (outfilename+'_real_1slmni_'+str(run)+'.nii', contrast),]
+
+    else:
+        key = [(mydate, mymethod, tr, run)]
+        value = [(outfilename+'_mag_1slmni_'+str(run)+'.nii', contrast)]
+
     if verbose:
         print key, value
     return key, value
