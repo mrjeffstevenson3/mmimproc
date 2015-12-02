@@ -14,8 +14,11 @@ def spgrformula(x, a, b):
     TR = spgrformula.TR
     return a * ((1-exp(-TR/b))/(1-cos(x)*exp(-TR/b))) * sin(x)
 
-def t1fit(files, X, TR=None, maskfile=None, scantype='IR', t1filename=None, 
+def t1fit(files, X, TR=None, nmaskfile=None, scantype='IR', t1filename=None, 
     voiCoords=None):
+    
+    import pdb
+    pdb.set_trace()
 
     if t1filename is None:
         t1filename = 't1_fit.nii.gz'

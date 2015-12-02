@@ -18,15 +18,14 @@ skipExisting = True
 ### FITTING
 
 rootdir = join(getlocaldataroot(),'phantom_qT1_disc')
-imageDictFile = join(rootdir,'conv_scans_dict.txt')
+imageDictFile = join(rootdir,'phantom_disc_dict_complete_dec1_2015.txt')
 with open(imageDictFile) as dfile:
     images = cPickle.load(dfile)
 
 t1fitTimeseries = defaultdict(dict) # (method, TR, run) : {date: t1file}
 
-for key, run in runs.items():
-    dateString = key[0]
-    date = datetime.datetime.strptime(dateString, '%Y%m%d').date()
+for key, run in images.items():
+    date = key[0]
     method = key[1]
     TR = key[2]
     runIndex = key[3]
@@ -37,14 +36,13 @@ for key, run in runs.items():
     msg = 'Working on session: {0} method: {1} TR: {2} Run: {3}'
     print(msg.format(date, method.upper(), TR, runIndex))
 
-    datadir = join(rootdir,
-        'phantom_qT1_{0}'.format(dateString),
-        'fitted_{0}_qT1'.format(method))
-    outdir = join(rootdir, 'T1_{0}_TR{1}'.format(method, TR))
+    TRstring = str(TR).replace('.','-')
+    outdir = join(rootdir, 'T1_{0}_TR{1}'.format(method, TRstring))
     if not os.path.isdir(outdir):
         os.mkdir(outdir)
     fnameTemplate = 'T1_{0}_TR{1}_{2}_{3}.nii.gz'
-    fname = fnameTemplate.format(method, TR, dateString, runIndex)
+    fname = fnameTemplate.format(method, TRstring, 
+        str(date), runIndex)
     t1filepath = join(outdir, fname)
 
     if skipExisting and os.path.isfile(t1filepath):
@@ -57,13 +55,19 @@ for key, run in runs.items():
         print('--> Skipping scan, only {0} files'.format(len(run)))
         continue
     files, X = zip(*sorted(run, key=lambda s: s[1]))
-    files = [join(datadir, f+'.nii') for f in files]
+    scottybasedir = '/media/DiskArray/shared_data/js'
+    jvdbbasedir = '/diskArray/mirror/js'
+    files = [f.replace(scottybasedir, jvdbbasedir) for f in files]
+    kwargs = {'t1filename':t1filepath}
+    sessiondir = os.sep.join(files[0].split(os.sep)[:-2])
+    maskfile = join(sessiondir,'B1map_qT1','b1map_mag_mask_1.nii')
+    if os.path.isfile(maskfile):
+        kwargs['maskfile'] = maskfile
+    if method.upper() == 'SPGR':
+        kwargs['scantype'] = 'SPGR'
+        kwargs['TR'] = TR
     try:
-        if method.upper() == 'SPGR':
-            t1fit(files, X, t1filename=t1filepath, voiCoords=vialCoords,
-                scantype='SPGR', TR=TR)
-        else:
-            t1fit(files, X, t1filename=t1filepath, voiCoords=vialCoords)
+        t1fit(files, X, **kwargs)
     except Exception as ex:
         print('\n--> Error during fitting: ', ex)
     else:
