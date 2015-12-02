@@ -71,6 +71,9 @@ def phantom_B1_midslice_par2mni(parfile, datadict, outdir=None, exceptions=None,
     affine = np.dot(pr_img.affine, t_aff)
     in_data_ras = apply_orientation(in_data, affine)
 
+    if in_data_ras.shape[3] == zdim and in_data_ras.shape[2] == tdim:
+        in_data_ras = np.rollaxis(in_data_ras, 3, 2)
+
     in_slice_mag = in_data_ras[:,:,mid_slice_num-1,0]
     in_slice_phase = in_data_ras[:,:,mid_slice_num-1,tdim-1]
     mnizoomfactor = 218/float(ydim)
@@ -78,8 +81,9 @@ def phantom_B1_midslice_par2mni(parfile, datadict, outdir=None, exceptions=None,
     slice_phase218 = scipy.ndimage.zoom(in_slice_phase, mnizoomfactor, order=0)
     slice_mag_mni = slice_mag218[18:200,:]
     #use dipy and ndimage to create a mask
-    slice_mag_mni_masked, slice_mag_mni_mask = median_otsu(slice_mag_mni, 7, 1)
+    slice_mag_mni_masked, slice_mag_mni_mask = median_otsu(slice_mag_mni, 8, 1)
     slice_mag_mni_mask = scipy.ndimage.morphology.binary_dilation(slice_mag_mni_mask, iterations=2)
+    slice_mag_mni_mask = scipy.ndimage.morphology.binary_fill_holes(slice_mag_mni_mask)
     slice_phase_raw_mni = slice_phase218[18:200,:]
     slice_phase_mf_mni = scipy.ndimage.filters.median_filter(slice_phase_raw_mni, 6)
     slice_phase_mf_mni = slice_phase_mf_mni * slice_mag_mni_mask
@@ -197,6 +201,10 @@ def phantom_midslice_par2mni(parfile, datadict, method, outdir=None, exceptions=
     t_aff = inv_ornt_aff(ornt, pr_img.shape)
     affine = np.dot(pr_img.affine, t_aff)
     in_data_ras = apply_orientation(in_data, affine)
+
+    if in_data_ras.shape[3] == zdim and in_data_ras.shape[2] == tdim:
+        in_data_ras = np.rollaxis(in_data_ras, 3, 2)
+
     in_slice_mag = in_data_ras[:,:, mid_slice_num-1, 0]
     mnizoomfactor = 218/float(ydim)
     slice_mag218 = scipy.ndimage.zoom(in_slice_mag, mnizoomfactor, order=0)
