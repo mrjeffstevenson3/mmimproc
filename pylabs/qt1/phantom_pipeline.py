@@ -30,7 +30,8 @@ phantom_ddata = defaultdict(list)
 
 # for i, p in enumerate(phantdirs):
 #     print i, p
-#phantdirs = [phantdirs[40]]
+
+# phantdirs = [phantdirs[40]]
 
 for dir in phantdirs:
     b1mapdir = pathjoin(dir, 'B1map_qT1')

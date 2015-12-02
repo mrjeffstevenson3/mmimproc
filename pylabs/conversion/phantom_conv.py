@@ -35,7 +35,6 @@ prov = Context()
 
 def phantom_B1_midslice_par2mni(parfile, datadict, outdir=None, exceptions=None, outfilename=None,
                                 verbose=True, scaling='dv', minmax=('parse', 'parse'), origin='scanner', overwrite=True):
-
     prov.add(parfile)
     key, value = [], []
     if outdir and not os.path.exists(outdir):
@@ -45,18 +44,18 @@ def phantom_B1_midslice_par2mni(parfile, datadict, outdir=None, exceptions=None,
     infile = fname_ext_ul_case(parfile)
     pr_img = pr.load(infile, permit_truncated=False, scaling=scaling)
     pr_hdr = pr_img.header
-    flipangle = int(pr_hdr.__getattribute__('image_defs')[0][29])
-    ti = int(round(pr_hdr.__getattribute__('image_defs')[0][34], -1))
-    tr = pr_hdr.__getattribute__('general_info').get('repetition_time')
+    flipangle = int(pr_hdr.image_defs['image_flip_angle'][0])
+    ti = int(round(pr_hdr.image_defs['Inversion delay'][0], -1))
+    tr = pr_hdr.general_info['repetition_time']
     if tr > 100:
-        tr = int(round(pr_hdr.__getattribute__('general_info').get('repetition_time'), -1))
+        tr = int(round(pr_hdr.general_info['repetition_time'], -1))
     if ti == 0.0:
         contrast = flipangle
     else:
         contrast = ti
-    max_slices = int(pr_hdr.__getattribute__('general_info').get('max_slices'))
+    max_slices = int(pr_hdr.general_info['max_slices'])
     mid_slice_num = int(max_slices) / 2
-    scandate = pr_hdr.__getattribute__('general_info').get('exam_date').split('/')[0].strip().replace(".","")
+    scandate = pr_hdr.general_info['exam_date'].split('/')[0].strip().replace(".","")
 
     xdim, ydim, zdim, tdim = [i for i in iter(pr_hdr._shape)]
 
@@ -71,6 +70,9 @@ def phantom_B1_midslice_par2mni(parfile, datadict, outdir=None, exceptions=None,
     affine = np.dot(pr_img.affine, t_aff)
     in_data_ras = apply_orientation(in_data, affine)
 
+    if in_data_ras.shape[3] == zdim and in_data_ras.shape[2] == tdim:
+        in_data_ras = np.rollaxis(in_data_ras, 3, 2)
+
     in_slice_mag = in_data_ras[:,:,mid_slice_num-1,0]
     in_slice_phase = in_data_ras[:,:,mid_slice_num-1,tdim-1]
     mnizoomfactor = 218/float(ydim)
@@ -78,8 +80,9 @@ def phantom_B1_midslice_par2mni(parfile, datadict, outdir=None, exceptions=None,
     slice_phase218 = scipy.ndimage.zoom(in_slice_phase, mnizoomfactor, order=0)
     slice_mag_mni = slice_mag218[18:200,:]
     #use dipy and ndimage to create a mask
-    slice_mag_mni_masked, slice_mag_mni_mask = median_otsu(slice_mag_mni, 7, 1)
+    slice_mag_mni_masked, slice_mag_mni_mask = median_otsu(slice_mag_mni, 8, 1)
     slice_mag_mni_mask = scipy.ndimage.morphology.binary_dilation(slice_mag_mni_mask, iterations=2)
+    slice_mag_mni_mask = scipy.ndimage.morphology.binary_fill_holes(slice_mag_mni_mask)
     slice_phase_raw_mni = slice_phase218[18:200,:]
     slice_phase_mf_mni = scipy.ndimage.filters.median_filter(slice_phase_raw_mni, 6)
     slice_phase_mf_mni = slice_phase_mf_mni * slice_mag_mni_mask
@@ -163,19 +166,20 @@ def phantom_midslice_par2mni(parfile, datadict, method, outdir=None, exceptions=
     infile = fname_ext_ul_case(parfile)
     pr_img = pr.load(infile, permit_truncated=False, scaling=scaling)
     pr_hdr = pr_img.header
-    flipangle = int(pr_hdr.__getattribute__('image_defs')[0][29])
-    ti = int(round(pr_hdr.__getattribute__('image_defs')[0][34], -1))
-    tr = pr_hdr.__getattribute__('general_info').get('repetition_time')
+    flipangle = int(pr_hdr.image_defs['image_flip_angle'][0])
+    ti = int(round(pr_hdr.image_defs['Inversion delay'][0], -1))
+    tr = pr_hdr.general_info['repetition_time']
     if tr > 100:
-        tr = int(round(pr_hdr.__getattribute__('general_info').get('repetition_time'), -1))
+        tr = int(round(pr_hdr.general_info['repetition_time'], -1))
     if ti == 0.0:
         contrast = flipangle
         outfilename += '_fa_'+str(flipangle).zfill(2)
     else:
         contrast = ti
         outfilename += '_ti_'+str(ti).zfill(4)
-    max_slices = int(pr_hdr.__getattribute__('general_info').get('max_slices'))
-    scandate = pr_hdr.__getattribute__('general_info').get('exam_date').split('/')[0].strip().replace(".","")
+
+    max_slices = int(pr_hdr.general_info['max_slices'])
+    scandate = pr_hdr.general_info['exam_date'].split('/')[0].strip().replace(".","")
     slope, intercept = pr_hdr.get_data_scaling(scaling)
     slope = np.array([1.])
     intercept = np.array([0.])
@@ -197,6 +201,10 @@ def phantom_midslice_par2mni(parfile, datadict, method, outdir=None, exceptions=
     t_aff = inv_ornt_aff(ornt, pr_img.shape)
     affine = np.dot(pr_img.affine, t_aff)
     in_data_ras = apply_orientation(in_data, affine)
+
+    if in_data_ras.shape[3] == zdim and in_data_ras.shape[2] == tdim:
+        in_data_ras = np.rollaxis(in_data_ras, 3, 2)
+
     in_slice_mag = in_data_ras[:,:, mid_slice_num-1, 0]
     mnizoomfactor = 218/float(ydim)
     slice_mag218 = scipy.ndimage.zoom(in_slice_mag, mnizoomfactor, order=0)
