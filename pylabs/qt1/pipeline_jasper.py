@@ -22,8 +22,12 @@ imageDictFile = join(rootdir,'phantom_disc_dict_complete_dec1_2015.txt')
 with open(imageDictFile) as dfile:
     images = cPickle.load(dfile)
 
+
 t1fitTimeseries = defaultdict(dict) # (method, TR, run) : {date: t1file}
 
+from multiprocessing import Pool
+pool = Pool(10)
+async = False
 for key, run in images.items():
     date = key[0]
     method = key[1]
@@ -38,12 +42,14 @@ for key, run in images.items():
 
     TRstring = str(TR).replace('.','-')
     outdir = join(rootdir, 'T1_{0}_TR{1}'.format(method, TRstring))
-    if not os.path.isdir(outdir):
-        os.mkdir(outdir)
     fnameTemplate = 'T1_{0}_TR{1}_{2}_{3}.nii.gz'
     fname = fnameTemplate.format(method, TRstring, 
         str(date), runIndex)
     t1filepath = join(outdir, fname)
+
+    if len(run) < 3:
+        print('--> Skipping scan, only {0} files'.format(len(run)))
+        continue
 
     if skipExisting and os.path.isfile(t1filepath):
         print('--> File exists, skipping scan.'.format(len(run)))
@@ -51,9 +57,9 @@ for key, run in images.items():
             t1fitTimeseries[(method, TR)][date] = t1filepath
         continue
 
-    if len(run) < 3:
-        print('--> Skipping scan, only {0} files'.format(len(run)))
-        continue
+    if not os.path.isdir(outdir):
+        os.mkdir(outdir)
+
     files, X = zip(*sorted(run, key=lambda s: s[1]))
     scottybasedir = '/media/DiskArray/shared_data/js'
     jvdbbasedir = '/diskArray/mirror/js'
@@ -71,18 +77,22 @@ for key, run in images.items():
         kwargs['scantype'] = 'SPGR'
         kwargs['TR'] = TR
     kwargs['t1filename'] = t1filepath
-    try:
-        t1fit(files, X, **kwargs)
-    except Exception as ex:
-        print('\n--> Error during fitting: ', ex)
+    if async:
+        kwargs['mute'] = True
+        pool.apply_async(t1fit, [files, X], kwargs)
     else:
-        if not date in t1fitTimeseries[(method, TR)]:
-            t1fitTimeseries[(method, TR)][date] = t1filepath
+        try:
+            t1fit(files, X, **kwargs)
+        except Exception as ex:
+            print('\n--> Error during fitting: ', ex)
         else:
-            print('--> Already have a run fitted for this date, '+
-                'this image not passed on down pipeline.')
-
-
+            if not date in t1fitTimeseries[(method, TR)]:
+                t1fitTimeseries[(method, TR)][date] = t1filepath
+            else:
+                print('--> Already have a run fitted for this date, '+
+                    'this image not passed on down pipeline.')
+pool.close()
+pool.join()
 
 #### ATLASSING
 

@@ -15,7 +15,7 @@ def spgrformula(x, a, b):
     return a * ((1-exp(-TR/b))/(1-cos(x)*exp(-TR/b))) * sin(x)
 
 def t1fit(files, X, TR=None, maskfile=None, b1file=None, scantype='IR', t1filename=None, 
-    voiCoords=None):
+    voiCoords=None, mute=False):
 
     if t1filename is None:
         t1filename = 't1_fit.nii.gz'
@@ -59,7 +59,8 @@ def t1fit(files, X, TR=None, maskfile=None, b1file=None, scantype='IR', t1filena
     nx = len(X)
     ny = len(data)
     msg = 'Fitting {0} points with image dimensions {1}.'
-    print(msg.format(nx, imageDimensions))
+    if not mute:
+        print(msg.format(nx, imageDimensions))
     if not nx == ny:
         msg = 'Number of parameters ({0}) does not match number of images ({1}).'
         raise ValueError(msg.format(nx, ny))
@@ -68,7 +69,8 @@ def t1fit(files, X, TR=None, maskfile=None, b1file=None, scantype='IR', t1filena
     t1data = numpy.zeros(data[0].shape)
     start = datetime.now()
     for v in range(nvoxels):
-        progress.progressbar(v, nvoxels, start)
+        if not mute:
+            progress.progressbar(v, nvoxels, start)
         Y = [image[v] for image in data]
         if maskfile is not None:
             if not mask[v]:
