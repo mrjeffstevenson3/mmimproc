@@ -35,7 +35,6 @@ prov = Context()
 
 def phantom_B1_midslice_par2mni(parfile, datadict, outdir=None, exceptions=None, outfilename=None,
                                 verbose=True, scaling='dv', minmax=('parse', 'parse'), origin='scanner', overwrite=True):
-
     prov.add(parfile)
     key, value = [], []
     if outdir and not os.path.exists(outdir):
@@ -45,18 +44,18 @@ def phantom_B1_midslice_par2mni(parfile, datadict, outdir=None, exceptions=None,
     infile = fname_ext_ul_case(parfile)
     pr_img = pr.load(infile, permit_truncated=False, scaling=scaling)
     pr_hdr = pr_img.header
-    flipangle = int(pr_hdr.__getattribute__('image_defs')[0][29])
-    ti = int(round(pr_hdr.__getattribute__('image_defs')[0][34], -1))
-    tr = pr_hdr.__getattribute__('general_info').get('repetition_time')
+    flipangle = int(pr_hdr.image_defs['image_flip_angle'][0])
+    ti = int(round(pr_hdr.image_defs['Inversion delay'][0], -1))
+    tr = pr_hdr.general_info['repetition_time']
     if tr > 100:
-        tr = int(round(pr_hdr.__getattribute__('general_info').get('repetition_time'), -1))
+        tr = int(round(pr_hdr.general_info['repetition_time'], -1))
     if ti == 0.0:
         contrast = flipangle
     else:
         contrast = ti
-    max_slices = int(pr_hdr.__getattribute__('general_info').get('max_slices'))
+    max_slices = int(pr_hdr.general_info['max_slices'])
     mid_slice_num = int(max_slices) / 2
-    scandate = pr_hdr.__getattribute__('general_info').get('exam_date').split('/')[0].strip().replace(".","")
+    scandate = pr_hdr.general_info['exam_date'].split('/')[0].strip().replace(".","")
 
     xdim, ydim, zdim, tdim = [i for i in iter(pr_hdr._shape)]
 
@@ -167,19 +166,20 @@ def phantom_midslice_par2mni(parfile, datadict, method, outdir=None, exceptions=
     infile = fname_ext_ul_case(parfile)
     pr_img = pr.load(infile, permit_truncated=False, scaling=scaling)
     pr_hdr = pr_img.header
-    flipangle = int(pr_hdr.__getattribute__('image_defs')[0][29])
-    ti = int(round(pr_hdr.__getattribute__('image_defs')[0][34], -1))
-    tr = pr_hdr.__getattribute__('general_info').get('repetition_time')
+    flipangle = int(pr_hdr.image_defs['image_flip_angle'][0])
+    ti = int(round(pr_hdr.image_defs['Inversion delay'][0], -1))
+    tr = pr_hdr.general_info['repetition_time']
     if tr > 100:
-        tr = int(round(pr_hdr.__getattribute__('general_info').get('repetition_time'), -1))
+        tr = int(round(pr_hdr.general_info['repetition_time'], -1))
     if ti == 0.0:
         contrast = flipangle
         outfilename += '_fa_'+str(flipangle).zfill(2)
     else:
         contrast = ti
         outfilename += '_ti_'+str(ti).zfill(4)
-    max_slices = int(pr_hdr.__getattribute__('general_info').get('max_slices'))
-    scandate = pr_hdr.__getattribute__('general_info').get('exam_date').split('/')[0].strip().replace(".","")
+
+    max_slices = int(pr_hdr.general_info['max_slices'])
+    scandate = pr_hdr.general_info['exam_date'].split('/')[0].strip().replace(".","")
     slope, intercept = pr_hdr.get_data_scaling(scaling)
     slope = np.array([1.])
     intercept = np.array([0.])
