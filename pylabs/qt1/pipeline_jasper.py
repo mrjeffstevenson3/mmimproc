@@ -58,14 +58,19 @@ for key, run in images.items():
     scottybasedir = '/media/DiskArray/shared_data/js'
     jvdbbasedir = '/diskArray/mirror/js'
     files = [f.replace(scottybasedir, jvdbbasedir) for f in files]
-    kwargs = {'t1filename':t1filepath}
+    kwargs = {}
     sessiondir = os.sep.join(files[0].split(os.sep)[:-2])
     maskfile = join(sessiondir,'B1map_qT1','b1map_mag_mask_1.nii')
+    b1file = join(sessiondir,'B1map_qT1','b1map_mag_1.nii')
     if os.path.isfile(maskfile):
         kwargs['maskfile'] = maskfile
+    if os.path.isfile(b1file):
+        kwargs['b1file'] = b1file
+        t1filepath = t1filepath.replace('.nii.gz', '_b1corr.nii.gz')
     if method.upper() == 'SPGR':
         kwargs['scantype'] = 'SPGR'
         kwargs['TR'] = TR
+    kwargs['t1filename'] = t1filepath
     try:
         t1fit(files, X, **kwargs)
     except Exception as ex:

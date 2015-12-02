@@ -14,11 +14,8 @@ def spgrformula(x, a, b):
     TR = spgrformula.TR
     return a * ((1-exp(-TR/b))/(1-cos(x)*exp(-TR/b))) * sin(x)
 
-def t1fit(files, X, TR=None, nmaskfile=None, scantype='IR', t1filename=None, 
+def t1fit(files, X, TR=None, maskfile=None, b1file=None, scantype='IR', t1filename=None, 
     voiCoords=None):
-    
-    import pdb
-    pdb.set_trace()
 
     if t1filename is None:
         t1filename = 't1_fit.nii.gz'
@@ -38,6 +35,13 @@ def t1fit(files, X, TR=None, nmaskfile=None, scantype='IR', t1filename=None,
             errmsg = 'Mask dimensions {0} not the same as image {1}.'
             raise ValueError(errmsg.format(maskImg.shape, imageDimensions))
         mask = maskImg.get_data().ravel()
+
+    if b1file is not None:
+        b1Img = nibabel.load(b1file)
+        if b1Img.shape != imageDimensions:
+            errmsg = 'B1 map dimensions {0} not the same as image {1}.'
+            raise ValueError(errmsg.format(b1Img.shape, imageDimensions))
+        B1 = b1Img.get_data().ravel()
 
     if (scantype == 'SPGR') and (TR is None):
         raise ValueError('SPGR fitting requires TR argument.')
@@ -69,6 +73,8 @@ def t1fit(files, X, TR=None, nmaskfile=None, scantype='IR', t1filename=None,
         if maskfile is not None:
             if not mask[v]:
                 continue
+        if b1file is not None:
+            Y = [(y/B1[v])*100 for y in Y]
         try:
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
