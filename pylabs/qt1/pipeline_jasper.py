@@ -11,9 +11,9 @@ from pylabs.qt1.fitting import t1fit
 
 skipExisting = True
 
-vialCoords = numpy.array([[64,175,90],[127,174,90],[33,143,90],[95,144,90],
-[156,143,90],[64,113,90],[126,114,90],[33,82,90],[96,82,90],[157,82,90],
-[65,51,90],[127,52,90]])
+#vialCoords = numpy.array([[64,175,90],[127,174,90],[33,143,90],[95,144,90],
+#[156,143,90],[64,113,90],[126,114,90],[33,82,90],[96,82,90],[157,82,90],
+#[65,51,90],[127,52,90]])
 
 ### FITTING
 
@@ -21,18 +21,6 @@ rootdir = join(getlocaldataroot(),'phantom_qT1_disc')
 imageDictFile = join(rootdir,'conv_scans_dict.txt')
 with open(imageDictFile) as dfile:
     images = cPickle.load(dfile)
-
-## Reformat multi-level dict into dict keyed by tuples
-runs = {}
-for dateString in images.keys():
-    for method in images[dateString].keys():
-        for TR in images[dateString][method]:
-            for imageTuple in images[dateString][method][TR]:
-                runIndex = int(imageTuple[0].split('_')[-1])
-                runKey = (dateString, method, TR, runIndex)
-                if not runKey in runs:
-                    runs[runKey] = []
-                runs[runKey].append(imageTuple)
 
 t1fitTimeseries = defaultdict(dict) # (method, TR, run) : {date: t1file}
 
