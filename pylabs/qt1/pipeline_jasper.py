@@ -27,7 +27,8 @@ t1fitTimeseries = defaultdict(dict) # (method, TR, run) : {date: t1file}
 
 from multiprocessing import Pool
 pool = Pool(10)
-async = False
+async = True
+b1correction = True
 for key, run in images.items():
     date = key[0]
     method = key[1]
@@ -40,12 +41,21 @@ for key, run in images.items():
     msg = 'Working on session: {0} method: {1} TR: {2} Run: {3}'
     print(msg.format(date, method.upper(), TR, runIndex))
 
+    files, X = zip(*sorted(run, key=lambda s: s[1]))
+    scottybasedir = '/media/DiskArray/shared_data/js'
+    jvdbbasedir = '/diskArray/mirror/js'
+    files = [f.replace(scottybasedir, jvdbbasedir) for f in files]
+    sessiondir = os.sep.join(files[0].split(os.sep)[:-2])
+    maskfile = join(sessiondir,'B1map_qT1','b1map_mag_mask_1.nii')
+    b1file = join(sessiondir,'B1map_qT1','b1map_mag_1.nii')
     TRstring = str(TR).replace('.','-')
     outdir = join(rootdir, 'T1_{0}_TR{1}'.format(method, TRstring))
     fnameTemplate = 'T1_{0}_TR{1}_{2}_{3}.nii.gz'
     fname = fnameTemplate.format(method, TRstring, 
         str(date), runIndex)
     t1filepath = join(outdir, fname)
+    if os.path.isfile(b1file) and b1correction:
+        t1filepath = t1filepath.replace('.nii.gz', '_b1corr.nii.gz')
 
     if len(run) < 3:
         print('--> Skipping scan, only {0} files'.format(len(run)))
@@ -60,19 +70,14 @@ for key, run in images.items():
     if not os.path.isdir(outdir):
         os.mkdir(outdir)
 
-    files, X = zip(*sorted(run, key=lambda s: s[1]))
-    scottybasedir = '/media/DiskArray/shared_data/js'
-    jvdbbasedir = '/diskArray/mirror/js'
-    files = [f.replace(scottybasedir, jvdbbasedir) for f in files]
     kwargs = {}
     sessiondir = os.sep.join(files[0].split(os.sep)[:-2])
     maskfile = join(sessiondir,'B1map_qT1','b1map_mag_mask_1.nii')
-    b1file = join(sessiondir,'B1map_qT1','b1map_mag_1.nii')
+    b1file = join(sessiondir,'B1map_qT1','b1map_phase_1.nii')
     if os.path.isfile(maskfile):
         kwargs['maskfile'] = maskfile
-    if os.path.isfile(b1file):
+    if os.path.isfile(b1file) and b1correction:
         kwargs['b1file'] = b1file
-        t1filepath = t1filepath.replace('.nii.gz', '_b1corr.nii.gz')
     if method.upper() == 'SPGR':
         kwargs['scantype'] = 'SPGR'
         kwargs['TR'] = TR
