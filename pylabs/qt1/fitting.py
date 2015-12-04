@@ -76,6 +76,8 @@ def t1fit(files, X, TR=None, maskfile=None, b1file=None, scantype='IR', t1filena
             if not mask[v]:
                 continue
         if b1file is not None:
+            import pdb
+            pdb.set_trace()
             Y = [(y/B1[v])*100 for y in Y]
         try:
             with warnings.catch_warnings():
@@ -102,6 +104,7 @@ def t1fit(files, X, TR=None, maskfile=None, b1file=None, scantype='IR', t1filena
                     plotFit(formula, popt, X, Y, t1filename, voisByIndex[v])
         except RuntimeError:
             pass
+
     print(' ')
     t1data = t1data.reshape(imageDimensions)
     t1img = nibabel.Nifti1Image(t1data, affine)

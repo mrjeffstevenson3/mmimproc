@@ -22,12 +22,12 @@ imageDictFile = join(rootdir,'phantom_disc_dict_complete_dec1_2015.txt')
 with open(imageDictFile) as dfile:
     images = cPickle.load(dfile)
 
-
+raise ValueError
 t1fitTimeseries = defaultdict(dict) # (method, TR, run) : {date: t1file}
 
 from multiprocessing import Pool
 pool = Pool(10)
-async = True
+async = False
 b1correction = True
 for key, run in images.items():
     date = key[0]
@@ -47,7 +47,7 @@ for key, run in images.items():
     files = [f.replace(scottybasedir, jvdbbasedir) for f in files]
     sessiondir = os.sep.join(files[0].split(os.sep)[:-2])
     maskfile = join(sessiondir,'B1map_qT1','b1map_mag_mask_1.nii')
-    b1file = join(sessiondir,'B1map_qT1','b1map_mag_1.nii')
+    b1file = join(sessiondir,'B1map_qT1','b1map_phase_1.nii')
     TRstring = str(TR).replace('.','-')
     outdir = join(rootdir, 'T1_{0}_TR{1}'.format(method, TRstring))
     fnameTemplate = 'T1_{0}_TR{1}_{2}_{3}.nii.gz'
@@ -71,9 +71,6 @@ for key, run in images.items():
         os.mkdir(outdir)
 
     kwargs = {}
-    sessiondir = os.sep.join(files[0].split(os.sep)[:-2])
-    maskfile = join(sessiondir,'B1map_qT1','b1map_mag_mask_1.nii')
-    b1file = join(sessiondir,'B1map_qT1','b1map_phase_1.nii')
     if os.path.isfile(maskfile):
         kwargs['maskfile'] = maskfile
     if os.path.isfile(b1file) and b1correction:
