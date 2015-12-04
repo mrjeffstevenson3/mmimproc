@@ -1,6 +1,7 @@
 from os.path import join
+import itertools
 import nibabel, numpy, scipy.stats, scipy.ndimage
-scipy.ndimage.interpolation.rotate
+
 
 def nancount(A):
     return numpy.count_nonzero(numpy.isnan(A))
@@ -8,43 +9,62 @@ def nancount(A):
 def nonnancount(A):
     return A.size - nancount(A)
 
+def preproc(data):
+    A = numpy.copy(data)
+
+    #dismiss negative
+    A[A < 0] = 0
+    #dismiss extreme pos values
+    uthresh = 20000
+    A[A > uthresh] = uthresh
+    zzero = (0-A.mean())/A.std()
+    A = (A-A.mean())/A.std()
+
+    # get rid of outliers
+    thresh = 0.005 # outlier fraction one sided
+    o = numpy.sort(A.ravel())[-int(thresh*A.size)] # outlier threshold
+    A[A > o] = o
+
+    #start at zero
+    A = A + -zzero
+    # plt.hist(A[A > 0].ravel(), 200)
+    return A
+
+def evaluate(target, subject):
+    ztarget = preproc(target)
+    zsubject = preproc(subject)
+    diffmap = ztarget - zsubject
+    return numpy.absolute(diffmap).mean()
+
+## get data
 datadir = join('data','phantom_align_samples')
 targetfile = join(datadir,'T1_seir_mag_TR4000_2014-07-23_1.nii.gz')
 subjectfile = join(datadir,'T1_seir_mag_TR4000_2014-07-03_1.nii.gz')
-
-
 target = nibabel.load(targetfile).get_data()
 subject = nibabel.load(subjectfile).get_data()
 
+stat = evaluate(target, subject)
+print('Baseline stat= {0}'.format(stat))
+
+d = 1
+ranges = {}
+dims = ['x','y','r']
+for dim in dims:
+    ranges[dim] = range(-d, d+1)
+rangesInOrder = [ranges[dim] for dim in dims]
+transformSpaceDims = [len(dimrange) for dimrange in rangesInOrder]
+alltransforms =  list(itertools.product(*rangesInOrder))
+ntransforms = len(alltransforms)
+for i, (x,y,r) in enumerate(alltransforms):
+
+    shifted = scipy.ndimage.interpolation.shift(subject, [x,y])
+    rot = scipy.ndimage.interpolation.rotate(shifted,r,reshape=False)
+    stat = evaluate(target, rot)
+
+    msg = 'Transform {0} of {1}: x={2} y={3} r={4} \t stat= {5}'
+    print(msg.format(i, ntransforms,x,y,r,stat))
 
 
-A = numpy.copy(target)
-
-uthresh = 20000
-
-#dismiss negative
-A[A < 0] = 0
-A[A > uthresh] = uthresh
-zzero = (0-A.mean())/A.std()
-A = (A-A.mean())/A.std()
-
-
-# get rid of outliers
-thresh = 0.005 # outlier fraction one sided
-o = numpy.sort(A.ravel())[-int(thresh*A.size)] # outlier threshold
-A[A > o] = o
-
-#start at zero
-A = A + -zzero
-
-# plt.hist(A[A > 0].ravel(), 200)
 
 
 
-devimap = numpy.absolute(ztarget - zsubject)
-stat = devimap.mean()
-
-print(stat)
-
-
-# rot = scipy.ndimage.interpolation.rotate(A,10,reshape=False)
