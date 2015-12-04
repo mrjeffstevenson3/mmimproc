@@ -11,51 +11,48 @@ from pylabs.qt1.fitting import t1fit
 
 skipExisting = True
 
-#vialCoords = numpy.array([[64,175,90],[127,174,90],[33,143,90],[95,144,90],
-#[156,143,90],[64,113,90],[126,114,90],[33,82,90],[96,82,90],[157,82,90],
-#[65,51,90],[127,52,90]])
+vialCoords = numpy.array([[57,159],[112,164],[30,130],[88,134],[143,139],[61,103],[116,108],[37,71],[93,77],[149,83],[68,47],[124,54]])
 
 ### FITTING
 
 rootdir = join(getlocaldataroot(),'phantom_qT1_disc')
-imageDictFile = join(rootdir,'phantom_disc_dict_complete_dec1_2015.txt')
+imageDictFile = join(rootdir,'phantom_disc_dict_dec3.txt')
 with open(imageDictFile) as dfile:
     images = cPickle.load(dfile)
 
-raise ValueError
 t1fitTimeseries = defaultdict(dict) # (method, TR, run) : {date: t1file}
 
 from multiprocessing import Pool
-pool = Pool(10)
-async = False
-b1correction = True
+pool = Pool(12)
+async = True
 for key, run in images.items():
     date = key[0]
     method = key[1]
     TR = key[2]
     runIndex = key[3]
 
-    if method == 'b1map':
+    targetdate = datetime.datetime(year=2015,month=6,day=30).date()
+    if 'b1map' in method:
         continue
 
     msg = 'Working on session: {0} method: {1} TR: {2} Run: {3}'
     print(msg.format(date, method.upper(), TR, runIndex))
 
+    run = [f for f in run if f[1]!='mask']
     files, X = zip(*sorted(run, key=lambda s: s[1]))
     scottybasedir = '/media/DiskArray/shared_data/js'
     jvdbbasedir = '/diskArray/mirror/js'
     files = [f.replace(scottybasedir, jvdbbasedir) for f in files]
     sessiondir = os.sep.join(files[0].split(os.sep)[:-2])
-    maskfile = join(sessiondir,'B1map_qT1','b1map_mag_mask_1.nii')
+    maskfname = 'orig_seir_ti_3000_tr_4000_mag_1slmni_1_mask.nii'
+    maskfile = join(sessiondir,'fitted_seir_qT1',maskfname)
     b1file = join(sessiondir,'B1map_qT1','b1map_phase_1.nii')
-    TRstring = str(TR).replace('.','-')
+    TRstring = str(TR).replace('.','p')
     outdir = join(rootdir, 'T1_{0}_TR{1}'.format(method, TRstring))
     fnameTemplate = 'T1_{0}_TR{1}_{2}_{3}.nii.gz'
     fname = fnameTemplate.format(method, TRstring, 
         str(date), runIndex)
     t1filepath = join(outdir, fname)
-    if os.path.isfile(b1file) and b1correction:
-        t1filepath = t1filepath.replace('.nii.gz', '_b1corr.nii.gz')
 
     if len(run) < 3:
         print('--> Skipping scan, only {0} files'.format(len(run)))
@@ -73,12 +70,13 @@ for key, run in images.items():
     kwargs = {}
     if os.path.isfile(maskfile):
         kwargs['maskfile'] = maskfile
-    if os.path.isfile(b1file) and b1correction:
+    if os.path.isfile(b1file):
         kwargs['b1file'] = b1file
-    if method.upper() == 'SPGR':
+    if 'SPGR' in method.upper():
         kwargs['scantype'] = 'SPGR'
         kwargs['TR'] = TR
     kwargs['t1filename'] = t1filepath
+    #kwargs['voiCoords'] = vialCoords
     if async:
         kwargs['mute'] = True
         pool.apply_async(t1fit, [files, X], kwargs)
@@ -98,32 +96,32 @@ pool.join()
 
 #### ATLASSING
 
-atlasfile = 't1_phantom_mask_course.nii.gz'
-vialAtlas = join('data','atlases',atlasfile)
-labels = atlaslabels(atlasfile)
-nvials = len(labels)
+#atlasfile = 't1_phantom_mask_course.nii.gz'
+#vialAtlas = join('data','atlases',atlasfile)
+#labels = atlaslabels(atlasfile)
+#nvials = len(labels)
 
-for key, timeseries in t1fitTimeseries.items():
-    method = key[0]
-    TR = key[1]
+#for key, timeseries in t1fitTimeseries.items():
+#    method = key[0]
+#    TR = key[1]
 
-    plotname = '{0}_{1}.png'.format(method, TR)
+#    plotname = '{0}_{1}.png'.format(method, TR)
 
-    dates = sorted(timeseries.keys())
-    scansInOrder = [timeseries[d] for d in dates]
-    ntimepoints = len(dates)
-    vialTimeseries = numpy.zeros((ntimepoints, nvials))
-    for t, scan in enumerate(scansInOrder):
-        print('Sampling vials for scan {0} of {1}'.format(t,ntimepoints))
-        regionalStats = statsByRegion(scan, vialAtlas)
-        vialTimeseries[t, :] = regionalStats['average']
+#    dates = sorted(timeseries.keys())
+#    scansInOrder = [timeseries[d] for d in dates]
+#    ntimepoints = len(dates)
+#    vialTimeseries = numpy.zeros((ntimepoints, nvials))
+#    for t, scan in enumerate(scansInOrder):
+#        print('Sampling vials for scan {0} of {1}'.format(t,ntimepoints))
+#        regionalStats = statsByRegion(scan, vialAtlas)
+#        vialTimeseries[t, :] = regionalStats['average']
 
-    # Get rid of background
-    vialTimeseries = numpy.delete(vialTimeseries, 0, 1)
-    del labels[0]
+#    # Get rid of background
+#    vialTimeseries = numpy.delete(vialTimeseries, 0, 1)
+#    del labels[0]
 
-    # plot development over time for each vial
-    lines = plt.plot(dates, vialTimeseries) 
-    plt.legend(lines, labels, loc=8)
-    plt.savefig(plotname)
+#    # plot development over time for each vial
+#    lines = plt.plot(dates, vialTimeseries) 
+#    plt.legend(lines, labels, loc=8)
+#    plt.savefig(plotname)
 
