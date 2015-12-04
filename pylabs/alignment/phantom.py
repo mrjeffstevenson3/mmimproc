@@ -41,12 +41,14 @@ datadir = join('data','phantom_align_samples')
 targetfile = join(datadir,'T1_seir_mag_TR4000_2014-07-23_1.nii.gz')
 subjectfile = join(datadir,'T1_seir_mag_TR4000_2014-07-03_1.nii.gz')
 target = nibabel.load(targetfile).get_data()
-subject = nibabel.load(subjectfile).get_data()
+subjectImg = nibabel.load(subjectfile)
+subject = subjectImg.get_data()
+affine = subjectImg.get_affine()
 
 stat = evaluate(target, subject)
 print('Baseline stat= {0}'.format(stat))
 
-d = 1
+d = 3 # delta for transformations from center.
 ranges = {}
 dims = ['x','y','r']
 for dim in dims:
@@ -55,14 +57,21 @@ rangesInOrder = [ranges[dim] for dim in dims]
 transformSpaceDims = [len(dimrange) for dimrange in rangesInOrder]
 alltransforms =  list(itertools.product(*rangesInOrder))
 ntransforms = len(alltransforms)
-for i, (x,y,r) in enumerate(alltransforms):
+best = stat
+for i, (x, y, r) in enumerate(alltransforms):
 
-    shifted = scipy.ndimage.interpolation.shift(subject, [x,y])
-    rot = scipy.ndimage.interpolation.rotate(shifted,r,reshape=False)
+    shifted = scipy.ndimage.interpolation.shift(subject, [x, y])
+    rot = scipy.ndimage.interpolation.rotate(shifted, r, reshape=False)
     stat = evaluate(target, rot)
 
     msg = 'Transform {0} of {1}: x={2} y={3} r={4} \t stat= {5}'
-    print(msg.format(i, ntransforms,x,y,r,stat))
+    print(msg.format(i, ntransforms, x, y, r, stat))
+
+    if stat < best:
+        bestImage = rot
+        best = stat
+
+nibabel.save(nibabel.Nifti1Image(rot, affine), 'transformed.nii.gz')
 
 
 
