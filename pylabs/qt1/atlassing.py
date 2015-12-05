@@ -39,6 +39,7 @@ with open(imageDictFile) as dfile:
 vialdata = {}
 ndictentries = len(images)*2
 
+print('Method, TR, B1 corr, date                        Found file')
 for key, run in images.items():
     date = key[0]
     method = key[1]
@@ -46,7 +47,6 @@ for key, run in images.items():
     runIndex = key[3]
 
     for b1corr in [True,False]:
-        # check if we have file
         filepath = findfile(rootdir, method, TR, date, runIndex, b1corr, coreg)
         newkey = (method, TR, b1corr, date)
         print('{0: <65}\t{1}'.format(newkey, (filepath is not None)))
@@ -59,15 +59,9 @@ for key, run in images.items():
 print('\nVialdata for {0} images.\n'.format(len(vialdata.keys())))
 
 
+labels = atlaslabels(atlasfname)
+nvials = len(labels)
 
-#atlasfile = 't1_phantom_mask_course.nii.gz'
-#vialAtlas = join('data','atlases',atlasfile)
-#labels = atlaslabels(atlasfile)
-#nvials = len(labels)
-
-#for key, timeseries in t1fitTimeseries.items():
-#    method = key[0]
-#    TR = key[1]
 
 #    plotname = '{0}_{1}.png'.format(method, TR)
 
@@ -77,7 +71,6 @@ print('\nVialdata for {0} images.\n'.format(len(vialdata.keys())))
 #    vialTimeseries = numpy.zeros((ntimepoints, nvials))
 #    for t, scan in enumerate(scansInOrder):
 #        print('Sampling vials for scan {0} of {1}'.format(t,ntimepoints))
-#        regionalStats = statsByRegion(scan, vialAtlas)
 #        vialTimeseries[t, :] = regionalStats['average']
 
 #    # Get rid of background
