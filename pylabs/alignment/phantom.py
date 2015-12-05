@@ -1,6 +1,7 @@
 from os.path import join
-import itertools
+import itertools, datetime
 import nibabel, numpy, scipy.stats, scipy.ndimage
+from pylabs.utils import progress
 
 
 def nancount(A):
@@ -48,7 +49,8 @@ affine = subjectImg.get_affine()
 stat = evaluate(target, subject)
 print('Baseline stat= {0}'.format(stat))
 
-d = 3 # delta for transformations from center.
+d = 10 # delta for transformations from center.
+verbose = False
 ranges = {}
 dims = ['x','y','r']
 for dim in dims:
@@ -58,20 +60,30 @@ transformSpaceDims = [len(dimrange) for dimrange in rangesInOrder]
 alltransforms =  list(itertools.product(*rangesInOrder))
 ntransforms = len(alltransforms)
 best = stat
+
+start = datetime.datetime.now()
+
 for i, (x, y, r) in enumerate(alltransforms):
 
     shifted = scipy.ndimage.interpolation.shift(subject, [x, y])
     rot = scipy.ndimage.interpolation.rotate(shifted, r, reshape=False)
     stat = evaluate(target, rot)
 
-    msg = 'Transform {0} of {1}: x={2} y={3} r={4} \t stat= {5}'
-    print(msg.format(i, ntransforms, x, y, r, stat))
+    if verbose:
+        msg = 'Transform {0} of {1}: x={2} y={3} r={4} \t stat= {5}'
+        print(msg.format(i, ntransforms, x, y, r, stat))
+    else:
+        progress.progressbar(i, ntransforms, start)
 
     if stat < best:
-        bestImage = rot
         best = stat
+        bestImage = rot
+        bestTransform = (x,y,r)
 
-nibabel.save(nibabel.Nifti1Image(rot, affine), 'transformed.nii.gz')
+print(' ')
+msg = 'Best transform: x={0} y={1} r={2} \t stat= {stat}'
+print(msg.format(*bestTransform, stat=best))
+nibabel.save(nibabel.Nifti1Image(bestImage, affine), 'transformed.nii.gz')
 
 
 
