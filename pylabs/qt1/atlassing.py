@@ -28,13 +28,16 @@ def findfile(rootdir, method, TR, date, runIndex, b1corr, coreg):
 
 ### ATLASSING
 
-coreg = False
+coreg = True
 rootdir = join(getlocaldataroot(),'phantom_qT1_disc')
+atlasfname = 'T1_seir_mag_TR4000_2014-07-23_mask.nii.gz'
+atlasfpath = join(rootdir,atlasfname)
 imageDictFile = join(rootdir,'phantom_disc_dict_dec3.txt')
 with open(imageDictFile) as dfile:
     images = cPickle.load(dfile)
 
 vialdata = {}
+ndictentries = len(images)*2
 
 for key, run in images.items():
     date = key[0]
@@ -45,9 +48,15 @@ for key, run in images.items():
     for b1corr in [True,False]:
         # check if we have file
         filepath = findfile(rootdir, method, TR, date, runIndex, b1corr, coreg)
+        newkey = (method, TR, b1corr, date)
+        print('{0: <65}\t{1}'.format(newkey, (filepath is not None)))
+        if filepath is None:
+            continue
+        if newkey in vialdata:
+            print(' --> Already have a run for this key.')
+        vialdata[newkey] = statsByRegion(filepath, atlasfpath)
 
-        print(filepath)
-        #regionalStats = statsByRegion(scan, vialAtlas)
+print('\nVialdata for {0} images.\n'.format(len(vialdata.keys())))
 
 
 
