@@ -1,63 +1,36 @@
 from __future__ import print_function
-import os, fnmatch, glob, datetime, sys
+import os, glob
 from os.path import join
-import numpy
 from pylabs.utils.paths import getlocaldataroot
 from pylabs.qt1.fitting import t1fit
 
-skipExisting = True
+async = False
+TR = 11.
+rootdir = join(getlocaldataroot(),'self_control','hbm_group_data','qT1')
 
-### FITTING
+for subjectdir in glob.glob(join(rootdir, 'scs*')):
 
-rootdir = join(getlocaldataroot(),'phantom_qT1_disc')
+    files = glob.glob(join(subjectdir,'fitted_qT1_spgr','*brain.nii.gz'))
+    files = sorted(files)
+    assert len(files) == 3
+    X = [2,10,20]
+    maskfile = files[0].replace('brain.nii.gz','brain_mask.nii.gz')
+    subject = os.path.basename(subjectdir)
+    outfile = join(subjectdir,'T1_{0}.nii.gz'.format(subject))
 
-
-for key, run in runs.items():
-    dateString = key[0]
-    date = datetime.datetime.strptime(dateString, '%Y%m%d').date()
-    method = key[1]
-    TR = key[2]
-    runIndex = key[3]
-
-    if method == 'b1map':
-        continue
-
-    msg = 'Working on session: {0} method: {1} TR: {2} Run: {3}'
-    print(msg.format(date, method.upper(), TR, runIndex))
- 
-    datadir = join(rootdir,
-        'phantom_qT1_{0}'.format(dateString),
-        'fitted_{0}_qT1'.format(method))
-    outdir = join(rootdir, 'T1_{0}_TR{1}'.format(method, TR))
-    if not os.path.isdir(outdir):
-        os.mkdir(outdir)
-    fnameTemplate = 'T1_{0}_TR{1}_{2}_{3}.nii.gz'
-    fname = fnameTemplate.format(method, TR, dateString, runIndex)
-    t1filepath = join(outdir, fname)
-
-    if skipExisting and os.path.isfile(t1filepath):
-        print('--> File exists, skipping scan.'.format(len(run)))
-        if not date in t1fitTimeseries[(method, TR)]:
-            t1fitTimeseries[(method, TR)][date] = t1filepath
-        continue
-
-    if len(run) < 3:
-        print('--> Skipping scan, only {0} files'.format(len(run)))
-        continue
-    files, X = zip(*sorted(run, key=lambda s: s[1]))
-    files = [join(datadir, f+'.nii') for f in files]
-    try:
-        if method.upper() == 'SPGR':
-            t1fit(files, X, t1filename=t1filepath, voiCoords=vialCoords,
-                scantype='SPGR', TR=TR)
-        else:
-            t1fit(files, X, t1filename=t1filepath, voiCoords=vialCoords)
-    except Exception as ex:
-        print('\n--> Error during fitting: ', ex)
+    kwargs = {}
+    kwargs['scantype'] = 'SPGR'
+    kwargs['TR'] = TR
+    kwargs['t1filename'] = outfile
+    if os.path.isfile(maskfile):
+        kwargs['maskfile'] = maskfile
+    if async:
+        kwargs['mute'] = True
+        pool.apply_async(t1fit, [files, X], kwargs)
     else:
-        if not date in t1fitTimeseries[(method, TR)]:
-            t1fitTimeseries[(method, TR)][date] = t1filepath
-        else:
-            print('--> Already have a run fitted for this date, '+
-                'this image not passed on down pipeline.')
+        try:
+            t1fit(files, X, **kwargs)
+        except Exception as ex:
+            print('\n--> Error during fitting: ', ex)
+
 
