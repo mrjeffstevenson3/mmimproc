@@ -27,11 +27,12 @@ scanner = phantdirs[0].split('/')[-2]
 scanner = str(scanner.split('_')[-1])
 scandateexception = ['20141108']
 phantom_ddata = defaultdict(list)
+phantom_dict_fname = pathjoin('/'.join(phantdirs[0].split('/')[0:-1]), 'phantom_disc_b1map_dict_dec4.txt')
 
 # for i, p in enumerate(phantdirs):
 #     print i, p
 
-# phantdirs = [phantdirs[40]]
+#phantdirs = [phantdirs[21]]
 
 for dir in phantdirs:
     b1mapdir = pathjoin(dir, 'B1map_qT1')
@@ -62,7 +63,7 @@ for dir in phantdirs:
                                                outfilename='b1map', scaling=scaling)
         for k, v in zip(key, val):
             phantom_ddata[k].append(v)
-
+    continue
     for parfile in phantSEIRparfiles:
         scaling = 'fp'
         key, val = phantom_midslice_par2mni(parfile=parfile, datadict=phantom_ddata, method='seir', outdir=seirdir, exceptions=scandateexception,
@@ -70,8 +71,6 @@ for dir in phantdirs:
         for k, v in zip(key, val):
              phantom_ddata[k].append(v)
 
-    seirhs_counter = collections.defaultdict(int)
-    seirhs_counter[sdate] += 1
     for parfile in phantSEIRHSparfiles:
         scaling = 'fp'
         key, val = phantom_midslice_par2mni(parfile=parfile, datadict=phantom_ddata, method='seirhs', outdir=seirhsdir, exceptions=scandateexception,
@@ -79,8 +78,6 @@ for dir in phantdirs:
         for k, v in zip(key, val):
             phantom_ddata[k].append(v)
 
-    spgr_counter = collections.defaultdict(int)
-    spgr_counter[sdate] += 1
     for parfile in phantSPGRparfiles:
         scaling = 'fp'
         key, val = phantom_midslice_par2mni(parfile=parfile, datadict=phantom_ddata, method='orig_spgr', outdir=spgrdir, exceptions=scandateexception,
@@ -88,8 +85,6 @@ for dir in phantdirs:
         for k, v in zip(key, val):
             phantom_ddata[k].append(v)
 
-    seirepi_counter = collections.defaultdict(int)
-    seirepi_counter[sdate] += 1
     for parfile in phantSEIREPIparfiles:
         scaling = 'fp'
         key, val = phantom_midslice_par2mni(parfile=parfile, datadict=phantom_ddata, method='seirepi', outdir=seirepidir, exceptions=scandateexception,
@@ -97,8 +92,6 @@ for dir in phantdirs:
         for k, v in zip(key, val):
             phantom_ddata[k].append(v)
 
-    tseir_counter = collections.defaultdict(int)
-    tseir_counter[sdate] += 1
     for parfile in phantTSEIRparfiles:
         scaling = 'fp'
         key, val = phantom_midslice_par2mni(parfile=parfile, datadict=phantom_ddata, method='tseir', outdir=seirepidir, exceptions=scandateexception,
@@ -106,9 +99,7 @@ for dir in phantdirs:
         for k, v in zip(key, val):
             phantom_ddata[k].append(v)
 
-if scanner == 'disc':
-    with open(pathjoin('/'.join(phantdirs[0].split('/')[0:-1]), 'phantom_disc_dict.txt'), "wb") as f:
-        f.write(dumps(phantom_ddata))
-elif scanner == 'slu':
-    with open(pathjoin('/'.join(phantdirs[0].split('/')[0:-1]), 'phantom_slu_dict.txt'), "wb") as f:
-        f.write(dumps(phantom_ddata))
+
+with open(phantom_dict_fname, "wb") as f:
+    f.write(dumps(phantom_ddata))
+

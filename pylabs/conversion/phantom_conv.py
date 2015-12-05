@@ -1,6 +1,7 @@
 
 import sys, os, datetime
 import itertools
+import subprocess
 from os.path import join as pathjoin
 import fnmatch, collections, datetime, cPickle, cloud
 import numpy as np
@@ -80,15 +81,25 @@ def phantom_B1_midslice_par2mni(parfile, datadict, outdir=None, exceptions=None,
     slice_phase218 = scipy.ndimage.zoom(in_slice_phase, mnizoomfactor, order=0)
     slice_mag_mni = slice_mag218[18:200,:]
     #use dipy and ndimage to create a mask
-    slice_mag_mni_masked, slice_mag_mni_mask = median_otsu(slice_mag_mni, 8, 1)
+    slice_mag_mni_masked, slice_mag_mni_mask = median_otsu(slice_mag_mni, 9, 1)
     slice_mag_mni_mask = scipy.ndimage.morphology.binary_dilation(slice_mag_mni_mask, iterations=2)
     slice_mag_mni_mask = scipy.ndimage.morphology.binary_fill_holes(slice_mag_mni_mask)
     slice_phase_raw_mni = slice_phase218[18:200,:]
     slice_phase_mf_mni = scipy.ndimage.filters.median_filter(slice_phase_raw_mni, 6)
-    slice_phase_mf_mni = slice_phase_mf_mni * slice_mag_mni_mask
+    slice_phase_mf_mni_masked = slice_phase_mf_mni * slice_mag_mni_mask
 
     if scandate not in exceptions:
         slice_phase_mf_mni = np.fliplr(slice_phase_mf_mni)
+        slice_phase_mf_mni_masked = np.fliplr(slice_phase_mf_mni_masked)
+        slice_mag_mni_masked = np.fliplr(slice_mag_mni_masked)
+        slice_mag_mni_mask = np.fliplr(slice_mag_mni_mask)
+    elif scandate in exceptions:
+        slice_phase_mf_mni = np.flipud(slice_phase_mf_mni)
+        slice_phase_mf_mni_masked = np.flipud(slice_phase_mf_mni_masked)
+        slice_mag_mni_masked = np.flipud(slice_mag_mni_masked)
+        slice_mag_mni_mask = np.flipud(slice_mag_mni_mask)
+        slice_phase_mf_mni = np.fliplr(slice_phase_mf_mni)
+        slice_phase_mf_mni_masked = np.fliplr(slice_phase_mf_mni_masked)
         slice_mag_mni_masked = np.fliplr(slice_mag_mni_masked)
         slice_mag_mni_mask = np.fliplr(slice_mag_mni_mask)
 
@@ -107,7 +118,7 @@ def phantom_B1_midslice_par2mni(parfile, datadict, outdir=None, exceptions=None,
         run = len(runkeys) + 1 # need to make new run    case 1, case 3
 
     slice_mag_mni_mask_nimg = nifti1.Nifti1Image(slice_mag_mni_mask.astype(np.float32), mni_affine)
-    nibabel.save(slice_mag_mni_mask_nimg, outfilename+'_mag_mask_'+str(run)+'.nii')
+    nibabel.save(slice_mag_mni_mask_nimg, outfilename+'_mag_'+str(run)+'_mask.nii')
 
     nimg_p = nifti1.Nifti1Image(slice_phase_mf_mni, mni_affine, pr_hdr)
     nhdr_p = nimg_p.header
@@ -150,7 +161,7 @@ def phantom_B1_midslice_par2mni(parfile, datadict, outdir=None, exceptions=None,
     prov.log(outfilename+'_mag_'+str(run)+'.nii', '1sl mni b1 mag', parfile)
 
     key = [(mydate, mymethod+'_phase', tr, run), (mydate, mymethod+'_mag', tr, run), (mydate, mymethod+'_mag_mask', tr, run)]  # case 3 = found key value pair exists we have repeat run   # case 1 = no key exists eg new file/run for loop never runs
-    value = [(outfilename+'_phase_'+str(run)+'.nii', 'phase'), (outfilename+'_mag_'+str(run)+'.nii', 'magnitude'), (outfilename+'_mag_mask_'+str(run)+'.nii', 'mask')]
+    value = [(outfilename+'_phase_'+str(run)+'.nii', 'phase'), (outfilename+'_mag_'+str(run)+'.nii', 'magnitude'), (outfilename+'_mag_'+str(run)+'_mask.nii', 'mask')]
 
     if verbose:
         print key, value
@@ -178,11 +189,12 @@ def phantom_midslice_par2mni(parfile, datadict, method, outdir=None, exceptions=
         contrast = ti
         outfilename += '_ti_'+str(ti).zfill(4)
 
+    outfilename += '_tr_'+str(tr).replace('.', 'p')
     max_slices = int(pr_hdr.general_info['max_slices'])
     scandate = pr_hdr.general_info['exam_date'].split('/')[0].strip().replace(".","")
     slope, intercept = pr_hdr.get_data_scaling(scaling)
-    slope = np.array([1.])
-    intercept = np.array([0.])
+    slope = np.array([1.])           #not sure these should be here. why overwrite orig slope
+    intercept = np.array([0.])           #not sure these should be here
     in_data = np.array(pr_img.dataobj)
     out_dtype = np.float64
 
@@ -212,6 +224,9 @@ def phantom_midslice_par2mni(parfile, datadict, method, outdir=None, exceptions=
 
     if scandate not in exceptions:
         slice_mag_mni = np.fliplr(slice_mag_mni)
+    elif scandate in exceptions:
+        slice_mag_mni = np.flipud(slice_mag_mni)
+        slice_mag_mni = np.fliplr(slice_mag_mni)
 
     mydate = datetime.datetime.strptime(scandate, '%Y%m%d').date()
     mymethod = method+'_mag'
@@ -226,6 +241,14 @@ def phantom_midslice_par2mni(parfile, datadict, method, outdir=None, exceptions=
             break;   # if you just want the run number  # case 2 key found but value/contrast does not exist eg new file
     else:
         run = len(runkeys) + 1 # need to make new run    case 1, case 3
+
+    if ti > 2900:
+        #use dipy and ndimage to create a mask
+        slice_mag_mni_masked, slice_mag_mni_mask = median_otsu(slice_mag_mni, 8, 1)
+        slice_mag_mni_mask = scipy.ndimage.morphology.binary_dilation(slice_mag_mni_mask, iterations=2)
+        slice_mag_mni_mask = scipy.ndimage.morphology.binary_fill_holes(slice_mag_mni_mask)
+        nimg_mm = nifti1.Nifti1Image(slice_mag_mni_mask, mni_affine, pr_hdr)
+        nibabel.save(nimg_mm, outfilename+'_mag_1slmni_'+str(run)+'_mask.nii')
 
     nimg_m = nifti1.Nifti1Image(slice_mag_mni, mni_affine, pr_hdr)
     nhdr_m = nimg_m.header
@@ -257,6 +280,9 @@ def phantom_midslice_par2mni(parfile, datadict, method, outdir=None, exceptions=
         slice_real218 = scipy.ndimage.zoom(in_slice_real, mnizoomfactor, order=0)
         slice_real_mni = slice_real218[18:200,:]
         if scandate not in exceptions:
+            slice_real_mni = np.fliplr(slice_real_mni)
+        elif scandate in exceptions:
+            slice_real_mni = np.flipud(slice_real_mni)
             slice_real_mni = np.fliplr(slice_real_mni)
 
         mydate = datetime.datetime.strptime(scandate, '%Y%m%d').date()
@@ -297,8 +323,8 @@ def phantom_midslice_par2mni(parfile, datadict, method, outdir=None, exceptions=
         nibabel.save(nimg_r, outfilename+'_real_1slmni_'+str(run)+'.nii')
         prov.log(outfilename+'_real_1slmni_'+str(run)+'.nii', 'real component of '+outfilename, parfile,)
 
-        key = [(mydate, method+'_mag', tr, run), (mydate, mymethod, tr, run),]
-        value = [(outfilename+'_mag_1slmni_'+str(run)+'.nii', contrast), (outfilename+'_real_1slmni_'+str(run)+'.nii', contrast),]
+        key = [(mydate, method+'_mag', tr, run), (mydate, mymethod, tr, run), (mydate, method+'_mag', tr, run)]
+        value = [(outfilename+'_mag_1slmni_'+str(run)+'.nii', contrast), (outfilename+'_real_1slmni_'+str(run)+'.nii', contrast),  (outfilename+'_mag_1slmni_'+str(run)+'_mask.nii', 'mask')]
 
     else:
         key = [(mydate, mymethod, tr, run)]
