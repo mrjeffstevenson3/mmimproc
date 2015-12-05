@@ -3,9 +3,6 @@ import os, fnmatch, glob, collections, datetime, cPickle, sys
 from os.path import join
 from collections import defaultdict
 import numpy
-import matplotlib.pyplot as plt
-from pylabs.regional import statsByRegion
-from pylabs.correlation.atlas import atlaslabels
 from pylabs.utils.paths import getlocaldataroot
 from pylabs.qt1.fitting import t1fit
 
@@ -31,7 +28,6 @@ for key, run in images.items():
     TR = key[2]
     runIndex = key[3]
 
-    targetdate = datetime.datetime(year=2015,month=6,day=30).date()
     if 'b1map' in method:
         continue
 
@@ -94,34 +90,5 @@ for key, run in images.items():
 pool.close()
 pool.join()
 
-#### ATLASSING
 
-#atlasfile = 't1_phantom_mask_course.nii.gz'
-#vialAtlas = join('data','atlases',atlasfile)
-#labels = atlaslabels(atlasfile)
-#nvials = len(labels)
-
-#for key, timeseries in t1fitTimeseries.items():
-#    method = key[0]
-#    TR = key[1]
-
-#    plotname = '{0}_{1}.png'.format(method, TR)
-
-#    dates = sorted(timeseries.keys())
-#    scansInOrder = [timeseries[d] for d in dates]
-#    ntimepoints = len(dates)
-#    vialTimeseries = numpy.zeros((ntimepoints, nvials))
-#    for t, scan in enumerate(scansInOrder):
-#        print('Sampling vials for scan {0} of {1}'.format(t,ntimepoints))
-#        regionalStats = statsByRegion(scan, vialAtlas)
-#        vialTimeseries[t, :] = regionalStats['average']
-
-#    # Get rid of background
-#    vialTimeseries = numpy.delete(vialTimeseries, 0, 1)
-#    del labels[0]
-
-#    # plot development over time for each vial
-#    lines = plt.plot(dates, vialTimeseries) 
-#    plt.legend(lines, labels, loc=8)
-#    plt.savefig(plotname)
 
