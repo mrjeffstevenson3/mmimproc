@@ -62,6 +62,19 @@ print('\nVialdata for {0} images.\n'.format(len(vialdata.keys())))
 labels = atlaslabels(atlasfname)
 nvials = len(labels)
 
+plotsubdir = 'coreg'
+if not coreg:
+    plotsubdir = 'nocoreg'
+plotdir = join(rootdir,'plots',plotsubdir)
+b1corrtag = {True:'b1corr',False:'notb1c'}
+if not os.path.isdir(plotdir):
+    os.makedirs(plotdir)
+
+methods = set([k[:3] for k in vialdata.keys()])
+for method in methods:
+    methodstr = '{0}_{1}_{2}'.format(method[0], method[1], b1corrtag[method[2]])
+    print(methodstr)
+
 
 #    plotname = '{0}_{1}.png'.format(method, TR)
 
