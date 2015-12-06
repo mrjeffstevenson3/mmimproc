@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 from pylabs.regional import statsByRegion
 from pylabs.correlation.atlas import atlaslabels
 from pylabs.utils.paths import getlocaldataroot
+import pylabs.qt1.expected
 
 
 def findfile(rootdir, method, TR, date, runIndex, b1corr, coreg):
@@ -26,9 +27,9 @@ def findfile(rootdir, method, TR, date, runIndex, b1corr, coreg):
     return filepath
 
 
-### ATLASSING
+### Gather data by vial
 
-coreg = True
+coreg = False # Look at coregistered file or non-coregistered files
 rootdir = join(getlocaldataroot(),'phantom_qT1_disc')
 atlasfname = 'T1_seir_mag_TR4000_2014-07-23_mask.nii.gz'
 atlasfpath = join(rootdir,atlasfname)
@@ -60,7 +61,14 @@ print('\nVialdata for {0} images.\n'.format(len(vialdata.keys())))
 
 
 labels = atlaslabels(atlasfname)
+vizlabels = labels[1:] # remove label for background
 nvials = len(labels)
+
+## Get expected data
+expectedByDate = pylabs.qt1.expected.readfromfile()
+datesWithTemps = expectedByDate.keys()
+
+## Start plotting
 
 plotsubdir = 'coreg'
 if not coreg:
@@ -70,27 +78,34 @@ b1corrtag = {True:'b1corr',False:'notb1c'}
 if not os.path.isdir(plotdir):
     os.makedirs(plotdir)
 
+def plotT1Timeseries(dates, data, labels, title):
+    plotfpath = join(plotdir,'timeseries_{0}.png'.format(title))
+    plt.figure()
+    lines = plt.plot(dates, data) 
+    plt.legend(lines, labels, loc=8)
+    plt.savefig(plotfpath)
+
 methods = set([k[:3] for k in vialdata.keys()])
 for method in methods:
     methodstr = '{0}_{1}_{2}'.format(method[0], method[1], b1corrtag[method[2]])
     print(methodstr)
+    thisMethodKeys = [k for k in vialdata.keys() if k[:3] == method]
+    dates = sorted([k[3] for k in thisMethodKeys if k[3] in datesWithTemps])
+    regStatsInOrder = [vialdata[method+(d,)]['average'] for d in dates]
+    obsVialtc = numpy.array(regStatsInOrder)
+
+    ## Observed data
+    obsVialtc = numpy.delete(obsVialtc, 0, 1) # Get rid of background
+    plotT1Timeseries(dates, obsVialtc, vizlabels, methodstr)
+
+    ## Expected plot for same dates
+    expVialtc = numpy.array([expectedByDate[d] for d in dates])
+    plotT1Timeseries(dates, expVialtc, vizlabels, methodstr+'_expected')
+
+    ## Difference
+    diffVialtc = obsVialtc - expVialtc
+    plotT1Timeseries(dates, diffVialtc, vizlabels, methodstr+'_diff')
+
+    
 
 
-#    plotname = '{0}_{1}.png'.format(method, TR)
-
-#    dates = sorted(timeseries.keys())
-#    scansInOrder = [timeseries[d] for d in dates]
-#    ntimepoints = len(dates)
-#    vialTimeseries = numpy.zeros((ntimepoints, nvials))
-#    for t, scan in enumerate(scansInOrder):
-#        print('Sampling vials for scan {0} of {1}'.format(t,ntimepoints))
-#        vialTimeseries[t, :] = regionalStats['average']
-
-#    # Get rid of background
-#    vialTimeseries = numpy.delete(vialTimeseries, 0, 1)
-#    del labels[0]
-
-#    # plot development over time for each vial
-#    lines = plt.plot(dates, vialTimeseries) 
-#    plt.legend(lines, labels, loc=8)
-#    plt.savefig(plotname)
