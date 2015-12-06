@@ -3,9 +3,12 @@ import os, glob
 from os.path import join
 from pylabs.utils.paths import getlocaldataroot
 from pylabs.qt1.fitting import t1fit
+from multiprocessing import Pool
 
-async = False
+
+async = True
 TR = 11.
+pool = Pool(10)
 rootdir = join(getlocaldataroot(),'self_control','hbm_group_data','qT1')
 
 for subjectdir in glob.glob(join(rootdir, 'scs*')):
