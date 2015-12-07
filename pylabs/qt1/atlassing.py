@@ -62,7 +62,7 @@ print('\nVialdata for {0} images.\n'.format(len(vialdata.keys())))
 
 labels = atlaslabels(atlasfname)
 vizlabels = labels[1:] # remove label for background
-nvials = len(labels)
+nvials = len(vizlabels)
 
 ## Get expected data
 expectedByDate = pylabs.qt1.expected.readfromfile()
@@ -79,9 +79,10 @@ if not os.path.isdir(plotdir):
     os.makedirs(plotdir)
 vialsOfInterest = [7,12]
 
+
 def plotT1Timeseries(dates, data, labels, title, dtype=None, secondaryData=None):
     ylimPresets = {'t1':[0,2500],'absdiff':[-500,500],'reldiff':[-50,50]}
-    plotfpath = join(plotdir,'timeseries_{0}.png'.format(title))
+    plotfpath = join(plotdir,'{0}_timeseries.png'.format(title))
     plt.figure()
     lines = plt.plot(dates, data) 
     axes = plt.gca()
@@ -131,6 +132,19 @@ for method in methods:
 
         plotT1Timeseries(dates, svExpObs, ['model','observed','diff'], 
             methodstr+'_vial{0}'.format(voi), dtype='t1', secondaryData=svReldiff)
+
+    ## Time average:
+    plt.figure()
+    ax = plt.gca()
+    width = .2
+    ind = numpy.arange(nvials)
+    rects1 = ax.bar(ind,        obsVialtc.mean(axis=0), width, color='blue')
+    rects2 = ax.bar(ind+width,  expVialtc.mean(axis=0), width, color='green')
+    rects3 = ax.bar(ind+width*2, diffVialtc.mean(axis=0), width, color='red')
+    ax.set_ylim([-300,2500])
+    plt.legend((rects1[0],rects2[0],rects3[0]), ['model','observed','diff'])
+    plotfpath = join(plotdir,'{0}_avg.png'.format(methodstr))
+    plt.savefig(plotfpath)
 
     
 
