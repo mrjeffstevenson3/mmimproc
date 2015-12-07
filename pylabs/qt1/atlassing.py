@@ -29,7 +29,7 @@ def findfile(rootdir, method, TR, date, runIndex, b1corr, coreg):
 
 ### Gather data by vial
 
-coreg = False # Look at coregistered file or non-coregistered files
+coreg = True # Look at coregistered file or non-coregistered files
 rootdir = join(getlocaldataroot(),'phantom_qT1_disc')
 atlasfname = 'T1_seir_mag_TR4000_2014-07-23_mask.nii.gz'
 atlasfpath = join(rootdir,atlasfname)
@@ -142,7 +142,7 @@ for method in methods:
     rects2 = ax.bar(ind+width,  expVialtc.mean(axis=0), width, color='green')
     rects3 = ax.bar(ind+width*2, diffVialtc.mean(axis=0), width, color='red')
     ax.set_ylim([-300,2500])
-    plt.legend((rects1[0],rects2[0],rects3[0]), ['model','observed','diff'])
+    plt.legend((rects1[0],rects2[0],rects3[0]), ['model','observed','diff'], loc=2)
     plotfpath = join(plotdir,'{0}_avg.png'.format(methodstr))
     plt.savefig(plotfpath)
 
