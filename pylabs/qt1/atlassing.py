@@ -29,7 +29,7 @@ def findfile(rootdir, method, TR, date, runIndex, b1corr, coreg):
 
 ### Gather data by vial
 
-coreg = False # Look at coregistered file or non-coregistered files
+coreg = True # Look at coregistered file or non-coregistered files
 rootdir = join(getlocaldataroot(),'phantom_qT1_disc')
 atlasfname = 'T1_seir_mag_TR4000_2014-07-23_mask.nii.gz'
 atlasfpath = join(rootdir,atlasfname)
@@ -78,10 +78,14 @@ b1corrtag = {True:'b1corr',False:'notb1c'}
 if not os.path.isdir(plotdir):
     os.makedirs(plotdir)
 
-def plotT1Timeseries(dates, data, labels, title):
+def plotT1Timeseries(dates, data, labels, title, dtype=None):
+    ylimPresets = {'t1':[0,2500],'absdiff':[-500,500],'reldiff':[-50,50]}
     plotfpath = join(plotdir,'timeseries_{0}.png'.format(title))
     plt.figure()
     lines = plt.plot(dates, data) 
+    axes = plt.gca()
+    if dtype in ylimPresets:
+        axes.set_ylim(ylimPresets[dtype])
     plt.legend(lines, labels, loc=8)
     plt.savefig(plotfpath)
 
@@ -96,15 +100,21 @@ for method in methods:
 
     ## Observed data
     obsVialtc = numpy.delete(obsVialtc, 0, 1) # Get rid of background
-    plotT1Timeseries(dates, obsVialtc, vizlabels, methodstr)
+    plotT1Timeseries(dates, obsVialtc, vizlabels, methodstr, dtype='t1')
 
     ## Expected plot for same dates
     expVialtc = numpy.array([expectedByDate[d] for d in dates])
-    plotT1Timeseries(dates, expVialtc, vizlabels, methodstr+'_expected')
+    plotT1Timeseries(dates, expVialtc, vizlabels, methodstr+'_expected', dtype='t1')
 
     ## Difference
-    diffVialtc = obsVialtc - expVialtc
-    plotT1Timeseries(dates, diffVialtc, vizlabels, methodstr+'_diff')
+    diffVialtc = expVialtc - obsVialtc
+    plotT1Timeseries(dates, diffVialtc, vizlabels, methodstr+'_diff', 
+        dtype='absdiff')
+
+    ## Relative Difference
+    reldiffVialtc = ((expVialtc - obsVialtc)/expVialtc)*100
+    plotT1Timeseries(dates, reldiffVialtc, vizlabels, methodstr+'_reldiff',     
+        dtype='reldiff')
 
     
 
