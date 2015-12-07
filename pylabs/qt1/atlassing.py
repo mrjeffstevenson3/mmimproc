@@ -29,7 +29,7 @@ def findfile(rootdir, method, TR, date, runIndex, b1corr, coreg):
 
 ### Gather data by vial
 
-coreg = True # Look at coregistered file or non-coregistered files
+coreg = False # Look at coregistered file or non-coregistered files
 rootdir = join(getlocaldataroot(),'phantom_qT1_disc')
 atlasfname = 'T1_seir_mag_TR4000_2014-07-23_mask.nii.gz'
 atlasfpath = join(rootdir,atlasfname)
@@ -77,8 +77,9 @@ plotdir = join(rootdir,'plots',plotsubdir)
 b1corrtag = {True:'b1corr',False:'notb1c'}
 if not os.path.isdir(plotdir):
     os.makedirs(plotdir)
+vialsOfInterest = [7,12]
 
-def plotT1Timeseries(dates, data, labels, title, dtype=None):
+def plotT1Timeseries(dates, data, labels, title, dtype=None, secondaryData=None):
     ylimPresets = {'t1':[0,2500],'absdiff':[-500,500],'reldiff':[-50,50]}
     plotfpath = join(plotdir,'timeseries_{0}.png'.format(title))
     plt.figure()
@@ -86,6 +87,11 @@ def plotT1Timeseries(dates, data, labels, title, dtype=None):
     axes = plt.gca()
     if dtype in ylimPresets:
         axes.set_ylim(ylimPresets[dtype])
+    if secondaryData is not None:
+        ax2 = axes.twinx()
+        ax2lines = ax2.plot(dates, secondaryData, 'r--')
+        ax2.set_ylim(ylimPresets['reldiff'])
+        lines += ax2lines
     plt.legend(lines, labels, loc=8)
     plt.savefig(plotfpath)
 
@@ -104,7 +110,8 @@ for method in methods:
 
     ## Expected plot for same dates
     expVialtc = numpy.array([expectedByDate[d] for d in dates])
-    plotT1Timeseries(dates, expVialtc, vizlabels, methodstr+'_expected', dtype='t1')
+    plotT1Timeseries(dates, expVialtc, vizlabels, methodstr+'_expected', 
+        dtype='t1')
 
     ## Difference
     diffVialtc = expVialtc - obsVialtc
@@ -115,6 +122,15 @@ for method in methods:
     reldiffVialtc = ((expVialtc - obsVialtc)/expVialtc)*100
     plotT1Timeseries(dates, reldiffVialtc, vizlabels, methodstr+'_reldiff',     
         dtype='reldiff')
+
+    ## Singled out vials:
+    for voi in vialsOfInterest:
+        voiIndex = vizlabels.index(str(voi))
+        svExpObs = numpy.array([expVialtc[:,voiIndex],obsVialtc[:,voiIndex]]).T
+        svReldiff = reldiffVialtc[:,voiIndex]
+
+        plotT1Timeseries(dates, svExpObs, ['model','observed','diff'], 
+            methodstr+'_vial{0}'.format(voi), dtype='t1', secondaryData=svReldiff)
 
     
 
