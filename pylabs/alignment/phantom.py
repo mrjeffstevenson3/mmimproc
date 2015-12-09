@@ -24,17 +24,17 @@ def evaluate(target, subject):
     return numpy.absolute(diffmap).mean()
 
 def transform(indata, tx, ty, rxy):
-    shifted = scipy.ndimage.interpolation.shift(subject, [tx, ty], order=1)
+    shifted = scipy.ndimage.interpolation.shift(indata, [tx, ty], order=1)
     rot = scipy.ndimage.interpolation.rotate(shifted, rxy, reshape=False, order=1)
     return rot
 
-def align(subjectfile, targetfile):
+def align(subjectfile, targetfile, delta=3):
     target = nibabel.load(targetfile).get_data()
     subjectImg = nibabel.load(subjectfile)
     subject = subjectImg.get_data()
     stat = evaluate(target, subject)
     print('Baseline stat= {0}'.format(stat))
-    d = 10 # delta for transformations from center.
+    d = delta # delta for transformations from center.
     verbose = False
     ranges = {}
     dims = ['x','y','r']
@@ -61,12 +61,17 @@ def align(subjectfile, targetfile):
     print(' ')
     msg = 'Best transform: x={0} y={1} r={2} \t stat= {stat}'
     print(msg.format(*bestTransform, stat=best))
-    return bestTransform
+    xform = {
+        'tx':bestTransform[0],
+        'ty':bestTransform[1],
+        'rxy':bestTransform[2]
+    }
+    return xform
 
 def savetransformed(subjectfile, xform, newfile, newAffine):
     indata = nibabel.load(subjectfile).get_data()
-    xformdata = transform(indata, tx, ty, rxy)
-    nibabel.save(Nifti1Image(xformdata, newAffine), newfile)
+    xformdata = transform(indata, xform['tx'], xform['ty'], xform['rxy'])
+    nibabel.save(nibabel.Nifti1Image(xformdata, newAffine), newfile)
 
 
 
