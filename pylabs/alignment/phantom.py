@@ -28,7 +28,7 @@ def transform(indata, tx, ty, rxy):
     rot = scipy.ndimage.interpolation.rotate(shifted, rxy, reshape=False, order=1)
     return rot
 
-def align(subjectfile, targetfile, delta=3):
+def align(subjectfile, targetfile, delta=5):
     target = nibabel.load(targetfile).get_data()
     subjectImg = nibabel.load(subjectfile)
     subject = subjectImg.get_data()
@@ -45,6 +45,7 @@ def align(subjectfile, targetfile, delta=3):
     alltransforms =  list(itertools.product(*rangesInOrder))
     ntransforms = len(alltransforms)
     best = stat
+    bestTransform = (0,0,0)
     start = datetime.datetime.now()
     for i, (x, y, r) in enumerate(alltransforms):
         transformed = transform(subject, x, y, r)
