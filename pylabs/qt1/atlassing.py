@@ -1,5 +1,5 @@
 from __future__ import print_function
-import os, fnmatch, glob, collections, datetime, cPickle, sys
+import os, fnmatch, glob, collections, datetime, cPickle, sys, pickle
 from os.path import join
 import numpy
 import matplotlib.pyplot as plt
@@ -29,7 +29,7 @@ def findfile(rootdir, method, TR, date, runIndex, b1corr, coreg):
 
 ### Gather data by vial
 
-coreg = True # Look at coregistered file or non-coregistered files
+coreg = False # Look at coregistered file or non-coregistered files
 rootdir = join(getlocaldataroot(),'phantom_qT1_disc')
 atlasfname = 'T1_seir_mag_TR4000_2014-07-23_mask.nii.gz'
 atlasfpath = join(rootdir,atlasfname)
@@ -97,6 +97,8 @@ def plotT1Timeseries(dates, data, labels, title, dtype=None, secondaryData=None)
     plt.savefig(plotfpath)
 
 methods = set([k[:3] for k in vialdata.keys()])
+datafile = 'data/t1_factordata_{0}.pickle'.format(plotsubdir)
+factordata = {}
 for method in methods:
     methodstr = '{0}_{1}_{2}'.format(method[0], method[1], b1corrtag[method[2]])
     print(methodstr)
@@ -145,6 +147,13 @@ for method in methods:
     plt.legend((rects1[0],rects2[0],rects3[0]), ['model','observed','diff'], loc=2)
     plotfpath = join(plotdir,'{0}_avg.png'.format(methodstr))
     plt.savefig(plotfpath)
+
+    ## Save data to generate correction factor:
+    factordata[method] = {'dates':dates, 
+                            'model':expVialtc.tolist(), 
+                            'observed':obsVialtc.tolist()}
+
+pickle.dump(factordata, open( datafile, 'wb'))
 
     
 
