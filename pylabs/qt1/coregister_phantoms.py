@@ -24,8 +24,11 @@ for f, subjectfile in enumerate(uncoregfiles):
     if os.path.isfile(newFile) and not overwrite:
         print('File exists, skipping..')
         continue
-    xform = pylabs.alignment.phantom.align(subjectfile, targetfile, delta=10)
-    pylabs.alignment.phantom.savetransformed(subjectfile, xform, newFile, newAffine)
+    try:
+        xform = pylabs.alignment.phantom.align(subjectfile, targetfile, delta=10)
+        pylabs.alignment.phantom.savetransformed(subjectfile, xform, newFile, newAffine)
+    except:
+        print('Error aligning file.')
 
 #    ornt = io_orientation(np.diag([-1, 1, 1, 1]).dot(pr_img.affine))
 #    t_aff = inv_ornt_aff(ornt, pr_img.shape)
