@@ -24,5 +24,5 @@ class CorrectionFactor(object):
         refdateIndex = self.dates.index(refdate)
         obs = self.observed[refdateIndex,:]
         mod = self.model[refdateIndex,:]
-        return 1-((mod-obs)/mod).mean()
+        return 1+((mod-obs)/mod).mean()
         
