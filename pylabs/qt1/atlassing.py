@@ -14,12 +14,14 @@ def findfile(rootdir, method, TR, date, runIndex, b1corr, coreg):
     trstr = str(TR).replace('.','p')
     dirvars = (method, trstr)
     if coreg:
-        dirtem = 'T1_{0}_TR{1}_reg2723_dec4{2}'
-        dirvars += (b1corrtag[b1corr],)
+        #dirtem = 'T1_{0}_TR{1}_reg2723_dec4{2}'
+        dirtem = 'T1_{0}_TR{1}'
+        #dirvars += (b1corrtag[b1corr],)
+        filetem = 'T1_{0}_TR{1}_{2}_{3}{4}_coreg723.nii.gz'
     else:
         dirtem = 'T1_{0}_TR{1}'
+        filetem = 'T1_{0}_TR{1}_{2}_{3}{4}.nii.gz'
     dirpath = join(rootdir, dirtem.format(*dirvars))
-    filetem = 'T1_{0}_TR{1}_{2}_{3}{4}.nii.gz'
     filevars = (method, trstr, date, runIndex, b1corrtag[b1corr])
     filepath = join(dirpath, filetem.format(*filevars))
     if not os.path.isfile(filepath):
@@ -29,7 +31,7 @@ def findfile(rootdir, method, TR, date, runIndex, b1corr, coreg):
 
 ### Gather data by vial
 
-coreg = False # Look at coregistered file or non-coregistered files
+coreg = True # Look at coregistered file or non-coregistered files
 rootdir = join(getlocaldataroot(),'phantom_qT1_disc')
 atlasfname = 'T1_seir_mag_TR4000_2014-07-23_mask.nii.gz'
 atlasfpath = join(rootdir,atlasfname)
