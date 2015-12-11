@@ -36,17 +36,17 @@ def t1fit(files, X, TR=None, maskfile=None, b1file=None, scantype='IR', t1filena
             raise ValueError(errmsg.format(maskImg.shape, imageDimensions))
         mask = maskImg.get_data().ravel()
 
+    if b1file is not None:
+        b1Img = nibabel.load(b1file)
+        if b1Img.shape != imageDimensions:
+            errmsg = 'B1 map dimensions {0} not the same as image {1}.'
+            raise ValueError(errmsg.format(b1Img.shape, imageDimensions))
+        B1 = b1Img.get_data().ravel()
+
     if (scantype == 'SPGR') and (TR is None):
         raise ValueError('SPGR fitting requires TR argument.')
 
     voisByIndex = {}
-    ## This gets complicated because we don't know if any dimensions are 
-    ## complex instead of spatial
-#    if voiCoords is not None:
-#        multi_index = tuple([numpy.array(d) for d in voiCoords.T.tolist()])
-#        # how many coord dims? this is the number of spatial dims for ravel_index
-#        vois = numpy.ravel_multi_index(multi_index, imageDimensions)
-#        voisByIndex = {vois[c]:voiCoords[c,:] for c in range(vois.size)}
 
     affine = anImg.get_affine()
     X = numpy.array(X)
@@ -65,17 +65,21 @@ def t1fit(files, X, TR=None, maskfile=None, b1file=None, scantype='IR', t1filena
     t1data = numpy.zeros(data[0].shape)
     start = datetime.now()
     for v in range(nvoxels):
-        if not mute:
-            progress.progressbar(v, nvoxels, start)
-        Y = numpy.array([image[v] for image in data])
         if maskfile is not None:
             if not mask[v]:
                 continue
+        if not mute:
+            progress.progressbar(v, nvoxels, start)
+        Y = numpy.array([image[v] for image in data])
+        if b1file is not None:
+            Xv = X*(B1[v]/100.)
+        else:
+            Xv = X
         try:
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
                 if scantype == 'IR':
-                    ai = Y[X.argmax()]  # S0
+                    ai = Y[Xv.argmax()]  # S0
                     bi = 2              # 'z'
                     ci = 1000           # T1
                     p0=[ai, bi, ci]
@@ -90,12 +94,12 @@ def t1fit(files, X, TR=None, maskfile=None, b1file=None, scantype='IR', t1filena
                     poi = 1
                 else:
                     raise ValueError('Unknown scantype: '+scantype)
-                popt, pcov = curve_fit(formula, X, Y, p0=p0)
+                popt, pcov = curve_fit(formula, Xv, Y, p0=p0)
 
                 t1data[v] = popt[poi]
 
                 if v in voisByIndex:
-                    plotFit(formula, popt, X, Y, t1filename, voisByIndex[v])
+                    plotFit(formula, popt, Xv, Y, t1filename, voisByIndex[v])
         except RuntimeError:
             pass
 
@@ -103,16 +107,6 @@ def t1fit(files, X, TR=None, maskfile=None, b1file=None, scantype='IR', t1filena
     t1data = t1data.reshape(imageDimensions)
     t1img = nibabel.Nifti1Image(t1data, affine)
     nibabel.save(t1img, t1filename)
-
-    if b1file is not None:
-        b1Img = nibabel.load(b1file)
-        if b1Img.shape != imageDimensions:
-            errmsg = 'B1 map dimensions {0} not the same as image {1}.'
-            raise ValueError(errmsg.format(b1Img.shape, imageDimensions))
-        B1 = b1Img.get_data()
-        t1corrected = t1data * numpy.square(B1/100)
-        t1imgCorr = nibabel.Nifti1Image(t1corrected, affine)
-        nibabel.save(t1imgCorr, t1filename.replace('.nii','_b1corr.nii'))
     return t1filename
 
 
