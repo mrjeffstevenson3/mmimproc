@@ -7,6 +7,7 @@ from pylabs.regional import statsByRegion
 from pylabs.correlation.atlas import atlaslabels
 from pylabs.utils.paths import getlocaldataroot
 import pylabs.qt1.expected
+import pylabs.qt1.blacklist as bad
 
 
 def findfile(rootdir, method, TR, date, runIndex, b1corr, coreg):
@@ -106,6 +107,10 @@ for method in methods:
     print(methodstr)
     thisMethodKeys = [k for k in vialdata.keys() if k[:3] == method]
     dates = sorted([k[3] for k in thisMethodKeys if k[3] in datesWithTemps])
+    
+    blackListedDates = [k[2] for k in bad.phantoms if k[:2]==method[:2]]
+    dates = [d for d in dates if d not in blackListedDates]
+
     regStatsInOrder = [vialdata[method+(d,)]['average'] for d in dates]
     obsVialtc = numpy.array(regStatsInOrder)
 
