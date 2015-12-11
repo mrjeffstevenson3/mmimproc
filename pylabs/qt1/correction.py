@@ -1,4 +1,4 @@
-import pickle
+import pickle, numpy
 
 class CorrectionFactor(object):
 
@@ -9,8 +9,8 @@ class CorrectionFactor(object):
         with open(datafilepath) as datafile:
             factordata = pickle.load(datafile)
         self.dates = factordata[method]['dates']
-        self.observed = factordata[method]['observed']
-        self.model = factordata[method]['model']
+        self.observed = numpy.array(factordata[method]['observed'])
+        self.model = numpy.array(factordata[method]['model'])
 
 
     def byDate(self, targetdate):
@@ -21,4 +21,8 @@ class CorrectionFactor(object):
             refdate = self.dates[deltas.index(min(deltas))]
             msg = 'No data for that session, using {0} instead.'
             print(msg.format(refdate))
+        refdateIndex = self.dates.index(refdate)
+        obs = self.observed[refdateIndex,:]
+        mod = self.model[refdateIndex,:]
+        return 1-((mod-obs)/mod).mean()
         

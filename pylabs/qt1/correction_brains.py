@@ -1,5 +1,5 @@
 from __future__ import print_function
-import os, glob
+import os, glob, nibabel
 from os.path import join
 from pylabs.utils.paths import getlocaldataroot
 from pylabs.qt1.correction import CorrectionFactor
@@ -25,8 +25,12 @@ for subjectdir in glob.glob(join(rootdir, 'scs*')):
         targetfilepath = join(subjectdir,targetfname)
         outfile = targetfilepath.replace('.nii','_fcorr.nii')
         print('Applying correction factor to: '+targetfname)
-        
-
-        factor.byDate(acqdate)
+        x = factor.byDate(acqdate)
+        print(x)
+        origimg = nibabel.load(targetfilepath)
+        origdata = origimg.get_data()
+        corrdata = origdata*x
+        corrimg = nibabel.Nifti1Image(corrdata, origimg.get_affine())
+        nibabel.save(corrimg, outfile)
 
 
