@@ -16,7 +16,8 @@ for subjectdir in glob.glob(join(rootdir, 'scs*')):
 
     parrecfile = glob.glob(join(subjectdir, 'source_parrec', '*.PAR'))[0]
     (img, status) = provenance.add(parrecfile)
-    acqdate = img.provenance['acquired']
+    acqdate = img.provenance['acquired'].date()
+    print('Subject {0} data acquired {1}.'.format(subject, acqdate))
 
     for b1corr in [True]:  #need to adapt for non-b1
         b1corrtag = {False:'',True:'_b1corr'}[b1corr]
@@ -24,7 +25,8 @@ for subjectdir in glob.glob(join(rootdir, 'scs*')):
         targetfilepath = join(subjectdir,targetfname)
         outfile = targetfilepath.replace('.nii','_fcorr.nii')
         print('Applying correction factor to: '+targetfname)
+        
 
-        #factor.byDate(acqdate)
+        factor.byDate(acqdate)
 
 

@@ -17,7 +17,7 @@ class CorrectionFactor(object):
         if targetdate in self.dates:
             refdate = targetdate
         else:
-            deltas = [d-targetdate for d in self.dates]
+            deltas = [abs(d-targetdate) for d in self.dates]
             refdate = self.dates[deltas.index(min(deltas))]
             msg = 'No data for that session, using {0} instead.'
             print(msg.format(refdate))
