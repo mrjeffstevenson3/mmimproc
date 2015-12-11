@@ -19,9 +19,9 @@ with open(imageDictFile) as dfile:
 
 t1fitTimeseries = defaultdict(dict) # (method, TR, run) : {date: t1file}
 
-from multiprocessing import Pool
-pool = Pool(12)
-async = True
+#from multiprocessing import Pool
+#pool = Pool(12)
+async = False
 for key, run in images.items():
     date = key[0]
     method = key[1]
@@ -45,7 +45,7 @@ for key, run in images.items():
     b1file = join(sessiondir,'B1map_qT1','b1map_phase_1.nii')
     TRstring = str(TR).replace('.','p')
     outdir = join(rootdir, 'T1_{0}_TR{1}'.format(method, TRstring))
-    fnameTemplate = 'T1_{0}_TR{1}_{2}_{3}.nii.gz'
+    fnameTemplate = 'T1_{0}_TR{1}_{2}_{3}_b1corr.nii.gz'
     fname = fnameTemplate.format(method, TRstring, 
         str(date), runIndex)
     t1filepath = join(outdir, fname)
@@ -75,7 +75,7 @@ for key, run in images.items():
     #kwargs['voiCoords'] = vialCoords
     if async:
         kwargs['mute'] = True
-        pool.apply_async(t1fit, [files, X], kwargs)
+        #pool.apply_async(t1fit, [files, X], kwargs)
     else:
         try:
             t1fit(files, X, **kwargs)
