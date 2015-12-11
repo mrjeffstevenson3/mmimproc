@@ -64,12 +64,27 @@ print('\nVialdata for {0} images.\n'.format(len(vialdata.keys())))
 
 
 labels = atlaslabels(atlasfname)
-vizlabels = labels[1:] # remove label for background
-nvials = len(vizlabels)
+
 
 ## Get expected data
 expectedByDate = pylabs.qt1.expected.readfromfile()
 datesWithTemps = expectedByDate.keys()
+
+## Get rid of "background" ROI
+labels = labels[1:] # remove label for background
+for key in vialdata.keys():
+    vialdata[key]['average'] = numpy.delete(vialdata[key]['average'], 0)
+
+## Remove blacklisted vials
+for badvial in bad.vials:
+    vialIndex = labels.index(str(badvial))
+    for key in vialdata.keys():
+        vialdata[key]['average'] = numpy.delete(vialdata[key]['average'], 
+            vialIndex)
+    for key in expectedByDate.keys():
+        del expectedByDate[key][vialIndex]
+    del labels[vialIndex]
+nvials = len(labels)
 
 ## Start plotting
 
@@ -115,27 +130,26 @@ for method in methods:
     obsVialtc = numpy.array(regStatsInOrder)
 
     ## Observed data
-    obsVialtc = numpy.delete(obsVialtc, 0, 1) # Get rid of background
-    plotT1Timeseries(dates, obsVialtc, vizlabels, methodstr, dtype='t1')
+    plotT1Timeseries(dates, obsVialtc, labels, methodstr, dtype='t1')
 
     ## Expected plot for same dates
     expVialtc = numpy.array([expectedByDate[d] for d in dates])
-    plotT1Timeseries(dates, expVialtc, vizlabels, methodstr+'_expected', 
+    plotT1Timeseries(dates, expVialtc, labels, methodstr+'_expected', 
         dtype='t1')
 
     ## Difference
     diffVialtc = expVialtc - obsVialtc
-    plotT1Timeseries(dates, diffVialtc, vizlabels, methodstr+'_diff', 
+    plotT1Timeseries(dates, diffVialtc, labels, methodstr+'_diff', 
         dtype='absdiff')
 
     ## Relative Difference
     reldiffVialtc = ((expVialtc - obsVialtc)/expVialtc)*100
-    plotT1Timeseries(dates, reldiffVialtc, vizlabels, methodstr+'_reldiff',     
+    plotT1Timeseries(dates, reldiffVialtc, labels, methodstr+'_reldiff',     
         dtype='reldiff')
 
     ## Singled out vials:
     for voi in vialsOfInterest:
-        voiIndex = vizlabels.index(str(voi))
+        voiIndex = labels.index(str(voi))
         svExpObs = numpy.array([expVialtc[:,voiIndex],obsVialtc[:,voiIndex]]).T
         svReldiff = reldiffVialtc[:,voiIndex]
 
