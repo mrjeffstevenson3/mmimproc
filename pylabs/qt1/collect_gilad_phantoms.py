@@ -17,7 +17,7 @@ for sessiondir in sessiondirs:
         print(filepath)
         datestr = os.path.basename(sessiondir).split('_')[-1]
         date =  datetime.datetime.strptime(datestr, '%Y%m%d').date()
-        key = (date, 'gilad_spgr', 11.0, 1)
+        key = (date, 'gilad_spgr_mag', 11.0, 1)
         imageDict[key] = None
         newfilepath = join(newdir, fnametem.format(date))
         #shutil.copy(filepath, newfilepath)
