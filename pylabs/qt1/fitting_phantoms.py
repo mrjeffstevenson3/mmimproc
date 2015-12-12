@@ -17,11 +17,9 @@ imageDictFile = join(rootdir,'phantom_disc_dict_dec3.txt')
 with open(imageDictFile) as dfile:
     images = cPickle.load(dfile)
 
-t1fitTimeseries = defaultdict(dict) # (method, TR, run) : {date: t1file}
-
-from multiprocessing import Pool
-pool = Pool(12)
-async = True
+#from multiprocessing import Pool
+#pool = Pool(12)
+async = False
 for key, run in images.items():
     date = key[0]
     method = key[1]
@@ -45,50 +43,45 @@ for key, run in images.items():
     b1file = join(sessiondir,'B1map_qT1','b1map_phase_1.nii')
     TRstring = str(TR).replace('.','p')
     outdir = join(rootdir, 'T1_{0}_TR{1}'.format(method, TRstring))
-    fnameTemplate = 'T1_{0}_TR{1}_{2}_{3}.nii.gz'
-    fname = fnameTemplate.format(method, TRstring, 
-        str(date), runIndex)
-    t1filepath = join(outdir, fname)
+    fnameTemplate = 'T1_{0}_TR{1}_{2}_{3}{4}.nii.gz'
 
     if len(run) < 3:
         print('--> Skipping scan, only {0} files'.format(len(run)))
         continue
-
-    if skipExisting and os.path.isfile(t1filepath):
-        print('--> File exists, skipping scan.'.format(len(run)))
-        if not date in t1fitTimeseries[(method, TR)]:
-            t1fitTimeseries[(method, TR)][date] = t1filepath
-        continue
-
     if not os.path.isdir(outdir):
         os.mkdir(outdir)
 
-    kwargs = {}
-    if os.path.isfile(maskfile):
-        kwargs['maskfile'] = maskfile
-    if os.path.isfile(b1file):
-        kwargs['b1file'] = b1file
-    if 'SPGR' in method.upper():
-        kwargs['scantype'] = 'SPGR'
-        kwargs['TR'] = TR
-    kwargs['t1filename'] = t1filepath
-    #kwargs['voiCoords'] = vialCoords
-    if async:
-        kwargs['mute'] = True
-        pool.apply_async(t1fit, [files, X], kwargs)
-    else:
-        try:
-            t1fit(files, X, **kwargs)
-        except Exception as ex:
-            print('\n--> Error during fitting: ', ex)
-        else:
+    for b1corr in [True, False]:
+        b1corrtag = {True:'_b1corr', False:''}[b1corr]
+        t1filepath = join(outdir, fnameTemplate.format(method, TRstring, 
+            str(date), runIndex, b1corrtag))
+
+        if skipExisting and os.path.isfile(t1filepath):
+            print('--> File exists, skipping scan.'.format(len(run)))
             if not date in t1fitTimeseries[(method, TR)]:
                 t1fitTimeseries[(method, TR)][date] = t1filepath
-            else:
-                print('--> Already have a run fitted for this date, '+
-                    'this image not passed on down pipeline.')
-pool.close()
-pool.join()
+            continue
+
+        kwargs = {}
+        if os.path.isfile(maskfile):
+            kwargs['maskfile'] = maskfile
+        if b1corr:
+            kwargs['b1file'] = b1file
+        if 'SPGR' in method.upper():
+            kwargs['scantype'] = 'SPGR'
+            kwargs['TR'] = TR
+        kwargs['t1filename'] = t1filepath
+        if async:
+            kwargs['mute'] = True
+            #pool.apply_async(t1fit, [files, X], kwargs)
+        else:
+            try:
+                t1fit(files, X, **kwargs)
+            except Exception as ex:
+                print('\n--> Error during fitting: ', ex)
+
+#pool.close()
+#pool.join()
 
 
 

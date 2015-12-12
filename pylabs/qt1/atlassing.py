@@ -7,6 +7,7 @@ from pylabs.regional import statsByRegion
 from pylabs.correlation.atlas import atlaslabels
 from pylabs.utils.paths import getlocaldataroot
 import pylabs.qt1.expected
+import pylabs.qt1.blacklist as bad
 
 
 def findfile(rootdir, method, TR, date, runIndex, b1corr, coreg):
@@ -63,12 +64,27 @@ print('\nVialdata for {0} images.\n'.format(len(vialdata.keys())))
 
 
 labels = atlaslabels(atlasfname)
-vizlabels = labels[1:] # remove label for background
-nvials = len(vizlabels)
+
 
 ## Get expected data
 expectedByDate = pylabs.qt1.expected.readfromfile()
 datesWithTemps = expectedByDate.keys()
+
+## Get rid of "background" ROI
+labels = labels[1:] # remove label for background
+for key in vialdata.keys():
+    vialdata[key]['average'] = numpy.delete(vialdata[key]['average'], 0)
+
+## Remove blacklisted vials
+for badvial in bad.vials:
+    vialIndex = labels.index(str(badvial))
+    for key in vialdata.keys():
+        vialdata[key]['average'] = numpy.delete(vialdata[key]['average'], 
+            vialIndex)
+    for key in expectedByDate.keys():
+        del expectedByDate[key][vialIndex]
+    del labels[vialIndex]
+nvials = len(labels)
 
 ## Start plotting
 
@@ -106,31 +122,34 @@ for method in methods:
     print(methodstr)
     thisMethodKeys = [k for k in vialdata.keys() if k[:3] == method]
     dates = sorted([k[3] for k in thisMethodKeys if k[3] in datesWithTemps])
+    
+    blackListedDates = [k[2] for k in bad.phantoms if k[:2]==method[:2]]
+    dates = [d for d in dates if d not in blackListedDates]
+
     regStatsInOrder = [vialdata[method+(d,)]['average'] for d in dates]
     obsVialtc = numpy.array(regStatsInOrder)
 
     ## Observed data
-    obsVialtc = numpy.delete(obsVialtc, 0, 1) # Get rid of background
-    plotT1Timeseries(dates, obsVialtc, vizlabels, methodstr, dtype='t1')
+    plotT1Timeseries(dates, obsVialtc, labels, methodstr, dtype='t1')
 
     ## Expected plot for same dates
     expVialtc = numpy.array([expectedByDate[d] for d in dates])
-    plotT1Timeseries(dates, expVialtc, vizlabels, methodstr+'_expected', 
+    plotT1Timeseries(dates, expVialtc, labels, methodstr+'_expected', 
         dtype='t1')
 
     ## Difference
     diffVialtc = expVialtc - obsVialtc
-    plotT1Timeseries(dates, diffVialtc, vizlabels, methodstr+'_diff', 
+    plotT1Timeseries(dates, diffVialtc, labels, methodstr+'_diff', 
         dtype='absdiff')
 
     ## Relative Difference
     reldiffVialtc = ((expVialtc - obsVialtc)/expVialtc)*100
-    plotT1Timeseries(dates, reldiffVialtc, vizlabels, methodstr+'_reldiff',     
+    plotT1Timeseries(dates, reldiffVialtc, labels, methodstr+'_reldiff',     
         dtype='reldiff')
 
     ## Singled out vials:
     for voi in vialsOfInterest:
-        voiIndex = vizlabels.index(str(voi))
+        voiIndex = labels.index(str(voi))
         svExpObs = numpy.array([expVialtc[:,voiIndex],obsVialtc[:,voiIndex]]).T
         svReldiff = reldiffVialtc[:,voiIndex]
 
@@ -142,8 +161,8 @@ for method in methods:
     ax = plt.gca()
     width = .2
     ind = numpy.arange(nvials)
-    rects1 = ax.bar(ind,        obsVialtc.mean(axis=0), width, color='blue')
-    rects2 = ax.bar(ind+width,  expVialtc.mean(axis=0), width, color='green')
+    rects1 = ax.bar(ind,         expVialtc.mean(axis=0), width, color='blue')
+    rects2 = ax.bar(ind+width,   obsVialtc.mean(axis=0), width, color='green')
     rects3 = ax.bar(ind+width*2, diffVialtc.mean(axis=0), width, color='red')
     ax.set_ylim([-300,2500])
     plt.legend((rects1[0],rects2[0],rects3[0]), ['model','observed','diff'], loc=2)
