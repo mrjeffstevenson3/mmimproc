@@ -14,12 +14,12 @@ from niprov import Context
 from pylabs.utils._options import PylabsOptions
 opts = PylabsOptions()
 prov = Context()
-prov.dryrun = True
+prov.dryrun = False
 prov.config.verbose = True
-prov.config.dryrun = True
+prov.config.dryrun = False
 verbose = True
 
-subjects = [317, 318, 328, 332, 334, 335, 347, 353, 364, 370, 371, 376, 379, 381, 384, 385, 396]
+subjects = [317, 328, 332, 334, 335, 347, 353, 364, 370, 371, 376, 379, 381, 384, 385, 396]
 
 fs = getlocaldataroot()
 statsdir = fs+'self_control/hbm_group_data/qT1/stats/'
@@ -27,10 +27,10 @@ behavdir = fs+'self_control/behavioral_data/behav_from_andy_march27_2015/'
 csvfile = behavdir+'SCS_Behavior_dataset_9_14_15_Meq0_delta_qT1_SS_resptime_D_qT1_phantcorr.csv'
 niprov.add(csvfile)
 
-images = glob.glob(statsdir+'all_qT1_*.nii.gz')
+images = glob.glob(statsdir+'all_qT1_*_reg2mni.nii.gz')
 [niprov.add(img) for img in images]
 
-exptag='randpar_qT1_test_dec13_no_cov_n500'
+exptag='randpar_qT1_test16subj_dec14_no_cov_n500'
 matfiledir = pathjoin(statsdir,'matfiles','matfiles_'+exptag)
 resultdir = pathjoin(statsdir,'randomise_runs',exptag)
 qsubdir = pathjoin(resultdir, 'qsubdir_defunctcommands')
@@ -44,7 +44,7 @@ qsubdir = pathjoin(resultdir, 'qsubdir_defunctcommands')
 designfile = statsdir+'scs_design2col.con'
 assert os.path.isfile(designfile)
 # collist = range(5, 8)+range(18, 32)+[44]
-matfiles = csv2fslmat(csvfile, cols=[5], selectSubjects=subjects,
+matfiles = csv2fslmat(csvfile, cols=[5,6,7,18,26,27,28,29,30,31], selectSubjects=subjects,
     groupcol=True, outdir=matfiledir, opts=opts)
 
 combs = {img:matfiles for img in images}
@@ -64,7 +64,7 @@ report(selectedCorrPfiles, atlas, atlaslabels(atlasfile),
 
 combs = deconstructRandparFiles(selectedCorrPfiles, matdir=matfiledir, imgdir=statsdir)
 
-exptag='randpar_n5000_thr95_qT1_test_dec13_no_cov_fm_sig_n500_2col'
+exptag='randpar_n5000_thr95_qT1_test16subj_dec14_no_cov_fm_sig_n500_2col'
 resultdir = pathjoin(statsdir,'randomise_runs',exptag)
 
 randparfiles = multirandpar(combs, designfile, niterations=5000,
