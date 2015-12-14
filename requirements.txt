@@ -10,4 +10,4 @@ six
 flake8
 nipype
 petname
-
+cloud
