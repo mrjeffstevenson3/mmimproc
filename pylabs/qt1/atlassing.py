@@ -36,7 +36,8 @@ coreg = True # Look at coregistered file or non-coregistered files
 rootdir = join(getlocaldataroot(),'phantom_qT1_disc')
 atlasfname = 'T1_seir_mag_TR4000_2014-07-23_mask.nii.gz'
 atlasfpath = join(rootdir,atlasfname)
-imageDictFile = join(rootdir,'phantom_disc_dict_dec3.txt')
+#imageDictFile = join(rootdir,'phantom_disc_dict_dec3.txt')
+imageDictFile = join(rootdir,'phantom_disc_dict_gilad.txt')
 with open(imageDictFile) as dfile:
     images = cPickle.load(dfile)
 
