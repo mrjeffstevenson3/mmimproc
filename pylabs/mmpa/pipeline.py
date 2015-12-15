@@ -1,13 +1,10 @@
 import os, glob
 from os.path import join
-import niprov
+from niprov import Context
 import nibabel, numpy
 from pylabs.utils.paths import getlocaldataroot
-from niprov.options import NiprovOptions
 from pylabs.vbm.upsample import upsample1mm
-opts = NiprovOptions()
-opts.dryrun = True
-opts.verbose = True
+provenance = Context()
 
 fs = getlocaldataroot()
 resultdir = join(fs,'self_control/hbm_group_data/mmpa/')
@@ -55,8 +52,17 @@ images += fmriimages
 measures += [c[:2] for c in contrasts]
 measureSubjects += [fmrisubjects]*len(contrasts)
 
+## QT1
+qt1dir = join(fs,'self_control/hbm_group_data/qt1/stats')
+qt1subjects = [317, 318, 328, 332, 334, 335, 347, 353, 364, 370, 371, 376, 379,
+381, 384, 385, 396]
+qt1images = [join(qt1dir, 'all_qT1_b1corr_phantcorr_bydate_dec12b_reg2mni.nii.gz')]
+images += qt1images
+measures += ['qt1']
+measureSubjects += [qt1subjects]
+
 ## MM
-[niprov.add(img) for img in images]
+[provenance.add(img) for img in images]
 commonSubjects = set.intersection(*map(set, 
     [fmrisubjects, vbmsubjects, tbsssubjects]))
 
@@ -74,7 +80,7 @@ for m, measure in enumerate(measures):
         data[s, m, :, :, :] = measureData[:,:,:, measureSubjectIndex]
 print('Saving data..')
 numpy.save(mmpaDataFile, data)
-niprov.log(mmpaDataFile, 'data to one file', images)
+provenance.log(mmpaDataFile, 'data to one file', images)
 
 picklevars = {}
 picklevars['measures'] = measures
