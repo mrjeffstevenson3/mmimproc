@@ -17,7 +17,7 @@ measureSubjects = []
 ## Behavior
 behavdir = join(fs,'self_control/behavioral_data/behav_from_andy_march27_2015/')
 csvfile = join(behavdir,'EF_and_Brain_july08_2015_Meq0_delta.csv')
-niprov.add(csvfile)
+provenance.add(csvfile)
 
 ## VBM
 vbmsubjects = [
@@ -53,8 +53,8 @@ measures += [c[:2] for c in contrasts]
 measureSubjects += [fmrisubjects]*len(contrasts)
 
 ## QT1
-qt1dir = join(fs,'self_control/hbm_group_data/qt1/stats')
-qt1subjects = [317, 318, 328, 332, 334, 335, 347, 353, 364, 370, 371, 376, 379,
+qt1dir = join(fs,'self_control/hbm_group_data/qT1/stats')
+qt1subjects = [317, 328, 332, 334, 335, 347, 353, 364, 370, 371, 376, 379,
 381, 384, 385, 396]
 qt1images = [join(qt1dir, 'all_qT1_b1corr_phantcorr_bydate_dec12b_reg2mni.nii.gz')]
 images += qt1images
