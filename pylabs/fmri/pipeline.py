@@ -1,14 +1,11 @@
 import os, glob
 from os.path import join
-import niprov
+from niprov import Context
 import nibabel, numpy
 from pylabs.utils.paths import getlocaldataroot
-from niprov.options import NiprovOptions
 from pylabs.utils import Filesystem
 from pylabs.transformations.standard import standardizeBasedOnAbsoluteMask
-opts = NiprovOptions()
-opts.dryrun = False
-opts.verbose = True
+provenance = Context()
 filesys = Filesystem()
 
 fs = getlocaldataroot()
@@ -24,8 +21,8 @@ mnidims = [182, 218, 182]
 
 hdrfilter = join(fmridir, 'analyze', '*.hdr')
 images = sorted(glob.glob(hdrfilter))
-[niprov.add(i) for i in images]
-images = [standardizeBasedOnAbsoluteMask(i, mnidir, opts=opts) for i in images]
+[provenance.add(i) for i in images]
+images = [standardizeBasedOnAbsoluteMask(i, mnidir) for i in images]
 
 def getContrast(filename):
     return '_'.join(os.path.basename(filename).split('.')[0].split('_')[1:])
@@ -45,8 +42,8 @@ for contrast in contrasts:
     groupfilename = join(fmridir, '{0}.nii.gz'.format(contrast))
     print('Saving '+groupfilename)
     nibabel.save(groupimg, groupfilename)
-    niprov.log(groupfilename, 'grouped', contrastimages, 
-        script=__file__, opts=opts)
+    provenance.log(groupfilename, 'grouped', contrastimages, 
+        script=__file__)
 
 
 # remap. http://brainmap.wustl.edu/help/mapper.html
