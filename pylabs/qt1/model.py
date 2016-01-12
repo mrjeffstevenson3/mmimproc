@@ -7,7 +7,7 @@ def expectedT1(T, gel, gado):
     ## gado = concentrations[0,2]    # $Conditions.B5
 
     B0 = 3.0                        # $Conditions.B2
-    Frequency = 42.57 * T            # Mhz  $Conditions.G1
+    Frequency = 42.57 * B0            # Mhz  $Conditions.G1
 
     TAUC = 0.0000000000232 * math.exp(4683.7/T) # $Constants.B9 or D9
 
