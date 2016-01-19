@@ -43,6 +43,15 @@ from pylabs.utils import Shell
 def sort_par_glob (parglob):
     return sorted(parglob, key=lambda f: int(f.split('_')[-2]))
 
+def convertParFiles(parfiles, outdir)
+    if not os.path.exists(outdir):
+        os.mkdir(outdir)
+    cmd = 'parrec2nii --overwrite --scaling=fp --store-header --output-dir='       #no quoptes except outside
+    cmd += outdir
+    cmd += ' '+' '.join(parfiles)
+    sp.run(cmd)
+
+
 fs = getlocaldataroot()
 subjdirs = sorted(glob(pathjoin(fs, 'self_control/hbm_group_data/qT1/scs*')), key=lambda f: f.split('/')[-1])
 dir = subjdirs[0]
@@ -54,23 +63,14 @@ fslflirt = fsl.FLIRT()
 fslapplyxfm = fsl.ApplyXfm()
 
 for dir in subjdirs:
-    subjSPGRparfiles = sort_par_glob(glob(pathjoin(dir, 'source_parrec/*T1_MAP*.PAR')))
-    subjB1MAPfiles = sort_par_glob(glob(pathjoin(dir, 'source_parrec/*B1MAP*.PAR')))
     subjid = subjSPGRparfiles[0].split('/')[-3]
+    subjSPGRparfiles = sort_par_glob(glob(pathjoin(dir, 'source_parrec/*T1_MAP*.PAR')))
     niioutdir = pathjoin(dir, 'source_nii')
+    convertParFiles(subjSPGRparfiles, niioutdir)
+    subjB1MAPfiles = sort_par_glob(glob(pathjoin(dir, 'source_parrec/*B1MAP*.PAR')))
     b1mapdir = pathjoin(dir, 'B1map_qT1')
-    if not os.path.exists(niioutdir):
-        os.mkdir(niioutdir)
-    if not os.path.exists(b1mapdir):
-        os.mkdir(b1mapdir)
-    cmd = 'parrec2nii --overwrite --scaling=fp --store-header --output-dir='       #no quoptes except outside
-    cmd += niioutdir
-    cmd += ' '+' '.join(subjSPGRparfiles)
-    sp.run(cmd)
-    cmd = 'parrec2nii --overwrite --scaling=dv --store-header --output-dir='       #no quoptes except outside
-    cmd += b1mapdir
-    cmd += ' '+' '.join(subjB1MAPfiles)
-    sp.run(cmd)
+    convertParFiles(subjB1MAPfiles, b1mapdir)
+
     fitoutdir = pathjoin(dir, 'fitted_qT1_spgr')
     if not os.path.exists(fitoutdir):
         os.mkdir(fitoutdir)
