@@ -1,18 +1,15 @@
 from os.path import join
 import collections 
 from pylabs.utils.paths import getlocaldataroot
+from pylabs.utils.files import sortedParGlob
 from pylabs.conversion.phantom_conv import phantom_midslice_par2mni as par2mni
-
-import glob
-def sortedParGlob (filefilter):
-    return sorted(glob.glob(filefilter), key=lambda f: int(f.split('_')[-2]))
-
+from pylabs.qt1.fitting_phantoms import fitPhantoms
 ## Evaluate which flip angles are required to do an adequate SPGR QT1
 ## based on tadpole phantom 999
 
 fs = getlocaldataroot()
 projectdir = join(fs, 'phantom_qT1_slu')
-subj = 'sub-phant20160113'
+subj = 'sub-phant2016-01-13'
 subjectdir = join(projectdir, subj)
 
 ## convert parrecs to nifti
@@ -30,6 +27,8 @@ for parfile in phantSPGRparfiles:
         niftiDict[k].append(v)
 
 ## fitting_phantoms
+fitPhantoms(niftiDict, outdir=anatdir)
+
 ## coregister_phantoms
 ## model_pipeline
 ## atlassing (phantoms)
