@@ -2,7 +2,7 @@ from os.path import join
 import glob, datetime
 from datetime import datetime
 import numpy
-fpath = 'data/T1_phantom_temperature_readings_inventory.csv'
+
 
 class TemperatureRecord(object):
 
@@ -24,7 +24,8 @@ class TemperatureRecord(object):
         return sum(self.temps)/len(self.temps)
 
 
-def getSessionRecords():
+def getSessionRecords(scanner):
+    fpath = 'data/T1_phantom_temperature_readings_inventory_{0}.csv'.format(scanner)
     with open(fpath) as tempfile:
         lines = tempfile.readlines()
     sessions = {}
