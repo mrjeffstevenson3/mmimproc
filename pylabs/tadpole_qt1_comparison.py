@@ -4,6 +4,7 @@ from pylabs.utils.paths import getlocaldataroot
 from pylabs.utils.files import sortedParGlob
 from pylabs.conversion.phantom_conv import phantom_midslice_par2mni as par2mni
 from pylabs.qt1.fitting_phantoms import fitPhantoms
+from pylabs.qt1.coregister_phantoms import coregisterPhantoms
 ## Evaluate which flip angles are required to do an adequate SPGR QT1
 ## based on tadpole phantom 999
 
@@ -30,6 +31,8 @@ for parfile in phantSPGRparfiles:
 t1files = fitPhantoms(niftiDict, outdir=anatdir)
 
 ## coregister_phantoms
+coregisterPhantoms(t1files)
+
 ## model_pipeline
 ## atlassing (phantoms)
 

@@ -3,32 +3,37 @@ from os.path import join
 import pylabs.alignment.phantom
 from pylabs.utils.paths import getlocaldataroot
 
-overwrite = False
-rootdir = join(getlocaldataroot(),'phantom_qT1_disc')
-t1dirs = glob.glob(join(rootdir, 'T1*'))
-uncoregdirs = [d for d in t1dirs if 'reg' not in d]
-uncoregfilesByDir = [glob.glob(join(d, 'T1*.nii.gz')) for d in uncoregdirs]
-uncoregfiles = list(itertools.chain(*uncoregfilesByDir))
-uncoregfiles = [f for f in uncoregfiles if 'coreg' not in f]
-nfiles = len(uncoregfiles)
 
+rootdir = join(getlocaldataroot(),'phantom_qT1_disc')
 targetfile = join(rootdir,'T1_seir_mag_TR4000',
     'T1_seir_mag_TR4000_2014-07-23_1.nii.gz')
-newAffine = nibabel.load(targetfile).get_affine()
 
-for f, subjectfile in enumerate(uncoregfiles):
-    fname = os.path.basename(subjectfile)
-    print('Aligning file {0} of {1}: {2}'.format(f, nfiles, fname))
 
-    newFile = subjectfile.replace('.nii','_coreg723.nii')
-    if os.path.isfile(newFile) and not overwrite:
-        print('File exists, skipping..')
-        continue
-    try:
-        xform = pylabs.alignment.phantom.align(subjectfile, targetfile, delta=10)
-        pylabs.alignment.phantom.savetransformed(subjectfile, xform, newFile, newAffine)
-    except:
-        print('Error aligning file.')
+def coregisterPhantoms(uncoregfiles, overwrite=False):
+    nfiles = len(uncoregfiles)
+    newAffine = nibabel.load(targetfile).get_affine()
+    for f, subjectfile in enumerate(uncoregfiles):
+        fname = os.path.basename(subjectfile)
+        print('Aligning file {0} of {1}: {2}'.format(f, nfiles, fname))
+
+        newFile = subjectfile.replace('.nii','_coreg723.nii')
+        if os.path.isfile(newFile) and not overwrite:
+            print('File exists, skipping..')
+            continue
+        try:
+            xform = pylabs.alignment.phantom.align(subjectfile, targetfile, delta=10)
+            pylabs.alignment.phantom.savetransformed(subjectfile, xform, newFile, newAffine)
+        except Exception as e:
+            print('Error aligning file: '+str(e))
+
+if __name__ == '__main__':
+    t1dirs = glob.glob(join(rootdir, 'T1*'))
+    uncoregdirs = [d for d in t1dirs if 'reg' not in d]
+    uncoregfilesByDir = [glob.glob(join(d, 'T1*.nii.gz')) for d in uncoregdirs]
+    uncoregfiles = list(itertools.chain(*uncoregfilesByDir))
+    uncoregfiles = [f for f in uncoregfiles if 'coreg' not in f]
+    coregisterPhantoms(uncoregfiles)
+
 
 #    ornt = io_orientation(np.diag([-1, 1, 1, 1]).dot(pr_img.affine))
 #    t_aff = inv_ornt_aff(ornt, pr_img.shape)
@@ -40,3 +45,4 @@ for f, subjectfile in enumerate(uncoregfiles):
 #    'ty':y,
 #    'rxy':r,
 #}
+
