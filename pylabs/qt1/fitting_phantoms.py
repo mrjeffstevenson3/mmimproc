@@ -11,6 +11,7 @@ from pylabs.qt1.fitting import t1fit
 def fitPhantoms(images, outdir=None, async=False, skipExisting = False):
     #from multiprocessing import Pool
     #pool = Pool(12)
+    outfiles = []
     for key, run in images.items():
         date = key[0]
         method = key[1]
@@ -69,10 +70,12 @@ def fitPhantoms(images, outdir=None, async=False, skipExisting = False):
             else:
                 try:
                     t1fit(files, X, **kwargs)
+                    outfiles.append(t1filepath)
                 except Exception as ex:
                     print('\n--> Error during fitting: ', ex)
     #pool.close()
     #pool.join()
+    return outfiles
 
 if __name__ == '__main__':
     async = False

@@ -27,7 +27,7 @@ for parfile in phantSPGRparfiles:
         niftiDict[k].append(v)
 
 ## fitting_phantoms
-fitPhantoms(niftiDict, outdir=anatdir)
+t1files = fitPhantoms(niftiDict, outdir=anatdir)
 
 ## coregister_phantoms
 ## model_pipeline
