@@ -34,8 +34,9 @@ t1files = fitPhantoms(niftiDict, outdir=anatdir)
 coregisterPhantoms(t1files)
 
 ## model_pipeline
-## atlassing (phantoms)
-
+## atlassing_phantoms
+# rename script
+# should check all possible files? i.e. combs of methods, dates, coreg, b1, etc
 
 
 
