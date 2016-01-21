@@ -2,6 +2,7 @@ import itertools, glob, nibabel, os
 from os.path import join
 import pylabs.alignment.phantom
 from pylabs.utils.paths import getlocaldataroot
+from pylabs.qt1.naming import qt1filepath
 
 
 rootdir = join(getlocaldataroot(),'phantom_qT1_disc')
@@ -9,10 +10,12 @@ targetfile = join(rootdir,'T1_seir_mag_TR4000',
     'T1_seir_mag_TR4000_2014-07-23_1.nii.gz')
 
 
-def coregisterPhantoms(uncoregfiles, overwrite=False):
+def coregisterPhantoms(uncoregfiles, projectdir, overwrite=False, dirstruct='BIDS'):
     nfiles = len(uncoregfiles)
+    outimages = []
     newAffine = nibabel.load(targetfile).get_affine()
-    for f, subjectfile in enumerate(uncoregfiles):
+    for f, image in enumerate(uncoregfiles):
+        subjectfile = qt1filepath(image, projectdir, dirstruct)
         fname = os.path.basename(subjectfile)
         print('Aligning file {0} of {1}: {2}'.format(f, nfiles, fname))
 
@@ -25,6 +28,9 @@ def coregisterPhantoms(uncoregfiles, overwrite=False):
             pylabs.alignment.phantom.savetransformed(subjectfile, xform, newFile, newAffine)
         except Exception as e:
             print('Error aligning file: '+str(e))
+        image['coreg'] = True
+        outimages.append(image)
+    return outimages # returns only coreg'd images
 
 if __name__ == '__main__':
     t1dirs = glob.glob(join(rootdir, 'T1*'))
@@ -32,7 +38,7 @@ if __name__ == '__main__':
     uncoregfilesByDir = [glob.glob(join(d, 'T1*.nii.gz')) for d in uncoregdirs]
     uncoregfiles = list(itertools.chain(*uncoregfilesByDir))
     uncoregfiles = [f for f in uncoregfiles if 'coreg' not in f]
-    coregisterPhantoms(uncoregfiles)
+    coregisterPhantoms(uncoregfiles, dirstruct='legacy')
 
 
 #    ornt = io_orientation(np.diag([-1, 1, 1, 1]).dot(pr_img.affine))
