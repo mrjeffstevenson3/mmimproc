@@ -39,7 +39,7 @@ t1images = coregisterPhantoms(t1images, projectdir=projectdir)
 expected = calculate_model('slu')
 
 ## atlassing_phantoms
-atlasPhantoms(t1images, expected)
+atlasPhantoms(t1images, expected, projectdir)
 
 
 

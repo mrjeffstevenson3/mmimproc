@@ -29,6 +29,7 @@ def coregisterPhantoms(uncoregfiles, projectdir, overwrite=False, dirstruct='BID
         except Exception as e:
             print('Error aligning file: '+str(e))
         image['coreg'] = True
+        image['coregtag'] = '_coreg723'
         outimages.append(image)
     return outimages # returns only coreg'd images
 

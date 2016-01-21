@@ -10,3 +10,4 @@ def qt1filepath(image, projectdir, dirstruct):
         raise ValueError('Unknown directory structure: '+str(dirstruct))
     fnametem = 'sub-phant{date}_T1_{method}_TR{TRtag}_{run}{b1tag}.nii.gz'
     return join(outdir, fnametem.format(**image))
+
