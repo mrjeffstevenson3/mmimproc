@@ -29,7 +29,8 @@ for parfile in phantSPGRparfiles:
         niftiDict[k].append(v)
 
 ## fitting_phantoms
-t1files = fitPhantoms(niftiDict, outdir=anatdir)
+t1files = fitPhantoms(niftiDict, projectdir=projectdir)
+print(t1files)
 
 ## coregister_phantoms
 coregisterPhantoms(t1files)
@@ -38,8 +39,7 @@ coregisterPhantoms(t1files)
 expected = calculate_model('slu')
 
 ## atlassing_phantoms
-# rename script
-# should check all possible files? i.e. combs of methods, dates, coreg, b1, etc
+## should check all possible files? i.e. combs of methods, dates, coreg, b1, etc
 
 
 
