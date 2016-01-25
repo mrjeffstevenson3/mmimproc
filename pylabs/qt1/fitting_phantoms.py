@@ -9,7 +9,7 @@ from pylabs.qt1.naming import qt1filepath
 
 
 ### FITTING
-def fitPhantoms(images, projectdir, dirstruct='BIDS', async=False, skipExisting = False):
+def fitPhantoms(images, projectdir, dirstruct='BIDS', async=False, skipExisting = False, X=None):
     #from multiprocessing import Pool
     #pool = Pool(12)
     outfiles = []
@@ -28,11 +28,13 @@ def fitPhantoms(images, projectdir, dirstruct='BIDS', async=False, skipExisting 
             if 'b1map' in image['method']:
                 continue
 
+            run = [f for f in run if f[1]!='mask']
+            files, X = zip(*sorted(run, key=lambda s: s[1]))
+            image['X'] = '-'.join([format(x,'02') for x in X])
+
             msg = 'Working on session: {date} method: {method} TR: {TR} Run: {run}'
             print(msg.format(**image))
 
-            run = [f for f in run if f[1]!='mask']
-            files, X = zip(*sorted(run, key=lambda s: s[1]))
             scottybasedir = '/media/DiskArray/shared_data/js'
             jvdbbasedir = '/diskArray/mirror/js'
             files = [f.replace(scottybasedir, jvdbbasedir) for f in files]

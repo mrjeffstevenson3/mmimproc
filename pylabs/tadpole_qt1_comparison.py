@@ -27,7 +27,14 @@ for parfile in phantSPGRparfiles:
     key, val = par2mni(parfile=parfile, datadict=niftiDict, method=method, 
         outdir=anatdir, exceptions=[], outfilename=fname, scaling=scaling)
     for k, v in zip(key, val):
+        # interrogate files here for available flip angles. like:
+        #            run = [f for f in run if f[1]!='mask']
+        #            files, X = zip(*sorted(run, key=lambda s: s[1]))
+        ## Vary flip angles used
+        # list(itertools.combinations([1,2,3,4,5], 3))
+        # pass them to fitPhantoms as a separate dictionary
         niftiDict[k].append(v)
+
 
 ## fitting_phantoms
 t1images = fitPhantoms(niftiDict, projectdir=projectdir)
