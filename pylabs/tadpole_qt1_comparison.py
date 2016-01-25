@@ -1,5 +1,5 @@
 from os.path import join
-import collections 
+import collections, itertools
 from pylabs.utils.paths import getlocaldataroot
 from pylabs.utils.files import sortedParGlob
 from pylabs.conversion.phantom_conv import phantom_midslice_par2mni as par2mni
@@ -27,17 +27,18 @@ for parfile in phantSPGRparfiles:
     key, val = par2mni(parfile=parfile, datadict=niftiDict, method=method, 
         outdir=anatdir, exceptions=[], outfilename=fname, scaling=scaling)
     for k, v in zip(key, val):
-        # interrogate files here for available flip angles. like:
-        #            run = [f for f in run if f[1]!='mask']
-        #            files, X = zip(*sorted(run, key=lambda s: s[1]))
-        ## Vary flip angles used
-        # list(itertools.combinations([1,2,3,4,5], 3))
-        # pass them to fitPhantoms as a separate dictionary
         niftiDict[k].append(v)
 
+## Figure out which combinations of flip angles we can test
+allAngles = sorted([i[1] for i in niftiDict.values()[0] if i[1]!='mask'])
+combinations = list(itertools.combinations(allAngles, 3))
+ncombs = len(combinations)
 
-## fitting_phantoms
-t1images = fitPhantoms(niftiDict, projectdir=projectdir)
+## Fit each combination of flip angles:
+t1images = []
+for s, xsample in enumerate(combinations):
+    print('Fitting flip angle combination {0} of {1}'.format(s, ncombs))
+    t1images += fitPhantoms(niftiDict, projectdir=projectdir, X=xsample)
 
 ## coregister_phantoms
 t1images = coregisterPhantoms(t1images, projectdir=projectdir)

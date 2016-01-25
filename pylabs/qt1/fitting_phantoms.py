@@ -29,10 +29,14 @@ def fitPhantoms(images, projectdir, dirstruct='BIDS', async=False, skipExisting 
                 continue
 
             run = [f for f in run if f[1]!='mask']
-            files, X = zip(*sorted(run, key=lambda s: s[1]))
+            files, allx = zip(*sorted(run, key=lambda s: s[1]))
+            if X is not None:
+                files = [f for f in files if allx[files.index(f)] in X]
+            else:
+                X = allx
             image['X'] = '-'.join([format(x,'02') for x in X])
 
-            msg = 'Working on session: {date} method: {method} TR: {TR} Run: {run}'
+            msg = 'Fitting: {date} method: {method} TR: {TR} Run: {run} X: {X}'
             print(msg.format(**image))
 
             scottybasedir = '/media/DiskArray/shared_data/js'
