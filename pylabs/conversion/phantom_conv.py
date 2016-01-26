@@ -1,7 +1,6 @@
 
 import sys, os, datetime
 import itertools
-import subprocess
 from os.path import join as pathjoin
 import fnmatch, collections, datetime, cPickle, cloud
 import numpy as np
@@ -15,8 +14,9 @@ from nibabel.orientations import apply_orientation
 from nibabel.orientations import inv_ornt_aff
 from nibabel.orientations import io_orientation
 from niprov import Context
-
-
+from pylabs.utils._options import PylabsOptions
+opts = PylabsOptions()
+prov = Context()
 
 identity_matrix = np.eye(4)
 mni_affine = np.array([[-1, 0, 0, 90], [0, 1, 0, -126], [0, 0, 1, -72], [0, 0, 0, 1]])
@@ -32,7 +32,7 @@ def error(msg, exit_code):
     sys.exit(exit_code)
 #defaults
 verbose = True
-prov = Context()
+prov.dryrun = True
 
 def phantom_B1_midslice_par2mni(parfile, datadict, outdir=None, exceptions=None, outfilename=None,
                                 verbose=True, scaling='dv', minmax=('parse', 'parse'), origin='scanner', overwrite=True):
@@ -216,6 +216,9 @@ def phantom_midslice_par2mni(parfile, datadict, method, outdir=None, exceptions=
 
     if in_data_ras.shape[3] == zdim and in_data_ras.shape[2] == tdim:
         in_data_ras = np.rollaxis(in_data_ras, 3, 2)
+
+    if in_data_ras.shape[1] == zdim and in_data_ras.shape[2] == ydim:
+        in_data_ras = np.rollaxis(in_data_ras, 2, 1)
 
     in_slice_mag = in_data_ras[:,:, mid_slice_num-1, 0]
     mnizoomfactor = 218/float(ydim)

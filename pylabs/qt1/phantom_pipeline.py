@@ -22,18 +22,18 @@ def sort_par_glob (parglob):
     return sorted(parglob, key=lambda f: int(f.split('_')[-2]))
 
 fs = getlocaldataroot()
-phantdirs = sorted(glob(pathjoin(fs, 'phantom_qT1_disc/phantom_qT1_*')), key=lambda f: int(f.split('_')[-1]))
-scanner = phantdirs[0].split('/')[-2]
-scanner = str(scanner.split('_')[-1])
-scandateexception = ['20141108']
+scanner = 'slu'
+phantdirs = sorted(glob(pathjoin(fs, 'phantom_qT1_'+scanner+'/phantom_qT1_*')), key=lambda f: int(f.split('_')[-1]))
+if scanner == 'disc':
+    scandateexception = ['20141108']
 phantom_ddata = defaultdict(list)
-phantom_dict_fname = pathjoin('/'.join(phantdirs[0].split('/')[0:-1]), 'phantom_disc_b1map_dict_dec4.txt')
+phantom_dict_fname = pathjoin('/'.join(phantdirs[0].split('/')[0:-1]), 'phantom_'+scanner+'_dict_jan25.txt')
 
 # for i, p in enumerate(phantdirs):
 #     print i, p
 
-#phantdirs = [phantdirs[21]]
-
+#phantdirs = [phantdirs[2]]
+#dir = phantdirs[0]
 for dir in phantdirs:
     b1mapdir = pathjoin(dir, 'B1map_qT1')
     spgrdir = pathjoin(dir, 'fitted_spgr_qT1')
@@ -51,6 +51,7 @@ for dir in phantdirs:
         phantTSEIRparfiles = sort_par_glob(glob(pathjoin(dir, 'source_parrec/*_IRTSE*.PAR')))
 
     if scanner == 'slu':
+        phantB1parfile = sort_par_glob(glob(pathjoin(dir, 'source_parrec/*B1MAP*.PAR')))
         phantSPGRparfiles = sort_par_glob(glob(pathjoin(dir, 'source_parrec/*3D_SPGR_*.PAR')))
         phantSEIRparfiles = sort_par_glob(glob(pathjoin(dir, 'source_parrec/*_IR*_128_CLEAR*.PAR')))
         phantSEIREPIparfiles = sort_par_glob(glob(pathjoin(dir, 'source_parrec/*_9shots_EPI11_*.PAR')))
