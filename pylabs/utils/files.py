@@ -1,4 +1,4 @@
-import os
+import os, glob
 
 
 def deconstructRandparFiles(corrPfiles, matdir=None, imgdir=None):
@@ -49,3 +49,6 @@ def deconstructFullRandparFiles(corrPfiles, matdir=None, imgdir=None):
         combs[imgname].append(tstat)
         combs[imgname].append(corrPfile)
     return combs
+
+def sortedParGlob (filefilter):
+    return sorted(glob.glob(filefilter), key=lambda f: int(f.split('_')[-2]))

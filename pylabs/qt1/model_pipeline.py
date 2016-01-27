@@ -13,13 +13,16 @@ def calculate_model(scanner):
     from pylabs.qt1.model import expectedT1
     vialsInOrder = range(18,6,-1)
     expected = numpy.zeros((len(sessions), 12)) # dates * vials
+    expectedByDate = {}
     for d, date in enumerate(sessions.keys()):
         tempCelcius = sessions[date].averageTemperature()
         T = tempCelcius + 273.15
+        expectedByDate[date] = []
         for v, vialno in enumerate(vialsInOrder):
             expected[d, v] = expectedT1(T=T,
                 gel=concentrations[vialno-1,1],
                 gado=concentrations[vialno-1,2])
+            expectedByDate[date].append(expected[d, v])
 
     ## Save by date to tab-separated values file
     expectedT1filepath = 'data/expectedT1_by_session_and_vial_{0}.tsv'.format(scanner)
@@ -29,4 +32,4 @@ def calculate_model(scanner):
         for d, date in enumerate(sessions.keys()):
             expectedT1file.write('{0}\t{1}\n'.format(date, '\t'.join(
                 [str(t1) for t1 in expected[d, :]])))
-    return expected
+    return expectedByDate

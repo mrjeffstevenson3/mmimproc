@@ -1,87 +1,97 @@
 from __future__ import print_function
-import os, fnmatch, glob, collections, datetime, cPickle, sys
+import os, fnmatch, glob, collections, datetime, cPickle, sys, shutil
 from os.path import join
 from collections import defaultdict
 import numpy
 from pylabs.utils.paths import getlocaldataroot
 from pylabs.qt1.fitting import t1fit
+from pylabs.qt1.naming import qt1filepath
 
-skipExisting = True
-
-vialCoords = numpy.array([[57,159],[112,164],[30,130],[88,134],[143,139],[61,103],[116,108],[37,71],[93,77],[149,83],[68,47],[124,54]])
 
 ### FITTING
+def fitPhantoms(images, projectdir, dirstruct='BIDS', async=False, skipExisting = False, X=None):
+    #from multiprocessing import Pool
+    #pool = Pool(12)
+    outfiles = []
+    for key, run in images.items():
+        for b1corr in [True, False]:
+            image = {
+                'date': key[0],
+                'method': key[1],
+                'TR': key[2],
+                'run': key[3],
+                'b1corr': b1corr,
+                'b1tag': {True:'_b1corr', False:''}[b1corr],
+                'TRtag': str(key[2]).replace('.','p')
+            }
 
-rootdir = join(getlocaldataroot(),'phantom_qT1_disc')
-imageDictFile = join(rootdir,'phantom_disc_dict_dec3.txt')
-with open(imageDictFile) as dfile:
-    images = cPickle.load(dfile)
+            if 'b1map' in image['method']:
+                continue
 
-#from multiprocessing import Pool
-#pool = Pool(12)
-async = False
-for key, run in images.items():
-    date = key[0]
-    method = key[1]
-    TR = key[2]
-    runIndex = key[3]
+            run = [f for f in run if f[1]!='mask']
+            files, allx = zip(*sorted(run, key=lambda s: s[1]))
+            if X is not None:
+                files = [f for f in files if allx[files.index(f)] in X]
+            else:
+                X = allx
+            image['X'] = '-'.join([format(x,'02') for x in X])
 
-    if 'b1map' in method:
-        continue
+            msg = 'Fitting: {date} method: {method} TR: {TR} Run: {run} X: {X}'
+            print(msg.format(**image))
 
-    msg = 'Working on session: {0} method: {1} TR: {2} Run: {3}'
-    print(msg.format(date, method.upper(), TR, runIndex))
+            scottybasedir = '/media/DiskArray/shared_data/js'
+            jvdbbasedir = '/diskArray/mirror/js'
+            files = [f.replace(scottybasedir, jvdbbasedir) for f in files]
+            sessiondir = os.sep.join(files[0].split(os.sep)[:-2])
+            maskfname = 'orig_seir_ti_3000_tr_4000_mag_1slmni_1_mask.nii'
+            maskfile = join(sessiondir,'fitted_seir_qT1',maskfname)
+            b1file = join(sessiondir,'B1map_qT1','b1map_phase_1.nii')
 
-    run = [f for f in run if f[1]!='mask']
-    files, X = zip(*sorted(run, key=lambda s: s[1]))
-    scottybasedir = '/media/DiskArray/shared_data/js'
-    jvdbbasedir = '/diskArray/mirror/js'
-    files = [f.replace(scottybasedir, jvdbbasedir) for f in files]
-    sessiondir = os.sep.join(files[0].split(os.sep)[:-2])
-    maskfname = 'orig_seir_ti_3000_tr_4000_mag_1slmni_1_mask.nii'
-    maskfile = join(sessiondir,'fitted_seir_qT1',maskfname)
-    b1file = join(sessiondir,'B1map_qT1','b1map_phase_1.nii')
-    TRstring = str(TR).replace('.','p')
-    outdir = join(rootdir, 'T1_{0}_TR{1}'.format(method, TRstring))
-    fnameTemplate = 'T1_{0}_TR{1}_{2}_{3}{4}.nii.gz'
+            if len(run) < 3:
+                print('--> Skipping scan, only {0} files'.format(len(run)))
+                continue
 
-    if len(run) < 3:
-        print('--> Skipping scan, only {0} files'.format(len(run)))
-        continue
-    if not os.path.isdir(outdir):
-        os.mkdir(outdir)
+            t1filepath = qt1filepath(image, projectdir, dirstruct)
+            if not os.path.isdir(os.path.dirname(t1filepath)):
+                shutil.makedirs(os.path.dirname(t1filepath))
 
-    for b1corr in [True, False]:
-        b1corrtag = {True:'_b1corr', False:''}[b1corr]
-        t1filepath = join(outdir, fnameTemplate.format(method, TRstring, 
-            str(date), runIndex, b1corrtag))
+            if skipExisting and os.path.isfile(t1filepath):
+                print('--> File exists, skipping scan.'.format(len(run)))
+                outfiles.append(image)
+                continue
 
-        if skipExisting and os.path.isfile(t1filepath):
-            print('--> File exists, skipping scan.'.format(len(run)))
-            if not date in t1fitTimeseries[(method, TR)]:
-                t1fitTimeseries[(method, TR)][date] = t1filepath
-            continue
+            kwargs = {}
+            if os.path.isfile(maskfile):
+                kwargs['maskfile'] = maskfile
+            if b1corr:
+                kwargs['b1file'] = b1file
+            if 'SPGR' in image['method'].upper():
+                kwargs['scantype'] = 'SPGR'
+                kwargs['TR'] = image['TR']
+            kwargs['t1filename'] = t1filepath
+            if async:
+                kwargs['mute'] = True
+                #pool.apply_async(t1fit, [files, X], kwargs)
+            else:
+                try:
+                    t1fit(files, X, **kwargs)
+                    outfiles.append(image)
+                except Exception as ex:
+                    print('\n--> Error during fitting: ', ex)
+    #pool.close()
+    #pool.join()
+    return outfiles
 
-        kwargs = {}
-        if os.path.isfile(maskfile):
-            kwargs['maskfile'] = maskfile
-        if b1corr:
-            kwargs['b1file'] = b1file
-        if 'SPGR' in method.upper():
-            kwargs['scantype'] = 'SPGR'
-            kwargs['TR'] = TR
-        kwargs['t1filename'] = t1filepath
-        if async:
-            kwargs['mute'] = True
-            #pool.apply_async(t1fit, [files, X], kwargs)
-        else:
-            try:
-                t1fit(files, X, **kwargs)
-            except Exception as ex:
-                print('\n--> Error during fitting: ', ex)
+if __name__ == '__main__':
+    async = False
+    skipExisting = True
+    rootdir = join(getlocaldataroot(),'phantom_qT1_disc')
+    imageDictFile = join(rootdir,'phantom_disc_dict_dec3.txt')
+    with open(imageDictFile) as dfile:
+        images = cPickle.load(dfile)
+    fitPhantoms(images, projectdir=rootdir, 
+        async=async, skipExisting=skipExisting, dirstruct='legacy')
 
-#pool.close()
-#pool.join()
 
 
 
