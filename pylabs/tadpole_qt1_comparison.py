@@ -38,7 +38,8 @@ ncombs = len(combinations)
 t1images = []
 for s, xsample in enumerate(combinations):
     print('Fitting flip angle combination {0} of {1}'.format(s, ncombs))
-    t1images += fitPhantoms(niftiDict, projectdir=projectdir, X=xsample)
+    t1images += fitPhantoms(niftiDict, projectdir=projectdir, X=xsample, 
+        skipExisting=True)
 
 ## coregister_phantoms
 t1images = coregisterPhantoms(t1images, projectdir=projectdir)

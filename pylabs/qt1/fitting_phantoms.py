@@ -57,6 +57,7 @@ def fitPhantoms(images, projectdir, dirstruct='BIDS', async=False, skipExisting 
 
             if skipExisting and os.path.isfile(t1filepath):
                 print('--> File exists, skipping scan.'.format(len(run)))
+                outfiles.append(image)
                 continue
 
             kwargs = {}

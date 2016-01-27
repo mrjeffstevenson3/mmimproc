@@ -20,17 +20,22 @@ def coregisterPhantoms(uncoregfiles, projectdir, overwrite=False, dirstruct='BID
         print('Aligning file {0} of {1}: {2}'.format(f, nfiles, fname))
 
         newFile = subjectfile.replace('.nii','_coreg723.nii')
+
+        image['coreg'] = True
+        image['coregtag'] = '_coreg723'
         if os.path.isfile(newFile) and not overwrite:
             print('File exists, skipping..')
+            outimages.append(image)
             continue
+
         try:
             xform = pylabs.alignment.phantom.align(subjectfile, targetfile, delta=10)
             pylabs.alignment.phantom.savetransformed(subjectfile, xform, newFile, newAffine)
         except Exception as e:
             print('Error aligning file: '+str(e))
-        image['coreg'] = True
-        image['coregtag'] = '_coreg723'
-        outimages.append(image)
+        else:
+            outimages.append(image)
+
     return outimages # returns only coreg'd images
 
 if __name__ == '__main__':

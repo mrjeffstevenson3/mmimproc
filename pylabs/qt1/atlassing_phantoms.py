@@ -11,7 +11,7 @@ import pylabs.qt1.blacklist as bad
 from pylabs.qt1.naming import qt1filepath
 
 
-def plotT1Timeseries(dates, data, labels, title, dtype=None, secondaryData=None):
+def plotT1Timeseries(dates, data, labels, title, dtype=None, secondaryData=None, plotdir='.'):
     ylimPresets = {'t1':[0,2500],'absdiff':[-500,500],'reldiff':[-50,50]}
     plotfpath = join(plotdir,'{0}_timeseries.png'.format(title))
     plt.figure()
@@ -38,7 +38,7 @@ def atlasPhantoms(images, expectedByDate, projectdir, dirstruct='BIDS'):
     print('Method, TR, B1 corr, date                        Found file')
     for image in images:
         filepath = qt1filepath(image, projectdir, dirstruct)
-        newkey =  tuple([image[k] for k in ('method', 'TR', 'b1corr', 'date')])
+        newkey =  tuple([image[k] for k in ('method', 'TR', 'b1corr', 'X','date')])
         fileExists = os.path.isfile(filepath)
         print('{0: <65}\t{1}'.format(newkey, fileExists))
         if not fileExists:
@@ -69,6 +69,8 @@ def atlasPhantoms(images, expectedByDate, projectdir, dirstruct='BIDS'):
     nvials = len(labels)
 
     ## Start plotting
+    #import pdb
+    #pdb.set_trace()
 
     plotdir = join(projectdir,'plots')
     if not os.path.isdir(plotdir):
@@ -76,14 +78,14 @@ def atlasPhantoms(images, expectedByDate, projectdir, dirstruct='BIDS'):
     b1corrtag = {True:'b1corr',False:'notb1c'}
     vialsOfInterest = [7,12]
 
-    methods = set([k[:3] for k in vialdata.keys()])
+    methods = set([k[:4] for k in vialdata.keys()])
     datafile = 'data/t1_factordata.pickle'
     factordata = {}
     for method in methods:
-        methodstr = '{0}_{1}_{2}'.format(method[0], method[1], b1corrtag[method[2]])
+        methodstr = '{0}_{1}_{2}_{3}'.format(method[0], method[1], b1corrtag[method[2]], method[3])
         print(methodstr)
-        thisMethodKeys = [k for k in vialdata.keys() if k[:3] == method]
-        dates = sorted([k[3] for k in thisMethodKeys if k[3] in datesWithTemps])
+        thisMethodKeys = [k for k in vialdata.keys() if k[:4] == method]
+        dates = sorted([k[4] for k in thisMethodKeys if k[4] in datesWithTemps])
         
         blackListedDates = [k[2] for k in bad.phantoms if k[:2]==method[:2]]
         dates = [d for d in dates if d not in blackListedDates]
@@ -92,22 +94,23 @@ def atlasPhantoms(images, expectedByDate, projectdir, dirstruct='BIDS'):
         obsVialtc = numpy.array(regStatsInOrder)
 
         ## Observed data
-        plotT1Timeseries(dates, obsVialtc, labels, methodstr, dtype='t1')
+        plotT1Timeseries(dates, obsVialtc, labels, methodstr, dtype='t1', 
+            plotdir=plotdir)
 
         ## Expected plot for same dates
         expVialtc = numpy.array([expectedByDate[d] for d in dates])
         plotT1Timeseries(dates, expVialtc, labels, methodstr+'_expected', 
-            dtype='t1')
+            dtype='t1', plotdir=plotdir)
 
         ## Difference
         diffVialtc = expVialtc - obsVialtc
         plotT1Timeseries(dates, diffVialtc, labels, methodstr+'_diff', 
-            dtype='absdiff')
+            dtype='absdiff', plotdir=plotdir)
 
         ## Relative Difference
         reldiffVialtc = ((expVialtc - obsVialtc)/expVialtc)*100
         plotT1Timeseries(dates, reldiffVialtc, labels, methodstr+'_reldiff',     
-            dtype='reldiff')
+            dtype='reldiff', plotdir=plotdir)
 
         ## Singled out vials:
         for voi in vialsOfInterest:
@@ -116,7 +119,8 @@ def atlasPhantoms(images, expectedByDate, projectdir, dirstruct='BIDS'):
             svReldiff = reldiffVialtc[:,voiIndex]
 
             plotT1Timeseries(dates, svExpObs, ['model','observed','diff'], 
-                methodstr+'_vial{0}'.format(voi), dtype='t1', secondaryData=svReldiff)
+                methodstr+'_vial{0}'.format(voi), dtype='t1', 
+                secondaryData=svReldiff, plotdir=plotdir)
 
         ## Time average:
         plt.figure()
