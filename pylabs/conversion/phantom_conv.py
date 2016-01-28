@@ -167,7 +167,7 @@ def phantom_B1_midslice_par2mni(parfile, datadict, outdir=None, exceptions=None,
         print key, value
     return key, value
 
-def phantom_midslice_par2mni(parfile, datadict, method, outdir=None, exceptions=None, outfilename=None,
+def phantom_midslice_par2mni(parfile, datadict, method, outdir=None, exceptions=None, outfilename=None, scanner='slu',
                                 verbose=True, scaling='fp', minmax=('parse', 'parse'), origin='scanner', overwrite=True):
     prov.add(parfile)
     key, value = [''], ['']
@@ -219,8 +219,10 @@ def phantom_midslice_par2mni(parfile, datadict, method, outdir=None, exceptions=
 
     if in_data_ras.shape[1] == zdim and in_data_ras.shape[2] == ydim:
         in_data_ras = np.rollaxis(in_data_ras, 2, 1)
-
-    in_slice_mag = in_data_ras[:,:, mid_slice_num-1, 0]
+    if method == 'orig_spgr' and len(pr_hdr._shape) == 3:
+        in_slice_mag = in_data_ras[:,:, mid_slice_num-1, 0]
+    if method == 'orig_spgr' and len(pr_hdr._shape) == 4 and scanner == 'slu':
+        in_slice_mag = in_data_ras[:,:, mid_slice_num-1, 1]
     mnizoomfactor = 218/float(ydim)
     slice_mag218 = scipy.ndimage.zoom(in_slice_mag, mnizoomfactor, order=0)
     slice_mag_mni = slice_mag218[18:200,:]

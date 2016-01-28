@@ -24,6 +24,7 @@ def sort_par_glob (parglob):
 fs = getlocaldataroot()
 scanner = 'slu'
 phantdirs = sorted(glob(pathjoin(fs, 'phantom_qT1_'+scanner+'/phantom_qT1_*')), key=lambda f: int(f.split('_')[-1]))
+scandateexception = ['']
 if scanner == 'disc':
     scandateexception = ['20141108']
 phantom_ddata = defaultdict(list)
@@ -32,9 +33,9 @@ phantom_dict_fname = pathjoin('/'.join(phantdirs[0].split('/')[0:-1]), 'phantom_
 # for i, p in enumerate(phantdirs):
 #     print i, p
 
-#phantdirs = [phantdirs[2]]
-#dir = phantdirs[0]
-for dir in phantdirs:
+phantdirs = [phantdirs[0]]
+dir = phantdirs[0]
+#for dir in phantdirs:
     b1mapdir = pathjoin(dir, 'B1map_qT1')
     spgrdir = pathjoin(dir, 'fitted_spgr_qT1')
     seirdir = pathjoin(dir, 'fitted_seir_qT1')
@@ -68,35 +69,35 @@ for dir in phantdirs:
     for parfile in phantSEIRparfiles:
         scaling = 'fp'
         key, val = phantom_midslice_par2mni(parfile=parfile, datadict=phantom_ddata, method='seir', outdir=seirdir, exceptions=scandateexception,
-                                               outfilename='orig_seir', scaling=scaling)
+                                               outfilename='orig_seir', scaling=scaling, scanner=scanner)
         for k, v in zip(key, val):
              phantom_ddata[k].append(v)
 
     for parfile in phantSEIRHSparfiles:
         scaling = 'fp'
         key, val = phantom_midslice_par2mni(parfile=parfile, datadict=phantom_ddata, method='seirhs', outdir=seirhsdir, exceptions=scandateexception,
-                                               outfilename='orig_seir', scaling=scaling)
+                                               outfilename='orig_seir', scaling=scaling, scanner=scanner)
         for k, v in zip(key, val):
             phantom_ddata[k].append(v)
 
     for parfile in phantSPGRparfiles:
         scaling = 'fp'
         key, val = phantom_midslice_par2mni(parfile=parfile, datadict=phantom_ddata, method='orig_spgr', outdir=spgrdir, exceptions=scandateexception,
-                                               outfilename='orig_spgr', scaling=scaling)
+                                               outfilename='orig_spgr', scaling=scaling, scanner=scanner)
         for k, v in zip(key, val):
             phantom_ddata[k].append(v)
 
     for parfile in phantSEIREPIparfiles:
         scaling = 'fp'
         key, val = phantom_midslice_par2mni(parfile=parfile, datadict=phantom_ddata, method='seirepi', outdir=seirepidir, exceptions=scandateexception,
-                                               outfilename='seirepi', scaling=scaling)
+                                               outfilename='seirepi', scaling=scaling, scanner=scanner)
         for k, v in zip(key, val):
             phantom_ddata[k].append(v)
 
     for parfile in phantTSEIRparfiles:
         scaling = 'fp'
         key, val = phantom_midslice_par2mni(parfile=parfile, datadict=phantom_ddata, method='tseir', outdir=seirepidir, exceptions=scandateexception,
-                                               outfilename='tseir', scaling=scaling)
+                                               outfilename='tseir', scaling=scaling, scanner=scanner)
         for k, v in zip(key, val):
             phantom_ddata[k].append(v)
 
