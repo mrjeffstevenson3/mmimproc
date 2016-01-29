@@ -2,7 +2,8 @@ from os.path import join
 import collections, itertools
 from pylabs.utils.paths import getlocaldataroot
 from pylabs.utils.files import sortedParGlob
-from pylabs.conversion.phantom_conv import phantom_midslice_par2mni as par2mni
+from pylabs.conversion.phantom_conv import (phantom_midslice_par2mni, 
+                                        phantom_B1_midslice_par2mni)
 from pylabs.qt1.fitting_phantoms import fitPhantoms
 from pylabs.qt1.coregister_phantoms import coregisterPhantoms
 from pylabs.qt1.atlassing_phantoms import atlasPhantoms
@@ -16,21 +17,35 @@ subj = 'sub-phant2016-01-13'
 subjectdir = join(projectdir, subj)
 
 ## convert parrecs to nifti
-anatdir = join(subjectdir, 'anat')
 niftiDict = collections.defaultdict(list)
-spgrFilter = 'source_parrec/*SPGR*.PAR'
-phantSPGRparfiles = sortedParGlob(join(subjectdir, spgrFilter))
-scaling = 'fp'
-method = 'orig_spgr'
-fname = subj+'_'+'orig_spgr'
-for parfile in phantSPGRparfiles:
-    key, val = par2mni(parfile=parfile, datadict=niftiDict, method=method, 
-        outdir=anatdir, exceptions=[], outfilename=fname, scaling=scaling)
+parfiles = sortedParGlob(join(subjectdir, 'source_parrec/*.PAR'))
+for parfile in parfiles:
+    args = {}
+    if 'SPGR' in parfile:
+        method = 'orig_spgr'
+        args['scaling'] = 'fp'
+        args['method'] = method
+        args['outdir'] = join(subjectdir, 'anat')
+        par2mni = phantom_midslice_par2mni
+    elif 'B1' in parfile and 'fixed' in parfile:
+        method = 'b1map'
+        args['scaling'] = 'dv'
+        args['outdir'] = join(subjectdir, 'fmap')
+        par2mni = phantom_B1_midslice_par2mni
+    else: 
+        continue
+    args['parfile'] = parfile
+    args['datadict'] = niftiDict
+    args['exceptions'] = []
+    args['outfilename'] = subj+'_'+method
+    key, val = par2mni(**args)
     for k, v in zip(key, val):
         niftiDict[k].append(v)
 
 ## Figure out which combinations of flip angles we can test
-allAngles = sorted([i[1] for i in niftiDict.values()[0] if i[1]!='mask'])
+spgrKey = [k for k in niftiDict.keys() if k[1]=='orig_spgr_mag'][0]
+spgrFilesAndFlipAngles = niftiDict[spgrKey]
+allAngles = sorted([i[1] for i in spgrFilesAndFlipAngles])
 combinations = list(itertools.combinations(allAngles, 3))
 ncombs = len(combinations)
 

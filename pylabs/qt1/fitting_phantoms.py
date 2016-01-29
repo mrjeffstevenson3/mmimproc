@@ -45,7 +45,10 @@ def fitPhantoms(images, projectdir, dirstruct='BIDS', async=False, skipExisting 
             sessiondir = os.sep.join(files[0].split(os.sep)[:-2])
             maskfname = 'orig_seir_ti_3000_tr_4000_mag_1slmni_1_mask.nii'
             maskfile = join(sessiondir,'fitted_seir_qT1',maskfname)
-            b1file = join(sessiondir,'B1map_qT1','b1map_phase_1.nii')
+            #b1file = join(sessiondir,'B1map_qT1','b1map_phase_1.nii')
+            b1key = [k for k in images.keys() if k[1] == 'b1map_phase' and
+                k[0] == image['date']][0]
+            b1file = images[b1key][0][0]
 
             if len(run) < 3:
                 print('--> Skipping scan, only {0} files'.format(len(run)))
