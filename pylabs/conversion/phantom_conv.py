@@ -48,6 +48,9 @@ def phantom_B1_midslice_par2mni(parfile, datadict, outdir=None, exceptions=None,
     flipangle = int(pr_hdr.image_defs['image_flip_angle'][0])
     ti = int(round(pr_hdr.image_defs['Inversion delay'][0], -1))
     tr = pr_hdr.general_info['repetition_time']
+    fov = pr_hdr.general_info['fov'][0]
+    spacing = pr_hdr.image_defs['pixel spacing'][0][0]
+
     if tr > 100:
         tr = int(round(pr_hdr.general_info['repetition_time'], -1))
     if ti == 0.0:
@@ -74,9 +77,15 @@ def phantom_B1_midslice_par2mni(parfile, datadict, outdir=None, exceptions=None,
     if in_data_ras.shape[3] == zdim and in_data_ras.shape[2] == tdim:
         in_data_ras = np.rollaxis(in_data_ras, 3, 2)
 
+    if in_data_ras.shape[1] == zdim and in_data_ras.shape[2] == ydim:
+        in_data_ras = np.rollaxis(in_data_ras, 2, 1)
+
+    if in_data_ras.shape[3] == ydim and in_data_ras.shape[1] == zdim:
+        in_data_ras = np.rollaxis(in_data_ras, 3, 1)
+
     in_slice_mag = in_data_ras[:,:,mid_slice_num-1,0]
     in_slice_phase = in_data_ras[:,:,mid_slice_num-1,tdim-1]
-    mnizoomfactor = 218/float(ydim)
+    mnizoomfactor = 218*spacing/float(fov)
     slice_mag218 = scipy.ndimage.zoom(in_slice_mag, mnizoomfactor, order=0)
     slice_phase218 = scipy.ndimage.zoom(in_slice_phase, mnizoomfactor, order=0)
     slice_mag_mni = slice_mag218[18:200,:]
@@ -180,6 +189,8 @@ def phantom_midslice_par2mni(parfile, datadict, method, outdir=None, exceptions=
     flipangle = int(pr_hdr.image_defs['image_flip_angle'][0])
     ti = int(round(pr_hdr.image_defs['Inversion delay'][0], -1))
     tr = pr_hdr.general_info['repetition_time']
+    fov = pr_hdr.general_info['fov'][0]
+    spacing = pr_hdr.image_defs['pixel spacing'][0][0]
     if tr > 100:
         tr = int(round(pr_hdr.general_info['repetition_time'], -1))
     if ti == 0.0:
@@ -219,11 +230,17 @@ def phantom_midslice_par2mni(parfile, datadict, method, outdir=None, exceptions=
 
     if in_data_ras.shape[1] == zdim and in_data_ras.shape[2] == ydim:
         in_data_ras = np.rollaxis(in_data_ras, 2, 1)
+
+    if in_data_ras.shape[3] == ydim and in_data_ras.shape[1] == zdim:
+        in_data_ras = np.rollaxis(in_data_ras, 3, 1)
+
     if method == 'orig_spgr' and len(pr_hdr._shape) == 3:
         in_slice_mag = in_data_ras[:,:, mid_slice_num-1, 0]
+
     if method == 'orig_spgr' and len(pr_hdr._shape) == 4 and scanner == 'slu':
         in_slice_mag = in_data_ras[:,:, mid_slice_num-1, 1]
-    mnizoomfactor = 218/float(ydim)
+
+    mnizoomfactor = 218*spacing/float(fov)
     slice_mag218 = scipy.ndimage.zoom(in_slice_mag, mnizoomfactor, order=0)
     slice_mag_mni = slice_mag218[18:200,:]
 
