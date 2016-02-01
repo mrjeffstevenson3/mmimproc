@@ -23,7 +23,8 @@ def sort_par_glob (parglob):
 
 fs = getlocaldataroot()
 scanner = 'slu'
-phantdirs = sorted(glob(pathjoin(fs, 'phantom_qT1_'+scanner+'/phantom_qT1_*')), key=lambda f: int(f.split('_')[-1]))
+#phantdirs = sorted(glob(pathjoin(fs, 'phantom_qT1_'+scanner+'/phantom_qT1_*')), key=lambda f: int(f.split('_')[-1]))
+phantdirs = sorted(glob(pathjoin(fs, 'phantom_test_disc_slu/phantom_qT1_*')), key=lambda f: int(f.split('_')[-1]))
 scandateexception = ['']
 if scanner == 'disc':
     scandateexception = ['20141108']
@@ -33,7 +34,7 @@ phantom_dict_fname = pathjoin('/'.join(phantdirs[0].split('/')[0:-1]), 'phantom_
 #for testing purposes only
 # for i, p in enumerate(phantdirs):
 #     print i, p
-#dir = phantdirs[2]
+#dir = phantdirs[1]
 
 for dir in phantdirs:
     b1mapdir = pathjoin(dir, 'B1map_qT1')
@@ -43,7 +44,8 @@ for dir in phantdirs:
     seirepidir = pathjoin(dir, 'fitted_seirepi_qT1')
     tseirdir = pathjoin(dir, 'fitted_tseir_qT1')
     sdate = dir.split('/')[-1].split('_')[-1]
-    if scanner == 'disc':
+    if dir == '/media/DiskArray/shared_data/js/phantom_test_disc_slu/phantom_qT1_20150309':
+        scanner = 'disc'
         phantB1parfile = sort_par_glob(glob(pathjoin(dir, 'source_parrec/*B1MAP*.PAR')))
         phantSPGRparfiles = sort_par_glob(glob(pathjoin(dir, 'source_parrec/*T1_MAP*.PAR')))
         phantSEIRparfiles = sort_par_glob(glob(pathjoin(dir, 'source_parrec/*__IR*_128_*.PAR')))
@@ -51,7 +53,8 @@ for dir in phantdirs:
         phantSEIREPIparfiles = sort_par_glob(glob(pathjoin(dir, 'source_parrec/*_SEIREPI_*.PAR')))
         phantTSEIRparfiles = sort_par_glob(glob(pathjoin(dir, 'source_parrec/*_IRTSE*.PAR')))
 
-    if scanner == 'slu':
+    if dir == '/media/DiskArray/shared_data/js/phantom_test_disc_slu/phantom_qT1_20160113':
+        scanner = 'slu'
         phantB1parfile = sort_par_glob(glob(pathjoin(dir, 'source_parrec/*B1MAP*.PAR')))
         phantSPGRparfiles = sort_par_glob(glob(pathjoin(dir, 'source_parrec/*3D_SPGR_*.PAR')))
         phantSEIRparfiles = sort_par_glob(glob(pathjoin(dir, 'source_parrec/*_IR*_128_CLEAR*.PAR')))
@@ -76,7 +79,7 @@ for dir in phantdirs:
     for parfile in phantSEIRHSparfiles:
         scaling = 'fp'
         key, val = phantom_midslice_par2mni(parfile=parfile, datadict=phantom_ddata, method='seirhs', outdir=seirhsdir, exceptions=scandateexception,
-                                               outfilename='orig_seir', scaling=scaling, scanner=scanner)
+                                               outfilename='orig_seirhs', scaling=scaling, scanner=scanner)
         for k, v in zip(key, val):
             phantom_ddata[k].append(v)
 
