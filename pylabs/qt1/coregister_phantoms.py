@@ -4,11 +4,8 @@ import pylabs.alignment.phantom
 from pylabs.utils.paths import getlocaldataroot
 from pylabs.qt1.naming import qt1filepath
 
-
-rootdir = join(getlocaldataroot(),'phantom_qT1_disc')
-targetfile = join(rootdir,'T1_seir_mag_TR4000',
-    'T1_seir_mag_TR4000_2014-07-23_1.nii.gz')
-
+targetfile = join(getlocaldataroot(),'phantom_qT1_slu',
+    'phantom_alignment_target.nii.gz')
 
 def coregisterPhantoms(uncoregfiles, projectdir, overwrite=False, dirstruct='BIDS'):
     nfiles = len(uncoregfiles)
@@ -39,6 +36,7 @@ def coregisterPhantoms(uncoregfiles, projectdir, overwrite=False, dirstruct='BID
     return outimages # returns only coreg'd images
 
 if __name__ == '__main__':
+    rootdir = join(getlocaldataroot(),'phantom_qT1_disc')
     t1dirs = glob.glob(join(rootdir, 'T1*'))
     uncoregdirs = [d for d in t1dirs if 'reg' not in d]
     uncoregfilesByDir = [glob.glob(join(d, 'T1*.nii.gz')) for d in uncoregdirs]
