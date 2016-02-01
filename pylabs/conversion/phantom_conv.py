@@ -34,7 +34,7 @@ def error(msg, exit_code):
 verbose = True
 prov.dryrun = True
 
-def phantom_B1_midslice_par2mni(parfile, datadict, outdir=None, exceptions=None, outfilename=None,
+def phantom_B1_midslice_par2mni(parfile, datadict, outdir=None, exceptions=None, outfilename=None, scanner='slu',
                                 verbose=True, scaling='dv', minmax=('parse', 'parse'), origin='scanner', overwrite=True):
     prov.add(parfile)
     key, value = [], []
@@ -83,17 +83,40 @@ def phantom_B1_midslice_par2mni(parfile, datadict, outdir=None, exceptions=None,
     if in_data_ras.shape[3] == ydim and in_data_ras.shape[1] == zdim:
         in_data_ras = np.rollaxis(in_data_ras, 3, 1)
 
-    in_slice_mag = in_data_ras[:,:,mid_slice_num-1,0]
-    in_slice_phase = in_data_ras[:,:,mid_slice_num-1,tdim-1]
-    mnizoomfactor = 1/spacing
-    slice_mag218 = scipy.ndimage.zoom(in_slice_mag, mnizoomfactor, order=0)
-    slice_phase218 = scipy.ndimage.zoom(in_slice_phase, mnizoomfactor, order=0)
+    if scanner == 'disc':
+        in_slice_mag = in_data_ras[:,:,mid_slice_num-1,0]
+    if scanner == 'slu':
+        in_slice_mag = in_data_ras[:,:,mid_slice_num-1,3]
+
+    if scanner == 'disc':
+        in_slice_phase = in_data_ras[:,:,mid_slice_num-1, -1]
+    if scanner == 'slu':
+        in_slice_phase = in_data_ras[:,:,mid_slice_num-1,4]
+
+    mmcropfactor = fov/218.
+    newsizediff = in_slice_mag.shape[0] - (in_slice_mag.shape[0]*mmcropfactor)
+    crop = round(newsizediff/2.)
+
+    if newsizediff <= 0:
+        crop = abs(crop)
+        crop_in_slice_mag = in_slice_mag[crop: -crop, crop: -crop]
+        crop_in_slice_phase = in_slice_phase[crop: -crop, crop: -crop]
+    else:
+        newdim = in_slice_mag.shape[0]+(crop*2)
+        crop_in_slice_mag = np.zeros((newdim, newdim))
+        crop_in_slice_phase = np.zeros((newdim, newdim))
+        crop_in_slice_mag[crop: -crop, crop: -crop] = in_slice_mag
+        crop_in_slice_phase[crop: -crop, crop: -crop] = in_slice_phase
+
+    zoomto218 = 218./crop_in_slice_mag.shape[0]
+    slice_mag218 = scipy.ndimage.zoom(crop_in_slice_mag, zoomto218, order=0)
+    slice_phase218 = scipy.ndimage.zoom(crop_in_slice_phase, zoomto218, order=0)
     slice_mag_mni = slice_mag218[18:200,:]
+    slice_phase_raw_mni = slice_phase218[18:200,:]
     #use dipy and ndimage to create a mask
     slice_mag_mni_masked, slice_mag_mni_mask = median_otsu(slice_mag_mni, 9, 1)
     slice_mag_mni_mask = scipy.ndimage.morphology.binary_dilation(slice_mag_mni_mask, iterations=2)
     slice_mag_mni_mask = scipy.ndimage.morphology.binary_fill_holes(slice_mag_mni_mask)
-    slice_phase_raw_mni = slice_phase218[18:200,:]
     slice_phase_mf_mni = scipy.ndimage.filters.median_filter(slice_phase_raw_mni, 6)
     slice_phase_mf_mni_masked = slice_phase_mf_mni * slice_mag_mni_mask
 
