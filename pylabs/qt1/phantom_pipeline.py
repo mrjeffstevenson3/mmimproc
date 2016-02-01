@@ -44,8 +44,9 @@ for dir in phantdirs:
     seirepidir = pathjoin(dir, 'fitted_seirepi_qT1')
     tseirdir = pathjoin(dir, 'fitted_tseir_qT1')
     sdate = dir.split('/')[-1].split('_')[-1]
-    if dir == '/media/DiskArray/shared_data/js/phantom_test_disc_slu/phantom_qT1_20150309':
-        scanner = 'disc'
+    # if dir == '/media/DiskArray/shared_data/js/phantom_test_disc_slu/phantom_qT1_20150309':
+    #     scanner = 'disc'
+    if scanner == 'disc':
         phantB1parfile = sort_par_glob(glob(pathjoin(dir, 'source_parrec/*B1MAP*.PAR')))
         phantSPGRparfiles = sort_par_glob(glob(pathjoin(dir, 'source_parrec/*T1_MAP*.PAR')))
         phantSEIRparfiles = sort_par_glob(glob(pathjoin(dir, 'source_parrec/*__IR*_128_*.PAR')))
@@ -53,8 +54,9 @@ for dir in phantdirs:
         phantSEIREPIparfiles = sort_par_glob(glob(pathjoin(dir, 'source_parrec/*_SEIREPI_*.PAR')))
         phantTSEIRparfiles = sort_par_glob(glob(pathjoin(dir, 'source_parrec/*_IRTSE*.PAR')))
 
-    if dir == '/media/DiskArray/shared_data/js/phantom_test_disc_slu/phantom_qT1_20160113':
-        scanner = 'slu'
+    # if dir == '/media/DiskArray/shared_data/js/phantom_test_disc_slu/phantom_qT1_20160113':
+    #     scanner = 'slu'
+    if scanner == 'slu':
         phantB1parfile = sort_par_glob(glob(pathjoin(dir, 'source_parrec/*B1MAP*.PAR')))
         phantSPGRparfiles = sort_par_glob(glob(pathjoin(dir, 'source_parrec/*3D_SPGR_*.PAR')))
         phantSEIRparfiles = sort_par_glob(glob(pathjoin(dir, 'source_parrec/*_IR*_128_CLEAR*.PAR')))
@@ -100,7 +102,7 @@ for dir in phantdirs:
     for parfile in phantB1parfile:
         scaling = 'dv'
         key, val = phantom_B1_midslice_par2mni(parfile=parfile, datadict=phantom_ddata, outdir=b1mapdir, exceptions=scandateexception,
-                                               outfilename='b1map', scaling=scaling)
+                                               outfilename='b1map', scaling=scaling, scanner=scanner)
         for k, v in zip(key, val):
             phantom_ddata[k].append(v)
 
