@@ -48,6 +48,9 @@ def phantom_B1_midslice_par2mni(parfile, datadict, outdir=None, exceptions=None,
     flipangle = int(pr_hdr.image_defs['image_flip_angle'][0])
     ti = int(round(pr_hdr.image_defs['Inversion delay'][0], -1))
     tr = pr_hdr.general_info['repetition_time']
+    fov = pr_hdr.general_info['fov'][0]
+    spacing = pr_hdr.image_defs['pixel spacing'][0][0]
+
     if tr > 100:
         tr = int(round(pr_hdr.general_info['repetition_time'], -1))
     if ti == 0.0:
@@ -74,9 +77,15 @@ def phantom_B1_midslice_par2mni(parfile, datadict, outdir=None, exceptions=None,
     if in_data_ras.shape[3] == zdim and in_data_ras.shape[2] == tdim:
         in_data_ras = np.rollaxis(in_data_ras, 3, 2)
 
+    if in_data_ras.shape[1] == zdim and in_data_ras.shape[2] == ydim:
+        in_data_ras = np.rollaxis(in_data_ras, 2, 1)
+
+    if in_data_ras.shape[3] == ydim and in_data_ras.shape[1] == zdim:
+        in_data_ras = np.rollaxis(in_data_ras, 3, 1)
+
     in_slice_mag = in_data_ras[:,:,mid_slice_num-1,0]
     in_slice_phase = in_data_ras[:,:,mid_slice_num-1,tdim-1]
-    mnizoomfactor = 218/float(ydim)
+    mnizoomfactor = 1/spacing
     slice_mag218 = scipy.ndimage.zoom(in_slice_mag, mnizoomfactor, order=0)
     slice_phase218 = scipy.ndimage.zoom(in_slice_phase, mnizoomfactor, order=0)
     slice_mag_mni = slice_mag218[18:200,:]
@@ -180,6 +189,8 @@ def phantom_midslice_par2mni(parfile, datadict, method, outdir=None, exceptions=
     flipangle = int(pr_hdr.image_defs['image_flip_angle'][0])
     ti = int(round(pr_hdr.image_defs['Inversion delay'][0], -1))
     tr = pr_hdr.general_info['repetition_time']
+    fov = pr_hdr.general_info['fov'][0]
+    spacing = pr_hdr.image_defs['pixel spacing'][0][0]
     if tr > 100:
         tr = int(round(pr_hdr.general_info['repetition_time'], -1))
     if ti == 0.0:
@@ -219,12 +230,46 @@ def phantom_midslice_par2mni(parfile, datadict, method, outdir=None, exceptions=
 
     if in_data_ras.shape[1] == zdim and in_data_ras.shape[2] == ydim:
         in_data_ras = np.rollaxis(in_data_ras, 2, 1)
+
+    if in_data_ras.shape[3] == ydim and in_data_ras.shape[1] == zdim:
+        in_data_ras = np.rollaxis(in_data_ras, 3, 1)
+
     if method == 'orig_spgr' and len(pr_hdr._shape) == 3:
         in_slice_mag = in_data_ras[:,:, mid_slice_num-1, 0]
+
     if method == 'orig_spgr' and len(pr_hdr._shape) == 4 and scanner == 'slu':
         in_slice_mag = in_data_ras[:,:, mid_slice_num-1, 1]
-    mnizoomfactor = 218/float(ydim)
-    slice_mag218 = scipy.ndimage.zoom(in_slice_mag, mnizoomfactor, order=0)
+
+    if method == 'orig_spgr' and len(pr_hdr._shape) == 4 and scanner == 'disc':
+        in_slice_mag = in_data_ras[:,:, mid_slice_num-1, 0]
+
+    if method != 'orig_spgr' and method != 'tseir' and scanner == 'slu':
+        in_slice_mag = in_data_ras[:,:, mid_slice_num-1, 1]
+
+    if method != 'orig_spgr' and method != 'tseir' and scanner == 'disc':
+        in_slice_mag = in_data_ras[:,:, mid_slice_num-1, 0]
+
+    if method == 'tseir' and scanner == 'slu':
+        in_slice_mag = in_data_ras[:,:, mid_slice_num-1, 2]
+
+    if method == 'tseir' and scanner == 'disc':
+        in_slice_mag = in_data_ras[:,:, mid_slice_num-1, 0]
+
+
+    mmcropfactor = fov/218.
+    newsizediff = in_slice_mag.shape[0] - (in_slice_mag.shape[0]*mmcropfactor)
+    crop = round(newsizediff/2.)
+
+    if newsizediff <= 0:
+        crop = abs(crop)
+        crop_in_slice_mag = in_slice_mag[crop: -crop, crop: -crop]
+    else:
+        newdim = in_slice_mag.shape[0]+(crop*2)
+        crop_in_slice_mag = np.zeros((newdim, newdim))
+        crop_in_slice_mag[crop: -crop, crop: -crop] = in_slice_mag
+
+    zoomto218 = 218./crop_in_slice_mag.shape[0]
+    slice_mag218 = scipy.ndimage.zoom(crop_in_slice_mag, zoomto218, order=0)
     slice_mag_mni = slice_mag218[18:200,:]
 
     if scandate not in exceptions:
@@ -280,10 +325,36 @@ def phantom_midslice_par2mni(parfile, datadict, method, outdir=None, exceptions=
     prov.log(outfilename+'_mag_1slmni_'+str(run)+'.nii', 'magnitude of '+outfilename, parfile)
 
 
-    if len(pr_hdr._shape) == 4 and pr_hdr._shape[3] == 2 and method != 'orig_spgr':
-        in_slice_real = in_data_ras[:,:, mid_slice_num-1,1]
-        slice_real218 = scipy.ndimage.zoom(in_slice_real, mnizoomfactor, order=0)
+    if len(pr_hdr._shape) == 4 and pr_hdr._shape[3] >= 2 and method != 'orig_spgr':
+
+        if method != 'tseir' and scanner == 'slu':
+            in_slice_real = in_data_ras[:,:, mid_slice_num-1,0]
+
+        if method != 'tseir' and scanner == 'disc':
+            in_slice_real = in_data_ras[:,:, mid_slice_num-1,1]
+
+        if method == 'tseir' and scanner == 'slu':
+            in_slice_real = in_data_ras[:,:, mid_slice_num-1, 0]
+
+        if method == 'tseir' and scanner == 'disc':
+            in_slice_real = in_data_ras[:,:, mid_slice_num-1, 1]
+
+        mmcropfactor = fov/218.
+        newsizediff = in_slice_real.shape[0] - (in_slice_real.shape[0]*mmcropfactor)
+        crop = round(newsizediff/2.)
+
+        if newsizediff <= 0:
+            crop = abs(crop)
+            crop_in_slice_real = in_slice_real[crop: -crop, crop: -crop]
+        else:
+            newdim = in_slice_real.shape[0]+(crop*2)
+            crop_in_slice_real = np.zeros((newdim, newdim))
+            crop_in_slice_real[crop: -crop, crop: -crop] = in_slice_real
+
+        zoomto218 = 218./crop_in_slice_real.shape[0]
+        slice_real218 = scipy.ndimage.zoom(crop_in_slice_real, zoomto218, order=0)
         slice_real_mni = slice_real218[18:200,:]
+
         if scandate not in exceptions:
             slice_real_mni = np.fliplr(slice_real_mni)
         elif scandate in exceptions:
