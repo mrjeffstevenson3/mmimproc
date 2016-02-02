@@ -36,7 +36,8 @@ for parfile in parfiles:
         continue
     args['parfile'] = parfile
     args['datadict'] = niftiDict
-    args['exceptions'] = []
+    args['flipexception'] = []
+    args['protoexception'] = ['20160113']
     args['outfilename'] = subj+'_'+method
     key, val = par2mni(**args)
     for k, v in zip(key, val):

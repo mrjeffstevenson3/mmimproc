@@ -29,9 +29,6 @@ def plotT1Timeseries(dates, data, labels, title, dtype=None, secondaryData=None,
 
 def atlasPhantoms(images, expectedByDate, projectdir, dirstruct='BIDS'):
 
-    import pdb
-    pdb.set_trace()
-
     atlasfname = 'phantom_slu_mask_20160113.nii.gz'
     atlasfpath = join(projectdir,atlasfname)
 
@@ -59,6 +56,10 @@ def atlasPhantoms(images, expectedByDate, projectdir, dirstruct='BIDS'):
     labels = labels[1:] # remove label for background
     for key in vialdata.keys():
         vialdata[key]['average'] = numpy.delete(vialdata[key]['average'], 0)
+
+    ## Reverse order of vials for expected
+    for key in expectedByDate.keys():
+        expectedByDate[key].reverse()
 
     ## Remove blacklisted vials
     for badvial in bad.vials:
