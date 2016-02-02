@@ -29,7 +29,10 @@ def plotT1Timeseries(dates, data, labels, title, dtype=None, secondaryData=None,
 
 def atlasPhantoms(images, expectedByDate, projectdir, dirstruct='BIDS'):
 
-    atlasfname = 'T1_seir_mag_TR4000_2014-07-23_mask.nii.gz'
+    import pdb
+    pdb.set_trace()
+
+    atlasfname = 'phantom_slu_mask_20160113.nii.gz'
     atlasfpath = join(projectdir,atlasfname)
 
     ### Gather data by vial

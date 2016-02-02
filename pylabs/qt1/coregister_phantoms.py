@@ -19,7 +19,7 @@ def coregisterPhantoms(uncoregfiles, projectdir, overwrite=False, dirstruct='BID
         newFile = subjectfile.replace('.nii','_coreg723.nii')
 
         image['coreg'] = True
-        image['coregtag'] = '_coreg723'
+        image['coregtag'] = '_coreg'
         if os.path.isfile(newFile) and not overwrite:
             print('File exists, skipping..')
             outimages.append(image)
