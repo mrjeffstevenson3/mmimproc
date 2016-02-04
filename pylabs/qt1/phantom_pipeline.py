@@ -95,7 +95,7 @@ for dir in phantdirs:
 
     for parfile in phantTSEIRparfiles:
         scaling = 'fp'
-        key, val = phantom_midslice_par2mni(parfile=parfile, datadict=phantom_ddata, method='tseir', outdir=seirepidir, flipexception=flipexception,
+        key, val = phantom_midslice_par2mni(parfile=parfile, datadict=phantom_ddata, method='tseir', outdir=tseirdir, flipexception=flipexception,
                                                outfilename='tseir', scaling=scaling, scanner=scanner, protoexception=protoexception)
         for k, v in zip(key, val):
             phantom_ddata[k].append(v)
