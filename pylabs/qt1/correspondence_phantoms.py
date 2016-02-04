@@ -1,6 +1,6 @@
 from pylabs.qt1.naming import qt1filepath
 from copy import copy
-import nibabel
+import nibabel, numpy
 
 
 def matchImages(images, query):
@@ -25,8 +25,11 @@ def createSpgrTseirCorrespondenceImages(t1images, projectdir):
             spgrImg = nibabel.load(spgr)
             tseirImg = nibabel.load(tseir)
             correspondence = spgrImg.get_data()/tseirImg.get_data()
+            ## get rid of divide-by-zero nans
+            correspondence = numpy.nan_to_num(correspondence)
             newImg = nibabel.Nifti1Image(correspondence, spgrImg.get_affine())
             nibabel.save(newImg, versus)
+            t1images.append(correspImage)
 
 
 

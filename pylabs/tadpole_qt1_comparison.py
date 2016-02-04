@@ -60,7 +60,7 @@ for key in niftiDict:
 t1images = fitPhantoms(niftiDict, projectdir=projectdir, xdict=xdict, 
     skipExisting=True)
 
-## create special spgr/tseir ratio images
+## correspondence_phantoms: create special spgr/tseir ratio images
 createSpgrTseirCorrespondenceImages(t1images, projectdir=projectdir)
 
 ## coregister_phantoms
