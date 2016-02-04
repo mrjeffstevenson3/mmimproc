@@ -1,5 +1,5 @@
 from os.path import join
-import collections, itertools
+import collections, itertools, os
 from pylabs.utils.paths import getlocaldataroot
 from pylabs.utils.files import sortedParGlob
 from pylabs.conversion.phantom_conv import (phantom_midslice_par2mni, 

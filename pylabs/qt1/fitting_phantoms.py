@@ -6,6 +6,7 @@ import numpy, niprov
 from pylabs.utils.paths import getlocaldataroot
 from pylabs.qt1.fitting import t1fit
 from pylabs.qt1.naming import qt1filepath
+from copy import copy
 
 
 ### FITTING
@@ -72,7 +73,7 @@ def fitPhantoms(images, projectdir, dirstruct='BIDS', async=False, skipExisting 
                     continue
 
                 kwargs = {}
-                parents = files
+                parents = copy(files)
                 if os.path.isfile(maskfile):
                     kwargs['maskfile'] = maskfile
                     parents.append(maskfile)
