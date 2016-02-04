@@ -8,6 +8,7 @@ from pylabs.qt1.fitting_phantoms import fitPhantoms
 from pylabs.qt1.coregister_phantoms import coregisterPhantoms
 from pylabs.qt1.atlassing_phantoms import atlasPhantoms
 from pylabs.qt1.model_pipeline import calculate_model
+from pylabs.qt1.correspondence_phantoms import createSpgrTseirCorrespondenceImages
 ## Evaluate which flip angles are required to do an adequate SPGR QT1
 ## based on tadpole phantom 999
 
@@ -58,6 +59,9 @@ for key in niftiDict:
 
 t1images = fitPhantoms(niftiDict, projectdir=projectdir, xdict=xdict, 
     skipExisting=True)
+
+## create special spgr/tseir ratio images
+createSpgrTseirCorrespondenceImages(t1images, projectdir=projectdir)
 
 ## coregister_phantoms
 t1images = coregisterPhantoms(t1images, projectdir=projectdir)
