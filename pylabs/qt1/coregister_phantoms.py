@@ -1,4 +1,4 @@
-import itertools, glob, nibabel, os
+import itertools, glob, nibabel, os, niprov
 from os.path import join
 import pylabs.alignment.phantom
 from pylabs.utils.paths import getlocaldataroot
@@ -8,6 +8,7 @@ targetfile = join(getlocaldataroot(),'phantom_qT1_slu',
     'phantom_alignment_target.nii.gz')
 
 def coregisterPhantoms(uncoregfiles, projectdir, overwrite=False, dirstruct='BIDS'):
+    provenance = niprov.Context()
     nfiles = len(uncoregfiles)
     outimages = []
     newAffine = nibabel.load(targetfile).get_affine()
@@ -32,6 +33,8 @@ def coregisterPhantoms(uncoregfiles, projectdir, overwrite=False, dirstruct='BID
             print('Error aligning file: '+str(e))
         else:
             outimages.append(image)
+            provenance.log(newFile, 'coregistration phantom', 
+                [subjectfile, targetfile])
 
     return outimages # returns only coreg'd images
 

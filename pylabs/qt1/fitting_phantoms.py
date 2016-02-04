@@ -2,7 +2,7 @@ from __future__ import print_function
 import os, fnmatch, glob, collections, datetime, cPickle, sys, shutil
 from os.path import join
 from collections import defaultdict
-import numpy
+import numpy, niprov
 from pylabs.utils.paths import getlocaldataroot
 from pylabs.qt1.fitting import t1fit
 from pylabs.qt1.naming import qt1filepath
@@ -12,6 +12,7 @@ from pylabs.qt1.naming import qt1filepath
 def fitPhantoms(images, projectdir, dirstruct='BIDS', async=False, skipExisting = False, xdict=None):
     #from multiprocessing import Pool
     #pool = Pool(12)
+    provenance = niprov.Context()
     outfiles = []
     if xdict is None:
         xdict = {}
@@ -71,10 +72,13 @@ def fitPhantoms(images, projectdir, dirstruct='BIDS', async=False, skipExisting 
                     continue
 
                 kwargs = {}
+                parents = files
                 if os.path.isfile(maskfile):
                     kwargs['maskfile'] = maskfile
+                    parents.append(maskfile)
                 if b1corr:
                     kwargs['b1file'] = b1file
+                    parents.append(b1file)
                 if 'SPGR' in image['method'].upper():
                     kwargs['scantype'] = 'SPGR'
                     kwargs['TR'] = image['TR']
@@ -88,6 +92,10 @@ def fitPhantoms(images, projectdir, dirstruct='BIDS', async=False, skipExisting 
                         outfiles.append(image)
                     except Exception as ex:
                         print('\n--> Error during fitting: ', ex)
+                    else:
+                        outfiles.append(image)
+                        provenance.log(t1filepath, 'qT1 fit', parents, 
+                            provenance={'fitparams':image['X']})
     #pool.close()
     #pool.join()
     return outfiles
