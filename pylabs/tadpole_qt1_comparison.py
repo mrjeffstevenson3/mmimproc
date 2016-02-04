@@ -25,7 +25,7 @@ for parfile in parfiles:
         if 'SPGR' in parfile:
             method = 'orig_spgr'
         else:
-            method = 'orig_tseir'
+            method = 'tseir'
         args['scaling'] = 'fp'
         args['method'] = method
         args['outdir'] = join(subjectdir, 'anat')
@@ -39,7 +39,7 @@ for parfile in parfiles:
         continue
     args['parfile'] = parfile
     args['datadict'] = niftiDict
-    args['flipexception'] = []
+    args['flipexception'] = ['']
     args['protoexception'] = ['20160113']
     args['outfilename'] = subj+'_'+method
     key, val = par2mni(**args)
