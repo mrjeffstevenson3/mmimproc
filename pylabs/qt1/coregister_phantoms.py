@@ -1,16 +1,14 @@
-import itertools, glob, nibabel, os
+import itertools, glob, nibabel, os, niprov
 from os.path import join
 import pylabs.alignment.phantom
 from pylabs.utils.paths import getlocaldataroot
 from pylabs.qt1.naming import qt1filepath
 
-
-rootdir = join(getlocaldataroot(),'phantom_qT1_disc')
-targetfile = join(rootdir,'T1_seir_mag_TR4000',
-    'T1_seir_mag_TR4000_2014-07-23_1.nii.gz')
-
+targetfile = join(getlocaldataroot(),'phantom_qT1_slu',
+    'phantom_alignment_target.nii.gz')
 
 def coregisterPhantoms(uncoregfiles, projectdir, overwrite=False, dirstruct='BIDS'):
+    provenance = niprov.Context()
     nfiles = len(uncoregfiles)
     outimages = []
     newAffine = nibabel.load(targetfile).get_affine()
@@ -22,7 +20,7 @@ def coregisterPhantoms(uncoregfiles, projectdir, overwrite=False, dirstruct='BID
         newFile = subjectfile.replace('.nii','_coreg723.nii')
 
         image['coreg'] = True
-        image['coregtag'] = '_coreg723'
+        image['coregtag'] = '_coreg'
         if os.path.isfile(newFile) and not overwrite:
             print('File exists, skipping..')
             outimages.append(image)
@@ -35,10 +33,13 @@ def coregisterPhantoms(uncoregfiles, projectdir, overwrite=False, dirstruct='BID
             print('Error aligning file: '+str(e))
         else:
             outimages.append(image)
+            provenance.log(newFile, 'coregistration phantom', 
+                [subjectfile, targetfile])
 
     return outimages # returns only coreg'd images
 
 if __name__ == '__main__':
+    rootdir = join(getlocaldataroot(),'phantom_qT1_disc')
     t1dirs = glob.glob(join(rootdir, 'T1*'))
     uncoregdirs = [d for d in t1dirs if 'reg' not in d]
     uncoregfilesByDir = [glob.glob(join(d, 'T1*.nii.gz')) for d in uncoregdirs]
