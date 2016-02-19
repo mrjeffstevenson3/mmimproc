@@ -6,22 +6,23 @@ from pylabs.qt1.fitting import t1fit
 from multiprocessing import Pool
 
 
-async = True
-TR = 11.
+async = False
+TR = 14.
 pool = Pool(10)
-rootdir = join(getlocaldataroot(),'self_control','hbm_group_data','qT1')
+rootdir = join(getlocaldataroot(),'tadpole')
 
-for subjectdir in glob.glob(join(rootdir, 'scs*')):
+for subjectdir in glob.glob(join(rootdir, 'TADPOLE_998C')):
     subject = os.path.basename(subjectdir)
     files = glob.glob(join(subjectdir,'fitted_qT1_spgr','*brain.nii.gz'))
     files = sorted(files)
     assert len(files) == 3
-    X = [2,10,20]
+    X = [7,10,15]
     maskfile = files[0].replace('brain.nii.gz','brain_mask.nii.gz')
     b1file = join(subjectdir,'B1map_qT1',
-        '{0}_b1map_phase_rfov_reg2qT1.nii.gz'.format(subject))
+        '{0}_b1map_phase_reg2spgr_s6.nii.gz'.format(subject))
     outfile = join(subjectdir,'T1_{0}_b1corr.nii.gz'.format(subject))
-
+    print(files)
+    print(b1file)
     kwargs = {}
     kwargs['scantype'] = 'SPGR'
     kwargs['TR'] = TR
