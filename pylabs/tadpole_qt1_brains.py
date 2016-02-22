@@ -1,59 +1,48 @@
 from os.path import join
 import collections, itertools, os
 from pylabs.utils.paths import getlocaldataroot
-from pylabs.utils.files import sortedParGlob
-from pylabs.conversion.phantom_conv import (phantom_midslice_par2mni, 
-                                        phantom_B1_midslice_par2mni)
-from pylabs.qt1.fitting_phantoms import fitPhantoms
+from pylabs.qt1.fitting import t1fit
 ## Evaluate which flip angles are required to do an adequate SPGR QT1
 
 fs = getlocaldataroot()
-projectdir = join(fs, 'phantom_qT1_slu')
-subj = 'sub-phant2016-01-13'
-subjectdir = join(projectdir, subj)
+projectdir = join(fs, 'tadpole', 'tadpole')
+subj = 'sub-901'
+outdir = join(projectdir, subj, 'anat')
+t1filetem = join(outdir,'t1_spgr_{0}.nii.gz')
 
-## convert parrecs to nifti
-niftiDict = collections.defaultdict(list)
-parfiles = sortedParGlob(join(subjectdir, 'source_parrec/*.PAR'))
-for parfile in parfiles:
-    args = {}
-    if 'SPGR' in parfile or 'IRTSE' in parfile:
-        if 'SPGR' in parfile:
-            method = 'orig_spgr'
-        else:
-            method = 'tseir'
-        args['scaling'] = 'fp'
-        args['method'] = method
-        args['outdir'] = join(subjectdir, 'anat')
-        par2mni = phantom_midslice_par2mni
-    elif 'B1' in parfile and 'fixed' in parfile:
-        method = 'b1map'
-        args['scaling'] = 'dv'
-        args['outdir'] = join(subjectdir, 'fmap')
-        par2mni = phantom_B1_midslice_par2mni
-    else: 
-        continue
-    args['parfile'] = parfile
-    args['datadict'] = niftiDict
-    args['flipexception'] = ['']
-    args['protoexception'] = ['20160113']
-    args['outfilename'] = subj+'_'+method
-    key, val = par2mni(**args)
-    for k, v in zip(key, val):
-        niftiDict[k].append(v)
+async = False
 
-xdict = {}
-for key in niftiDict:
-    if key[1]=='orig_spgr_mag':
-        ## Figure out which combinations of flip angles we can test
-        spgrKey = [k for k in niftiDict.keys() if k[1]=='orig_spgr_mag'][0]
-        spgrFilesAndFlipAngles = niftiDict[spgrKey]
-        allAngles = sorted([i[1] for i in spgrFilesAndFlipAngles])
-        combinations = list(itertools.combinations(allAngles, 3))
-        xdict[key] = combinations
+b1dir = '/diskArray/mirror/js/tadpole/tadpole/TADPOLE901/B1map_qT1'
+spgrdir = '/diskArray/mirror/js/tadpole/tadpole/TADPOLE901/fitted_qT1_spgr'
+b1file = join(b1dir, 'TADPOLE901_b1map_phase_reg2spgr_s6.nii.gz')
+spgrtem = join(spgrdir, 'spgr_{0:0>2}_mag_01_brain.nii.gz')
+maskfile = join(spgrdir, 'spgr_07_mag_01_brain_mask.nii.gz')
 
-t1images = fitPhantoms(niftiDict, projectdir=projectdir, xdict=xdict, 
-    skipExisting=True)
+allAngles = [7,10,15,20,30]
+xcombs = list(itertools.combinations(allAngles, 3))
+xcombs.insert(0, allAngles) # Add all-angles fit
+
+
+
+for xcomb in xcombs:
+
+    kwargs = {}
+    kwargs['scantype'] = 'SPGR'
+    kwargs['TR'] = 14.
+    kwargs['b1file'] = b1file
+    kwargs['maskfile'] = maskfile
+    kwargs['t1filename'] = t1filetem.format('-'.join([str(x) for x in xcomb]))
+    
+    files = [spgrtem.format(x) for x in xcomb]
+
+    if async:
+        kwargs['mute'] = True
+        #pool.apply_async(t1fit, [files, X], kwargs)
+    else:
+        try:
+            t1fit(files, xcomb, **kwargs)
+        except Exception as ex:
+            print('\n--> Error during fitting: ', ex)
 
 
 
