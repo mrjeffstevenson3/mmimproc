@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 
 coordsfile = 'pylabs/spect/coords.txt'
 basefile = fsl.Info.standard_image('MNI152_T1_1mm_brain.nii.gz')
+nvertices = 8
 
 coords = []
 with open(coordsfile) as cfile:
@@ -16,22 +17,15 @@ with open(coordsfile) as cfile:
     for line in lines:
         coords.append([float(n) for n in line.split()[0:3]])
 coords = numpy.round(coords).astype(int)
+vertexReOrder = [7, 6, 2, 3, 4, 5, 1, 0] #reorders coords in Neva's order to mine
 
-sides = [
-(0,1),
-(1,2),
-(2,3),
-(4,5),
-(5,6),
-(6,7),
-(0,4),
-(1,5),
-(2,6),
-(3,7),
-(0,3),
-(4,7),
-]
-nsides = len(sides)
+edges = [(0,1),(1,2),(2,3),(3,0), #front
+         (4,5),(5,6),(6,7),(7,4), #back
+         (0,4),(1,5),(2,6),(3,7)] #sides
+nedges = len(edges)
+sides = [(0,1,2,3),(4,5,6,7),   # front, back
+         (8,7,11,3),(9,5,10,1), # left, right, 
+         (8,4,9,0),(11,6,10,2)] # top, bottom
 
 img = nibabel.load(basefile)
 data = img.get_data()
