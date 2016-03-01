@@ -17,7 +17,9 @@ with open(coordsfile) as cfile:
     for line in lines:
         coords.append([float(n) for n in line.split()[0:3]])
 coords = numpy.round(coords).astype(int)
-vertexReOrder = [7, 6, 2, 3, 4, 5, 1, 0] #reorders coords in Neva's order to mine
+vertexReOrder = [7, 6, 2, 3, 4, 5, 1, 0] #reorders coords in Neva's order to 
+# mine (start top left, front clockwise, back clockwise)
+coords = coords[vertexReOrder]
 
 edges = [(0,1),(1,2),(2,3),(3,0), #front
          (4,5),(5,6),(6,7),(7,4), #back
@@ -26,6 +28,18 @@ nedges = len(edges)
 sides = [(0,1,2,3),(4,5,6,7),   # front, back
          (8,7,11,3),(9,5,10,1), # left, right, 
          (8,4,9,0),(11,6,10,2)] # top, bottom
+
+edgeLength = []
+for e, edge in enumerate(edges):
+     v1,v2 = [coords[v] for v in edge]
+    SquareRoot(xd*xd + yd*yd + zd*zd)
+    edgeLength[e] = numpy.sqrt(numpy.sum(numpy.square(v1-v2)))
+
+sideArea = []
+for s, side in enumerate(sides):
+    v1,v2 = [coords[v] for v in edge]
+    SquareRoot(xd*xd + yd*yd + zd*zd)
+    edgeLength[e] = numpy.sqrt(numpy.sum(numpy.square(v1-v2)))
 
 img = nibabel.load(basefile)
 data = img.get_data()
