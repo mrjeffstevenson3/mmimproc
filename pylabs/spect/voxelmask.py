@@ -1,6 +1,10 @@
 from nipype.interfaces import fsl
-import nibabel
+import nibabel, numpy
 import matplotlib.pyplot as plt
+
+# http://math.stackexchange.com/questions/1472049/check-if-a-point-is-inside-a-rectangular-shaped-area-3d
+# http://math.stackexchange.com/questions/190111/how-to-check-if-a-point-is-inside-a-rectangle?lq=1
+# http://www.mathopenref.com/pyramidvolume.html
 
 
 coordsfile = 'pylabs/spect/coords.txt'
@@ -12,8 +16,6 @@ with open(coordsfile) as cfile:
     for line in lines:
         coords.append([float(n) for n in line.split()[0:3]])
 coords = numpy.round(coords).astype(int)
-
-raise ValueError
 
 sides = [
 (0,1),
@@ -45,7 +47,7 @@ for x in range(dims[0]):
                 pointVector = coords[side[0]] - numpy.array((x,y,z))
                 sideResults.append(0 < numpy.cross(sideVector,pointVector))
             if sum(sideResults) == nsides:
-                data[x,y] = bright
+                data[x, y, z] = bright
 
 
 plt.imshow(data[:,100,:])
