@@ -41,6 +41,12 @@ dims = data.shape
 for x in range(dims[0]):
     for y in range(dims[1]):
         for z in range(dims[2]):
+
+            # calculate volume of pyramid of each side to point.
+            # pyramid volume is 1/3*base area* height
+            # height can be determined by getting area using Heron's, 
+            # and then inv use formula for area of triangle
+            # total volume > volume of box? outside.
             sideResults = []
             for side in sides:
                 sideVector = coords[side[0]] - coords[side[1]]
