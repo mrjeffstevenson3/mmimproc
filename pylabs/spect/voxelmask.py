@@ -68,6 +68,8 @@ boxWidth = mean(edgeLengths[widthEdges])
 boxHeight = mean(edgeLengths[heightEdges])
 boxLength = mean(edgeLengths[LengthEdges])
 boxVolume = boxWidth * boxHeight * boxLength
+maxDimSize = max(boxWidth, boxHeight, boxLength)
+distanceThreshold = maxDimSize * sqrt(3) * 1.1 # diagonal of box + 10%
 msg = 'Box W={0:.2f} H={1:.2f} L={2:.2f} V={3:.2f}'
 print(msg.format(boxWidth,boxHeight,boxLength,boxVolume))
 
@@ -75,6 +77,7 @@ print(msg.format(boxWidth,boxHeight,boxLength,boxVolume))
 
 
 img = nibabel.load(basefile)
+affine = img.get_affine()
 data = img.get_data()
 bright = data.max()
 dims = data.shape
@@ -88,8 +91,10 @@ for x in range(dims[0]):
             v += 1
             progress.progressbar(v, nvoxels, start)
             p = numpy.array([x,y,z])
+            voxelTooFar = False
 
             pyrvols = numpy.zeros((nsides,))
+            pyrvols[:] = numpy.NAN
             for s, side in enumerate(sides):
                 sideArray = numpy.array(side)
                 triangleHeights = [0, 0]
@@ -98,19 +103,33 @@ for x in range(dims[0]):
                     v1, v2 = [coords[vertex] for vertex in edges[edgeIndex]]
                     base = edgeLengths[edgeIndex]
                     v1p = sqrt(numpy.sum(square(v1-p)))
+                    if v1p > distanceThreshold:
+                        voxelTooFar = True
+                        break
                     v2p = sqrt(numpy.sum(square(v2-p)))
                     triangleHeights[t] = triangleHeight(base, v1p, v2p)
-                normalTriangleBase = mean(edgeLengths[sideArray[[1,3]]])
-                pyrHeight = triangleHeight(normalTriangleBase, *triangleHeights)
-                pyrvols[s] = (pyrHeight*sideAreas[s])/3.
+                else:
+                    normalTriangleBase = mean(edgeLengths[sideArray[[1,3]]])
+                    pyrHeight = triangleHeight(normalTriangleBase, *triangleHeights)
+                    pyrvols[s] = (pyrHeight*sideAreas[s])/3.
+                if voxelTooFar:
+                    break
             if pyrvols.sum() < boxVolume:
                 data[x, y, z] = bright
 print(' ')
+
+newimg = nibabel.Nifti1Image(data, affine)
+nibabel.save(newimg, 'gabaVoxel.nii.gz')
 
 
 plt.imshow(data[:,100,:])
 plt.show()
 
+
+## Optimizations:
+# cache triangle height per edge
+# break loop if one vxp is much larger than box
+# numpy.array(side) earlier
 
 #In  my coordinate system, 
 #X is A/P, 0 at back of brain
