@@ -1,11 +1,23 @@
+from __future__ import division # division always floating point
 from nipype.interfaces import fsl
 import nibabel, numpy
+from datetime import datetime
 from numpy import mean, sqrt, square
 import matplotlib.pyplot as plt
+from pylabs.utils import progress
+
 
 # http://math.stackexchange.com/questions/1472049/check-if-a-point-is-inside-a-rectangular-shaped-area-3d
 # http://math.stackexchange.com/questions/190111/how-to-check-if-a-point-is-inside-a-rectangle?lq=1
 # http://www.mathopenref.com/pyramidvolume.html
+# find height of one pyramid side, find height of opposite side. height of pyramid is the height of the # triangle formed by these two
+
+def triangleHeight(b, a, c):
+    # base is b
+    s = (a+b+c)/2 # semiperimeter 
+    area = sqrt(s*(s-a)*(s-b)*(s-c)) # Heron's
+    h = area/(b/2)
+    return h
 
 
 coordsfile = 'pylabs/spect/coords.txt'
@@ -55,26 +67,23 @@ img = nibabel.load(basefile)
 data = img.get_data()
 bright = data.max()
 dims = data.shape
-nvoxels =  numpy.dot(*dims)
+nvoxels =  numpy.prod(dims)
 
-raise ValueError
 v = 0
+start = datetime.now()
 for x in range(dims[0]):
     for y in range(dims[1]):
+        progress.progressbar(v, nvoxels, start)
         for z in range(dims[2]):
             v += 1
+
             # calculate volume of pyramid of each side to point.
             # pyramid volume is 1/3*base area* height
             # height can be determined by getting area using Heron's, 
             # and then inv use formula for area of triangle
             # total volume > volume of box? outside.
-            sideResults = []
-            for side in sides:
-                sideVector = coords[side[0]] - coords[side[1]]
-                pointVector = coords[side[0]] - numpy.array((x,y,z))
-                sideResults.append(0 < numpy.cross(sideVector,pointVector))
-            if sum(sideResults) == nsides:
-                data[x, y, z] = bright
+            #data[x, y, z] = bright
+print(' ')
 
 
 plt.imshow(data[:,100,:])
