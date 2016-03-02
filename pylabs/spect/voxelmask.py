@@ -1,5 +1,6 @@
 from nipype.interfaces import fsl
 import nibabel, numpy
+from numpy import mean, sqrt, square
 import matplotlib.pyplot as plt
 
 # http://math.stackexchange.com/questions/1472049/check-if-a-point-is-inside-a-rectangular-shaped-area-3d
@@ -28,28 +29,40 @@ nedges = len(edges)
 sides = [(0,1,2,3),(4,5,6,7),   # front, back
          (8,7,11,3),(9,5,10,1), # left, right, 
          (8,4,9,0),(11,6,10,2)] # top, bottom
+nsides = len(sides)
+widthEdges = [0,2,4,6]
+heightEdges = [1,3,5,7]
+LengthEdges = [8,9,10,11]
 
-edgeLength = []
+edgeLengths = numpy.zeros((nedges,))
 for e, edge in enumerate(edges):
-     v1,v2 = [coords[v] for v in edge]
-    SquareRoot(xd*xd + yd*yd + zd*zd)
-    edgeLength[e] = numpy.sqrt(numpy.sum(numpy.square(v1-v2)))
-
-sideArea = []
-for s, side in enumerate(sides):
     v1,v2 = [coords[v] for v in edge]
-    SquareRoot(xd*xd + yd*yd + zd*zd)
-    edgeLength[e] = numpy.sqrt(numpy.sum(numpy.square(v1-v2)))
+    edgeLengths[e] = sqrt(numpy.sum(square(v1-v2)))
+
+sideAreas = numpy.zeros((nsides,))
+for s, side in enumerate(sides):
+    perimeter = edgeLengths[list(side)]
+    sideAreas[s] = mean(perimeter[[0,2]]) * mean(perimeter[[1,3]])
+
+boxWidth = mean(edgeLengths[widthEdges])
+boxHeight = mean(edgeLengths[heightEdges])
+boxLength = mean(edgeLengths[LengthEdges])
+boxVolume = boxWidth * boxHeight * boxLength
+msg = 'Box W={0:.2f} H={1:.2f} L={2:.2f} V={3:.2f}'
+print(msg.format(boxWidth,boxHeight,boxLength,boxVolume))
 
 img = nibabel.load(basefile)
 data = img.get_data()
 bright = data.max()
 dims = data.shape
+nvoxels =  numpy.dot(*dims)
 
+raise ValueError
+v = 0
 for x in range(dims[0]):
     for y in range(dims[1]):
         for z in range(dims[2]):
-
+            v += 1
             # calculate volume of pyramid of each side to point.
             # pyramid volume is 1/3*base area* height
             # height can be determined by getting area using Heron's, 
