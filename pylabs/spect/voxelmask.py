@@ -42,6 +42,7 @@ sides = [(0,1,2,3),(4,5,6,7),   # front, back
          (8,7,11,3),(9,5,10,1), # left, right, 
          (8,4,9,0),(11,6,10,2)] # top, bottom
 nsides = len(sides)
+oppositeEdges = [(0,2),(1,3)]
 widthEdges = [0,2,4,6]
 heightEdges = [1,3,5,7]
 LengthEdges = [8,9,10,11]
@@ -63,6 +64,9 @@ boxVolume = boxWidth * boxHeight * boxLength
 msg = 'Box W={0:.2f} H={1:.2f} L={2:.2f} V={3:.2f}'
 print(msg.format(boxWidth,boxHeight,boxLength,boxVolume))
 
+# pyramids
+
+
 img = nibabel.load(basefile)
 data = img.get_data()
 bright = data.max()
@@ -77,12 +81,23 @@ for x in range(dims[0]):
         for z in range(dims[2]):
             v += 1
 
-            # calculate volume of pyramid of each side to point.
-            # pyramid volume is 1/3*base area* height
-            # height can be determined by getting area using Heron's, 
-            # and then inv use formula for area of triangle
-            # total volume > volume of box? outside.
-            #data[x, y, z] = bright
+            pyrvols = numpy.zeros((nsides,))
+            for s, side in enumerate(sides):
+                sideArray = numpy.array(side)
+                triangleHeights = [0, 0]
+                triangleBaseEdges = sideArray[[0, 2]]
+                for t, edgeIndex in enumerate(triangleBaseEdges):
+                    v1, v2 = [coords[v] for v in edges[edgeIndex]]
+                    p = numpy.array([x,y,z])
+                    base = edgeLengths[edgeIndex]
+                    v1p = sqrt(numpy.sum(square(v1-p)))
+                    v2p = sqrt(numpy.sum(square(v2-p)))
+                    triangleHeights[t] = triangleHeight(base, v1p, v2p)
+                normalTriangleBase = mean(edgeLengths[sideArray[[1,3]]])
+                pyrHeight = triangleHeight(normalTriangleBase, *triangleHeights)
+                pyrvols[s] = (pyrHeight*sideAreas[s])/3
+            if pyrvols.sum() > boxVolume:
+                data[x, y, z] = bright
 print(' ')
 
 
