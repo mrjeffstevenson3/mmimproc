@@ -14,6 +14,13 @@ from pylabs.utils import progress
 
 def triangleHeight(b, a, c):
     # base is b
+    allSides = [a,b,c]
+    if 0 in allSides:
+        return 0.0
+    longestSide = max(allSides)
+    if longestSide > (sum(allSides)-longestSide):
+        # Not a valid triangle, assume rounding error
+        return 0.0
     s = (a+b+c)/2 # semiperimeter 
     area = sqrt(s*(s-a)*(s-b)*(s-c)) # Heron's
     h = area/(b/2)
@@ -77,9 +84,10 @@ v = 0
 start = datetime.now()
 for x in range(dims[0]):
     for y in range(dims[1]):
-        progress.progressbar(v, nvoxels, start)
         for z in range(dims[2]):
             v += 1
+            progress.progressbar(v, nvoxels, start)
+            p = numpy.array([x,y,z])
 
             pyrvols = numpy.zeros((nsides,))
             for s, side in enumerate(sides):
@@ -87,16 +95,15 @@ for x in range(dims[0]):
                 triangleHeights = [0, 0]
                 triangleBaseEdges = sideArray[[0, 2]]
                 for t, edgeIndex in enumerate(triangleBaseEdges):
-                    v1, v2 = [coords[v] for v in edges[edgeIndex]]
-                    p = numpy.array([x,y,z])
+                    v1, v2 = [coords[vertex] for vertex in edges[edgeIndex]]
                     base = edgeLengths[edgeIndex]
                     v1p = sqrt(numpy.sum(square(v1-p)))
                     v2p = sqrt(numpy.sum(square(v2-p)))
                     triangleHeights[t] = triangleHeight(base, v1p, v2p)
                 normalTriangleBase = mean(edgeLengths[sideArray[[1,3]]])
                 pyrHeight = triangleHeight(normalTriangleBase, *triangleHeights)
-                pyrvols[s] = (pyrHeight*sideAreas[s])/3
-            if pyrvols.sum() > boxVolume:
+                pyrvols[s] = (pyrHeight*sideAreas[s])/3.
+            if pyrvols.sum() < boxVolume:
                 data[x, y, z] = bright
 print(' ')
 
