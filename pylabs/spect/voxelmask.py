@@ -79,7 +79,7 @@ print(msg.format(boxWidth,boxHeight,boxLength,boxVolume))
 img = nibabel.load(basefile)
 affine = img.get_affine()
 data = img.get_data()
-bright = data.max()
+bright = data.max() * 1.2
 dims = data.shape
 nvoxels =  numpy.prod(dims)
 
@@ -116,14 +116,16 @@ for x in range(dims[0]):
                     break
             if pyrvols.sum() < boxVolume:
                 data[x, y, z] = bright
+            elif voxelTooFar:
+                data[x, y, z] = data[x, y, z] * .5 
 print(' ')
 
 newimg = nibabel.Nifti1Image(data, affine)
 nibabel.save(newimg, 'gabaVoxel.nii.gz')
 
 
-plt.imshow(data[:,100,:])
-plt.show()
+# plt.imshow(data[:,100,:])
+# plt.show()
 
 
 ## Optimizations:
