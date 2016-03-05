@@ -37,7 +37,6 @@ class SparTests(unittest.TestCase):
         from pylabs.io.spar import load
         fpath = join('data/testdata/spar',files[5])
         hdrDict = load(fpath)
-        print(hdrDict.keys())
         self.assertEqual(hdrDict['scan_id'], 'PRESS_TE30_GLU')
         self.assertEqual(hdrDict['samples'], 2048)
         self.assertEqual(hdrDict['ap_off_center'], -26.76418495)
