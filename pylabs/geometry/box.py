@@ -5,8 +5,6 @@ from numpy import mean, sqrt, square
 from pylabs.utils import progress
 from pylabs.geometry.triangle import triangleHeight
 
-
-# tolerance as a parameter
 # optionally create fluid mask with values that show likelihood for being in box
 ## Optimizations:
 # cache triangle height per edge
@@ -14,7 +12,8 @@ from pylabs.geometry.triangle import triangleHeight
 # numpy.array(side) earlier
 # matrix operations.
 
-def createBoxMask(coords, referenceFilepath, outFilepath='box.nii.gz'):
+def createBoxMask(coords, referenceFilepath, outFilepath='box.nii.gz', 
+        tolerance=.01):
 
     edges = [(0,1),(1,2),(2,3),(3,0), #front
              (4,5),(5,6),(6,7),(7,4), #back
@@ -43,7 +42,7 @@ def createBoxMask(coords, referenceFilepath, outFilepath='box.nii.gz'):
     boxHeight = mean(edgeLengths[heightEdges])
     boxLength = mean(edgeLengths[LengthEdges])
     boxVolume = boxWidth * boxHeight * boxLength
-    boxVolumeThreshold = boxVolume * 1.005
+    boxVolumeThreshold = boxVolume * (1 + tolerance)
     maxDimSize = max(boxWidth, boxHeight, boxLength)
     distanceThreshold = maxDimSize * sqrt(3) # diagonal of box
     msg = 'Box W={0:.2f} H={1:.2f} L={2:.2f} V={3:.2f}'
