@@ -65,7 +65,7 @@ for tf in templatefiles:
                         spheredata[x,y,z] = 1
 
     sphere_img = nibabel.Nifti1Image(spheredata, skin_affine)
-    nibabel.save(sphere_img,pathjoin(outputdir, tf_age+'_d'+ 2*r+'mm_sphere.nii.gz'))
+    nibabel.save(sphere_img,pathjoin(outputdir, tf_age+'_d'+ str(2 * r) +'mm_sphere.nii.gz'))
 
 
 
