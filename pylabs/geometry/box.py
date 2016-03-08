@@ -50,8 +50,7 @@ def createBoxMask(coords, referenceFilepath, outFilepath='box.nii.gz',
 
     img = nibabel.load(referenceFilepath)
     affine = img.get_affine()
-    data = img.get_data()
-    bright = data.max() * 1.2
+    data = numpy.zeros(img.get_data().shape)
     dims = data.shape
     nvoxels =  numpy.prod(dims)
 
@@ -86,14 +85,12 @@ def createBoxMask(coords, referenceFilepath, outFilepath='box.nii.gz',
                         pyrvols[s] = (pyrHeight*sideAreas[s])/3.
                     if voxelTooFar:
                         break
-    #            if not voxelTooFar:
-    #                data[x, y, z] = pyrvols.sum()
-                if pyrvols.sum() < boxVolumeThreshold:
-                    data[x, y, z] = bright
-                elif voxelTooFar:
-                    data[x, y, z] = data[x, y, z] * .5 
-                elif numpy.any(numpy.isnan(pyrvols)):
-                    raise ValueError('NaN encountered.')
+
+                if not voxelTooFar:
+                    if pyrvols.sum() < boxVolumeThreshold:
+                        data[x, y, z] = 1
+                    if numpy.any(numpy.isnan(pyrvols)):
+                        raise ValueError('NaN encountered.')
     print(' ')
 
     newimg = nibabel.Nifti1Image(data, affine)
