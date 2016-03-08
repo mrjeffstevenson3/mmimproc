@@ -3,13 +3,19 @@ from nipype.interfaces import fsl
 import nibabel, numpy
 from datetime import datetime
 from numpy import mean, sqrt, square
+from os.path import join
 import matplotlib.pyplot as plt
 from pylabs.utils import progress
 
 
-# http://math.stackexchange.com/questions/1472049/check-if-a-point-is-inside-a-rectangular-shaped-area-3d
-# http://math.stackexchange.com/questions/190111/how-to-check-if-a-point-is-inside-a-rectangle?lq=1
-# http://www.mathopenref.com/pyramidvolume.html
+# no rounding of coords?
+# tolerance as a parameter
+# two functions, one with array coords, one with filename
+# optionally create fluid mask with values that show likelihood for being in box
+
+spgrpath = '/diskArray/mirror/js/tadpole/tadpole/sub-901/anat'
+spgrname = 't1_spgr_7-10-15-20-30_b1corr.nii.gz'
+
 # find height of one pyramid side, find height of opposite side. height of pyramid is the height of the # triangle formed by these two
 
 def triangleHeight(b, a, c):
@@ -28,7 +34,8 @@ def triangleHeight(b, a, c):
 
 
 coordsfile = 'pylabs/spect/coords.txt'
-basefile = fsl.Info.standard_image('MNI152_T1_1mm_brain.nii.gz')
+#basefile = fsl.Info.standard_image('MNI152_T1_1mm_brain.nii.gz')
+basefile = join(spgrpath, spgrname)
 nvertices = 8
 
 coords = []
@@ -40,6 +47,7 @@ coords = numpy.round(coords).astype(int)
 vertexReOrder = [7, 6, 2, 3, 4, 5, 1, 0] #reorders coords in Neva's order to 
 # mine (start top left, front clockwise, back clockwise)
 coords = coords[vertexReOrder]
+coords = coords[:,[1,0,2]] # switch XY
 
 edges = [(0,1),(1,2),(2,3),(3,0), #front
          (4,5),(5,6),(6,7),(7,4), #back
@@ -68,8 +76,9 @@ boxWidth = mean(edgeLengths[widthEdges])
 boxHeight = mean(edgeLengths[heightEdges])
 boxLength = mean(edgeLengths[LengthEdges])
 boxVolume = boxWidth * boxHeight * boxLength
+boxVolumeThreshold = boxVolume * 1.005
 maxDimSize = max(boxWidth, boxHeight, boxLength)
-distanceThreshold = maxDimSize * sqrt(3) * 1.1 # diagonal of box + 10%
+distanceThreshold = maxDimSize * sqrt(3) # diagonal of box
 msg = 'Box W={0:.2f} H={1:.2f} L={2:.2f} V={3:.2f}'
 print(msg.format(boxWidth,boxHeight,boxLength,boxVolume))
 
@@ -114,14 +123,18 @@ for x in range(dims[0]):
                     pyrvols[s] = (pyrHeight*sideAreas[s])/3.
                 if voxelTooFar:
                     break
-            if pyrvols.sum() < boxVolume:
+#            if not voxelTooFar:
+#                data[x, y, z] = pyrvols.sum()
+            if pyrvols.sum() < boxVolumeThreshold:
                 data[x, y, z] = bright
             elif voxelTooFar:
                 data[x, y, z] = data[x, y, z] * .5 
+            elif numpy.any(numpy.isnan(pyrvols)):
+                raise ValueError('NaN encountered.')
 print(' ')
 
 newimg = nibabel.Nifti1Image(data, affine)
-nibabel.save(newimg, 'gabaVoxel.nii.gz')
+nibabel.save(newimg, 'box.nii.gz')
 
 
 # plt.imshow(data[:,100,:])
