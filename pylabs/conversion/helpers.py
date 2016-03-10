@@ -24,7 +24,7 @@ def convertSubjectParfiles(subj, subjectdir):
             args['method'] = method
             args['outdir'] = join(subjectdir, 'anat')
             par2mni = phantom_midslice_par2mni
-        elif 'B1' in parfile and 'fixed' in parfile:
+        elif 'B1' in parfile:
             method = 'b1map'
             args['scaling'] = 'dv'
             args['outdir'] = join(subjectdir, 'fmap')
@@ -40,7 +40,7 @@ def convertSubjectParfiles(subj, subjectdir):
         msg = 'Converting PAR. Method: [{0}] filename: {0}'
         print(msg.format(method, fname))
 
-        key, val = ([],[]) #par2mni(**args)
+        key, val = par2mni(**args)
 
         for k, v in zip(key, val):
             niftiDict[k].append(v)
