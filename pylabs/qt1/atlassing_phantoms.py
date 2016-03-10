@@ -73,9 +73,6 @@ def atlasPhantoms(images, expectedByDate, projectdir, dirstruct='BIDS'):
     nvials = len(labels)
 
     ## Start plotting
-    #import pdb
-    #pdb.set_trace()
-
     plotdir = join(projectdir,'plots')
     if not os.path.isdir(plotdir):
         os.makedirs(plotdir)
