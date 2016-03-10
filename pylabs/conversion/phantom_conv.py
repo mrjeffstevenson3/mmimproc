@@ -23,6 +23,14 @@ mni_affine = np.array([[-1, 0, 0, 90], [0, 1, 0, -126], [0, 0, 1, -72], [0, 0, 0
 psl2ras = np.array([[0., 0., -1., 0.], [-1., 0., 0., 0.], [0., 1., 0., 0.], [0., 0., 0., 1.]])
 
 
+protoexception = ['']
+flipexception = ['']
+if scanner == 'disc':
+    flipexception = ['20141108']
+if scanner == 'slu':
+    protoexception = ['20160113']
+
+
 def printmessage(msg, indent=0):
     if verbose:
         print("%s%s" % (' ' * indent, msg))
@@ -34,9 +42,8 @@ def error(msg, exit_code):
 verbose = True
 prov.dryrun = True
 
-def phantom_B1_midslice_par2mni(parfile, datadict, outdir=None, flipexception=None, outfilename=None, scanner='slu',
-                                verbose=True, scaling='dv', minmax=('parse', 'parse'), origin='scanner', overwrite=True,
-                                protoexception=None):
+def phantom_B1_midslice_par2mni(parfile, datadict, outdir=None, outfilename=None, scanner='slu',
+                                verbose=True, scaling='dv', minmax=('parse', 'parse'), origin='scanner', overwrite=True):
     prov.add(parfile)
     key, value = [], []
     if outdir and not os.path.exists(outdir):
@@ -93,7 +100,7 @@ def phantom_B1_midslice_par2mni(parfile, datadict, outdir=None, flipexception=No
 
     if scanner == 'disc':
         in_slice_phase = in_data_ras[:,:,mid_slice_num-1, -1]
-    if scanner == 'slu' and protoexception[0] == '20160113':
+    if scanner == 'slu' and scandate in protoexception:
         in_slice_phase = in_data_ras[:,:,mid_slice_num-1,4]
     else:
         in_slice_phase = in_data_ras[:,:,mid_slice_num-1, -1]
@@ -204,9 +211,8 @@ def phantom_B1_midslice_par2mni(parfile, datadict, outdir=None, flipexception=No
         print key, value
     return key, value
 
-def phantom_midslice_par2mni(parfile, datadict, method, outdir=None, flipexception=None, outfilename=None, scanner='slu',
-                                verbose=True, scaling='fp', minmax=('parse', 'parse'), origin='scanner', overwrite=True,
-                                protoexception=None):
+def phantom_midslice_par2mni(parfile, datadict, method, outdir=None, outfilename=None, scanner='slu',
+                                verbose=True, scaling='fp', minmax=('parse', 'parse'), origin='scanner', overwrite=True):
     prov.add(parfile)
     key, value = [''], ['']
     if outdir and not os.path.exists(outdir):
