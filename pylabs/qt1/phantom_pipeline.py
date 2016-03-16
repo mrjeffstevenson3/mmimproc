@@ -65,35 +65,35 @@ for dir in phantdirs:
 
     for parfile in phantSEIRparfiles:
         scaling = 'fp'
-        key, val = phantom_midslice_par2mni(parfile=parfile, datadict=phantom_ddata, method='seir', outdir=seirdir, 
+        key, val = phantom_midslice_par2mni(parfile=parfile, datadict=phantom_ddata, method='seir', outdir=seirdir,
                                                outfilename='orig_seir', scaling=scaling, scanner=scanner)
         for k, v in zip(key, val):
              phantom_ddata[k].append(v)
 
     for parfile in phantSEIRHSparfiles:
         scaling = 'fp'
-        key, val = phantom_midslice_par2mni(parfile=parfile, datadict=phantom_ddata, method='seirhs', outdir=seirhsdir, 
+        key, val = phantom_midslice_par2mni(parfile=parfile, datadict=phantom_ddata, method='seirhs', outdir=seirhsdir,
                                                outfilename='orig_seirhs', scaling=scaling, scanner=scanner)
         for k, v in zip(key, val):
             phantom_ddata[k].append(v)
 
     for parfile in phantSEIREPIparfiles:
         scaling = 'fp'
-        key, val = phantom_midslice_par2mni(parfile=parfile, datadict=phantom_ddata, method='seirepi', outdir=seirepidir, 
+        key, val = phantom_midslice_par2mni(parfile=parfile, datadict=phantom_ddata, method='seirepi', outdir=seirepidir,
                                                outfilename='seirepi', scaling=scaling, scanner=scanner)
         for k, v in zip(key, val):
             phantom_ddata[k].append(v)
 
     for parfile in phantTSEIRparfiles:
         scaling = 'fp'
-        key, val = phantom_midslice_par2mni(parfile=parfile, datadict=phantom_ddata, method='tseir', outdir=seirepidir, 
+        key, val = phantom_midslice_par2mni(parfile=parfile, datadict=phantom_ddata, method='tseir', outdir=seirepidir,
                                                outfilename='tseir', scaling=scaling, scanner=scanner)
         for k, v in zip(key, val):
             phantom_ddata[k].append(v)
 
     for parfile in phantB1parfile:
         scaling = 'dv'
-        key, val = phantom_B1_midslice_par2mni(parfile=parfile, datadict=phantom_ddata, outdir=b1mapdir, 
+        key, val = phantom_B1_midslice_par2mni(parfile=parfile, datadict=phantom_ddata, outdir=b1mapdir,
                                                outfilename='b1map', scaling=scaling, scanner=scanner)
         for k, v in zip(key, val):
             phantom_ddata[k].append(v)

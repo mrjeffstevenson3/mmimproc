@@ -1,0 +1,8 @@
+   92.8715  175.8144   56.4979 (bottom left corner, back square)
+   93.0000  159.0000   59.0000 (bottom right corner, back square)
+  135.0180  156.9437   43.0231 (bottom right corner, front square)
+  134.8894  173.7580   40.5209 (bottom left corner, front square)
+  101.8187  179.3173   79.5776 (top left corner, back square)
+  101.9473  162.5029   82.0798 (top right corner, back square)
+  143.9653  160.4466   66.1029  (top right corner, front square)
+  143.8367  177.2609   63.6007  (top left corner, front square)
