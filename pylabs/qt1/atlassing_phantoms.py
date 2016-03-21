@@ -8,6 +8,7 @@ from pylabs.correlation.atlas import atlaslabels
 from pylabs.utils.paths import getlocaldataroot
 import pylabs.qt1.expected
 import pylabs.qt1.blacklist as bad
+from pylabs.qt1.vials import vialNumbersByAscendingT1
 from pylabs.qt1.naming import qt1filepath
 
 
@@ -73,7 +74,16 @@ def atlasPhantoms(images, expectedByDate, projectdir, dirstruct='BIDS'):
     nvials = len(labels)
 
     ## Reorder vials according to T1
-    targetOrder = 
+    measuredVialsInOrder = [l for l in vialNumbersByAscendingT1 if str(l) in labels]
+    vialIndicesInOrder = [labels.index(str(l)) for l in measuredVialsInOrder]
+    # reorder labels
+    labels = [labels[v] for v in vialIndicesInOrder]
+    # reorder expected
+    for key in expectedByDate.keys():
+        expectedByDate[key] = [expectedByDate[key][v] for v in vialIndicesInOrder]
+    # reorder vialData
+    for key in vialdata.keys():
+        vialdata[key]['average'] = vialdata[key]['average'][vialIndicesInOrder]
 
     ## Start plotting
     plotdir = join(projectdir,'plots')
