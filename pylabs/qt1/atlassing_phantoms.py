@@ -72,6 +72,9 @@ def atlasPhantoms(images, expectedByDate, projectdir, dirstruct='BIDS'):
         del labels[vialIndex]
     nvials = len(labels)
 
+    ## Reorder vials according to T1
+    targetOrder = 
+
     ## Start plotting
     plotdir = join(projectdir,'plots')
     if not os.path.isdir(plotdir):
