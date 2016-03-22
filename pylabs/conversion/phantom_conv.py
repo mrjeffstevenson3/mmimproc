@@ -36,6 +36,13 @@ prov.dryrun = True
 
 def phantom_B1_midslice_par2mni(parfile, datadict, outdir=None, outfilename=None, scanner='slu',
                                 verbose=True, scaling='dv', minmax=('parse', 'parse'), origin='scanner', overwrite=True):
+
+    protoexception = ['']
+    flipexception = ['']
+    if scanner == 'disc':
+        scandateexception = ['20141108']
+        flipexception = ['20141108']
+
     prov.add(parfile)
     key, value = [], []
     if outdir and not os.path.exists(outdir):
@@ -89,7 +96,7 @@ def phantom_B1_midslice_par2mni(parfile, datadict, outdir=None, outfilename=None
         in_slice_mag = in_data_ras[:,:,mid_slice_num-1,0]
         in_slice_phase = in_data_ras[:,:,mid_slice_num-1, -1]
 
-    if scanner == 'slu' and scandate in protoexception:
+    if scanner == 'slu' and scandate in slu_B1_mag_then_phase_idx.keys():
         in_slice_mag = in_data_ras[:,:,mid_slice_num-1,slu_B1_mag_then_phase_idx.get(scandate)[0]]
         in_slice_phase = in_data_ras[:,:,mid_slice_num-1,slu_B1_mag_then_phase_idx.get(scandate)[1]]
     else:
@@ -204,6 +211,13 @@ def phantom_B1_midslice_par2mni(parfile, datadict, outdir=None, outfilename=None
 
 def phantom_midslice_par2mni(parfile, datadict, method, outdir=None, outfilename=None, scanner='slu',
                                 verbose=True, scaling='fp', minmax=('parse', 'parse'), origin='scanner', overwrite=True):
+
+    protoexception = ['']
+    flipexception = ['']
+    if scanner == 'disc':
+        scandateexception = ['20141108']
+        flipexception = ['20141108']
+
     prov.add(parfile)
     key, value = [''], ['']
     if outdir and not os.path.exists(outdir):

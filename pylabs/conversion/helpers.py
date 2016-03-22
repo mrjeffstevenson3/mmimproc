@@ -33,8 +33,6 @@ def convertSubjectParfiles(subj, subjectdir):
             continue
         args['parfile'] = parfile
         args['datadict'] = niftiDict
-        args['flipexception'] = ['']
-        args['protoexception'] = ['']
         args['outfilename'] = subj+'_'+method
 
         msg = 'Converting PAR. Method: [{0}] filename: {0}'
