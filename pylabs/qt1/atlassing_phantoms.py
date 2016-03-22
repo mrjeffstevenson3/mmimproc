@@ -144,7 +144,7 @@ def atlasPhantoms(images, expectedByDate, projectdir, dirstruct='BIDS'):
         rects1 = ax.bar(ind,         expVialtc.mean(axis=0), width, color='blue')
         rects2 = ax.bar(ind+width,   obsVialtc.mean(axis=0), width, color='green')
         rects3 = ax.bar(ind+width*2, diffVialtc.mean(axis=0), width, color='red')
-        ax.set_ylim([-300,2500])
+        ax.set_ylim([-500,2500])
         plt.legend((rects1[0],rects2[0],rects3[0]), ['model','observed','diff'], loc=2)
         plotfpath = join(plotdir,'{0}_avg.png'.format(methodstr))
         plt.savefig(plotfpath)
