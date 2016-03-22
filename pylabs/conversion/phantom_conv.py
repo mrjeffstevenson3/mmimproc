@@ -23,6 +23,14 @@ mni_affine = np.array([[-1, 0, 0, 90], [0, 1, 0, -126], [0, 0, 1, -72], [0, 0, 0
 psl2ras = np.array([[0., 0., -1., 0.], [-1., 0., 0., 0.], [0., 1., 0., 0.], [0., 0., 0., 1.]])
 
 
+protoexception = ['']
+flipexception = ['']
+if scanner == 'disc':
+    flipexception = ['20141108']
+if scanner == 'slu':
+    protoexception = ['20160113', '20160302']
+
+
 def printmessage(msg, indent=0):
     if verbose:
         print("%s%s" % (' ' * indent, msg))
@@ -34,9 +42,8 @@ def error(msg, exit_code):
 verbose = True
 prov.dryrun = True
 
-def phantom_B1_midslice_par2mni(parfile, datadict, outdir=None, flipexception=None, outfilename=None, scanner='slu',
-                                verbose=True, scaling='dv', minmax=('parse', 'parse'), origin='scanner', overwrite=True,
-                                protoexception=None):
+def phantom_B1_midslice_par2mni(parfile, datadict, outdir=None, outfilename=None, scanner='slu',
+                                verbose=True, scaling='dv', minmax=('parse', 'parse'), origin='scanner', overwrite=True):
     prov.add(parfile)
     key, value = [], []
     if outdir and not os.path.exists(outdir):
@@ -74,7 +81,7 @@ def phantom_B1_midslice_par2mni(parfile, datadict, outdir=None, flipexception=No
     t_aff = inv_ornt_aff(ornt, pr_img.shape)
     affine = np.dot(pr_img.affine, t_aff)
     in_data_ras = apply_orientation(in_data, affine)
-
+    #test and fix if any dims get swapped by reorienting
     if in_data_ras.shape[3] == zdim and in_data_ras.shape[2] == tdim:
         in_data_ras = np.rollaxis(in_data_ras, 3, 2)
 
@@ -84,19 +91,18 @@ def phantom_B1_midslice_par2mni(parfile, datadict, outdir=None, flipexception=No
     if in_data_ras.shape[3] == ydim and in_data_ras.shape[1] == zdim:
         in_data_ras = np.rollaxis(in_data_ras, 3, 1)
 
+    disc_B1_mag_then_phase_idx = {}
+    slu_B1_mag_then_phase_idx = {  '20160113':[1,4], '20160217': [0, 2], '20160302': [0,2]}
     if scanner == 'disc':
         in_slice_mag = in_data_ras[:,:,mid_slice_num-1,0]
-    if scanner == 'slu' and protoexception[0] == '20160113':
-        in_slice_mag = in_data_ras[:,:,mid_slice_num-1,3]
-    else:
-        in_slice_mag = in_data_ras[:,:,mid_slice_num-1,0]
+        in_slice_phase = in_data_ras[:,:,mid_slice_num-1, -1]
 
-    if scanner == 'disc':
-        in_slice_phase = in_data_ras[:,:,mid_slice_num-1, -1]
-    if scanner == 'slu' and protoexception[0] == '20160113':
-        in_slice_phase = in_data_ras[:,:,mid_slice_num-1,4]
+    if scanner == 'slu' and scandate in protoexception:
+        in_slice_mag = in_data_ras[:,:,mid_slice_num-1,slu_B1_mag_then_phase_idx.get(scandate)[0]]
+        in_slice_phase = in_data_ras[:,:,mid_slice_num-1,slu_B1_mag_then_phase_idx.get(scandate)[1]]
     else:
-        in_slice_phase = in_data_ras[:,:,mid_slice_num-1, -1]
+        in_slice_mag = in_data_ras[:,:,mid_slice_num-1,0]
+        in_slice_phase = in_data_ras[:,:,mid_slice_num-1, 2]
 
     mmcropfactor = fov/218.
     newsizediff = in_slice_mag.shape[0] - (in_slice_mag.shape[0]*mmcropfactor)
@@ -204,9 +210,8 @@ def phantom_B1_midslice_par2mni(parfile, datadict, outdir=None, flipexception=No
         print key, value
     return key, value
 
-def phantom_midslice_par2mni(parfile, datadict, method, outdir=None, flipexception=None, outfilename=None, scanner='slu',
-                                verbose=True, scaling='fp', minmax=('parse', 'parse'), origin='scanner', overwrite=True,
-                                protoexception=None):
+def phantom_midslice_par2mni(parfile, datadict, method, outdir=None, outfilename=None, scanner='slu',
+                                verbose=True, scaling='fp', minmax=('parse', 'parse'), origin='scanner', overwrite=True):
     prov.add(parfile)
     key, value = [''], ['']
     if outdir and not os.path.exists(outdir):
