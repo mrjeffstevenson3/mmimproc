@@ -11,7 +11,8 @@ from nipype.interfaces import fsl
 from pylabs.utils.paths import getlocaldataroot
 from niprov import Context
 from pylabs.utils._options import PylabsOptions
-import subprocess
+from decimal import *
+getcontext().prec = 8
 opts = PylabsOptions()
 prov = Context()
 fslbet = fsl.BET()
@@ -28,6 +29,7 @@ templatedict = defaultdict(lambda: defaultdict(list))
 a = [('ANTS12-0Months3T_head_bias_corrected.nii.gz', {'zcutoff': 14, 'ztrans': 0, 'xrot': -22, 'origdims': (141, 178, 144)}),
      ('ANTS6-0Months3T_head_bias_corrected.nii.gz', {'zcutoff': 41, 'ztrans': 26.5, 'xrot': -16, 'zroll': -20, 'xroll': 3, 'origdims': (147, 170, 176)}),
      ('ANTS15-0Months_head_bias_corrected.nii.gz', {'zcutoff': 19, 'ztrans': -4, 'xrot': -26, 'origdims': (150, 180, 155)}),
+     ('K13714-0Months_301_WIP_QUIET_MPRAGE_ti1450_ras.nii.gz', {'zcutoff': 70, 'ztrans': 0, 'xrot': -12, 'zroll': 0, 'xroll': 0, 'origdims': (150, 256, 256)}),
       ]
 for i in a:
     templatedict[i[0]] = i[1]
@@ -46,8 +48,9 @@ prov.dryrun = True
 fs = getlocaldataroot()
 pathtotemplates = pathjoin(fs, 'tadpole/sphere_sources')
 outputdir = pathjoin(fs, 'tadpole/atlases2')
-templatefiles = set(glob(pathjoin(fs, pathtotemplates, '*_head_bias_corrected.nii.gz'))) - set(glob(pathjoin(fs, pathtotemplates, '*_t2w_*')))
+templatefiles = set(glob(pathjoin(fs, pathtotemplates, '*_head_bias_corrected.nii.gz'))) - set(glob(pathjoin(fs, pathtotemplates, '*_t2w_*.nii.gz')))
 templatefiles = list(templatefiles)
+templatefiles += glob(pathjoin(fs, pathtotemplates, '*_ras.nii.gz'))
 if outputdir and not os.path.exists(pathjoin(outputdir, 'tmp')):
     os.makedirs(pathjoin(outputdir, 'tmp'))
 
@@ -57,7 +60,11 @@ for tf in templatefiles:
     tfname = tf.split('/')[-1]
     tf_age = tfname.split('_')[0][4:]
     tf_img = nibabel.load(tf)
+    tf_hdr = tf_img.header
     tf_data = np.array(tf_img.dataobj)
+    if all(x != 1.0 for x in tf_hdr.get_zooms()): #image not 1mm3 res. must adj
+        tf_data = scipy.ndimage.zoom(tf_data, list(tf_hdr.get_zooms()), order=0)
+        templatedict[tfname]['zcutoff'] = round(templatedict[tfname]['zcutoff'] * list(tf_hdr.get_zooms())[2])
     tf_data_zcrop = tf_data
     tf_data_zcrop[:,:,0:templatedict[tfname]['zcutoff']] = 0
     tf_data_rot = scipy.ndimage.interpolation.rotate(tf_data_zcrop, templatedict[tfname]['xrot'],  axes=(2, 1))
