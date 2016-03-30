@@ -72,7 +72,7 @@ for tf in templatefiles:
     if not any(x < 0 for x in shape_diff):
         #new xyz shape smaller than target
         xl = shape_diff[0]
-        xu = targetdims[0] - shape_diff[0]
+        xu = targetdims[0] - shape_diff[0]-1
         yl = shape_diff[1]
         yu = targetdims[1] - shape_diff[1]
         zl = shape_diff[2]
@@ -95,7 +95,7 @@ for tf in templatefiles:
         yl = shape_diff[1]
         yu = targetdims[1] - shape_diff[1]
         mni_array = np.zeros(targetdims)
-        temp = tf_data_rot[:,:, templatedict[tfname]['zcutoff']:templatedict[tfname]['zcutoff']-abs(shape_diff[2]*2)]
+        temp = tf_data_rot[:,:, templatedict[tfname]['zcutoff']:templatedict[tfname]['zcutoff']-abs(shape_diff[2]*2)+1]
         mni_array[xl:xu, yl:yu,:] = temp
 
     if templatedict[tfname]['xroll'] < 0:
