@@ -64,7 +64,7 @@ for tf in templatefiles:
     tf_data = np.array(tf_img.dataobj)
     if all(x != 1.0 for x in tf_hdr.get_zooms()): #image not 1mm3 res. must adj
         tf_data = scipy.ndimage.zoom(tf_data, list(tf_hdr.get_zooms()), order=0)
-        templatedict[tfname]['zcutoff'] = round(templatedict[tfname]['zcutoff'] * list(tf_hdr.get_zooms())[2])
+        templatedict[tfname]['zcutoff'] = int(round(templatedict[tfname]['zcutoff'] * list(tf_hdr.get_zooms())[2]))
     tf_data_zcrop = tf_data
     tf_data_zcrop[:,:,0:templatedict[tfname]['zcutoff']] = 0
     tf_data_rot = scipy.ndimage.interpolation.rotate(tf_data_zcrop, templatedict[tfname]['xrot'],  axes=(2, 1))
@@ -79,6 +79,20 @@ for tf in templatefiles:
         zu = targetdims[2] - shape_diff[2]
         mni_array = np.zeros(targetdims)
         mni_array[xl:xu, yl:yu, zl:zu] = tf_data_rot
+    elif shape_diff[1] < 0 and shape_diff[2] < 0 and abs(shape_diff[2]*2) <= templatedict[tfname]['zcutoff']:
+        #new y and z shape bigger than target but small enough to lop off entirely
+        xl = shape_diff[0]
+        xu = targetdims[0] - shape_diff[0]-1
+        mni_array = np.zeros(targetdims)
+        temp = tf_data_rot[:,abs(shape_diff[1]):,abs(shape_diff[2]*2):]
+        mni_array[xl:xu,:,:] = temp
+    elif shape_diff[1] < 0 and shape_diff[2] < 0 and abs(shape_diff[2]*2) > templatedict[tfname]['zcutoff']:
+        #new y and z shape bigger than target and z too big to lop off entirely
+        xl = shape_diff[0]
+        xu = targetdims[0] - shape_diff[0]
+        mni_array = np.zeros(targetdims)
+        temp = tf_data_rot[:,abs(shape_diff[1]):targetdims[1] - shape_diff[1], templatedict[tfname]['zcutoff']:templatedict[tfname]['zcutoff']-abs(shape_diff[2]*2)+1]
+        mni_array[xl:xu,:,:] = temp
     elif shape_diff[2] < 0 and abs(shape_diff[2]*2) <= templatedict[tfname]['zcutoff']:
         #new z shape bigger than target but small enough to lop off entirely
         xl = shape_diff[0]
