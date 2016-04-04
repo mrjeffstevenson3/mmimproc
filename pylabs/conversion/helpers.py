@@ -5,12 +5,13 @@ import collections, itertools, os
 from os.path import join
 
 
-def convertSubjectParfiles(subj, subjectdir):
+def convertSubjectParfiles(subj, subjectdir, niftiDict=None):
     """ Converts all compatible .PAR files in the source_parrec directory under
         the subject directory passed to this function.
     """
 
-    niftiDict = collections.defaultdict(list)
+    if niftiDict is None:
+        niftiDict = collections.defaultdict(list)
     parfiles = sortedParGlob(join(subjectdir, 'source_parrec/*.PAR'))
     for parfile in parfiles:
         args = {}
