@@ -17,7 +17,7 @@ class TemperatureRecord(object):
                 self.date = datetime.strptime(strval, '%m/%d/%Y').date()
             elif c in [2, 4]:
                 self.temps.append(float(strval))
-        if self.date and (len(self.temps) > 1):
+        if self.date and (len(self.temps) > 0):
             self.valid = True
 
     def averageTemperature(self):

@@ -96,13 +96,17 @@ def atlasPhantoms(images, expectedByDate, projectdir, dirstruct='BIDS'):
     datafile = 'data/t1_factordata.pickle'
     factordata = {}
     for method in methods:
-        methodstr = '{0}_{1}_{2}_{3}'.format(method[0], method[1], b1corrtag[method[2]], method[3])
+        methodstr = '{0}_{1}_{2}_{3}'.format(method[0], method[1],
+                                             b1corrtag[method[2]], method[3])
         print(methodstr)
         thisMethodKeys = [k for k in vialdata.keys() if k[:4] == method]
         dates = sorted([k[4] for k in thisMethodKeys if k[4] in datesWithTemps])
         
         blackListedDates = [k[2] for k in bad.phantoms if k[:2]==method[:2]]
         dates = [d for d in dates if d not in blackListedDates]
+        if not dates:
+            print('No usable dates for this method.')
+            continue # No dates for this method
 
         regStatsInOrder = [vialdata[method+(d,)]['average'] for d in dates]
         obsVialtc = numpy.array(regStatsInOrder)
