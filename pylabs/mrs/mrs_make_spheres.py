@@ -10,7 +10,8 @@ from scipy.ndimage.interpolation import shift
 from scipy.ndimage.interpolation import rotate as rot
 from scipy.ndimage.measurements import center_of_mass as com
 import mne
-from mne.bem import (_fit_sphere, fit_sphere_to_headshape)
+from mne.bem import _fit_sphere
+from six import string_types
 import nibabel
 import nibabel.nifti1 as nifti1
 from nipype.interfaces import fsl
@@ -82,34 +83,6 @@ def substring_i(the_list, substring):
               return i
     return -1
 
-def _fit_sphere(points, disp='auto'):
-    """Aux function to fit a sphere to an arbitrary set of points from mne"""
-    from scipy.optimize import fmin_cobyla
-    # if isinstance(disp, string_types) and disp == 'auto':
-    #     disp = True if logger.level <= 20 else False
-    # initial guess for center and radius
-    radii = (np.max(points, axis=1) - np.min(points, axis=1)) / 2.
-    radius_init = radii.mean()
-    center_init = np.median(points, axis=0)
-
-    # optimization
-    x0 = np.concatenate([center_init, [radius_init]])
-
-    def cost_fun(center_rad):
-        d = points - center_rad[:3]
-        d = (np.sqrt(np.sum(d * d, axis=1)) - center_rad[3])
-        return np.sum(d * d)
-
-    def constraint(center_rad):
-        return center_rad[3]  # radius must be >= 0
-
-    x_opt = fmin_cobyla(cost_fun, x0, constraint, rhobeg=radius_init,
-                        rhoend=radius_init * 1e-6, disp=disp)
-
-    origin = x_opt[:3]
-    radius = x_opt[3]
-    return radius, origin
-
 #defaults
 verbose = True
 prov.dryrun = True
@@ -123,7 +96,7 @@ if outputdir and not os.path.exists(pathjoin(outputdir, 'tmp')):
     os.makedirs(pathjoin(outputdir, 'tmp'))
 [niprov.add(img) for img in templatefiles]
 
-#tf = templatefiles[0]
+tf = templatefiles[2]
 #tf = templatefiles[substring_i(templatefiles, ref_img)]
 
 for tf in templatefiles:
@@ -219,16 +192,26 @@ for tf in templatefiles:
     skin_dome_img = nibabel.Nifti1Image(skin_dome, q, skin_hdr)
     skin_dome_fpath = pathjoin(outputdir, 'mnimegaxis_'+tf_age+'_r'+ str(r) +'mm_skin_dome.nii.gz')
     nibabel.save(skin_dome_img, skin_dome_fpath)
-    #
-    # dome_radius, dome_origin = _fit_sphere(np.array(skin_dome), disp=False)
-    # domespheredata = np.zeros(skin_data.shape)
-    # for x in range(domespheredata.shape[0]):
-    #     for y in range(domespheredata.shape[1]):
-    #         for z in range(domespheredata.shape[2]):
-    #             dist = np.sqrt(np.sum(np.square(np.array([x,y,z])-dome_origin)))
-    #             if (dist > (dome_radius - 1)) and (dist < (dome_radius + 1)):
-    #                     domespheredata[x,y,z] = 1
-    #
-    # domesphere_img = nibabel.Nifti1Image(domespheredata, skin_affine, skin_hdr)
-    # domesphere_fpath = pathjoin(outputdir, 'mnimegaxis_'+tf_age+'_r'+ str(dome_radius) +'mm_dome_sphere.nii.gz')
-    # nibabel.save(domesphere_img, domesphere_fpath)
+
+    dome_coord = np.array(np.nonzero(skin_dome))
+    for i, offset in enumerate(megaxis_vox_origin_mni):
+        dome_coord[i,:] = dome_coord[i,:] - offset
+
+    dome_radius, dome_origin = _fit_sphere(dome_coord.T, disp=False)
+    dome_sphere_orig = [x + y for x, y in zip(dome_origin, megaxis_vox_origin_mni)]
+    domespheredata = np.zeros(skin_data.shape)
+    for x in range(domespheredata.shape[0]):
+        for y in range(domespheredata.shape[1]):
+            for z in range(domespheredata.shape[2]):
+                dist = np.sqrt(np.sum(np.square(np.array([x,y,z])-dome_sphere_orig)))
+                if (dist > (dome_radius - 1)) and (dist < (dome_radius + 1)):
+                        domespheredata[x,y,z] = 1
+    domespheredata_com = com(domespheredata)
+    domesphere_affine = np.array([[-1, 0, 0, domespheredata_com[0]], [0, 1, 0, -domespheredata_com[1]], [0, 0, 1, -domespheredata_com[2]], [0, 0, 0, 1]])
+    skin_img.set_qform(q, code='scanner')
+    skin_img.set_sform(q, code='scanner')
+    skin_hdr = skin_img.header
+
+    domesphere_img = nibabel.Nifti1Image(domespheredata, domesphere_affine, skin_hdr)
+    domesphere_fpath = pathjoin(outputdir, 'mnimegaxis_'+tf_age+'_r'+ str(int(round(dome_radius))) +'mm_dome_sphere.nii.gz')
+    nibabel.save(domesphere_img, domesphere_fpath)
