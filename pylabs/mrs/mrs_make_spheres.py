@@ -9,6 +9,8 @@ import scipy.ndimage
 from scipy.ndimage.interpolation import shift
 from scipy.ndimage.interpolation import rotate as rot
 from scipy.ndimage.measurements import center_of_mass as com
+import mne
+from mne.bem import (_fit_sphere, fit_sphere_to_headshape)
 import nibabel
 import nibabel.nifti1 as nifti1
 from nipype.interfaces import fsl
@@ -25,25 +27,38 @@ prov.verbosity = 'info'
 verbose = True
 fslbet = fsl.BET()
 
-targetdims = (182, 218, 200)
-paddims = tuple([x * 2 for x in targetdims])
-target_translation = (90, -93, -57)
-meg_affine = np.array([[-1, 0, 0, 90], [0, 1, 0, -102], [0, 0, 1, -30], [0, 0, 0, 1]])
-meg_affinex2 = np.array([[-1, 0, 0, 180], [0, 1, 0, -204], [0, 0, 1, -60], [0, 0, 0, 1]])
+#image origin all others will be centered on
+ref_img = 'xxxxMNI152adult_T1_1mm_head.nii.gz'
+#vox dims or shape of ref_img
+ref_targetdims = (182, 218, 200)
+#distance to meg origin from com for ref_img
+ref_meg_origin2com = (0, -19, -47)
+#double target dims
+paddims = tuple([x * 2 for x in ref_targetdims])
+#resulting meg origin of ref_img after rot and crop
+megaxis_vox_origin_mni = (90, 90, 52)
+#center of mass of ref_img in ref_targetdims after rot and crop
+megaxis_vox_mni_com = (91, 108, 100)
+mni_crop_range = [(x/2, x + x/2) for x in ref_targetdims]
+#target_translation = (90, -90, -52)
+meg_affine = np.array([[-1, 0, 0, 90], [0, 1, 0, -90], [0, 0, 1, -52], [0, 0, 0, 1]])
+meg_affinex2 = meg_affine
+meg_affinex2[:3,3] = [x * 2 for x in meg_affine[:3,3]]
 identity_matrix = np.eye(4)
 mni_affine = np.array([[-1, 0, 0, 90], [0, 1, 0, -126], [0, 0, 1, -72], [0, 0, 0, 1]])
 psl2ras = np.array([[0., 0., -1., 0.], [-1., 0., 0., 0.], [0., 1., 0., 0.], [0., 0., 0., 1.]])
 imgdict = defaultdict(lambda: defaultdict(list))
 
-a = [('xxxxMNI152adult_T1_1mm_head.nii.gz', {'zcutoff': 8, 'ztrans': 0, 'meg_origin': (90, -102, -30), 'xrot': -18, 'zroll': 0, 'xroll': 0, 'origdims': (182, 218, 182)}),
-     ('ANTS12-0Months3T_head_bias_corrected.nii.gz', {'zcutoff': 14, 'ztrans': 0, 'xrot': -22, 'origdims': (141, 178, 144)}),
-     ('ANTS6-0Months3T_head_bias_corrected.nii.gz', {'zcutoff': 41, 'ztrans': 26.5, 'xrot': -16, 'zroll': -20, 'xroll': 3, 'origdims': (147, 170, 176)}),
-     ('ANTS15-0Months_head_bias_corrected.nii.gz', {'zcutoff': 19, 'ztrans': -4, 'xrot': -26, 'origdims': (150, 180, 155)}),
-     ('K13714-0Months_301_WIP_QUIET_MPRAGE_ti1450_ras.nii.gz', {'zcutoff': 70, 'ztrans': 0, 'xrot': -12, 'zroll': 0, 'xroll': 0, 'origdims': (150, 256, 256)}),
-     ('ANTS18-0Months_head_bias_corrected.nii.gz', {'zcutoff': 17, 'ztrans': 0, 'xrot': -30, 'zroll': 0, 'xroll': 0, 'origdims': (150, 256, 256)}),
-     ('ANTS2-5Years_head_bias_corrected.nii.gz', {'zcutoff': 70, 'ztrans': 0, 'xrot': -12, 'zroll': 0, 'xroll': 0, 'origdims': (150, 256, 256)}),
-     ('ANTS3-0Years_head_bias_corrected.nii.gz', {'zcutoff': 70, 'ztrans': 0, 'xrot': -12, 'zroll': 0, 'xroll': 0, 'origdims': (150, 256, 256)}),
-     ('ANTS4-0Years_head_bias_corrected.nii.gz', {'zcutoff': 70, 'ztrans': 0, 'xrot': -12, 'zroll': 0, 'xroll': 0, 'origdims': (150, 256, 256)}),
+a = [(ref_img, {'zcutoff': 8, 'ztrans': 0, 'meg_vox_origin': (90, 104, 30), 'xrot': -18, 'origdims': (182, 218, 182)}),
+     ('ANTS6-0Months3T_head_bias_corrected.nii.gz', {'zcutoff': 48, 'meg_vox_origin': (71, 80, 60), 'xrot': -16, 'origdims': (147, 170, 176)}),
+     ('ANTS12-0Months3T_head_bias_corrected.nii.gz', {'zcutoff': 50, 'meg_vox_origin': (74, 93, 68), 'xrot': -22, 'origdims': (149, 178, 190)}),
+     ('K13714-0Months_301_WIP_QUIET_MPRAGE_ti1450_head.nii.gz', {'zcutoff': 70, 'meg_vox_origin': (73, 93, 66), 'xrot': -22, 'origdims': (150, 256, 256)}),
+     ('ANTS15-0Months_head_bias_corrected.nii.gz', {'zcutoff': 20, 'meg_vox_origin': (80, 90, 41), 'xrot': -22, 'origdims': (150, 180, 155)}),
+     ('ANTS18-0Months_head_bias_corrected.nii.gz', {'zcutoff': 19, 'meg_vox_origin': (80, 92, 40), 'xrot': -26, 'origdims': (150, 256, 256)}),
+     ('ANTS2-0Years_head_bias_corrected.nii.gz', {'zcutoff': 13, 'meg_vox_origin': (72, 88, 32), 'xrot': -24, 'origdims': (150, 256, 256)}),
+     ('ANTS2-5Years_head_bias_corrected.nii.gz', {'zcutoff': 19, 'meg_vox_origin': (75, 87, 38), 'xrot': -18, 'origdims': (150, 256, 256)}),
+     ('ANTS3-0Years_head_bias_corrected.nii.gz', {'zcutoff': 22, 'meg_vox_origin': (80, 95, 44), 'xrot': -22, 'origdims': (150, 256, 256)}),
+     ('ANTS4-0Years_head_bias_corrected.nii.gz', {'zcutoff': 18, 'meg_vox_origin': (75, 83, 37), 'xrot': -14, 'origdims': (150, 256, 256)}),
       ]
 for i in a:
     imgdict[i[0]] = i[1]
@@ -61,20 +76,55 @@ def set_affine_offsets(affine, newoffsets):
         affine[i,3] = a
     return affine
 
+def substring_i(the_list, substring):
+    for i, s in enumerate(the_list):
+        if substring in s:
+              return i
+    return -1
+
+def _fit_sphere(points, disp='auto'):
+    """Aux function to fit a sphere to an arbitrary set of points from mne"""
+    from scipy.optimize import fmin_cobyla
+    # if isinstance(disp, string_types) and disp == 'auto':
+    #     disp = True if logger.level <= 20 else False
+    # initial guess for center and radius
+    radii = (np.max(points, axis=1) - np.min(points, axis=1)) / 2.
+    radius_init = radii.mean()
+    center_init = np.median(points, axis=0)
+
+    # optimization
+    x0 = np.concatenate([center_init, [radius_init]])
+
+    def cost_fun(center_rad):
+        d = points - center_rad[:3]
+        d = (np.sqrt(np.sum(d * d, axis=1)) - center_rad[3])
+        return np.sum(d * d)
+
+    def constraint(center_rad):
+        return center_rad[3]  # radius must be >= 0
+
+    x_opt = fmin_cobyla(cost_fun, x0, constraint, rhobeg=radius_init,
+                        rhoend=radius_init * 1e-6, disp=disp)
+
+    origin = x_opt[:3]
+    radius = x_opt[3]
+    return radius, origin
+
 #defaults
 verbose = True
 prov.dryrun = True
 
 fs = getlocaldataroot()
 pathtotemplates = pathjoin(fs, 'tadpole/sphere_sources')
-outputdir = pathjoin(fs, 'tadpole/atlases2')
+outputdir = pathjoin(fs, 'tadpole/meg_atlases')
 templatefiles = set(glob(pathjoin(fs, pathtotemplates, '*_head*.nii.gz'))) - set(glob(pathjoin(fs, pathtotemplates, '*_t2w_*.nii.gz')))
 templatefiles = list(templatefiles)
-if outputdir and not os.path.exists(pathjoin(outputdir, 'tmp3')):
-    os.makedirs(pathjoin(outputdir, 'tmp3'))
+if outputdir and not os.path.exists(pathjoin(outputdir, 'tmp')):
+    os.makedirs(pathjoin(outputdir, 'tmp'))
 [niprov.add(img) for img in templatefiles]
 
-tf = templatefiles[1]
+#tf = templatefiles[0]
+#tf = templatefiles[substring_i(templatefiles, ref_img)]
 
 for tf in templatefiles:
     tfname = tf.split('/')[-1]
@@ -82,6 +132,7 @@ for tf in templatefiles:
     tf_img = nibabel.load(tf)
     tf_hdr = tf_img.header
     tf_data = np.array(tf_img.dataobj)
+    tf_data_com = com(tf_data)
     #if image not 1mm3 res. must adj zoom
     if all(x != 1.0 for x in tf_hdr.get_zooms()):
         tf_data = scipy.ndimage.zoom(tf_data, list(tf_hdr.get_zooms()), order=0)
@@ -89,81 +140,36 @@ for tf in templatefiles:
     tf_data_zcrop = tf_data
     tf_data_zcrop[:,:,0:imgdict[tfname]['zcutoff']] = 0
     tf_data_zcrop_com = com(tf_data_zcrop)
-    padX = [tf_data_zcrop.shape[0] - abs(imgdict[tfname]['meg_origin'][0]), abs(imgdict[tfname]['meg_origin'][0])]
-    padY = [tf_data_zcrop.shape[1] - abs(imgdict[tfname]['meg_origin'][1]), abs(imgdict[tfname]['meg_origin'][1])]
-    padZ = [tf_data_zcrop.shape[2] - abs(imgdict[tfname]['meg_origin'][2]), abs(imgdict[tfname]['meg_origin'][2])]
-    tf_data_zcropP = np.pad(tf_data_zcrop, [padX, padY, padZ], 'constant')
-    tf_data_zcropP_hdr = tf_hdr
-    tf_data_zcropP_hdr.set_qform(meg_affinex2, code='scanner')
-    tf_data_zcropP_hdr.set_sform(meg_affinex2, code='scanner')
-    nimg_tf_data_zcropP = nifti1.Nifti1Image(tf_data_zcropP, meg_affinex2, tf_data_zcropP_hdr)
-    nibabel.save(nimg_tf_data_zcropP, pathjoin(outputdir, 'preangle_'+tf_age+'.nii'))
+    padX, padY, padZ = [int(x-y) for x, y in zip(ref_targetdims, imgdict[tfname]['meg_vox_origin'])]
+    tf_data_zcropP = np.zeros(paddims)
+    tf_data_zcropP[padX:padX+tf_data_zcrop.shape[0], padY:padY+tf_data_zcrop.shape[1],padZ:padZ+tf_data_zcrop.shape[2]] = tf_data_zcrop
+    # tf_data_zcropP_hdr = tf_img.header
+    # tf_data_zcropP_hdr.set_qform(meg_affinex2, code='scanner')
+    # tf_data_zcropP_hdr.set_sform(meg_affinex2, code='scanner')
+    # nimg_tf_data_zcropP = nifti1.Nifti1Image(tf_data_zcropP, meg_affinex2, tf_data_zcropP_hdr)
+    # nibabel.save(nimg_tf_data_zcropP, pathjoin(outputdir, 'preangle_'+tf_age+'.nii'))
     tf_data_rot = rot(tf_data_zcropP, imgdict[tfname]['xrot'],  axes=(2, 1), reshape=False)
     tf_data_rot_com = np.round(com(tf_data_rot)).astype(int)
-    lx = tf_data_rot_com[0] - int(round(targetdims[0]/2.))
-    ux = lx + targetdims[0]
-    ly = tf_data_rot_com[1] - int(round(targetdims[1]/2.))
-    uy = ly + targetdims[1]
-    lz = tf_data_rot_com[2] - int(round(targetdims[2]/2.))
-    uz = lz + targetdims[2]
+    meg_origin2com = [x - y for x, y in zip(ref_targetdims, tf_data_rot_com)]
+    img_origin_offset_fm_com = [x/2. + y for x, y in zip(ref_targetdims, meg_origin2com)]
+    roll_offset = [int(round(x-y)) for x, y in zip(img_origin_offset_fm_com, megaxis_vox_origin_mni)]
+    lx = tf_data_rot_com[0] - int(round(ref_targetdims[0]/2.))
+    ux = lx + ref_targetdims[0]
+    ly = tf_data_rot_com[1] - int(round(ref_targetdims[1]/2.))
+    uy = ly + ref_targetdims[1]
+    lz = tf_data_rot_com[2] - int(round(ref_targetdims[2]/2.))
+    uz = lz + ref_targetdims[2]
     mni_array = tf_data_rot[lx:ux,ly:uy,lz:uz]
-    #offset_due2rot = [int(round(x/2. - y)) for x, y in zip(tf_data_rot_com, tf_data_zcrop_com)]
-    #rolldata = shift(tf_data_rot, [x*-2 for x in offset_due2rot], order=0)
-    #shape_diff = [int(round((a - b)/2)) for a, b in zip(list(targetdims), list(tf_data_rot.shape))]
-
-    # if not any(x < 0 for x in shape_diff):
-    #     #new xyz shape smaller than target
-    #     xl = shape_diff[0]
-    #     xu = targetdims[0] - shape_diff[0]-1
-    #     yl = shape_diff[1]
-    #     yu = targetdims[1] - shape_diff[1]
-    #     zl = shape_diff[2]
-    #     zu = targetdims[2] - shape_diff[2]
-    #     mni_array = np.zeros(targetdims)
-    #     mni_array[xl:xu, yl:yu, zl:zu] = tf_data_rot
-    # elif shape_diff[1] < 0 and shape_diff[2] < 0 and abs(shape_diff[2]*2) <= imgdict[tfname]['zcutoff']:
-    #     #new y and z shape bigger than target but small enough to lop off entirely
-    #     xl = shape_diff[0]
-    #     xu = targetdims[0] - shape_diff[0]-1
-    #     mni_array = np.zeros(targetdims)
-    #     temp = tf_data_rot[:,abs(shape_diff[1]):,abs(shape_diff[2]*2):]
-    #     mni_array[xl:xu,:,:] = temp
-    # elif shape_diff[1] < 0 and shape_diff[2] < 0 and abs(shape_diff[2]*2) > imgdict[tfname]['zcutoff']:
-    #     #new y and z shape bigger than target and z too big to lop off entirely
-    #     xl = shape_diff[0]
-    #     xu = targetdims[0] - shape_diff[0]
-    #     mni_array = np.zeros(targetdims)
-    #     temp = tf_data_rot[:,abs(shape_diff[1]):targetdims[1] - shape_diff[1], imgdict[tfname]['zcutoff']:imgdict[tfname]['zcutoff']-abs(shape_diff[2]*2)+1]
-    #     mni_array[xl:xu,:,:] = temp
-    # elif shape_diff[2] < 0 and abs(shape_diff[2]*2) <= imgdict[tfname]['zcutoff']:
-    #     #new z shape bigger than target but small enough to lop off entirely
-    #     xl = shape_diff[0]
-    #     xu = targetdims[0] - shape_diff[0]-1
-    #     yl = shape_diff[1]
-    #     yu = targetdims[1] - shape_diff[1]
-    #     mni_array = np.zeros(targetdims)
-    #     temp = tf_data_rot[:,:,abs(shape_diff[2]*2):]
-    #     mni_array[xl:xu, yl:yu,:] = temp
-    # elif shape_diff[2] < 0 and abs(shape_diff[2]*2) > imgdict[tfname]['zcutoff']:
-    #     #new z shape bigger than target but too big to lop off entirely
-    #     xl = shape_diff[0]
-    #     xu = targetdims[0] - shape_diff[0]
-    #     yl = shape_diff[1]
-    #     yu = targetdims[1] - shape_diff[1]
-    #     mni_array = np.zeros(targetdims)
-    #     temp = tf_data_rot[:,:, imgdict[tfname]['zcutoff']:imgdict[tfname]['zcutoff']-abs(shape_diff[2]*2)+1]
-    #     mni_array[xl:xu, yl:yu,:] = temp
-
-    if imgdict[tfname]['xroll'] < 0:
-        mni_array = np.roll(mni_array, targetdims[0] + imgdict[tfname]['xroll'], 0)
-    elif imgdict[tfname]['xroll'] > 0:
-        mni_array = np.roll(mni_array, imgdict[tfname]['xroll'], 0)
-
-    if imgdict[tfname]['zroll'] < 0:
-        mni_array = np.roll(mni_array, targetdims[2] + imgdict[tfname]['zroll'], 2)
-    elif imgdict[tfname]['zroll'] > 0:
-        mni_array = np.roll(mni_array, imgdict[tfname]['zroll'], 2)
-
+    if any(v != 0 for v in roll_offset):
+        for i, offset in enumerate(roll_offset):
+            if offset > 0:
+                mni_array = np.roll(mni_array, ref_targetdims[i] - offset, i)
+            elif offset < 0:
+                mni_array = np.roll(mni_array, offset, i)
+    mni_array_com = np.round(com(mni_array)).astype(int)
+    com2meg_vox_origin_offset = [int(round(x/2. - y)) for x, y in zip(tf_data_rot_com, mni_array_com)]
+    tf_hdr = tf_img.header
+    meg_affine = np.array([[-1, 0, 0, 90], [0, 1, 0, -90], [0, 0, 1, -52], [0, 0, 0, 1]])
     tf_img.set_qform(meg_affine, code='scanner')
     tf_img.set_sform(meg_affine, code='scanner')
     tf_hdr = tf_img.header
@@ -173,10 +179,10 @@ for tf in templatefiles:
     fslbet.inputs.in_file = pathjoin(outputdir, 'mnimegaxis_'+tf_age+'.nii')
     fslbet.inputs.frac = 0.3
     fslbet.inputs.surfaces = True
-    fslbet.inputs.out_file = pathjoin(outputdir, 'tmp3', 'mnimegaxis_'+tf_age+'_brain.nii.gz')
+    fslbet.inputs.out_file = pathjoin(outputdir, 'tmp', 'mnimegaxis_'+tf_age+'_brain.nii.gz')
     fslbet.run()
     skin_fpath = pathjoin(outputdir, 'mnimegaxis_'+tf_age+'_skin_surf.nii.gz')
-    shutil.copy2(pathjoin(outputdir, 'tmp3', 'mnimegaxis_'+tf_age+'_brain_outskin_mesh.nii.gz'), skin_fpath)
+    shutil.copy2(pathjoin(outputdir, 'tmp', 'mnimegaxis_'+tf_age+'_brain_outskin_mesh.nii.gz'), skin_fpath)
     skin_img = nifti1.load(skin_fpath)
     skin_affine = skin_img.affine
     skin_data = np.array(skin_img.dataobj)
@@ -204,13 +210,25 @@ for tf in templatefiles:
                         spheredata[x,y,z] = 1
 
 
-    sphere_img = nibabel.Nifti1Image(spheredata, skin_affine, skin_hdr)
+    sphere_img = nibabel.Nifti1Image(spheredata, q, skin_hdr)
     sphere_hrd = sphere_img.header
     sphere_fpath = pathjoin(outputdir, 'mnimegaxis_'+tf_age+'_r'+ str(r) +'mm_sphere.nii.gz')
     nibabel.save(sphere_img, sphere_fpath)
     skin_dome = skin_data
     skin_dome[:,:,0:skin_data_com[2]] = 0
-    skin_dome_img = nibabel.Nifti1Image(skin_dome, skin_affine, skin_hdr)
+    skin_dome_img = nibabel.Nifti1Image(skin_dome, q, skin_hdr)
     skin_dome_fpath = pathjoin(outputdir, 'mnimegaxis_'+tf_age+'_r'+ str(r) +'mm_skin_dome.nii.gz')
     nibabel.save(skin_dome_img, skin_dome_fpath)
-
+    #
+    # dome_radius, dome_origin = _fit_sphere(np.array(skin_dome), disp=False)
+    # domespheredata = np.zeros(skin_data.shape)
+    # for x in range(domespheredata.shape[0]):
+    #     for y in range(domespheredata.shape[1]):
+    #         for z in range(domespheredata.shape[2]):
+    #             dist = np.sqrt(np.sum(np.square(np.array([x,y,z])-dome_origin)))
+    #             if (dist > (dome_radius - 1)) and (dist < (dome_radius + 1)):
+    #                     domespheredata[x,y,z] = 1
+    #
+    # domesphere_img = nibabel.Nifti1Image(domespheredata, skin_affine, skin_hdr)
+    # domesphere_fpath = pathjoin(outputdir, 'mnimegaxis_'+tf_age+'_r'+ str(dome_radius) +'mm_dome_sphere.nii.gz')
+    # nibabel.save(domesphere_img, domesphere_fpath)
