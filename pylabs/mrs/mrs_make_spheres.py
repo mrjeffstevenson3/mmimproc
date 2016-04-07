@@ -154,7 +154,7 @@ for tf in templatefiles:
     skin_img = nifti1.load(skin_fpath)
     skin_affine = skin_img.affine
     skin_data = np.array(skin_img.dataobj)
-    skin_data_com = com(skin_data)
+    skin_data_com = np.round(com(skin_data), decimals=2)
     x0, y0, z0 = [d for d in skin_data_com]
     q = skin_img.get_qform()
     q[1,3] = -y0
