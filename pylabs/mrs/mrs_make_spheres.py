@@ -85,11 +85,11 @@ def substring_i(the_list, substring):
 
 #defaults
 verbose = True
-prov.dryrun = True
+prov.dryrun = False
 
 fs = getlocaldataroot()
 pathtotemplates = pathjoin(fs, 'tadpole/sphere_sources')
-outputdir = pathjoin(fs, 'tadpole/meg_atlases2')
+outputdir = pathjoin(fs, 'tadpole/meg_sphere_templates')
 templatefiles = set(glob(pathjoin(fs, pathtotemplates, '*_head*.nii.gz'))) - set(glob(pathjoin(fs, pathtotemplates, '*_t2w_*.nii.gz')))
 templatefiles = list(templatefiles)
 if outputdir and not os.path.exists(pathjoin(outputdir, 'tmp')):
