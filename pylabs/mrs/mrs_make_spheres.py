@@ -17,12 +17,12 @@ import nibabel.nifti1 as nifti1
 from nipype.interfaces import fsl
 from pylabs.utils.paths import getlocaldataroot
 import niprov
-from niprov import Context
+from niprov import Context as ProvenanceContext
 from pylabs.utils._options import PylabsOptions
 from decimal import *
 getcontext().prec = 8
 opts = PylabsOptions()
-prov = Context()
+prov = ProvenanceContext()
 prov.dryrun = False
 prov.verbosity = 'info'
 verbose = True
@@ -96,7 +96,7 @@ if outputdir and not os.path.exists(pathjoin(outputdir, 'tmp')):
     os.makedirs(pathjoin(outputdir, 'tmp'))
 [niprov.add(img) for img in templatefiles]
 
-tf = templatefiles[2]
+#tf = templatefiles[2]
 #tf = templatefiles[substring_i(templatefiles, ref_img)]
 
 for tf in templatefiles:
@@ -182,7 +182,7 @@ for tf in templatefiles:
     sphere_hrd = sphere_img.header
     sphere_fpath = pathjoin(outputdir, 'mnimegaxis_'+tf_age+'_r'+ str(r) +'mm_sphere.nii.gz')
     nibabel.save(sphere_img, sphere_fpath)
-    prov.log(sphere_fpath, 'meg sphere of radius '+r+'mm and center of mass origin derived fm fsl bet skin surface of parent with resultant meg origin coord and MNI shape.',
+    prov.log(sphere_fpath, 'meg sphere of radius '+str(r)+'mm and center of mass origin derived fm fsl bet skin surface of parent with resultant meg origin coord and MNI shape.',
                         pathjoin(outputdir, 'mnimegaxis_'+tf_age+'.nii'), script=__file__)
     skin_dome = skin_data
     skin_dome[:,:,0:skin_data_com[2]] = 0
@@ -212,5 +212,5 @@ for tf in templatefiles:
     domesphere_img = nibabel.Nifti1Image(domespheredata, domesphere_affine, skin_hdr)
     domesphere_fpath = pathjoin(outputdir, 'mnimegaxis_'+tf_age+'_r'+ str(int(round(dome_radius))) +'mm_dome_sphere.nii.gz')
     nibabel.save(domesphere_img, domesphere_fpath)
-    prov.log(domesphere_fpath, 'analogue to meg polhemus cloud sphere using mne _fit_sphere of radius '+dome_radius+'mm and origin '+dome_sphere_orig+' derived fm upper dome of skin surface of parent in MNI space',
+    prov.log(domesphere_fpath, 'analogue to meg polhemus cloud sphere using mne _fit_sphere of radius '+str(dome_radius)+'mm and origin '+str(dome_sphere_orig)+' derived fm upper dome of skin surface of parent in MNI space',
                         pathjoin(outputdir, 'mnimegaxis_'+tf_age+'.nii'), script=__file__)
