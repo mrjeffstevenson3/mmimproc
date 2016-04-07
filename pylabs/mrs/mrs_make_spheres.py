@@ -89,7 +89,7 @@ prov.dryrun = True
 
 fs = getlocaldataroot()
 pathtotemplates = pathjoin(fs, 'tadpole/sphere_sources')
-outputdir = pathjoin(fs, 'tadpole/meg_atlases')
+outputdir = pathjoin(fs, 'tadpole/meg_atlases2')
 templatefiles = set(glob(pathjoin(fs, pathtotemplates, '*_head*.nii.gz'))) - set(glob(pathjoin(fs, pathtotemplates, '*_t2w_*.nii.gz')))
 templatefiles = list(templatefiles)
 if outputdir and not os.path.exists(pathjoin(outputdir, 'tmp')):
@@ -116,11 +116,6 @@ for tf in templatefiles:
     padX, padY, padZ = [int(x-y) for x, y in zip(ref_targetdims, imgdict[tfname]['meg_vox_origin'])]
     tf_data_zcropP = np.zeros(paddims)
     tf_data_zcropP[padX:padX+tf_data_zcrop.shape[0], padY:padY+tf_data_zcrop.shape[1],padZ:padZ+tf_data_zcrop.shape[2]] = tf_data_zcrop
-    # tf_data_zcropP_hdr = tf_img.header
-    # tf_data_zcropP_hdr.set_qform(meg_affinex2, code='scanner')
-    # tf_data_zcropP_hdr.set_sform(meg_affinex2, code='scanner')
-    # nimg_tf_data_zcropP = nifti1.Nifti1Image(tf_data_zcropP, meg_affinex2, tf_data_zcropP_hdr)
-    # nibabel.save(nimg_tf_data_zcropP, pathjoin(outputdir, 'preangle_'+tf_age+'.nii'))
     tf_data_rot = rot(tf_data_zcropP, imgdict[tfname]['xrot'],  axes=(2, 1), reshape=False)
     tf_data_rot_com = np.round(com(tf_data_rot)).astype(int)
     meg_origin2com = [x - y for x, y in zip(ref_targetdims, tf_data_rot_com)]
@@ -148,7 +143,7 @@ for tf in templatefiles:
     tf_hdr = tf_img.header
     nimg_tf = nifti1.Nifti1Image(mni_array, meg_affine, tf_hdr)
     nibabel.save(nimg_tf, pathjoin(outputdir, 'mnimegaxis_'+tf_age+'.nii'))
-
+    prov.log(pathjoin(outputdir, 'mnimegaxis_'+tf_age+'.nii'), 'rotate2meg origin+set shape to MNI', tf, script=__file__)
     fslbet.inputs.in_file = pathjoin(outputdir, 'mnimegaxis_'+tf_age+'.nii')
     fslbet.inputs.frac = 0.3
     fslbet.inputs.surfaces = True
@@ -187,6 +182,8 @@ for tf in templatefiles:
     sphere_hrd = sphere_img.header
     sphere_fpath = pathjoin(outputdir, 'mnimegaxis_'+tf_age+'_r'+ str(r) +'mm_sphere.nii.gz')
     nibabel.save(sphere_img, sphere_fpath)
+    prov.log(sphere_fpath, 'meg sphere of radius '+r+'mm and center of mass origin derived fm fsl bet skin surface of parent with resultant meg origin coord and MNI shape.',
+                        pathjoin(outputdir, 'mnimegaxis_'+tf_age+'.nii'), script=__file__)
     skin_dome = skin_data
     skin_dome[:,:,0:skin_data_com[2]] = 0
     skin_dome_img = nibabel.Nifti1Image(skin_dome, q, skin_hdr)
@@ -215,3 +212,5 @@ for tf in templatefiles:
     domesphere_img = nibabel.Nifti1Image(domespheredata, domesphere_affine, skin_hdr)
     domesphere_fpath = pathjoin(outputdir, 'mnimegaxis_'+tf_age+'_r'+ str(int(round(dome_radius))) +'mm_dome_sphere.nii.gz')
     nibabel.save(domesphere_img, domesphere_fpath)
+    prov.log(domesphere_fpath, 'analogue to meg polhemus cloud sphere using mne _fit_sphere of radius '+dome_radius+'mm and origin '+dome_sphere_orig+' derived fm upper dome of skin surface of parent in MNI space',
+                        pathjoin(outputdir, 'mnimegaxis_'+tf_age+'.nii'), script=__file__)
