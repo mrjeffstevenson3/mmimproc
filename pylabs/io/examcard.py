@@ -5,21 +5,31 @@ Read Philips Examcard files.
 Jasper J.F. van den Bosch <jasperb@uw.edu>
 """
 from xml.dom.minidom import parse
-import struct
+import struct, pprint
+import niprov.comparing
 from niprov.xmllib import *
 from niprov.basefile import BaseFile
+
+fields = {'field-of-view':'EX_GEO_fov',
+          'epi-factor':'IF_epi_factor',
+          'magnetization-transfer-contrast':'EX_MTC_enable',
+          'echo-time':'EX_ACQ_first_echo_time',
+          'flip-angle':'EX_ACQ_flip_angle',
+          'duration':'IF_str_total_scan_time',
+          'subject-position':'EX_GEO_patient_position',
+          'water-fat-shift':'EX_ACQ_water_fat_shift',
+          'subject-orientation':'EX_GEO_patient_orientation'}
 
 def load(fpath):
     obj = PylabsExamCardFile(fpath)
     obj.inspect()
-    return obj.provenance
+    return obj.provenance['examcard']
 
 
 class PylabsExamCardFile(BaseFile):
 
     def __init__(self, location, **kwargs):
         super(PylabsExamCardFile, self).__init__(location, **kwargs)
-        self.libs = self.dependencies.getLibraries()
 
     def inspect(self):
         provenance = super(PylabsExamCardFile, self).inspect()
@@ -40,7 +50,32 @@ class PylabsExamCardFile(BaseFile):
             b64content = getTextContent(refNode)
             scan['parameters'] = decodeParameters(b64content)
             exam['scans'].append(scan)
-        provenance.update(exam)
+        provenance['examcard'] = exam
+
+    def getScan(self, scanname):
+        scanname = scanname.split(' ')[1]
+        scannames = [s['name'] for s in self.provenance['examcard']['scans']]
+        if scanname not in scannames:
+            msg = "Can't find scan '{}' in {}"
+            raise ValueError(msg.format(scanname, pprint.pformat(scannames)))
+        scanindex = scannames.index(scanname)
+        scanDict = self.provenance['examcard']['scans'][scanindex]
+        scanProvenance = {'examcard-scan':scanDict}
+        for field, ecname in fields.items():
+            scanProvenance[field] = scanDict['parameters'][ecname]
+        return PylabsExamCardScan(str(self.location), 
+            provenance=scanProvenance)
+
+    def compareCorrespondingScan(self, other):
+        assert 'protocol' in other.provenance
+        scan = self.getScan(other.provenance['protocol'])
+        return niprov.comparing.compare(other, scan)
+
+
+class PylabsExamCardScan(BaseFile):
+
+    def __init__(self, location, **kwargs):
+        super(PylabsExamCardScan, self).__init__(location, **kwargs)
 
 def decodeParameters(b64content):
     params = {}

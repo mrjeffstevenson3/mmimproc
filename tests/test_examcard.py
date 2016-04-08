@@ -87,6 +87,20 @@ class ExamCardTests(unittest.TestCase):
         params = scanDict['parameters']
         self.assertEquals(params['IF_epi_factor'], 67)
 
+    def test_Comparison(self):
+        from pylabs.io.examcard import PylabsExamCardFile
+        from niprov.parrec import ParrecFile
+        fpath = abspath(join('data/testdata/examcard',files[1]))
+        exam = PylabsExamCardFile(fpath)
+        exam.inspect()
+        path = '/diskArray/mirror/js/av_dyslexia/SR_ADULT_007'
+        name = 'SR_ADULT_007_WIP_DTI6_b1_PA_TOPDN_SENSE_8_1.PAR'
+        fpath = join(path, name)
+        par = ParrecFile(fpath)
+        par.inspect()
+        diff = exam.compareCorrespondingScan(par)
+        diff.assertEqualProtocol()
+
 if __name__ == '__main__':
     unittest.main()
 
