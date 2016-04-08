@@ -21,7 +21,7 @@ fields = {'field-of-view':'EX_GEO_fov',
           'water-fat-shift':'EX_ACQ_water_fat_shift',
           'subject-orientation':'EX_GEO_patient_orientation'}
 
-def load(fpath):
+def loaddict(fpath):
     obj = PylabsExamCardFile(fpath)
     obj.inspect()
     return obj.provenance['examcard']
