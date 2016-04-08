@@ -28,7 +28,7 @@ prov.verbosity = 'info'
 verbose = True
 fslbet = fsl.BET()
 
-#image origin all others will be centered on
+#reference image dims and origin all others will be centered on
 ref_img = 'xxxxMNI152adult_T1_1mm_head.nii.gz'
 #vox dims or shape of ref_img
 ref_targetdims = (182, 218, 200)
@@ -154,7 +154,7 @@ for tf in templatefiles:
     skin_img = nifti1.load(skin_fpath)
     skin_affine = skin_img.affine
     skin_data = np.array(skin_img.dataobj)
-    skin_data_com = com(skin_data)
+    skin_data_com = np.round(com(skin_data), decimals=2)
     x0, y0, z0 = [d for d in skin_data_com]
     q = skin_img.get_qform()
     q[1,3] = -y0
@@ -186,7 +186,7 @@ for tf in templatefiles:
                         pathjoin(outputdir, 'mnimegaxis_'+tf_age+'.nii'), script=__file__)
     skin_dome = skin_data
     skin_dome[:,:,0:skin_data_com[2]] = 0
-    skin_dome_img = nibabel.Nifti1Image(skin_dome, q, skin_hdr)
+    skin_dome_img = nibabel.Nifti1Image(skin_dome, meg_affine, skin_hdr)
     skin_dome_fpath = pathjoin(outputdir, 'mnimegaxis_'+tf_age+'_r'+ str(r) +'mm_skin_dome.nii.gz')
     nibabel.save(skin_dome_img, skin_dome_fpath)
 
@@ -203,10 +203,10 @@ for tf in templatefiles:
                 dist = np.sqrt(np.sum(np.square(np.array([x,y,z])-dome_sphere_orig)))
                 if (dist > (dome_radius - 1)) and (dist < (dome_radius + 1)):
                         domespheredata[x,y,z] = 1
-    domespheredata_com = com(domespheredata)
+    domespheredata_com = np.round(com(domespheredata), decimals=2)
     domesphere_affine = np.array([[-1, 0, 0, domespheredata_com[0]], [0, 1, 0, -domespheredata_com[1]], [0, 0, 1, -domespheredata_com[2]], [0, 0, 0, 1]])
-    skin_img.set_qform(q, code='scanner')
-    skin_img.set_sform(q, code='scanner')
+    skin_img.set_qform(domesphere_affine, code='scanner')
+    skin_img.set_sform(domesphere_affine, code='scanner')
     skin_hdr = skin_img.header
 
     domesphere_img = nibabel.Nifti1Image(domespheredata, domesphere_affine, skin_hdr)
