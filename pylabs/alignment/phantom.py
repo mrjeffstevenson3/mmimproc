@@ -1,6 +1,6 @@
 from os.path import join
 import itertools, datetime
-import nibabel, numpy, scipy.stats, scipy.ndimage
+import nibabel, numpy, scipy.stats, scipy.ndimage, niprov
 from pylabs.utils import progress
 
 
@@ -73,6 +73,19 @@ def savetransformed(subjectfile, xform, newfile, newAffine):
     indata = nibabel.load(subjectfile).get_data()
     xformdata = transform(indata, xform['tx'], xform['ty'], xform['rxy'])
     nibabel.save(nibabel.Nifti1Image(xformdata, newAffine), newfile)
+
+def alignAndSave(subjectfile, targetfile, newfile=None, provenance=None)
+    if not provenance:
+        provenance = niprov.Context()
+    if not newfile:
+        newfile = subjectfile.replace('.nii','_coreg.nii')
+    newAffine = nibabel.load(targetfile).get_affine()
+    xform = align(subjectfile, targetfile, delta=10)
+    indata = nibabel.load(subjectfile).get_data()
+    xformdata = transform(indata, xform['tx'], xform['ty'], xform['rxy'])
+    nibabel.save(nibabel.Nifti1Image(xformdata, newAffine), newfile)
+    provenance.log(newFile, 'coregistration phantom', [subjectfile, targetfile])
+    return newfile
 
 
 
