@@ -1,24 +1,24 @@
 from __future__ import division
-import collections
-from os.path import join
-import numpy
-from pylabs.utils.paths import getlocaldataroot
-import glob
-from pylabs.qt1.fitting import spgrformula
-from pylabs.qt1.coregister_phantoms import coregisterPhantoms
-from scipy.optimize import curve_fit
-from pylabs.regional import statsByRegion
-from pylabs.correlation.atlas import atlaslabels
-import numpy as np
+import collections, numpy, glob
 from numpy import cos, sin, exp, tan
 import matplotlib.pyplot as plt
+from os.path import join
+from scipy.optimize import curve_fit
+from niprov import Context
+from pylabs.utils.paths import getlocaldataroot
+from pylabs.qt1.fitting import spgrformula
+from pylabs.qt1.coregister_phantoms import coregisterPhantoms
+from pylabs.regional import statsByRegion
+from pylabs.correlation.atlas import atlaslabels
+provenance = Context()
 
 def frac_sat(a, TR, T1):
     return round(((1-cos(a))*exp(-TR/T1))/(1-(cos(a)*exp(-TR/T1))), 5)
 
+## model_pipeline
+expected = calculate_model('slu')
 
-
-
+## data
 fs = getlocaldataroot()
 projectdir = join(fs, 'phantom_qT1_slu')
 subject = 'sub-phant2016-03-02'
@@ -28,7 +28,7 @@ anglefiles = sorted(glob.glob(join(anatdir,'*14*1.nii')))
 X = [7,10,15,20,30]
 
 ### coregistration
-#coregAngleFiles = coregisterPhantoms(anglefiles, projectdir=projectdir)
+alignAndSave(subjectfile, targetfile, newfile=None, provenance=provenance)
 
 
 ## atlassing
@@ -45,6 +45,14 @@ Y = [stats['average'][indexOf15] for stats in YRegionalData]
 
 X = numpy.radians(X)
 Y = numpy.array(Y)
+
+
+## minimize signal loss formula 
+## fit once, get estimated S0
+## from this we can adjust S0 and and fit.
+## plot signal loss vs vial
+## fit curve to signall loss vs T1
+
 
 
 ## fitting
