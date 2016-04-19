@@ -21,7 +21,7 @@ projectdir = join(fs, 'phantom_qT1_slu')
 subject = 'sub-phant2016-03-02'
 subjectdir = join(projectdir, subject)
 anatdir = join(projectdir, subject, 'anat')
-alignmentTarget = join(projectdir, 'phantom_alignment_target.nii.gz')
+alignmentTarget = join(projectdir, 'phantom_flipangle_alignment_target.nii')
 vialAtlas = join(projectdir,'phantom_slu_mask_20160113.nii.gz')
 usedVials = range(7, 18+1)
 vialOrder = [str(v) for v in vialNumbersByAscendingT1 if v in usedVials]
@@ -47,19 +47,11 @@ for alphafile in alphafiles:
 
 data = data.loc[vialOrder]
 
-
-TR = provenance.get(forFile=alphafile).provenance['repetition-time']
-alpha = numpy.radians(15.0)
-
-## minimize signal loss formula 
-def fracsat(T1, a, TR):
-    return ( (1-cos(a)) * exp(-TR/T1) ) / ( 1 - ( cos(a) * exp(-TR/T1) ))
-res = optimize.fminbound(fracsat, 500, 2500, args=(alpha, TR))
-
 ### fitting
 def spgrformula(a, S0, T1):
     TR = spgrformula.TR
     return S0 * ((1-exp(-TR/T1))/(1-cos(a)*exp(-TR/T1))) * sin(a)
+TR = provenance.get(forFile=alphafile).provenance['repetition-time']
 spgrformula.TR = TR
 A = radians(data.columns.values)
 T1i = 1000
