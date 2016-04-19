@@ -18,10 +18,6 @@ provenance = Context()
 def frac_sat(a, TR, T1):
     return round(((1-cos(a))*exp(-TR/T1))/(1-(cos(a)*exp(-TR/T1))), 5)
 
-## model_pipeline
-targetdate = datetime.date(2016, 3, 2)
-expected = modelForDate(targetdate, 'slu')
-
 ## settings
 fs = getlocaldataroot()
 projectdir = join(fs, 'phantom_qT1_slu')
@@ -31,6 +27,10 @@ anatdir = join(projectdir, subject, 'anat')
 alignmentTarget = join(projectdir, 'phantom_alignment_target.nii.gz')
 vialAtlas = join(projectdir,'phantom_slu_mask_20160113.nii.gz')
 vialOrder = [str(v) for v in vialNumbersByAscendingT1 if v in range(7, 18+1)]
+
+## model_pipeline
+targetdate = datetime.date(2016, 3, 2)
+expected = modelForDate(targetdate, 'slu')[vialOrder]
 
 ## par2nii
 niftiDict = convertSubjectParfiles(subject, subjectdir)
