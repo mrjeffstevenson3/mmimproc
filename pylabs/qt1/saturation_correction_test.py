@@ -1,14 +1,16 @@
 from __future__ import division
-import collections, numpy, glob, datetime
+import collections, numpy, glob, datetime, pandas
 from numpy import cos, sin, exp, tan
 import matplotlib.pyplot as plt
-from os.path import join
+from os.path import join, isfile
 from scipy.optimize import curve_fit
 from niprov import Context
 from pylabs.utils.paths import getlocaldataroot
+from pylabs.conversion.helpers import convertSubjectParfiles
 from pylabs.qt1.fitting import spgrformula
-from pylabs.qt1.model_pipeline import calculate_model
-from pylabs.regional import statsByRegion
+from pylabs.qt1.model_pipeline import modelForDate
+from pylabs.qt1.vials import vialNumbersByAscendingT1
+from pylabs.regional import averageByRegion
 from pylabs.correlation.atlas import atlaslabels
 from pylabs.alignment.phantom import alignAndSave
 provenance = Context()
@@ -18,33 +20,36 @@ def frac_sat(a, TR, T1):
 
 ## model_pipeline
 targetdate = datetime.date(2016, 3, 2)
-expected = calculate_model('slu')[targetdate]
+expected = modelForDate(targetdate, 'slu')
 
-## data
+## settings
 fs = getlocaldataroot()
 projectdir = join(fs, 'phantom_qT1_slu')
 subject = 'sub-phant2016-03-02'
+subjectdir = join(projectdir, subject)
 anatdir = join(projectdir, subject, 'anat')
-anglefiles = sorted(glob.glob(join(anatdir,'*14*1.nii')))
-X = numpy.radians([7,10,15,20,30])
+alignmentTarget = join(projectdir, 'phantom_alignment_target.nii.gz')
+vialAtlas = join(projectdir,'phantom_slu_mask_20160113.nii.gz')
+vialOrder = [str(v) for v in vialNumbersByAscendingT1 if v in range(7, 18+1)]
 
-### coregistration
-ref = join(projectdir, 'phantom_alignment_target.nii.gz')
-aligned = [alignAndSave(f, ref, provenance=provenance) for f in anglefiles]
+## par2nii
+niftiDict = convertSubjectParfiles(subject, subjectdir)
 
-## atlassing
-atlasfname = 'phantom_slu_mask_20160113.nii.gz'
-atlasfpath = join(projectdir,atlasfname)
-labels = atlaslabels(atlasfname)
-indexOf15 = labels.index('15')
+## align and sample flip-angle files
+data = pandas.DataFrame()
+alphafiles = sorted(glob.glob(join(anatdir,'*14*1.nii')))
+for alphafile in alphafiles:
+    alignedAlphafile = alphafile.replace('.nii', '_coreg.nii')
+    if not isfile(alignedAlphafile):
+        alignAndSave(alphafile, alignmentTarget, newfile=alignedAlphafile, 
+            provenance=provenance)
+    vialAverages = averageByRegion(alignedAlphafile, vialAtlas)
+    alpha = provenance.get(forFile=alignedAlphafile).provenance['flip-angle']
+    data[alpha] = vialAverages
 
-YRegionalData = []
-for fpath in anglefiles:
-    YRegionalData.append(samplevials(fpath))
-
-Y = [stats['average'][indexOf15] for stats in YRegionalData]
-
-Y = numpy.array(Y)
+data = data.loc[vialOrder]
+#X = numpy.radians([7,10,15,20,30])
+#Y = numpy.array(Y)
 
 
 ## minimize signal loss formula 
