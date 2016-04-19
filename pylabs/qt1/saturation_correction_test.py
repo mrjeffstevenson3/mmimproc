@@ -59,7 +59,7 @@ data = data.loc[vialOrder]
 ## fit curve to signall loss vs T1
 
 ### fitting
-#TR = 14.0
+TR = provenance.get(forFile=alphafile).provenance['repetition-time']
 ##ai = 15*Y.max()  # S0
 #ai = Y.max()/sin(X[1])
 #bi = 1000           # T1
