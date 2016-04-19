@@ -74,7 +74,7 @@ def savetransformed(subjectfile, xform, newfile, newAffine):
     xformdata = transform(indata, xform['tx'], xform['ty'], xform['rxy'])
     nibabel.save(nibabel.Nifti1Image(xformdata, newAffine), newfile)
 
-def alignAndSave(subjectfile, targetfile, newfile=None, provenance=None)
+def alignAndSave(subjectfile, targetfile, newfile=None, provenance=None):
     if not provenance:
         provenance = niprov.Context()
     if not newfile:
