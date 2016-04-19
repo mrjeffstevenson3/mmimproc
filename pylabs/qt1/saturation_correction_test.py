@@ -1,9 +1,9 @@
 from __future__ import division
 import collections, numpy, glob, datetime, pandas
-from numpy import cos, sin, exp, tan
+import scipy.optimize as optimize
+from numpy import cos, sin, exp, tan, radians
 import matplotlib.pyplot as plt
 from os.path import join, isfile
-from scipy.optimize import curve_fit
 from niprov import Context
 from pylabs.utils.paths import getlocaldataroot
 from pylabs.conversion.helpers import convertSubjectParfiles
@@ -15,9 +15,6 @@ from pylabs.correlation.atlas import atlaslabels
 from pylabs.alignment.phantom import alignAndSave
 provenance = Context()
 
-def frac_sat(a, TR, T1):
-    return round(((1-cos(a))*exp(-TR/T1))/(1-(cos(a)*exp(-TR/T1))), 5)
-
 ## settings
 fs = getlocaldataroot()
 projectdir = join(fs, 'phantom_qT1_slu')
@@ -26,14 +23,15 @@ subjectdir = join(projectdir, subject)
 anatdir = join(projectdir, subject, 'anat')
 alignmentTarget = join(projectdir, 'phantom_alignment_target.nii.gz')
 vialAtlas = join(projectdir,'phantom_slu_mask_20160113.nii.gz')
-vialOrder = [str(v) for v in vialNumbersByAscendingT1 if v in range(7, 18+1)]
+usedVials = range(7, 18+1)
+vialOrder = [str(v) for v in vialNumbersByAscendingT1 if v in usedVials]
 
 ## model_pipeline
 targetdate = datetime.date(2016, 3, 2)
 expected = modelForDate(targetdate, 'slu')[vialOrder]
 
 ## par2nii
-niftiDict = convertSubjectParfiles(subject, subjectdir)
+#niftiDict = convertSubjectParfiles(subject, subjectdir)
 
 ## align and sample flip-angle files
 data = pandas.DataFrame()
@@ -48,35 +46,35 @@ for alphafile in alphafiles:
     data[alpha] = vialAverages
 
 data = data.loc[vialOrder]
-#X = numpy.radians([7,10,15,20,30])
-#Y = numpy.array(Y)
 
+
+TR = provenance.get(forFile=alphafile).provenance['repetition-time']
+alpha = numpy.radians(15.0)
 
 ## minimize signal loss formula 
-## fit once, get estimated S0
-## from this we can adjust S0 and and fit.
-## plot signal loss vs vial
-## fit curve to signall loss vs T1
+def fracsat(T1, a, TR):
+    return ( (1-cos(a)) * exp(-TR/T1) ) / ( 1 - ( cos(a) * exp(-TR/T1) ))
+res = optimize.fminbound(fracsat, 500, 2500, args=(alpha, TR))
 
 ### fitting
-TR = provenance.get(forFile=alphafile).provenance['repetition-time']
-##ai = 15*Y.max()  # S0
-#ai = Y.max()/sin(X[1])
-#bi = 1000           # T1
-#p0=[ai, bi]
-#spgrformula.TR = TR
-#formula = spgrformula
-
-#popt, pcov = curve_fit(formula, X, Y, p0=p0)
-#T1 = popt[1]
+def spgrformula(a, S0, T1):
+    TR = spgrformula.TR
+    return S0 * ((1-exp(-TR/T1))/(1-cos(a)*exp(-TR/T1))) * sin(a)
+spgrformula.TR = TR
+A = radians(data.columns.values)
+T1i = 1000
+fit = pandas.Series()
+for v in vialOrder:
+    Sa = data.loc[v].values
+    S0i = 15*Sa.max()
+    popt, pcov = optimize.curve_fit(spgrformula, A, Sa, p0=[S0i, T1i])
+    fit[v] = popt[1]
 
 #y = Y/sin(X)
 #m = exp(-TR/T1)
 #x = Y/tan(X)
 #b = S0*(1-m)
 #y = mx+b
-
-
 
 ### sat
 #for x, y in zip(X,Y):
@@ -92,33 +90,7 @@ TR = provenance.get(forFile=alphafile).provenance['repetition-time']
 #plt.plot(Xrange, sat*10000) 
 #plt.show()
 
-##def func(x):
-##    return (x - 2) * (x + 2)**2
 
-##def func2(x):
-##    return (x - 2) * x * (x + 2)**2
-
-##min = 0
-##max = 1
-
-##res1 = optimize.fminbound(func, min, max)
-##res2 = optimize.minimize_scalar(func, bounds=(min,max))
-##res3 = optimize.fminbound(func2, min, max)
-##res4 = optimize.minimize_scalar(func2, bounds=(min,max))
-
-##print res1, res2.x
-##print res3, res4.x
-
-##import matplotlib.pyplot as plt
-##import numpy as np
-
-##xaxis = np.arange(-15,15)
-
-##plt.plot(xaxis, func(xaxis))
-##plt.plot(xaxis, func2(xaxis))
-##plt.scatter(res2.x, res2.fun)
-##plt.scatter(res4.x, res4.fun)
-##plt.show()
 
 
 
