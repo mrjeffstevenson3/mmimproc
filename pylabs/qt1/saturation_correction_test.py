@@ -13,6 +13,7 @@ from pylabs.qt1.vials import vialNumbersByAscendingT1
 from pylabs.regional import averageByRegion
 from pylabs.correlation.atlas import atlaslabels
 from pylabs.alignment.phantom import alignAndSave
+from pylabs.stats import ScaledPolyfit
 provenance = Context()
 
 ## settings
@@ -77,8 +78,7 @@ for TRselector in [14,28]:
         sloss.loc[v] = fracsat(A, TR, expected.loc[v])
 
     ## Fit correction curve
-    p = numpy.polyfit(expected, diff, 6)
-    correctionCurve = numpy.poly1d(p)
+    correctionCurve = ScaledPolyfit(expected, diff, 2)
 
     ## plotting
     plt.figure()
@@ -91,8 +91,7 @@ for TRselector in [14,28]:
     sloss.transpose().plot.line() ## (loglog=True) This is Tofts fig 4.9
     plt.savefig('fracsat_tofts_TR{}.png'.format(TR))
     plt.figure()
-    t1space = numpy.linspace(expected.min()-100, expected.max()+100, 200)
-    plt.plot(expected, diff, 'bo', t1space, correctionCurve(t1space))
+    correctionCurve.plot()
     plt.savefig('corr_curve_TR{}.png'.format(TR))
 
     ### Calculate new signal based on model T1
