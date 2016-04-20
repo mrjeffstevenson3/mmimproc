@@ -44,7 +44,6 @@ for alphafile in alphafiles:
     vialAverages = averageByRegion(alignedAlphafile, vialAtlas)
     alpha = provenance.get(forFile=alignedAlphafile).provenance['flip-angle']
     data[alpha] = vialAverages
-
 data = data.loc[vialOrder]
 
 ### fitting
@@ -62,16 +61,23 @@ for v in vialOrder:
     popt, pcov = optimize.curve_fit(spgrformula, A, Sa, p0=[S0i, T1i])
     fit[v] = popt[1]
 
-#y = Y/sin(X)
-#m = exp(-TR/T1)
-#x = Y/tan(X)
-#b = S0*(1-m)
-#y = mx+b
+## Calculate theoretical signal loss
+def fracsat(a, TR, T1):
+    return ((1-cos(a))*exp(-TR/T1))/(1-(cos(a)*exp(-TR/T1)))
+sloss = pandas.DataFrame(index=vialOrder, columns=data.columns)
+for v in vialOrder:
+    sloss.loc[v] = fracsat(A, TR, expected.loc[v])
 
-### sat
-#for x, y in zip(X,Y):
-#    fsat = frac_sat(x, TR, T1)
-#    print((x, y, fsat))
+## plotting
+plt.figure()
+pandas.DataFrame({'expected': expected, 'observed':fit}).plot.bar()
+plt.savefig('exp_vs_obs_TR{}.png'.format(TR))
+plt.figure()
+((fit-expected)/expected).plot.line()
+plt.savefig('T1_difference_TR{}.png'.format(TR))
+plt.figure()
+sloss.transpose().plot.line() ## (loglog=True) This is Tofts fig 4.9
+plt.savefig('fracsat_tofts_TR{}.png'.format(TR))
 
 ### plot
 #Xrange = numpy.radians(numpy.arange(200))
@@ -81,6 +87,13 @@ for v in vialOrder:
 #plt.plot(X, Y, 'bo')
 #plt.plot(Xrange, sat*10000) 
 #plt.show()
+
+
+### Calculate new signal based on model T1
+#corrdata = pandas.DataFrame(index=vialOrder, columns=data.columns)
+#S0fit = popt[0]
+#for v in vialOrder:
+#    corrdata.loc[v] = spgrformula(A, S0, expected.loc[v])
 
 
 
