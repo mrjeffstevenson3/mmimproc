@@ -23,6 +23,7 @@ subject = 'sub-phant2016-03-02'
 subjectdir = join(projectdir, subject)
 anatdir = join(projectdir, subject, 'anat')
 alignmentTarget = join(projectdir, 'phantom_flipangle_alignment_target.nii')
+b1alignmentTarget = join(projectdir, 'phantom_b1map_alignment_target.nii')
 vialAtlas = join(projectdir,'phantom_slu_mask_20160113.nii.gz')
 usedVials = range(7, 18+1)
 vialOrder = [str(v) for v in vialNumbersByAscendingT1 if v in usedVials]
@@ -39,10 +40,13 @@ for TRselector in [14,28]:
     ## Gather files
     alphafiles = sorted(glob.glob(join(anatdir,'*{}*1.nii'.format(TRselector))))
     TR = provenance.get(forFile=alphafiles[0]).provenance['repetition-time']
+    b1file = join(subjectdir, 'fmap', '{}_b1map_phase_1.nii'.format(subject))
+    alignedB1file = alignAndSave(b1file, b1alignmentTarget, 
+        provenance=provenance)
+    B1 = averageByRegion(alignedB1file, vialAtlas).loc[vialOrder]
 
     ## align and sample flip-angle files
     adata = pandas.DataFrame()
-
     for alphafile in alphafiles:
         alignedAlphafile = alphafile.replace('.nii', '_coreg.nii')
         if not isfile(alignedAlphafile):
@@ -64,7 +68,8 @@ for TRselector in [14,28]:
     for v in vialOrder:
         Sa = adata.loc[v].values
         S0i = 15*Sa.max()
-        popt, pcov = optimize.curve_fit(spgrformula, A, Sa, p0=[S0i, T1i])
+        Ab1 = A*(B1[v]/100)
+        popt, pcov = optimize.curve_fit(spgrformula, Ab1, Sa, p0=[S0i, T1i])
         fit[v] = popt[1]
 
     ## Observed T1 difference
