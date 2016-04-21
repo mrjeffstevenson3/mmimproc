@@ -23,9 +23,6 @@ subjectsByTR = {14.0:datetime.date(2016, 3, 2),
                 28.0:datetime.date(2016, 3, 2), 
                 56.0:datetime.date(2016, 3, 11)}
 
-subjectdir = join(projectdir, subject)
-anatdir = join(projectdir, subject, 'anat')
-
 alignmentTarget = join(projectdir, 'phantom_flipangle_alignment_target.nii')
 b1alignmentTarget = join(projectdir, 'phantom_b1map_alignment_target.nii')
 vialAtlas = join(projectdir,'phantom_slu_mask_20160113.nii.gz')
@@ -41,7 +38,7 @@ corrfit = pandas.DataFrame(columns=TRs, index=vialOrder)
 curves = {}
 for TR in TRs:
     date = subjectsByTR[TR]
-    subject = 'sub-phant'+date
+    subject = 'sub-phant'+str(date)
     subjectdir = join(projectdir, subject)
 
     ## par2nii
@@ -51,8 +48,8 @@ for TR in TRs:
     expected[TR] = modelForDate(date, 'slu')[vialOrder]
 
     ## Gather files
-    alphafilter = '*{}*1.nii'.format(int(TR)))
-    alphafiles = sorted(glob.glob(join(subjectdir,'anat',alphafilter))
+    alphafilter = '*{}*1.nii'.format(int(TR))
+    alphafiles = sorted(glob.glob(join(subjectdir,'anat',alphafilter)))
     assert TR == provenance.get(forFile=alphafiles[0]).provenance['repetition-time']
     b1file = join(subjectdir, 'fmap', '{}_b1map_phase_1.nii'.format(subject))
     alignedB1file = b1file.replace('.nii', '_coreg.nii')
