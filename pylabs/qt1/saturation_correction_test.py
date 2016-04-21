@@ -34,7 +34,12 @@ expected = modelForDate(targetdate, 'slu')[vialOrder]
 
 ## par2nii
 #niftiDict = convertSubjectParfiles(subject, subjectdir)
-
+TRs = [14,28]
+adata = {}
+fit = pandas.DataFrame(columns=TRs, index=vialOrder)
+diff = pandas.DataFrame(columns=TRs, index=vialOrder)
+corrfit = pandas.DataFrame(columns=TRs, index=vialOrder)
+curves = {}
 for TRselector in [14,28]:
 
     ## Gather files
@@ -48,7 +53,7 @@ for TRselector in [14,28]:
     B1 = averageByRegion(alignedB1file, vialAtlas).loc[vialOrder]
 
     ## align and sample flip-angle files
-    adata = pandas.DataFrame()
+    adata[TR] = pandas.DataFrame()
     for alphafile in alphafiles:
         alignedAlphafile = alphafile.replace('.nii', '_coreg.nii')
         if not isfile(alignedAlphafile):
@@ -56,67 +61,60 @@ for TRselector in [14,28]:
                 provenance=provenance)
         vialAverages = averageByRegion(alignedAlphafile, vialAtlas)
         alpha = provenance.get(forFile=alignedAlphafile).provenance['flip-angle']
-        adata[alpha] = vialAverages
-    adata = adata.loc[vialOrder]
+        adata[TR][alpha] = vialAverages
+    adata[TR] = adata[TR].loc[vialOrder]
 
     ### fitting
     def spgrformula(a, S0, T1):
         TR = spgrformula.TR
         return S0 * ((1-exp(-TR/T1))/(1-cos(a)*exp(-TR/T1))) * sin(a)
     spgrformula.TR = TR
-    A = radians(adata.columns.values)
+    A = radians(adata[TR].columns.values)
     T1i = 1000
-    fit = pandas.Series()
     for v in vialOrder:
-        Sa = adata.loc[v].values
+        Sa = adata[TR].loc[v].values
         S0i = 15*Sa.max()
         Ab1 = A*(B1[v]/100)
         popt, pcov = optimize.curve_fit(spgrformula, Ab1, Sa, p0=[S0i, T1i])
-        fit[v] = popt[1]
+        fit[TR][v] = popt[1]
 
     ## Observed T1 difference
-    diff = (fit-expected)/expected
+    diff[TR] = (fit[TR]-expected)/expected
 
     ## Calculate theoretical signal loss and corrected fit
     def fracsat(a, TR, T1):
         return ((1-cos(a))*exp(-TR/T1))/(1-(cos(a)*exp(-TR/T1)))
-    sloss = pandas.DataFrame(index=vialOrder, columns=adata.columns, dtype=float)
+    sloss = pandas.DataFrame(index=vialOrder, columns=adata[TR].columns, dtype=float)
     for v in vialOrder:
         sloss.loc[v] = fracsat(A, TR, expected.loc[v])
-    corrdata = adata/(1-(sloss*cos(A))) # B1 or not
-    corrfit = pandas.Series()
+    corrdata = adata[TR]/(1-(sloss*sin(A))) # B1 or not
     for v in vialOrder:
         Sa = corrdata.loc[v].values
         S0i = 15*Sa.max()
         Ab1 = A*(B1[v]/100)
         popt, pcov = optimize.curve_fit(spgrformula, Ab1, Sa, p0=[S0i, T1i])
-        corrfit[v] = popt[1]
+        corrfit[TR][v] = popt[1]
 
     ## Fit correction curve
-    correctionCurve = ScaledPolyfit(expected, diff, 2)
+    curves[TR] = ScaledPolyfit(expected, diff[TR], 2)
 
     ## plotting
     plt.figure()
-    pandas.DataFrame({'expected': expected, 'observed':fit}).plot.bar()
+    pandas.DataFrame({'expected': expected, 'observed':fit[TR]}).plot.bar()
     plt.savefig('exp_vs_obs_TR{}.png'.format(TR))
     plt.figure()
-    diff.plot.line()
+    diff[TR].plot.line()
     plt.savefig('T1_difference_TR{}.png'.format(TR))
     plt.figure()
     sloss.transpose().plot.line() ## (loglog=True) This is Tofts fig 4.9
     plt.savefig('fracsat_tofts_TR{}.png'.format(TR))
     plt.figure()
-    correctionCurve.plot()
+    curves[TR].plot()
     plt.savefig('corr_curve_TR{}.png'.format(TR))
 
-    ### Calculate new signal based on model T1
-    #corrdata = pandas.DataFrame(index=vialOrder, columns=adata.columns)
-    #S0fit = popt[0]
-    #for v in vialOrder:
-    #    corrdata.loc[v] = spgrformula(A, S0, expected.loc[v])
+D = pandas.Panel(adata)
 
-slossCosA = sloss*cos(A)
-newdata = adata/(1.-slossCosA)
+
 
 
 
