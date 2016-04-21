@@ -41,8 +41,10 @@ for TRselector in [14,28]:
     alphafiles = sorted(glob.glob(join(anatdir,'*{}*1.nii'.format(TRselector))))
     TR = provenance.get(forFile=alphafiles[0]).provenance['repetition-time']
     b1file = join(subjectdir, 'fmap', '{}_b1map_phase_1.nii'.format(subject))
-    alignedB1file = alignAndSave(b1file, b1alignmentTarget, 
-        provenance=provenance)
+    alignedB1file = b1file.replace('.nii', '_coreg.nii')
+    if not isfile(alignedB1file):
+        alignedB1file = alignAndSave(b1file, b1alignmentTarget, newfile=alignedB1file,
+            provenance=provenance)
     B1 = averageByRegion(alignedB1file, vialAtlas).loc[vialOrder]
 
     ## align and sample flip-angle files
@@ -75,12 +77,20 @@ for TRselector in [14,28]:
     ## Observed T1 difference
     diff = (fit-expected)/expected
 
-    ## Calculate theoretical signal loss
+    ## Calculate theoretical signal loss and corrected fit
     def fracsat(a, TR, T1):
         return ((1-cos(a))*exp(-TR/T1))/(1-(cos(a)*exp(-TR/T1)))
-    sloss = pandas.DataFrame(index=vialOrder, columns=adata.columns)
+    sloss = pandas.DataFrame(index=vialOrder, columns=adata.columns, dtype=float)
     for v in vialOrder:
         sloss.loc[v] = fracsat(A, TR, expected.loc[v])
+    corrdata = adata/(1-(sloss*cos(A))) # B1 or not
+    corrfit = pandas.Series()
+    for v in vialOrder:
+        Sa = corrdata.loc[v].values
+        S0i = 15*Sa.max()
+        Ab1 = A*(B1[v]/100)
+        popt, pcov = optimize.curve_fit(spgrformula, Ab1, Sa, p0=[S0i, T1i])
+        corrfit[v] = popt[1]
 
     ## Fit correction curve
     correctionCurve = ScaledPolyfit(expected, diff, 2)
@@ -104,6 +114,9 @@ for TRselector in [14,28]:
     #S0fit = popt[0]
     #for v in vialOrder:
     #    corrdata.loc[v] = spgrformula(A, S0, expected.loc[v])
+
+slossCosA = sloss*cos(A)
+newdata = adata/(1.-slossCosA)
 
 
 
