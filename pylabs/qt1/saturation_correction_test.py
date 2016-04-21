@@ -19,32 +19,41 @@ provenance = Context()
 ## settings
 fs = getlocaldataroot()
 projectdir = join(fs, 'phantom_qT1_slu')
-subject = 'sub-phant2016-03-02'
+subjectsByTR = {14.0:datetime.date(2016, 3, 2),
+                28.0:datetime.date(2016, 3, 2), 
+                56.0:datetime.date(2016, 3, 11)}
+
 subjectdir = join(projectdir, subject)
 anatdir = join(projectdir, subject, 'anat')
+
 alignmentTarget = join(projectdir, 'phantom_flipangle_alignment_target.nii')
 b1alignmentTarget = join(projectdir, 'phantom_b1map_alignment_target.nii')
 vialAtlas = join(projectdir,'phantom_slu_mask_20160113.nii.gz')
 usedVials = range(7, 18+1)
 vialOrder = [str(v) for v in vialNumbersByAscendingT1 if v in usedVials]
 
-## model_pipeline
-targetdate = datetime.date(2016, 3, 2)
-expected = modelForDate(targetdate, 'slu')[vialOrder]
-
-## par2nii
-#niftiDict = convertSubjectParfiles(subject, subjectdir)
-TRs = [14,28]
+TRs = subjectsByTR.keys()
 adata = {}
+expected = pandas.DataFrame(columns=TRs, index=vialOrder)
 fit = pandas.DataFrame(columns=TRs, index=vialOrder)
 diff = pandas.DataFrame(columns=TRs, index=vialOrder)
 corrfit = pandas.DataFrame(columns=TRs, index=vialOrder)
 curves = {}
-for TRselector in [14,28]:
+for TR in TRs:
+    date = subjectsByTR[TR]
+    subject = 'sub-phant'+date
+    subjectdir = join(projectdir, subject)
+
+    ## par2nii
+    niftiDict = convertSubjectParfiles(subject, subjectdir)
+
+    ## model_pipeline
+    expected[TR] = modelForDate(date, 'slu')[vialOrder]
 
     ## Gather files
-    alphafiles = sorted(glob.glob(join(anatdir,'*{}*1.nii'.format(TRselector))))
-    TR = provenance.get(forFile=alphafiles[0]).provenance['repetition-time']
+    alphafilter = '*{}*1.nii'.format(int(TR)))
+    alphafiles = sorted(glob.glob(join(subjectdir,'anat',alphafilter))
+    assert TR == provenance.get(forFile=alphafiles[0]).provenance['repetition-time']
     b1file = join(subjectdir, 'fmap', '{}_b1map_phase_1.nii'.format(subject))
     alignedB1file = b1file.replace('.nii', '_coreg.nii')
     if not isfile(alignedB1file):
@@ -79,14 +88,14 @@ for TRselector in [14,28]:
         fit[TR][v] = popt[1]
 
     ## Observed T1 difference
-    diff[TR] = (fit[TR]-expected)/expected
+    diff[TR] = (fit[TR]-expected[TR])/expected[TR]
 
     ## Calculate theoretical signal loss and corrected fit
     def fracsat(a, TR, T1):
         return ((1-cos(a))*exp(-TR/T1))/(1-(cos(a)*exp(-TR/T1)))
     sloss = pandas.DataFrame(index=vialOrder, columns=adata[TR].columns, dtype=float)
     for v in vialOrder:
-        sloss.loc[v] = fracsat(A, TR, expected.loc[v])
+        sloss.loc[v] = fracsat(A, TR, expected[TR].loc[v])
     corrdata = adata[TR]/(1-(sloss*sin(A))) # B1 or not
     for v in vialOrder:
         Sa = corrdata.loc[v].values
@@ -96,11 +105,11 @@ for TRselector in [14,28]:
         corrfit[TR][v] = popt[1]
 
     ## Fit correction curve
-    curves[TR] = ScaledPolyfit(expected, diff[TR], 2)
+    curves[TR] = ScaledPolyfit(expected[TR], diff[TR], 2)
 
     ## plotting
     plt.figure()
-    pandas.DataFrame({'expected': expected, 'observed':fit[TR]}).plot.bar()
+    pandas.DataFrame({'expected': expected[TR], 'observed':fit[TR]}).plot.bar()
     plt.savefig('exp_vs_obs_TR{}.png'.format(TR))
     plt.figure()
     diff[TR].plot.line()
