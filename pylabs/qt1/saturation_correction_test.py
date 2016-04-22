@@ -1,5 +1,5 @@
 from __future__ import division
-import collections, numpy, glob, datetime, pandas
+import collections, numpy, glob, datetime, pandas, itertools
 import scipy.optimize as optimize
 from numpy import cos, sin, exp, tan, radians, power
 import matplotlib.pyplot as plt
@@ -37,6 +37,8 @@ diff = pandas.DataFrame(columns=TRs, index=vialOrder)
 corrfit = pandas.DataFrame(columns=TRs, index=vialOrder)
 curves = {}
 for TR in TRs:
+    if TR ==56:
+        continue
     date = subjectsByTR[TR]
     subject = 'sub-phant'+str(date)
     subjectdir = join(projectdir, subject)
@@ -88,23 +90,28 @@ for TR in TRs:
     diff[TR] = (fit[TR]-expected[TR])/expected[TR]
 
     ## Determine J for minimized model/observed diff
-    jmax = 3 # 32
+    jmax = 20 # 32
     TE = 4.6
     jvals = numpy.arange(jmax)+1
     jcombs = list(itertools.combinations_with_replacement(jvals, 5))
-    jtr = pandas.DataFrame()
+    J[TR] = pandas.DataFrame(index=vialOrder, columns=['j','mindiff'], dtype=object)
     for v in vialOrder:
         SaUncor = adata[TR].loc[v].values
         Ab1 = A*(B1[v]/100)
         t1 = expected[TR][v]
-        opt = pandas.Series(index=jcombs)
+        diffByJcomb = pandas.Series(index=jcombs)
         for jcomb in jcombs:
             losses = approachSS(numpy.array(jcomb), t1, A, TR, TE)
             Sa = SaUncor*(1-losses)
             S0i = 15*Sa.max()
-            popt, pcov = optimize.curve_fit(spgrformula, Ab1, Sa, p0=[S0i, T1i])
-            opt[jcomb] = (popt[1]-t1)/t1
-        jtr[v] = opt.argmin()
+            try:
+                popt, pcov = optimize.curve_fit(spgrformula, Ab1, Sa, p0=[S0i, T1i])
+            except RuntimeError:
+                continue
+            diffByJcomb[jcomb] = abs((popt[1]-t1)/t1)
+        jopt = diffByJcomb.argmin(skipna=True)
+        J[TR]['j'][v] = jopt
+        J[TR]['mindiff'][v] = diffByJcomb[jopt]
 
     ## Fit correction curve
     curves[TR] = ScaledPolyfit(expected[TR], diff[TR], 2)
@@ -116,9 +123,6 @@ for TR in TRs:
     plt.figure()
     diff[TR].plot.line()
     plt.savefig('T1_difference_TR{}.png'.format(TR))
-    plt.figure()
-    sloss.transpose().plot.line() ## (loglog=True) This is Tofts fig 4.9
-    plt.savefig('fracsat_tofts_TR{}.png'.format(TR))
     plt.figure()
     curves[TR].plot()
     plt.savefig('corr_curve_TR{}.png'.format(TR))
