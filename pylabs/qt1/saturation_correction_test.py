@@ -71,13 +71,14 @@ for TR in TRs:
         alpha = provenance.get(forFile=alignedAlphafile).provenance['flip-angle']
         adata[TR][alpha] = vialAverages
     adata[TR] = adata[TR].loc[vialOrder]
+    alphas = adata[TR].columns.values.tolist()
 
     ### fitting
     def spgrformula(a, S0, T1):
         TR = spgrformula.TR
         return S0 * ((1-exp(-TR/T1))/(1-cos(a)*exp(-TR/T1))) * sin(a)
     spgrformula.TR = TR
-    A = radians(adata[TR].columns.values)
+    A = radians(alphas)
     T1i = 1000
     for v in vialOrder:
         Sa = adata[TR].loc[v].values
@@ -90,11 +91,11 @@ for TR in TRs:
     diff[TR] = (fit[TR]-expected[TR])/expected[TR]
 
     ## Determine J for minimized model/observed diff
-    jmax = 20 # 32
+    jmax = 5 # 32
     TE = 4.6
     jvals = numpy.arange(jmax)+1
     jcombs = list(itertools.combinations_with_replacement(jvals, 5))
-    J[TR] = pandas.DataFrame(index=vialOrder, columns=['j','mindiff'], dtype=object)
+    J[TR] = pandas.DataFrame(index=vialOrder, columns=['mindiff']+alphas, dtype=object)
     for v in vialOrder:
         SaUncor = adata[TR].loc[v].values
         Ab1 = A*(B1[v]/100)
@@ -109,8 +110,12 @@ for TR in TRs:
             except RuntimeError:
                 continue
             diffByJcomb[jcomb] = abs((popt[1]-t1)/t1)
+            if diffByJcomb[jcomb] < .01:
+                print('Convergence on TR {} and vial {}'.format(TR, v))
+                break
         jopt = diffByJcomb.argmin(skipna=True)
-        J[TR]['j'][v] = jopt
+        for jindex in range(len(jopt)):
+            J[TR][alphas[jindex]][v] = jopt[jindex]
         J[TR]['mindiff'][v] = diffByJcomb[jopt]
 
     ## Fit correction curve
