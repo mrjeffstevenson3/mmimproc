@@ -87,6 +87,19 @@ def alignAndSave(subjectfile, targetfile, newfile=None, provenance=None):
     provenance.log(newfile, 'coregistration phantom', [subjectfile, targetfile])
     return newfile
 
+def applyXformAndSave(xform, subjectfile, targetfile, newfile=None, 
+        provenance=None):
+    if not provenance:
+        provenance = niprov.Context()
+    if not newfile:
+        newfile = subjectfile.replace('.nii','_coreg.nii')
+    newAffine = nibabel.load(targetfile).get_affine()
+    indata = nibabel.load(subjectfile).get_data()
+    xformdata = transform(indata, xform['tx'], xform['ty'], xform['rxy'])
+    nibabel.save(nibabel.Nifti1Image(xformdata, newAffine), newfile)
+    provenance.log(newfile, 'coregistration phantom', [subjectfile, targetfile])
+    return newfile
+
 
 
 

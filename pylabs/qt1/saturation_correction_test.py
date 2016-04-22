@@ -12,7 +12,7 @@ from pylabs.qt1.model_pipeline import modelForDate
 from pylabs.qt1.vials import vialNumbersByAscendingT1
 from pylabs.qt1.formulas import approachSS
 from pylabs.regional import averageByRegion
-from pylabs.alignment.phantom import alignAndSave
+from pylabs.alignment.phantom import align, applyXformAndSave
 from pylabs.stats import ScaledPolyfit
 provenance = Context()
 
@@ -23,8 +23,7 @@ subjectsByTR = {14.0:datetime.date(2016, 3, 2),
                 28.0:datetime.date(2016, 3, 2), 
                 56.0:datetime.date(2016, 3, 11)}
 alignmentTarget = join(projectdir, 'phantom_flipangle_alignment_target.nii')
-b1alignmentTarget = join(projectdir, 'phantom_b1map_alignment_target.nii')
-vialAtlas = join(projectdir,'phantom_slu_mask_20160113.nii.gz')
+vialAtlas = join(projectdir,'phantom_alignment_target_round_mask.nii.gz')
 usedVials = range(7, 18+1)
 vialOrder = [str(v) for v in vialNumbersByAscendingT1 if v in usedVials]
 
@@ -49,24 +48,25 @@ for TR in TRs:
     ## model_pipeline
     expected[TR] = modelForDate(date, 'slu')[vialOrder]
 
-    ## Gather files
+    ## Gather files & align
     alphafilter = '*{}*1.nii'.format(int(TR))
     alphafiles = sorted(glob.glob(join(subjectdir,'anat',alphafilter)))
     assert TR == provenance.get(forFile=alphafiles[0]).provenance['repetition-time']
+    xform = align(alphafiles[0], alignmentTarget, delta=10)
+
+    ## b1 map
     b1file = join(subjectdir, 'fmap', '{}_b1map_phase_1.nii'.format(subject))
     alignedB1file = b1file.replace('.nii', '_coreg.nii')
-    if not isfile(alignedB1file):
-        alignedB1file = alignAndSave(b1file, b1alignmentTarget, newfile=alignedB1file,
-            provenance=provenance)
+    applyXformAndSave(xform, b1file, alignmentTarget, 
+        newfile=alignedB1file, provenance=provenance)
     B1 = averageByRegion(alignedB1file, vialAtlas).loc[vialOrder]
 
-    ## align and sample flip-angle files
+    ## transform and sample flip-angle files
     adata[TR] = pandas.DataFrame()
     for alphafile in alphafiles:
         alignedAlphafile = alphafile.replace('.nii', '_coreg.nii')
-        if not isfile(alignedAlphafile):
-            alignAndSave(alphafile, alignmentTarget, newfile=alignedAlphafile, 
-                provenance=provenance)
+        applyXformAndSave(xform, alphafile, alignmentTarget, 
+            newfile=alignedAlphafile, provenance=provenance)
         vialAverages = averageByRegion(alignedAlphafile, vialAtlas)
         alpha = provenance.get(forFile=alignedAlphafile).provenance['flip-angle']
         adata[TR][alpha] = vialAverages
@@ -91,7 +91,7 @@ for TR in TRs:
     diff[TR] = (fit[TR]-expected[TR])/expected[TR]
 
     ## Determine J for minimized model/observed diff
-    jmax = 5 # 32
+    jmax = 10 # 32
     TE = 4.6
     jvals = numpy.arange(jmax)+1
     jcombs = list(itertools.combinations_with_replacement(jvals, 5))
@@ -113,6 +113,8 @@ for TR in TRs:
             if diffByJcomb[jcomb] < .01:
                 print('Convergence on TR {} and vial {}'.format(TR, v))
                 break
+        else:
+            print('No convergence on TR {} and vial {}'.format(TR, v))
         jopt = diffByJcomb.argmin(skipna=True)
         for jindex in range(len(jopt)):
             J[TR][alphas[jindex]][v] = jopt[jindex]
@@ -133,4 +135,5 @@ for TR in TRs:
     plt.savefig('corr_curve_TR{}.png'.format(TR))
 
 D = pandas.Panel(adata)
+J = pandas.Panel(J)
 
