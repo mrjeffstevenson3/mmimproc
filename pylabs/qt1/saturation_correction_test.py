@@ -133,6 +133,11 @@ for TR in TRs:
     plt.figure()
     curves[TR].plot()
     plt.savefig('corr_curve_TR{}.png'.format(TR))
+    plt.figure()
+    J[TR].iloc[:,1:].plot.bar()
+    (diff[TR]*100).plot.line()
+    plt.savefig('corr_curve_TR{}.png'.format(TR))
+
 
 D = pandas.Panel(adata)
 J = pandas.Panel(J)
