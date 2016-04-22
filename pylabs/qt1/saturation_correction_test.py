@@ -1,7 +1,7 @@
 from __future__ import division
 import collections, numpy, glob, datetime, pandas
 import scipy.optimize as optimize
-from numpy import cos, sin, exp, tan, radians
+from numpy import cos, sin, exp, tan, radians, power
 import matplotlib.pyplot as plt
 from os.path import join, isfile
 from niprov import Context
@@ -10,8 +10,8 @@ from pylabs.conversion.helpers import convertSubjectParfiles
 from pylabs.qt1.fitting import spgrformula
 from pylabs.qt1.model_pipeline import modelForDate
 from pylabs.qt1.vials import vialNumbersByAscendingT1
+from pylabs.qt1.formulas import approachSS
 from pylabs.regional import averageByRegion
-from pylabs.correlation.atlas import atlaslabels
 from pylabs.alignment.phantom import alignAndSave
 from pylabs.stats import ScaledPolyfit
 provenance = Context()
@@ -22,7 +22,6 @@ projectdir = join(fs, 'phantom_qT1_slu')
 subjectsByTR = {14.0:datetime.date(2016, 3, 2),
                 28.0:datetime.date(2016, 3, 2), 
                 56.0:datetime.date(2016, 3, 11)}
-
 alignmentTarget = join(projectdir, 'phantom_flipangle_alignment_target.nii')
 b1alignmentTarget = join(projectdir, 'phantom_b1map_alignment_target.nii')
 vialAtlas = join(projectdir,'phantom_slu_mask_20160113.nii.gz')
@@ -31,6 +30,7 @@ vialOrder = [str(v) for v in vialNumbersByAscendingT1 if v in usedVials]
 
 TRs = subjectsByTR.keys()
 adata = {}
+J = {}
 expected = pandas.DataFrame(columns=TRs, index=vialOrder)
 fit = pandas.DataFrame(columns=TRs, index=vialOrder)
 diff = pandas.DataFrame(columns=TRs, index=vialOrder)
@@ -42,7 +42,7 @@ for TR in TRs:
     subjectdir = join(projectdir, subject)
 
     ## par2nii
-    niftiDict = convertSubjectParfiles(subject, subjectdir)
+    #niftiDict = convertSubjectParfiles(subject, subjectdir)
 
     ## model_pipeline
     expected[TR] = modelForDate(date, 'slu')[vialOrder]
@@ -87,19 +87,24 @@ for TR in TRs:
     ## Observed T1 difference
     diff[TR] = (fit[TR]-expected[TR])/expected[TR]
 
-    ## Calculate theoretical signal loss and corrected fit
-    def fracsat(a, TR, T1):
-        return ((1-cos(a))*exp(-TR/T1))/(1-(cos(a)*exp(-TR/T1)))
-    sloss = pandas.DataFrame(index=vialOrder, columns=adata[TR].columns, dtype=float)
+    ## Determine J for minimized model/observed diff
+    jmax = 3 # 32
+    TE = 4.6
+    jvals = numpy.arange(jmax)+1
+    jcombs = list(itertools.combinations_with_replacement(jvals, 5))
+    jtr = pandas.DataFrame()
     for v in vialOrder:
-        sloss.loc[v] = fracsat(A, TR, expected[TR].loc[v])
-    corrdata = adata[TR]/(1-(sloss*sin(A))) # B1 or not
-    for v in vialOrder:
-        Sa = corrdata.loc[v].values
-        S0i = 15*Sa.max()
+        SaUncor = adata[TR].loc[v].values
         Ab1 = A*(B1[v]/100)
-        popt, pcov = optimize.curve_fit(spgrformula, Ab1, Sa, p0=[S0i, T1i])
-        corrfit[TR][v] = popt[1]
+        t1 = expected[TR][v]
+        opt = pandas.Series(index=jcombs)
+        for jcomb in jcombs:
+            losses = approachSS(numpy.array(jcomb), t1, A, TR, TE)
+            Sa = SaUncor*(1-losses)
+            S0i = 15*Sa.max()
+            popt, pcov = optimize.curve_fit(spgrformula, Ab1, Sa, p0=[S0i, T1i])
+            opt[jcomb] = (popt[1]-t1)/t1
+        jtr[v] = opt.argmin()
 
     ## Fit correction curve
     curves[TR] = ScaledPolyfit(expected[TR], diff[TR], 2)
@@ -119,15 +124,4 @@ for TR in TRs:
     plt.savefig('corr_curve_TR{}.png'.format(TR))
 
 D = pandas.Panel(adata)
-
-
-
-
-
-
-
-
-
-
-
 
