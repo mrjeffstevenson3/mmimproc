@@ -2,11 +2,11 @@
 import sys, os, datetime
 import itertools
 from os.path import join as pathjoin
-import fnmatch, collections, datetime, cPickle, cloud
+import fnmatch, collections, datetime, cPickle
 import numpy as np
 import scipy.ndimage
 from dipy.segment.mask import median_otsu
-import scipy.ndimage.filters.median_filter as medianf
+import scipy.ndimage.filters as filter
 import nibabel
 import nibabel.parrec as pr
 import nibabel.nifti1 as nifti1
@@ -341,7 +341,7 @@ def phantom_midslice_par2mni(parfile, datadict, method, outdir=None, outfilename
         nimg_mm = nifti1.Nifti1Image(slice_mag_mni_mask, mni_affine, pr_hdr)
         nibabel.save(nimg_mm, outfilename+'_mag_1slmni_'+str(run)+'_mask.nii')
 
-    slice_mag_mni_mf = medianf(slice_mag_mni, size=5)
+    slice_mag_mni_mf = filter.median_filter(slice_mag_mni, size=5)
 
     nimg_m = nifti1.Nifti1Image(slice_mag_mni_mf, mni_affine, pr_hdr)
     nhdr_m = nimg_m.header
