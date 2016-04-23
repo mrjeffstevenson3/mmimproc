@@ -6,6 +6,7 @@ import fnmatch, collections, datetime, cPickle, cloud
 import numpy as np
 import scipy.ndimage
 from dipy.segment.mask import median_otsu
+import scipy.ndimage.filters.median_filter as medianf
 import nibabel
 import nibabel.parrec as pr
 import nibabel.nifti1 as nifti1
@@ -340,7 +341,9 @@ def phantom_midslice_par2mni(parfile, datadict, method, outdir=None, outfilename
         nimg_mm = nifti1.Nifti1Image(slice_mag_mni_mask, mni_affine, pr_hdr)
         nibabel.save(nimg_mm, outfilename+'_mag_1slmni_'+str(run)+'_mask.nii')
 
-    nimg_m = nifti1.Nifti1Image(slice_mag_mni, mni_affine, pr_hdr)
+    slice_mag_mni_mf = medianf(slice_mag_mni, size=5)
+
+    nimg_m = nifti1.Nifti1Image(slice_mag_mni_mf, mni_affine, pr_hdr)
     nhdr_m = nimg_m.header
     nhdr_m.set_data_dtype(out_dtype)
     nhdr_m.set_slope_inter(slope, intercept)
