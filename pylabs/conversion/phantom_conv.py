@@ -2,10 +2,11 @@
 import sys, os, datetime
 import itertools
 from os.path import join as pathjoin
-import fnmatch, collections, datetime, cPickle, cloud
+import fnmatch, collections, datetime, cPickle
 import numpy as np
 import scipy.ndimage
 from dipy.segment.mask import median_otsu
+import scipy.ndimage.filters as filter
 import nibabel
 import nibabel.parrec as pr
 import nibabel.nifti1 as nifti1
@@ -13,10 +14,10 @@ from nibabel.volumeutils import fname_ext_ul_case
 from nibabel.orientations import apply_orientation
 from nibabel.orientations import inv_ornt_aff
 from nibabel.orientations import io_orientation
-from niprov import Context
+import niprov
 from pylabs.utils._options import PylabsOptions
 opts = PylabsOptions()
-prov = Context()
+prov = niprov.Context()
 
 identity_matrix = np.eye(4)
 mni_affine = np.array([[-1, 0, 0, 90], [0, 1, 0, -126], [0, 0, 1, -72], [0, 0, 0, 1]])
@@ -339,7 +340,9 @@ def phantom_midslice_par2mni(parfile, datadict, method, outdir=None, outfilename
         nimg_mm = nifti1.Nifti1Image(slice_mag_mni_mask, mni_affine, pr_hdr)
         nibabel.save(nimg_mm, outfilename+'_mag_1slmni_'+str(run)+'_mask.nii')
 
-    nimg_m = nifti1.Nifti1Image(slice_mag_mni, mni_affine, pr_hdr)
+    slice_mag_mni_mf = filter.median_filter(slice_mag_mni, size=5)
+
+    nimg_m = nifti1.Nifti1Image(slice_mag_mni_mf, mni_affine, pr_hdr)
     nhdr_m = nimg_m.header
     nhdr_m.set_data_dtype(out_dtype)
     nhdr_m.set_slope_inter(slope, intercept)

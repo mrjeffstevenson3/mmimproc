@@ -30,7 +30,7 @@ def plotT1Timeseries(dates, data, labels, title, dtype=None, secondaryData=None,
 
 def atlasPhantoms(images, expectedByDate, projectdir, dirstruct='BIDS'):
 
-    atlasfname = 'phantom_slu_mask_20160113.nii.gz'
+    atlasfname = 'phantom_alignment_target_round_mask.nii.gz'
     atlasfpath = join(projectdir,atlasfname)
 
     ### Gather data by vial
