@@ -54,12 +54,12 @@ def phantom_B1_midslice_par2mni(parfile, datadict, outdir=None, outfilename=None
     pr_hdr = pr_img.header
     flipangle = int(pr_hdr.image_defs['image_flip_angle'][0])
     ti = int(round(pr_hdr.image_defs['Inversion delay'][0], -1))
-    tr = pr_hdr.general_info['repetition_time']
+    tr = pr_hdr.general_info['repetition_time'][0]
     fov = pr_hdr.general_info['fov'][0]
     spacing = pr_hdr.image_defs['pixel spacing'][0][0]
 
     if tr > 100:
-        tr = int(round(pr_hdr.general_info['repetition_time'], -1))
+        tr = int(round(pr_hdr.general_info['repetition_time'][0], -1))
     if ti == 0.0:
         contrast = flipangle
     else:
@@ -228,11 +228,11 @@ def phantom_midslice_par2mni(parfile, datadict, method, outdir=None, outfilename
     pr_hdr = pr_img.header
     flipangle = int(pr_hdr.image_defs['image_flip_angle'][0])
     ti = int(round(pr_hdr.image_defs['Inversion delay'][0], -1))
-    tr = pr_hdr.general_info['repetition_time']
+    tr = pr_hdr.general_info['repetition_time'][0]
     fov = pr_hdr.general_info['fov'][0]
     spacing = pr_hdr.image_defs['pixel spacing'][0][0]
     if tr > 100:
-        tr = int(round(pr_hdr.general_info['repetition_time'], -1))
+        tr = int(round(pr_hdr.general_info['repetition_time'][0], -1))
     if ti == 0.0:
         contrast = flipangle
         outfilename += '_fa_'+str(flipangle).zfill(2)
