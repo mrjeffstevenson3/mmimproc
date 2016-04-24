@@ -33,7 +33,7 @@ for parfile in parfiles:
         args['method'] = method
         args['outdir'] = join(subjectdir, 'anat')
         par2mni = phantom_midslice_par2mni
-    elif 'B1' in parfile and 'fixed' in parfile:
+    elif 'B1' in parfile:
         method = 'b1map'
         args['scaling'] = 'dv'
         args['outdir'] = join(subjectdir, 'fmap')
@@ -59,8 +59,7 @@ for key in niftiDict:
         combinations = list(itertools.combinations(allAngles, 3))
         xdict[key] = combinations
 
-t1images = fitPhantoms(niftiDict, projectdir=projectdir, xdict=xdict, 
-    skipExisting=True)
+t1images = fitPhantoms(niftiDict, projectdir=projectdir)
 
 ## correspondence_phantoms: create special spgr/tseir ratio images
 createSpgrTseirCorrespondenceImages(t1images, projectdir=projectdir)
