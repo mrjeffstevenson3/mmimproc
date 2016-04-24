@@ -14,7 +14,9 @@ from pylabs.qt1.correspondence_phantoms import createSpgrTseirCorrespondenceImag
 
 fs = getlocaldataroot()
 projectdir = join(fs, 'phantom_qT1_slu')
-subj = 'sub-phant2016-01-13'
+subjects = ['phantom_qT1_20160302', 'phantom_qT1_20160311']
+#subj = 'sub-phant2016-01-13'
+subj = subjects[0]
 subjectdir = join(projectdir, subj)
 
 ## convert parrecs to nifti
@@ -22,11 +24,11 @@ niftiDict = collections.defaultdict(list)
 parfiles = sortedParGlob(join(subjectdir, 'source_parrec/*.PAR'))
 for parfile in parfiles:
     args = {}
-    if 'SPGR' in parfile or 'IRTSE' in parfile:
+    if 'SPGR' in parfile or '_IR' in parfile:
         if 'SPGR' in parfile:
             method = 'orig_spgr'
         else:
-            method = 'tseir'
+            method = 'seir'
         args['scaling'] = 'fp'
         args['method'] = method
         args['outdir'] = join(subjectdir, 'anat')
@@ -40,8 +42,8 @@ for parfile in parfiles:
         continue
     args['parfile'] = parfile
     args['datadict'] = niftiDict
-    args['flipexception'] = ['']
-    args['protoexception'] = ['20160113']
+    #args['flipexception'] = ['']
+    #args['protoexception'] = ['20160113']
     args['outfilename'] = subj+'_'+method
     key, val = par2mni(**args)
     for k, v in zip(key, val):
