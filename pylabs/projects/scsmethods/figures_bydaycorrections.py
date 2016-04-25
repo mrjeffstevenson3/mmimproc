@@ -4,6 +4,7 @@ from os.path import join
 from pylabs.utils.paths import getlocaldataroot
 from pylabs.qt1.correction import CorrectionFactor
 from niprov import Context as ProvenanceContext
+from pylabs.qt1.temperaturedata import getSessionRecords
 provenance = ProvenanceContext()
 from pylabs.correlation.atlas import atlaslabels
 from pylabs.qt1.vials import vialNumbersByAscendingT1
@@ -17,7 +18,7 @@ del vials[vials.index('18')]
 rootdir = join(getlocaldataroot(),'self_control','hbm_group_data','qT1')
 method = ('orig_spgr_mag', 14.0, True)
 
-## Table 1: Vial average
+## Gather data
 coreg = True
 coregtag = {True:'coreg',False:'nocoreg'}[coreg]
 datafilepath = 'data/t1_factordata_{0}.pickle'.format(coregtag)
@@ -33,10 +34,15 @@ data = pandas.Panel(data)
 data['diff'] = data['observed']-data['model']
 data['%'] = data['diff']/data['model']*100
 
+## Temperature
+sessions = getSessionRecords('disc')
+temps = pandas.Series({d:sessions[d].averageTemperature() for d in dates})
 
 
 ## Table 1: Vial average export
 vialAverage = data.mean(axis=2)
+vialAverage.insert(0, 'temperature', temps)
+vialAverage = vialAverage.round(2)
 content = vialAverage.to_latex()
 header = "\documentclass[12pt]{article}\n\\usepackage{booktabs}\n\\begin{document}\n"
 footer = "\end{document}"
