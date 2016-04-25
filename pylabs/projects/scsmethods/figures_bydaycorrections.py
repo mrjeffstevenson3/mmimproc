@@ -1,5 +1,5 @@
 from __future__ import print_function
-import os, glob, nibabel
+import os, glob, numpy, pandas, pickle
 from os.path import join
 from pylabs.utils.paths import getlocaldataroot
 from pylabs.qt1.correction import CorrectionFactor
@@ -8,7 +8,23 @@ from niprov import Context as ProvenanceContext
 provenance = ProvenanceContext()
 rootdir = join(getlocaldataroot(),'self_control','hbm_group_data','qT1')
 
+method = ('orig_spgr_mag', 14.0, True)
 
+coreg = True
+coregtag = {True:'coreg',False:'nocoreg'}[coreg]
+datafilepath = 'data/t1_factordata_{0}.pickle'.format(coregtag)
+with open(datafilepath) as datafile:
+    allmethods = pickle.load(datafile)
+data = allmethods[method]
+vialAverage = pandas.DataFrame(index=data['dates'])
+for col in ['observed', 'model']:
+    vialAverage[col] = [numpy.array(d).mean() for d in data[col]]
+vialAverage['diff'] = vialAverage['observed']-vialAverage['model']
+vialAverage['%'] = vialAverage['diff']/vialAverage['model']*100
+
+
+factor = CorrectionFactor(method, coreg=True)
+factor.byNearestDate()
 
 
 ## determine date range
@@ -20,38 +36,12 @@ for subjectdir in glob.glob(join(rootdir, 'scs*')):
     acqdate = img.provenance['acquired'].date()
     subjects[subject] = acqdate
 
-factors = {}
-for b1corr in [True, False]:
-    method = ('orig_spgr_mag', 11.0, b1corr) 
-    factors[b1corr] = CorrectionFactor(method, coreg=True)
-    ## Choose either one of these:
-    #factors[b1corr].byNearestDate()
-    factors[b1corr].byDateRangeInterceptAndSlope(subjects.values())
-
-tabledata = {True:{}, False:{}}
-
 for subject in subjects.keys():
     acqdate = subjects[subject]
     print('Subject {0} data acquired {1}.'.format(subject, acqdate))
     subjectdir = join(rootdir, subject)
-    for b1corr in [True, False]: 
-        b1corrtag = {False:'',True:'_b1corr'}[b1corr]
-        factor = factors[b1corr]
-        rationalefilepath = outfile.replace('.nii.gz','.txt')
-        print('Applying correction factor to: '+targetfname)
-        x, rationale = factor.forDate(acqdate)
-        corrdata = origdata*x
-        with open(rationalefilepath, 'w') as logfile:
-            logfile.write(rationale)
-        tabledata[b1corr][subject] = x
+    rationalefilepath = outfile.replace('.nii.gz','.txt')
+    print('Applying correction factor to: '+targetfname)
+    x, rationale = factor.forDate(acqdate)
 
-
-for b1corr in [True, False]: 
-    tdata = tabledata[b1corr]
-    b1corrtag = {False:'',True:'_b1corr'}[b1corr]
-    tablefname = 'fcor_table_{0}{1}.tsv'.format(factors[b1corr].name, b1corrtag)
-    lines = ['{0}\t{1}'.format(s, tdata[s]) for s in tdata.keys()]
-    content = '\n'.join(lines)
-    with open(tablefname, 'w') as tablefile:
-        tablefile.write(content)
 
