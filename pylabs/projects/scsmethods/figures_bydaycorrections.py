@@ -1,7 +1,8 @@
 from __future__ import print_function
-import os, glob, numpy, pandas, pickle, latex
+import os, glob, numpy, pandas, pickle
 from os.path import join
 from pylabs.utils.paths import getlocaldataroot
+import pylabs.graphics.tables as tables
 from pylabs.qt1.correction import CorrectionFactor
 from niprov import Context as ProvenanceContext
 from pylabs.qt1.temperaturedata import getSessionRecords
@@ -38,19 +39,16 @@ data['%'] = data['diff']/data['model']*100
 sessions = getSessionRecords('disc')
 temps = pandas.Series({d:sessions[d].averageTemperature() for d in dates})
 
-
-## Table 1: Vial average export
+## Table 1A: Vial average
 vialAverage = data.mean(axis=2)
 vialAverage.insert(0, 'temperature', temps)
-vialAverage = vialAverage.round(2)
-content = vialAverage.to_latex()
-header = "\documentclass[12pt]{article}\n\\usepackage{booktabs}\n\\begin{document}\n"
-footer = "\end{document}"
-tabledoc = header + content + footer
-with open('table1.tex','w') as tablefile:
-    tablefile.write(tabledoc)
-pdf = latex.build_pdf(tabledoc)
-pdf.save_to('table1.pdf')
+tables.toLatexAndPdf(vialAverage.round(2), 'table1a')
+
+## Table 1B: Vial 7
+vial7 = data.minor_xs('7')
+vial7.insert(0, 'temperature', temps)
+tables.toLatexAndPdf(vial7.round(2), 'table1b')
+
 
 #factor = CorrectionFactor(method, coreg=True)
 #factor.byNearestDate()
