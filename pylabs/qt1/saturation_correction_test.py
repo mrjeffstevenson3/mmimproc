@@ -92,7 +92,7 @@ for TR in TRs:
     diff[TR] = (fit[TR]-expected[TR])/expected[TR]
 
     ## Determine J for minimized model/observed diff
-    jmax = 25 # 32
+    jmax = 10 # 32
     TE = 4.6
     jvals = numpy.arange(jmax)+1
     jcombs = list(itertools.combinations_with_replacement(jvals, 5))
@@ -103,8 +103,9 @@ for TR in TRs:
         t1 = expected[TR][v]
         diffByJcomb = pandas.Series(index=jcombs)
         for jcomb in jcombs:
+            baseloss = approachSS(numpy.ones((5)), t1, A, TR, TE)
             losses = approachSS(numpy.array(jcomb), t1, A, TR, TE)
-            Sa = SaUncor*(1-losses)
+            Sa = SaUncor+SaUncor*(baseloss-losses)
             S0i = 15*Sa.max()
             try:
                 popt, pcov = optimize.curve_fit(spgrformula, Ab1, Sa, p0=[S0i, T1i])
@@ -122,9 +123,9 @@ for TR in TRs:
         J[TR]['mindiff'][v] = diffByJcomb[jopt]
 
     ## J-based correction
-    convergedVials = J[14].loc[J[14]['mindiff'] < .01]
+    convergedVials = J[TR].loc[J[TR]['mindiff'] < .01]
     lower4AlphaMeanJ = convergedVials.iloc[:,1:5].mean().mean() 
-    a30Jdiff = convergedVials.iloc[-1,-1]-lower4AlphaMeanJ
+    a30Jdiff = numpy.array([7,9,11])-lower4AlphaMeanJ
     T1offset = expected[TR][convergedVials.index[0]]
     T1diff = expected[TR][convergedVials.index[-1]]-T1offset
     slopeJbyT1 = a30Jdiff / T1diff
@@ -132,10 +133,11 @@ for TR in TRs:
     for v in vialOrder:
         t1 = expected[TR][v]
         a30j = lower4AlphaMeanJ + (t1-T1offset)*slopeJbyT1
-        jvector = numpy.round(([lower4AlphaMeanJ]*4)+[a30j])
+        jvector = numpy.round(([lower4AlphaMeanJ]*2)+list(a30j))
+        baseloss = approachSS(numpy.ones((5)), t1, A, TR, TE)
         losses = approachSS(jvector, t1, A, TR, TE)
         SaUncor = adata[TR].loc[v].values
-        Sa = SaUncor*(1-losses)
+        Sa = SaUncor+SaUncor*(baseloss-losses)
         S0i = 15*Sa.max()
         Ab1 = A*(B1[v]/100)
         popt, pcov = optimize.curve_fit(spgrformula, Ab1, Sa, p0=[S0i, T1i])
