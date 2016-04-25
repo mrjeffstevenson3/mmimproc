@@ -1,5 +1,5 @@
 from __future__ import print_function
-import os, glob, numpy, pandas, pickle
+import os, glob, numpy, pandas, pickle, latex
 from os.path import join
 from pylabs.utils.paths import getlocaldataroot
 from pylabs.qt1.correction import CorrectionFactor
@@ -22,6 +22,14 @@ for col in ['observed', 'model']:
 vialAverage['diff'] = vialAverage['observed']-vialAverage['model']
 vialAverage['%'] = vialAverage['diff']/vialAverage['model']*100
 
+content = vialAverage.to_latex()
+header = "\documentclass[12pt]{article}\n\\usepackage{booktabs}\n\\begin{document}\n"
+footer = "\end{document}"
+tabledoc = header + content + footer
+with open('table1.tex','w') as tablefile:
+    tablefile.write(tabledoc)
+pdf = latex.build_pdf(tabledoc)
+pdf.save_to('table1.pdf')
 
 factor = CorrectionFactor(method, coreg=True)
 factor.byNearestDate()
