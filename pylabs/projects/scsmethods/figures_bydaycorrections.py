@@ -42,12 +42,12 @@ temps = pandas.Series({d:sessions[d].averageTemperature() for d in dates})
 ## Table 1A: Vial average
 vialAverage = data.mean(axis=2)
 vialAverage.insert(0, 'temperature', temps)
-tables.toLatexAndPdf(vialAverage.round(2), 'table1a')
+tables.toLatexAndPdf(vialAverage.round(2), 'table1a', tryImageMagickPNG=True)
 
 ## Table 1B: Vial 7
 vial7 = data.minor_xs('7')
 vial7.insert(0, 'temperature', temps)
-tables.toLatexAndPdf(vial7.round(2), 'table1b')
+tables.toLatexAndPdf(vial7.round(2), 'table1b', tryImageMagickPNG=True)
 
 
 #factor = CorrectionFactor(method, coreg=True)
