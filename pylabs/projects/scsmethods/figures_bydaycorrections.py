@@ -4,24 +4,37 @@ from os.path import join
 from pylabs.utils.paths import getlocaldataroot
 from pylabs.qt1.correction import CorrectionFactor
 from niprov import Context as ProvenanceContext
-
 provenance = ProvenanceContext()
-rootdir = join(getlocaldataroot(),'self_control','hbm_group_data','qT1')
+from pylabs.correlation.atlas import atlaslabels
+from pylabs.qt1.vials import vialNumbersByAscendingT1
+usedVials = range(7, 18+1)
+vialOrderT1 = [str(v) for v in vialNumbersByAscendingT1 if v in usedVials]
+atlasfname = 'phantom_slu_mask_20160113.nii.gz'
+vials = atlaslabels(atlasfname)
 
+rootdir = join(getlocaldataroot(),'self_control','hbm_group_data','qT1')
 method = ('orig_spgr_mag', 14.0, True)
 
+## Table 1: Vial average
 coreg = True
 coregtag = {True:'coreg',False:'nocoreg'}[coreg]
 datafilepath = 'data/t1_factordata_{0}.pickle'.format(coregtag)
 with open(datafilepath) as datafile:
     allmethods = pickle.load(datafile)
-data = allmethods[method]
+methoddata = allmethods[method]
+dates = meth
 vialAverage = pandas.DataFrame(index=data['dates'])
-for col in ['observed', 'model']:
+data = {}
+for item in ['model', 'observed']:
+    data[item] = pandas.DataFrame(columns=vials, index=dates)
+
+
+
     vialAverage[col] = [numpy.array(d).mean() for d in data[col]]
 vialAverage['diff'] = vialAverage['observed']-vialAverage['model']
 vialAverage['%'] = vialAverage['diff']/vialAverage['model']*100
 
+## Table 1: Vial average export
 content = vialAverage.to_latex()
 header = "\documentclass[12pt]{article}\n\\usepackage{booktabs}\n\\begin{document}\n"
 footer = "\end{document}"
