@@ -10,7 +10,7 @@ from pylabs.conversion.helpers import convertSubjectParfiles
 from pylabs.qt1.fitting import spgrformula
 from pylabs.qt1.model_pipeline import modelForDate
 from pylabs.qt1.vials import vialNumbersByAscendingT1
-from pylabs.qt1.formulas import approachSS
+from pylabs.qt1.formulas import jloss
 from pylabs.regional import averageByRegion
 from pylabs.alignment.phantom import align, applyXformAndSave
 from pylabs.stats import ScaledPolyfit
@@ -29,7 +29,9 @@ vialOrder = [str(v) for v in vialNumbersByAscendingT1 if v in usedVials]
 
 TRs = subjectsByTR.keys()
 adata = {}
-sloss = {}
+J = {}
+Jfit = {}
+Jdiff = {}
 corr = {}
 xform = {}
 xform = {14.0: {'rxy': 0, 'tx': 0, 'ty': 0}, 28.0: {'rxy': -3, 'tx': 1, 'ty': 0}}
@@ -94,24 +96,25 @@ for TR in TRs:
     ## Observed T1 difference
     diff[TR] = (fit[TR]-expected[TR])/expected[TR]
 
-    ## Signal loss
-    sloss[TR] = pandas.DataFrame(index=vialOrder, columns=adata[TR].columns, dtype=float)
-    corr[TR] = pandas.DataFrame(index=vialOrder, columns=['cfit','d'], dtype=object)
-    def fracsat(a, TR, T1):
-        return ((1-cos(a))*exp(-TR/T1))/(1-(cos(a)*exp(-TR/T1)))
+    ## Determine J for minimized model/observed diff
+    jmax = 50 # 32
+    J = numpy.arange(jmax)+1
+    Jfit[TR] = pandas.DataFrame(index=J, columns=vialOrder, dtype=float)
+    Jdiff[TR] = pandas.DataFrame(index=J, columns=vialOrder, dtype=float)
     for v in vialOrder:
-        t1 = expected[TR][v]
-        sloss[TR].loc[v] = fracsat(A, TR, t1)
         SaUncor = adata[TR].loc[v].values
-        Sa = SaUncor / (1-sloss[TR].loc[v]*cos(A))
-        S0i = 15*Sa.max()
         Ab1 = A*(B1[v]/100)
-        try:
-            popt, pcov = optimize.curve_fit(spgrformula, Ab1, Sa, p0=[S0i, T1i])
-        except RuntimeError as exc:
-            pass
-        corr[TR]['cfit'][v] = popt[1]
-        corr[TR]['d'][v] = (popt[1]-t1)/t1
+        t1 = expected[TR][v]
+        for j in J:
+            losses = jloss(j, A, t1, TR)
+            Sa = SaUncor+SaUncor*losses
+            S0i = 15*Sa.max()
+            try:
+                popt, pcov = optimize.curve_fit(spgrformula, Ab1, Sa, p0=[S0i, T1i])
+            except RuntimeError:
+                continueJd
+            Jfit[TR][v][j] = popt[1]
+            Jdiff[TR][v][j] = abs((popt[1]-t1)/t1)
 
     ## Fit correction curve
     curves[TR] = ScaledPolyfit(expected[TR], diff[TR], 2)
@@ -126,6 +129,15 @@ for TR in TRs:
     plt.figure()
     curves[TR].plot()
     plt.savefig('corr_curve_TR{}.png'.format(TR))
+#    plt.figure()
+#    J[TR].iloc[:,1:].plot.bar()
+#    (diff[TR]*100).plot.line()
+#    plt.savefig('Js_TR{}.png'.format(TR))
+
+
+print(Jdiff[TR].idxmin()) # best j per vial
+Jdiff[TR].mean(axis=1).idxmin() #j with lowest mean diff
+Jdiff[TR].mean(axis=1).min() # lowest mean diff j-wise
 
 D = pandas.Panel(adata)
 
