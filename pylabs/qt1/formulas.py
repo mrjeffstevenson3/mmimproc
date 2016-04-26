@@ -8,4 +8,7 @@ def sub(a, TR, T1):
     return (1-exp(-TR/T1)) / (1-cos(a)*exp(-TR/T1))
 
 def sub2(a, TR, T1, j):
-    return (sub(a, TR, T1) + power(cos(a)*exp(-TR/T1), j-1) * (1-sub(a, TR, T1)))
+    return sub(a, TR, T1) + jloss(j, a, T1, TR)
+
+def jloss(j, a, T1, TR):
+    return power(cos(a)*exp(-TR/T1), j-1) * (1-sub(a, TR, T1))
