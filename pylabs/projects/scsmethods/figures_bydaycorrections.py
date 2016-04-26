@@ -74,21 +74,4 @@ ax2.plot(vial7['%'])
 plt.savefig('figC.png')
 
 
-### determine date range
-#subjects = {}
-#for subjectdir in glob.glob(join(rootdir, 'scs*')):
-#    subject = os.path.basename(subjectdir)
-#    parrecfile = glob.glob(join(subjectdir, 'source_parrec', '*.PAR'))[0]
-#    (img, status) = provenance.add(parrecfile)
-#    acqdate = img.provenance['acquired'].date()
-#    subjects[subject] = acqdate
-
-#for subject in subjects.keys():
-#    acqdate = subjects[subject]
-#    print('Subject {0} data acquired {1}.'.format(subject, acqdate))
-#    subjectdir = join(rootdir, subject)
-#    rationalefilepath = outfile.replace('.nii.gz','.txt')
-#    print('Applying correction factor to: '+targetfname)
-#    x, rationale = factor.forDate(acqdate)
-
 
