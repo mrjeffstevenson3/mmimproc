@@ -2,10 +2,11 @@
 import sys, os, datetime
 import itertools
 from os.path import join as pathjoin
-import fnmatch, collections, datetime, cPickle, cloud
+import fnmatch, collections, datetime, cPickle
 import numpy as np
 import scipy.ndimage
 from dipy.segment.mask import median_otsu
+import scipy.ndimage.filters as filter
 import nibabel
 import nibabel.parrec as pr
 import nibabel.nifti1 as nifti1
@@ -13,15 +14,14 @@ from nibabel.volumeutils import fname_ext_ul_case
 from nibabel.orientations import apply_orientation
 from nibabel.orientations import inv_ornt_aff
 from nibabel.orientations import io_orientation
-from niprov import Context
+import niprov
 from pylabs.utils._options import PylabsOptions
 opts = PylabsOptions()
-prov = Context()
+prov = niprov.Context()
 
 identity_matrix = np.eye(4)
 mni_affine = np.array([[-1, 0, 0, 90], [0, 1, 0, -126], [0, 0, 1, -72], [0, 0, 0, 1]])
 psl2ras = np.array([[0., 0., -1., 0.], [-1., 0., 0., 0.], [0., 1., 0., 0.], [0., 0., 0., 1.]])
-
 
 def printmessage(msg, indent=0):
     if verbose:
@@ -54,12 +54,12 @@ def phantom_B1_midslice_par2mni(parfile, datadict, outdir=None, outfilename=None
     pr_hdr = pr_img.header
     flipangle = int(pr_hdr.image_defs['image_flip_angle'][0])
     ti = int(round(pr_hdr.image_defs['Inversion delay'][0], -1))
-    tr = pr_hdr.general_info['repetition_time']
+    tr = pr_hdr.general_info['repetition_time'][0]
     fov = pr_hdr.general_info['fov'][0]
     spacing = pr_hdr.image_defs['pixel spacing'][0][0]
 
     if tr > 100:
-        tr = int(round(pr_hdr.general_info['repetition_time'], -1))
+        tr = int(round(pr_hdr.general_info['repetition_time'][0], -1))
     if ti == 0.0:
         contrast = flipangle
     else:
@@ -228,11 +228,11 @@ def phantom_midslice_par2mni(parfile, datadict, method, outdir=None, outfilename
     pr_hdr = pr_img.header
     flipangle = int(pr_hdr.image_defs['image_flip_angle'][0])
     ti = int(round(pr_hdr.image_defs['Inversion delay'][0], -1))
-    tr = pr_hdr.general_info['repetition_time']
+    tr = pr_hdr.general_info['repetition_time'][0]
     fov = pr_hdr.general_info['fov'][0]
     spacing = pr_hdr.image_defs['pixel spacing'][0][0]
     if tr > 100:
-        tr = int(round(pr_hdr.general_info['repetition_time'], -1))
+        tr = int(round(pr_hdr.general_info['repetition_time'][0], -1))
     if ti == 0.0:
         contrast = flipangle
         outfilename += '_fa_'+str(flipangle).zfill(2)
@@ -340,7 +340,9 @@ def phantom_midslice_par2mni(parfile, datadict, method, outdir=None, outfilename
         nimg_mm = nifti1.Nifti1Image(slice_mag_mni_mask, mni_affine, pr_hdr)
         nibabel.save(nimg_mm, outfilename+'_mag_1slmni_'+str(run)+'_mask.nii')
 
-    nimg_m = nifti1.Nifti1Image(slice_mag_mni, mni_affine, pr_hdr)
+    slice_mag_mni_mf = filter.median_filter(slice_mag_mni, size=5)
+
+    nimg_m = nifti1.Nifti1Image(slice_mag_mni_mf, mni_affine, pr_hdr)
     nhdr_m = nimg_m.header
     nhdr_m.set_data_dtype(out_dtype)
     nhdr_m.set_slope_inter(slope, intercept)

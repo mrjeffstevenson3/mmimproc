@@ -2,7 +2,8 @@ from os.path import join
 import itertools, datetime
 import nibabel, numpy, scipy.stats, scipy.ndimage, niprov
 from pylabs.utils import progress
-
+# import niprov
+# provenance = niprov.Context()
 
 def nancount(A):
     return numpy.count_nonzero(numpy.isnan(A))

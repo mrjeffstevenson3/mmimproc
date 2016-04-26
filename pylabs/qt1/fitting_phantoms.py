@@ -1,5 +1,5 @@
 from __future__ import print_function
-import os, fnmatch, glob, collections, datetime, cPickle, sys, shutil
+import os, fnmatch, glob, collections, datetime, cPickle, sys
 from os.path import join
 from collections import defaultdict
 import numpy, niprov
@@ -45,7 +45,7 @@ def fitPhantoms(images, projectdir, dirstruct='BIDS', async=False, skipExisting 
                 }
                 files = [f for f in allfiles if allx[allfiles.index(f)] in X]
 
-                msg = 'Fitting: {date} method: {method} TR: {TR} Run: {run} X: {X}'
+                msg = 'Fitting: {date} method: {method} b1corr: {b1corr} TR: {TR} Run: {run} X: {X}'
                 print(msg.format(**image))
 
                 scottybasedir = '/media/DiskArray/shared_data/js'
@@ -65,7 +65,7 @@ def fitPhantoms(images, projectdir, dirstruct='BIDS', async=False, skipExisting 
 
                 t1filepath = qt1filepath(image, projectdir, dirstruct)
                 if not os.path.isdir(os.path.dirname(t1filepath)):
-                    shutil.makedirs(os.path.dirname(t1filepath))
+                    os.makedirs(os.path.dirname(t1filepath))
 
                 if skipExisting and os.path.isfile(t1filepath):
                     print('--> File exists, skipping scan.'.format(len(run)))
@@ -89,6 +89,7 @@ def fitPhantoms(images, projectdir, dirstruct='BIDS', async=False, skipExisting 
                     #pool.apply_async(t1fit, [files, X], kwargs)
                 else:
                     try:
+                        kwargs['mute'] = True
                         t1fit(files, X, **kwargs)
                         outfiles.append(image)
                     except Exception as ex:
