@@ -31,6 +31,8 @@ TRs = subjectsByTR.keys()
 adata = {}
 sloss = {}
 corr = {}
+xform = {}
+xform = {14.0: {'rxy': 0, 'tx': 0, 'ty': 0}, 28.0: {'rxy': -3, 'tx': 1, 'ty': 0}}
 expected = pandas.DataFrame(columns=TRs, index=vialOrder)
 fit = pandas.DataFrame(columns=TRs, index=vialOrder)
 diff = pandas.DataFrame(columns=TRs, index=vialOrder)
@@ -53,12 +55,13 @@ for TR in TRs:
     alphafilter = '*{}*1.nii'.format(int(TR))
     alphafiles = sorted(glob.glob(join(subjectdir,'anat',alphafilter)))
     assert TR == provenance.get(forFile=alphafiles[0]).provenance['repetition-time']
-    xform = align(alphafiles[0], alignmentTarget, delta=10)
+    if not xform:
+        xform[TR] = align(alphafiles[0], alignmentTarget, delta=10)
 
     ## b1 map
     b1file = join(subjectdir, 'fmap', '{}_b1map_phase_1.nii'.format(subject))
     alignedB1file = b1file.replace('.nii', '_coreg.nii')
-    applyXformAndSave(xform, b1file, alignmentTarget, 
+    applyXformAndSave(xform[TR], b1file, alignmentTarget, 
         newfile=alignedB1file, provenance=provenance)
     B1 = averageByRegion(alignedB1file, vialAtlas).loc[vialOrder]
 
@@ -66,7 +69,7 @@ for TR in TRs:
     adata[TR] = pandas.DataFrame()
     for alphafile in alphafiles:
         alignedAlphafile = alphafile.replace('.nii', '_coreg.nii')
-        applyXformAndSave(xform, alphafile, alignmentTarget, 
+        applyXformAndSave(xform[TR], alphafile, alignmentTarget, 
             newfile=alignedAlphafile, provenance=provenance)
         vialAverages = averageByRegion(alignedAlphafile, vialAtlas)
         alpha = provenance.get(forFile=alignedAlphafile).provenance['flip-angle']
@@ -100,7 +103,7 @@ for TR in TRs:
         t1 = expected[TR][v]
         sloss[TR].loc[v] = fracsat(A, TR, t1)
         SaUncor = adata[TR].loc[v].values
-        Sa = SaUncor / (1-sloss[TR].loc[v])
+        Sa = SaUncor / (1-sloss[TR].loc[v]*cos(A))
         S0i = 15*Sa.max()
         Ab1 = A*(B1[v]/100)
         try:
