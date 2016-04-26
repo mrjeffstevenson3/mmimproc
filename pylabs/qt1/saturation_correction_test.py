@@ -29,7 +29,7 @@ vialOrder = [str(v) for v in vialNumbersByAscendingT1 if v in usedVials]
 
 TRs = subjectsByTR.keys()
 adata = {}
-J = {}
+sloss = {}
 corr = {}
 expected = pandas.DataFrame(columns=TRs, index=vialOrder)
 fit = pandas.DataFrame(columns=TRs, index=vialOrder)
@@ -91,60 +91,24 @@ for TR in TRs:
     ## Observed T1 difference
     diff[TR] = (fit[TR]-expected[TR])/expected[TR]
 
-    ## Determine J for minimized model/observed diff
-    jmax = 10 # 32
-    TE = 4.6
-    jvals = numpy.arange(jmax)+1
-    jcombs = list(itertools.combinations_with_replacement(jvals, 5))
-    J[TR] = pandas.DataFrame(index=vialOrder, columns=['mindiff']+alphas, dtype=object)
-    for v in vialOrder:
-        SaUncor = adata[TR].loc[v].values
-        Ab1 = A*(B1[v]/100)
-        t1 = expected[TR][v]
-        diffByJcomb = pandas.Series(index=jcombs)
-        for jcomb in jcombs:
-            baseloss = approachSS(numpy.ones((5)), t1, A, TR, TE)
-            losses = approachSS(numpy.array(jcomb), t1, A, TR, TE)
-            Sa = SaUncor+SaUncor*(baseloss-losses)
-            S0i = 15*Sa.max()
-            try:
-                popt, pcov = optimize.curve_fit(spgrformula, Ab1, Sa, p0=[S0i, T1i])
-            except RuntimeError:
-                continue
-            diffByJcomb[jcomb] = abs((popt[1]-t1)/t1)
-            if diffByJcomb[jcomb] < .01:
-                print('Convergence on TR {} and vial {}'.format(TR, v))
-                break
-        else:
-            print('No convergence on TR {} and vial {}'.format(TR, v))
-        jopt = diffByJcomb.argmin(skipna=True)
-        for jindex in range(len(jopt)):
-            J[TR][alphas[jindex]][v] = jopt[jindex]
-        J[TR]['mindiff'][v] = diffByJcomb[jopt]
-
-    ## J-based correction
-    convergedVials = J[TR].loc[J[TR]['mindiff'] < .01]
-    lower4AlphaMeanJ = convergedVials.iloc[:,1:5].mean().mean() 
-    a30Jdiff = numpy.array([7,9,11])-lower4AlphaMeanJ
-    T1offset = expected[TR][convergedVials.index[0]]
-    T1diff = expected[TR][convergedVials.index[-1]]-T1offset
-    slopeJbyT1 = a30Jdiff / T1diff
-    corr[TR] = pandas.DataFrame(index=vialOrder, columns=['j','fit','d'], dtype=object)
+    ## Signal loss
+    sloss[TR] = pandas.DataFrame(index=vialOrder, columns=adata[TR].columns, dtype=float)
+    corr[TR] = pandas.DataFrame(index=vialOrder, columns=['cfit','d'], dtype=object)
+    def fracsat(a, TR, T1):
+        return ((1-cos(a))*exp(-TR/T1))/(1-(cos(a)*exp(-TR/T1)))
     for v in vialOrder:
         t1 = expected[TR][v]
-        a30j = lower4AlphaMeanJ + (t1-T1offset)*slopeJbyT1
-        jvector = numpy.round(([lower4AlphaMeanJ]*2)+list(a30j))
-        baseloss = approachSS(numpy.ones((5)), t1, A, TR, TE)
-        losses = approachSS(jvector, t1, A, TR, TE)
+        sloss[TR].loc[v] = fracsat(A, TR, t1)
         SaUncor = adata[TR].loc[v].values
-        Sa = SaUncor+SaUncor*(baseloss-losses)
+        Sa = SaUncor / (1-sloss[TR].loc[v])
         S0i = 15*Sa.max()
         Ab1 = A*(B1[v]/100)
-        popt, pcov = optimize.curve_fit(spgrformula, Ab1, Sa, p0=[S0i, T1i])
-        corr[TR]['j'][v] = jvector
-        corr[TR]['fit'][v] = popt[1]
+        try:
+            popt, pcov = optimize.curve_fit(spgrformula, Ab1, Sa, p0=[S0i, T1i])
+        except RuntimeError as exc:
+            pass
+        corr[TR]['cfit'][v] = popt[1]
         corr[TR]['d'][v] = (popt[1]-t1)/t1
-
 
     ## Fit correction curve
     curves[TR] = ScaledPolyfit(expected[TR], diff[TR], 2)
@@ -159,12 +123,6 @@ for TR in TRs:
     plt.figure()
     curves[TR].plot()
     plt.savefig('corr_curve_TR{}.png'.format(TR))
-    plt.figure()
-    J[TR].iloc[:,1:].plot.bar()
-    (diff[TR]*100).plot.line()
-    plt.savefig('Js_TR{}.png'.format(TR))
-
 
 D = pandas.Panel(adata)
-J = pandas.Panel(J)
 
