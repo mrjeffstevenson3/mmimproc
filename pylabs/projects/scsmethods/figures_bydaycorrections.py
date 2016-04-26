@@ -1,5 +1,5 @@
 from __future__ import print_function
-import os, glob, numpy, pandas, pickle
+import os, glob, numpy, pandas, seaborn, pickle
 import matplotlib.pyplot as plt
 from os.path import join
 from pylabs.utils.paths import getlocaldataroot
