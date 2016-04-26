@@ -55,6 +55,7 @@ factor = CorrectionFactor(method, coreg=True)
 factor.byNearestDate()
 
 ## Fig A date-average correction for 2 vials
+#? Same as fig B?
 
 ## Fig B vial-wise correction for one date
 june8date = dates[4]
@@ -63,14 +64,14 @@ june8['corrected'] = june8['observed']*factor.forDate(june8date)[0]
 del june8['%']
 del june8['diff']
 june8.plot.bar()
-plt.savefig('fig2.png')
+plt.savefig('figB.png')
 
 ## Fig C date-wise correction
-
-
-
-
-
+fig = plt.figure()
+ax = vial7[['model', 'observed']].plot.bar()
+ax2 = ax.twinx()
+ax2.plot(vial7['%'])
+plt.savefig('figC.png')
 
 
 ### determine date range
