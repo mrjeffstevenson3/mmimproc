@@ -1,5 +1,6 @@
 from __future__ import print_function
 import os, glob, numpy, pandas, pickle
+import matplotlib.pyplot as plt
 from os.path import join
 from pylabs.utils.paths import getlocaldataroot
 import pylabs.graphics.tables as tables
@@ -49,9 +50,27 @@ vial7 = data.minor_xs('7')
 vial7.insert(0, 'temperature', temps)
 tables.toLatexAndPdf(vial7.round(2), 'table1b', tryImageMagickPNG=True)
 
+## correction
+factor = CorrectionFactor(method, coreg=True)
+factor.byNearestDate()
 
-#factor = CorrectionFactor(method, coreg=True)
-#factor.byNearestDate()
+## Fig A date-average correction for 2 vials
+
+## Fig B vial-wise correction for one date
+june8date = dates[4]
+june8 = data.major_xs(june8date)
+june8['corrected'] = june8['observed']*factor.forDate(june8date)[0]
+del june8['%']
+del june8['diff']
+june8.plot.bar()
+plt.savefig('fig2.png')
+
+## Fig C date-wise correction
+
+
+
+
+
 
 
 ### determine date range
