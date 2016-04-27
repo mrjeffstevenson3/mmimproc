@@ -1,6 +1,10 @@
 from __future__ import division
 from numpy import cos, sin, exp, tan, radians, power
 
+def spgrformula(a, S0, T1):
+    TR = spgrformula.TR
+    return S0 * ((1-exp(-TR/T1))/(1-cos(a)*exp(-TR/T1))) * sin(a)
+
 def approachSS(j, a, TR, T1, TE, T2s=50, M0=1.):
     return M0 * sin(a) * sub2(a, TR, T1, j) * exp(-TE/T2s)
     
@@ -12,3 +16,8 @@ def sub2(a, TR, T1, j):
 
 def jloss(j, a, T1, TR):
     return power(cos(a)*exp(-TR/T1), j-1) * (1-sub(a, TR, T1))
+
+def spgrWithJ(a, S0, T1):
+    return S0 * sin(a) * (sub(a, TR, T1) + jloss(j, a, T1, TR)) * exp(-TE/T2s)
+
+
