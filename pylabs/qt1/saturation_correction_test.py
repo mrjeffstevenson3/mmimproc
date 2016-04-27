@@ -32,13 +32,12 @@ adata = {}
 J = {}
 Jfit = {}
 Jdiff = {}
-corr = {}
+overview = {}
 xform = {}
 xform = {14.0: {'rxy': 0, 'tx': 0, 'ty': 0}, 28.0: {'rxy': -3, 'tx': 1, 'ty': 0}}
-expected = pandas.DataFrame(columns=TRs, index=vialOrder)
-fit = pandas.DataFrame(columns=TRs, index=vialOrder)
-diff = pandas.DataFrame(columns=TRs, index=vialOrder)
-corrfit = pandas.DataFrame(columns=TRs, index=vialOrder)
+expected = pandas.DataFrame(columns=TRs, index=vialOrder, dtype=float)
+fit = pandas.DataFrame(columns=TRs, index=vialOrder, dtype=float)
+diff = pandas.DataFrame(columns=TRs, index=vialOrder, dtype=float)
 curves = {}
 for TR in TRs:
     if TR ==56:
@@ -116,6 +115,17 @@ for TR in TRs:
             Jfit[TR][v][j] = popt[1]
             Jdiff[TR][v][j] = abs((popt[1]-t1)/t1)
 
+    bestj = Jdiff[TR].mean(axis=1).idxmin()
+    print('Best j: {}'.format(bestj))
+
+    ## Overview
+    overview[TR] = pandas.DataFrame(index=vialOrder, dtype=float)
+    overview[TR]['model'] = expected[TR]
+    overview[TR]['fit'] = fit[TR]
+    overview[TR]['d'] = diff[TR]
+    overview[TR]['corr'] = Jfit[TR].loc[9]
+    overview[TR]['corrd'] = Jdiff[TR].loc[9]
+
     ## Fit correction curve
     curves[TR] = ScaledPolyfit(expected[TR], diff[TR], 2)
 
@@ -129,11 +139,9 @@ for TR in TRs:
     plt.figure()
     curves[TR].plot()
     plt.savefig('corr_curve_TR{}.png'.format(TR))
-#    plt.figure()
-#    J[TR].iloc[:,1:].plot.bar()
-#    (diff[TR]*100).plot.line()
-#    plt.savefig('Js_TR{}.png'.format(TR))
-
+    plt.figure()
+    overview[TR][['model', 'fit', 'corr']].plot.bar()
+    plt.savefig('overview_TR{}.png'.format(TR))
 
 print(Jdiff[TR].idxmin()) # best j per vial
 Jdiff[TR].mean(axis=1).idxmin() #j with lowest mean diff
