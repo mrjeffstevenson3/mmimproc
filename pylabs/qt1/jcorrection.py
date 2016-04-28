@@ -21,10 +21,7 @@ b1file = join(subjectdir, 'fmap', b1filter.format(subject))
 # ## Need j, TR, TE, T2s
 #provenance.get(forFile=alphafiles[0]).provenance['repetition-time']
 alphas = [2.,10.,20.]
-TR = 14. 
-T2s = 50
-TE = 4.6 #?
-j = 9
+TR = 11. 
 # spgrWithJ(a, S0, T1)
 
 Sa = numpy.array([nibabel.load(f).get_data() for f in alphafiles])
@@ -36,7 +33,16 @@ B1 = B1[100,100,100]
 A = radians(alphas)
 T1i = 1000
 S0i = 15*Sa.max()
-Ab1 = A*(B1/100)
+Ab1 = A *(B1/100)
 spgrformula.TR = TR
-popt, pcov = scipy.optimize.curve_fit(spgrformula, Ab1, Sa, p0=[S0i, T1i])
+popt, pcov = scipy.optimize.curve_fit(
+                        spgrformula, Ab1, Sa, p0=[S0i, T1i])
 print(popt[1])
+spgrWithJ.TR = TR
+spgrWithJ.j = 150
+spgrWithJ.TE = 4.6
+spgrWithJ.T2s = 50
+popt, pcov = scipy.optimize.curve_fit(
+                        spgrWithJ, Ab1, Sa, p0=[S0i, T1i])
+print(popt[1])
+
