@@ -1,5 +1,6 @@
 from __future__ import division
 import collections, numpy, glob, datetime, pandas, itertools
+import scipy.optimize as optimize
 from numpy import cos, sin, exp, tan, radians, power
 import matplotlib.pyplot as plt
 from os.path import join, isfile
@@ -9,10 +10,9 @@ from pylabs.conversion.helpers import convertSubjectParfiles
 from pylabs.qt1.fitting import spgrformula
 from pylabs.qt1.model_pipeline import modelForDate
 from pylabs.qt1.vials import vialNumbersByAscendingT1
-from pylabs.qt1.formulas import jloss
+from pylabs.qt1.formulas import sratio
 from pylabs.regional import averageByRegion
 from pylabs.alignment.phantom import align, applyXformAndSave
-from pylabs.qt1.simplefitting import fitT1
 from pylabs.stats import ScaledPolyfit
 provenance = Context()
 
@@ -27,27 +27,26 @@ vialAtlas = join(projectdir,'phantom_alignment_target_round_mask.nii.gz')
 usedVials = range(7, 18+1)
 vialOrder = [str(v) for v in vialNumbersByAscendingT1 if v in usedVials]
 
-import pylabs.qt1.corrections.dummy as dummy
-correctT1 = dummy.correct
-
 TRs = subjectsByTR.keys()
-xform = {}
-xform = {14.0: {'rxy': 0, 'tx': 0, 'ty': 0}, 
-         28.0: {'rxy': -3, 'tx': 1, 'ty': 0}}
 adata = {}
+J = {}
+Jfit = {}
+Jdiff = {}
 overview = {}
+xform = {}
+xform = {14.0: {'rxy': 0, 'tx': 0, 'ty': 0}, 28.0: {'rxy': -3, 'tx': 1, 'ty': 0}}
 expected = pandas.DataFrame(columns=TRs, index=vialOrder, dtype=float)
 fit = pandas.DataFrame(columns=TRs, index=vialOrder, dtype=float)
-corrected = pandas.DataFrame(columns=TRs, index=vialOrder, dtype=float)
+diff = pandas.DataFrame(columns=TRs, index=vialOrder, dtype=float)
+fit2 = pandas.DataFrame(columns=TRs, index=vialOrder, dtype=float)
+srat = {}
+curves = {}
 for TR in TRs:
     if TR ==56:
         continue
     date = subjectsByTR[TR]
     subject = 'sub-phant'+str(date)
     subjectdir = join(projectdir, subject)
-
-    ## par2nii
-    #niftiDict = convertSubjectParfiles(subject, subjectdir)
 
     ## model_pipeline
     expected[TR] = modelForDate(date, 'slu')[vialOrder]
@@ -62,37 +61,81 @@ for TR in TRs:
     ## b1 map
     b1file = join(subjectdir, 'fmap', '{}_b1map_phase_1.nii'.format(subject))
     alignedB1file = b1file.replace('.nii', '_coreg.nii')
-    if not xform:
-        applyXformAndSave(xform[TR], b1file, alignmentTarget, 
-            newfile=alignedB1file, provenance=provenance)
-    print('Sampling B1')
+    applyXformAndSave(xform[TR], b1file, alignmentTarget, 
+        newfile=alignedB1file, provenance=provenance)
     B1 = averageByRegion(alignedB1file, vialAtlas).loc[vialOrder]
 
     ## transform and sample flip-angle files
     adata[TR] = pandas.DataFrame()
     for alphafile in alphafiles:
         alignedAlphafile = alphafile.replace('.nii', '_coreg.nii')
-        if not xform:
-            applyXformAndSave(xform[TR], alphafile, alignmentTarget, 
-                newfile=alignedAlphafile, provenance=provenance)
-        print('Sampling signal for one flip angle..')
+        applyXformAndSave(xform[TR], alphafile, alignmentTarget, 
+            newfile=alignedAlphafile, provenance=provenance)
         vialAverages = averageByRegion(alignedAlphafile, vialAtlas)
         alpha = provenance.get(forFile=alignedAlphafile).provenance['flip-angle']
         adata[TR][alpha] = vialAverages
     adata[TR] = adata[TR].loc[vialOrder]
     alphas = adata[TR].columns.values.tolist()
 
+    ### fitting
+    def spgrformula(a, S0, T1):
+        TR = spgrformula.TR
+        return S0 * ((1-exp(-TR/T1))/(1-cos(a)*exp(-TR/T1))) * sin(a)
+    spgrformula.TR = TR
     A = radians(alphas)
+    T1i = 1000
+    for v in vialOrder:
+        Sa = adata[TR].loc[v].values
+        S0i = 15*Sa.max()
+        Ab1 = A*(B1[v]/100)
+        popt, pcov = optimize.curve_fit(spgrformula, Ab1, Sa, p0=[S0i, T1i])
+        fit[TR][v] = popt[1]
 
-    ## Initial fit
-    fit[TR] = fitT1(adata[TR], A, B1, TR)
+    ## Observed T1 difference
+    diff[TR] = (fit[TR]-expected[TR])/expected[TR]
+
+    ### fitting 2
+    def spgrformula(a, S0, T1):
+        TR = spgrformula.TR
+        return S0 * ((1-exp(-TR/T1))/(1-cos(a)*exp(-TR/T1))) * sin(a)
+    spgrformula.TR = TR
+    A = radians(alphas)
+    T1i = 1000
+    srat[TR] = pandas.DataFrame(index=alphas, columns=vialOrder, dtype=float)
+    for v in vialOrder:
+        Ab1 = A*(B1[v]/100)
+        srat[TR][v] = sratio(Ab1, TR, fit[TR][v], expected[TR][v])
+        SaUncor = adata[TR].loc[v].values
+        Sa = SaUncor * srat[TR][v]
+        S0i = 15*Sa.max()
+        popt, pcov = optimize.curve_fit(spgrformula, Ab1, Sa, p0=[S0i, T1i])
+        fit2[TR][v] = popt[1]
+
+from mpl_toolkits.mplot3d import axes3d
+import matplotlib.pyplot as plt
+from matplotlib import cm
 
 
-    corrected[TR] = correctT1(adata[TR], A, B1, expected[TR], fit[TR], TR)
+X = expected[TR].values
+Y = srat[TR].T.columns.values
+X, Y = numpy.meshgrid(X, Y)
+Z = srat[TR].values
 
-    ## plotting
-    overview[TR] = pandas.DataFrame({'model':expected[TR], 'fit':fit[TR], 'corrected':corrected[TR]})
-    plt.figure()
-    overview[TR].plot.bar()
-    plt.savefig('correction_TR{}.png'.format(TR))
+fig2 = plt.figure()
+az = fig2.gca(projection='3d')
+az.plot_surface(X, Y, Z, rstride=8, cstride=8, alpha=0.3, cmap=cm.coolwarm)
+#cset = az.contour(X, Y, Z, zdir='z', offset=numpy.min(Z)-1, cmap=cm.coolwarm)
+cset = az.contour(X, Y, Z, zdir='x', offset=numpy.min(X)-1, cmap=cm.coolwarm)
+cset = az.contour(X, Y, Z, zdir='y', offset=numpy.max(Y)+0.05, cmap=cm.coolwarm)
+az.set_xlabel('GM <-- T1 --> WM')
+az.set_xlim(numpy.min(X)-1, numpy.max(X)+1)
+az.set_ylabel('Flip Angle')
+az.set_ylim(numpy.min(Y)-1, numpy.max(Y)+1)
+az.set_zlabel('Signal Ratio')
+az.set_zlim(numpy.min(Z)-0.1, numpy.max(Z)+0.1)
+az.set_title('Signal Ratio as Function of T1 and Flip Angle',fontsize=15)
+plt.show()
+
+
+
 
