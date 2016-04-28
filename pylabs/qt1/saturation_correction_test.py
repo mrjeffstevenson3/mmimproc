@@ -96,7 +96,7 @@ for TR in TRs:
     diff[TR] = (fit[TR]-expected[TR])/expected[TR]
 
     ## Determine J for minimized model/observed diff
-    jmax = 50 # 32
+    jmax = 200 # 32
     J = numpy.arange(jmax)+1
     Jfit[TR] = pandas.DataFrame(index=J, columns=vialOrder, dtype=float)
     Jdiff[TR] = pandas.DataFrame(index=J, columns=vialOrder, dtype=float)
@@ -105,13 +105,16 @@ for TR in TRs:
         Ab1 = A*(B1[v]/100)
         t1 = expected[TR][v]
         for j in J:
-            losses = jloss(j, A, t1, TR)
-            Sa = SaUncor+SaUncor*losses
+            def jloss2(j, a, T1, TR):
+                return power(cos(a)*exp(-TR/T1), j-1)
+            losses = jloss2(j, A, t1, TR)
+
+            Sa = SaUncor*(1-losses)
             S0i = 15*Sa.max()
             try:
                 popt, pcov = optimize.curve_fit(spgrformula, Ab1, Sa, p0=[S0i, T1i])
             except RuntimeError:
-                continueJd
+                continue
             Jfit[TR][v][j] = popt[1]
             Jdiff[TR][v][j] = abs((popt[1]-t1)/t1)
 

@@ -39,7 +39,7 @@ popt, pcov = scipy.optimize.curve_fit(
                         spgrformula, Ab1, Sa, p0=[S0i, T1i])
 print(popt[1])
 spgrWithJ.TR = TR
-spgrWithJ.j = 150
+spgrWithJ.j = 128
 spgrWithJ.TE = 4.6
 spgrWithJ.T2s = 50
 popt, pcov = scipy.optimize.curve_fit(
