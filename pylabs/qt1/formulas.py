@@ -24,13 +24,10 @@ def spgrWithJ(a, S0, T1):
     T2s = spgrWithJ.T2s
     return S0 * sin(a) * (sub(a, TR, T1) + jloss(j, a, T1, TR))
 
-def t1corr():
-    ssT1 = 50
-    return S0 * sin(a) * sub(a, TR, T1) 
+def sratio(a, TR, T1o, T1m):
+    return ((1-exp(-TR/T1m)) * (1-cos(a) * exp(-TR/T1o))) / ((1-cos(a) * exp(-TR/T1m)) * (1-exp(-TR/T1o)))
 
 #def spgrformula(a, S0, T1):
 #    TR = spgrformula.TR
 #    return S0 * ((1-exp(-TR/T1))/(1-cos(a)*exp(-TR/T1))) * sin(a)
 #jdiff = jloss(j, a, T1, TR) - jloss(40, a, T1, TR)
-
-
