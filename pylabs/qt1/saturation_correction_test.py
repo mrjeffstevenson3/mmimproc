@@ -27,7 +27,8 @@ vialAtlas = join(projectdir,'phantom_alignment_target_round_mask.nii.gz')
 usedVials = range(7, 18+1)
 vialOrder = [str(v) for v in vialNumbersByAscendingT1 if v in usedVials]
 
-import pylabs.qt1.corrections.dummy as correct
+import pylabs.qt1.corrections.polycurvet1 as correct
+correctionname = correct.__name__.split('.')[-1]
 
 ## Get brain sample:
 from pylabs.qt1.brainsampling import sample
@@ -105,9 +106,13 @@ for TR in TRs:
 
     ## plotting
     plt.figure()
+    pltname = 'phantom_TR{}_{}'.format(TR, correctionname)
     phantom[TR].plot.bar()
-    plt.savefig('phantom_TR{}.png'.format(TR))
+    plt.title(pltname)
+    plt.savefig(pltname+'.png')
     plt.figure()
+    pltname = 'brain_TR{}_{}'.format(TR, correctionname)
     brain[TR].plot.bar()
-    plt.savefig('brain_TR{}.png'.format(TR))
+    plt.title(pltname)
+    plt.savefig(pltname+'.png')
 
