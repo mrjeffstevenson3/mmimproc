@@ -21,12 +21,15 @@ projectdir = join(fs, 'phantom_qT1_disc')
 subject = 'phantom_qT1_20140618'
 date = datetime.date(2014, 6, 18)
 subjectdir = join(projectdir,subject)
-alignmentTarget = join(projectdir, 'phantom_flipangle_alignment_target.nii')
-vialAtlas = join(projectdir,'phantom_alignment_target_round_mask.nii.gz')
+alignmentTarget = join(projectdir, 
+    'phantom_flipangle_alignment_target_20140618_fa10.nii')
+vialAtlas = join('data','atlases',
+    'new_vial_mask_20140618_fa10-mask.nii.gz')
 usedVials = range(7, 18+1)
 vialOrder = [str(v) for v in vialNumbersByAscendingT1 if v in usedVials]
 
-import pylabs.qt1.corrections.dummy as correct
+import pylabs.qt1.corrections.polycurvet1 as correct
+correctionname = correct.__name__.split('.')[-1]
 
 ## Get brain sample:
 from pylabs.qt1.brainsampling import sample
@@ -59,7 +62,7 @@ assert TR == provTR
 for a, alpha in enumerate(alphas):
     assert alpha == prov(alphafiles[a])['flip-angle']
 
-xform[TR] = align(alphafiles[0], alignmentTarget, delta=10)
+xform[TR] = align(alphafiles[1], alignmentTarget, delta=10)
 
 ## b1 map
 b1file = join(subjectdir, 'fmap', '{}_b1map_phase_1.nii'.format(subject))
