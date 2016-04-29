@@ -94,6 +94,12 @@ for TR in TRs:
     ## determine Correction
     correction[TR] = correct.create(adata[TR], A, B1, phantom[TR]['model'], 
                                     phantom[TR]['fit'], TR)
+
+    try:
+        if isinstance(correction[TR][0], str):
+            correctionname = correction[TR][0]
+    except Exception as e:
+        pass
     ## apply Correction fit on vials
     phantom[TR]['corr'] = correct.apply(correction[TR], adata[TR], A, B1)
     ## apply Correction fit on brain sample
