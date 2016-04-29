@@ -32,21 +32,23 @@ assert B1.shape == Sa.shape[1:]
 start = datetime.datetime.now()
 v = 0
 dims = (10,10,10)
+nvoxels = numpy.prod(dims)
 for x in range(dims[0]):
     for y in range(dims[1]):
         for z in range(dims[2]):
 
-v +=1
-x += 100
-y += 100
-z += 100
+            v += 1
+            x += 100
+            y += 100
+            z += 100
 
-progress.progressbar(v, nvoxels, start)
-    
+            progress.progressbar(v, nvoxels, start)
+                
+            import time 
+            time.sleep(0.01)
+            #Sa = Sa[:,x,y,z]
+            #B1 = B1[x,y,z]
 
-Sa = Sa[:,x,y,z]
-B1 = B1[x,y,z]
-
-A = radians(alphas)
+            #A = radians(alphas)
 
 
