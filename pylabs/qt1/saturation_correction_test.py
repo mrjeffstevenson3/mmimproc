@@ -27,19 +27,23 @@ vialAtlas = join(projectdir,'phantom_alignment_target_round_mask.nii.gz')
 usedVials = range(7, 18+1)
 vialOrder = [str(v) for v in vialNumbersByAscendingT1 if v in usedVials]
 
-import pylabs.qt1.corrections.dummy as dummy
-correctT1 = dummy.correct
+import pylabs.qt1.corrections.dummy as correct
+
+## Get brain sample:
+from pylabs.qt1.brainsampling import sample
 
 TRs = subjectsByTR.keys()
 xform = {}
 xform = {14.0: {'rxy': 0, 'tx': 0, 'ty': 0}, 
          28.0: {'rxy': -3, 'tx': 1, 'ty': 0}}
 adata = {}
-overview = {}
-expected = pandas.DataFrame(columns=TRs, index=vialOrder, dtype=float)
-fit = pandas.DataFrame(columns=TRs, index=vialOrder, dtype=float)
-corrected = pandas.DataFrame(columns=TRs, index=vialOrder, dtype=float)
+correction = {}
+phantom = {}
+brain = {}
 for TR in TRs:
+    phantom[TR] = pandas.DataFrame(index=vialOrder, 
+                    columns=['model','fit','corr'], dtype=float)
+
     if TR ==56:
         continue
     date = subjectsByTR[TR]
@@ -50,7 +54,7 @@ for TR in TRs:
     #niftiDict = convertSubjectParfiles(subject, subjectdir)
 
     ## model_pipeline
-    expected[TR] = modelForDate(date, 'slu')[vialOrder]
+    phantom[TR]['model'] = modelForDate(date, 'slu')[vialOrder]
 
     ## Gather files & align
     alphafilter = '*{}*1.nii'.format(int(TR))
@@ -84,15 +88,26 @@ for TR in TRs:
 
     A = radians(alphas)
 
-    ## Initial fit
-    fit[TR] = fitT1(adata[TR], A, B1, TR)
-
-
-    corrected[TR] = correctT1(adata[TR], A, B1, expected[TR], fit[TR], TR)
+    ## Initial fit on vials
+    phantom[TR]['fit'] = fitT1(adata[TR], A, B1, TR)
+    ## determine Correction
+    correction[TR] = correct.create(adata[TR], A, B1, phantom[TR]['model'], 
+                                    phantom[TR]['fit'], TR)
+    ## apply Correction fit on vials
+    phantom[TR]['corr'] = correct.apply(correction[TR], adata[TR], A, B1)
+    ## apply Correction fit on brain sample
+    brain[TR] = pandas.DataFrame(index=sample.index, 
+                    columns=['fit','corr'], dtype=float)
+    brainAngles = list(sample.columns.values[-3:])
+    brain[TR]['fit'] = sample['fit']
+    brain[TR]['corr'] = correct.apply(correction[TR], sample[brainAngles], 
+                                        radians(brainAngles), sample['B1'])
 
     ## plotting
-    overview[TR] = pandas.DataFrame({'model':expected[TR], 'fit':fit[TR], 'corrected':corrected[TR]})
     plt.figure()
-    overview[TR].plot.bar()
-    plt.savefig('correction_TR{}.png'.format(TR))
+    phantom[TR].plot.bar()
+    plt.savefig('phantom_TR{}.png'.format(TR))
+    plt.figure()
+    brain[TR].plot.bar()
+    plt.savefig('brain_TR{}.png'.format(TR))
 
