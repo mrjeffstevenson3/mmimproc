@@ -4,7 +4,8 @@ import datetime, glob, nibabel, numpy, scipy.optimize
 from numpy import radians
 from os.path import join
 from pylabs.utils.paths import getlocaldataroot
-from pylabs.qt1.formulas import spgrWithJ, spgrformula
+from pylabs.qt1.simplefitting import fitT1
+from pylabs.utils import progress
 from niprov import Context
 provenance = Context()
 
@@ -27,22 +28,25 @@ TR = 11.
 Sa = numpy.array([nibabel.load(f).get_data() for f in alphafiles])
 B1 = nibabel.load(b1file).get_data()
 assert B1.shape == Sa.shape[1:]
-Sa = Sa[:,100,100,100]
-B1 = B1[100,100,100]
+
+start = datetime.datetime.now()
+v = 0
+dims = (10,10,10)
+for x in range(dims[0]):
+    for y in range(dims[1]):
+        for z in range(dims[2]):
+
+v +=1
+x += 100
+y += 100
+z += 100
+
+progress.progressbar(v, nvoxels, start)
+    
+
+Sa = Sa[:,x,y,z]
+B1 = B1[x,y,z]
 
 A = radians(alphas)
-T1i = 1000
-S0i = 15*Sa.max()
-Ab1 = A *(B1/100)
-spgrformula.TR = TR
-popt, pcov = scipy.optimize.curve_fit(
-                        spgrformula, Ab1, Sa, p0=[S0i, T1i])
-print(popt[1])
-spgrWithJ.TR = TR
-spgrWithJ.j = 128
-spgrWithJ.TE = 4.6
-spgrWithJ.T2s = 50
-popt, pcov = scipy.optimize.curve_fit(
-                        spgrWithJ, Ab1, Sa, p0=[S0i, T1i])
-print(popt[1])
+
 
