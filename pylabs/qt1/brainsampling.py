@@ -19,11 +19,9 @@ alphafiles = sorted(glob.glob(join(subjectdir,'anat','*_fa_*brain.nii.gz')))
 b1filter = '{}_b1map_phase_rfov_reg2qT1.nii.gz'
 b1file = join(subjectdir, 'fmap', b1filter.format(subject))
 
-# ## Need j, TR, TE, T2s
-#provenance.get(forFile=alphafiles[0]).provenance['repetition-time']
 alphas = [2.,10.,20.]
+A = radians(alphas)
 TR = 11. 
-# spgrWithJ(a, S0, T1)
 
 Sa = numpy.array([nibabel.load(f).get_data() for f in alphafiles])
 B1 = nibabel.load(b1file).get_data()
@@ -33,6 +31,7 @@ start = datetime.datetime.now()
 v = 0
 dims = (10,10,10)
 nvoxels = numpy.prod(dims)
+data = pandas.DataFrame(columns=['x','y','z','S','fit','B1'], dtype=float)
 for x in range(dims[0]):
     for y in range(dims[1]):
         for z in range(dims[2]):
@@ -43,12 +42,19 @@ for x in range(dims[0]):
             z += 100
 
             progress.progressbar(v, nvoxels, start)
-                
-            import time 
-            time.sleep(0.01)
-            #Sa = Sa[:,x,y,z]
-            #B1 = B1[x,y,z]
 
-            #A = radians(alphas)
+            Sv = Sa[:,x,y,z]
+            B1v = B1[x,y,z]
+
+            S0i = 15*Sa.max()
+            Ab1 = A*(B1v/100)
+            spgrformula.TR = TR
+            T1i = 1000
+            try:
+                popt, pcov = optimize.curve_fit(
+                                    spgrformula, Ab1, Sv, p0=[S0i, T1i])
+            except RuntimeError as e:
+                continue
+            t1 = popt[1]
 
 
