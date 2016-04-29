@@ -16,8 +16,10 @@ def convertSubjectParfiles(subj, subjectdir, niftiDict=None):
     for parfile in parfiles:
         args = {}
         fname = os.path.basename(parfile)
-        if 'SPGR' in parfile or 'IRTSE' in parfile:
-            if 'SPGR' in parfile:
+        if 'ABSOLUTE' in parfile:
+            continue
+        if 'SPGR' in parfile or 'IRTSE' in parfile or 'T1_MAP' in parfile:
+            if 'SPGR' in parfile or 'T1_MAP' in parfile:
                 method = 'orig_spgr'
             else:
                 method = 'tseir'
