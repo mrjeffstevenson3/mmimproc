@@ -18,6 +18,9 @@ def fitT1(S, A, B1, TR):
         Sv = S.loc[v].values
         S0i = 15*Sv.max()
         Ab1 = A*(B1[v]/100)
-        popt, pcov = optimize.curve_fit(spgrformula, Ab1, Sv, p0=[S0i, T1i])
+        try:
+            popt, pcov = optimize.curve_fit(spgrformula, Ab1, Sv, p0=[S0i, T1i])
+        except RuntimeError as e:
+            continue
         fit[v] = popt[1]
     return fit
