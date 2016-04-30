@@ -28,7 +28,7 @@ vialAtlas = join('data','atlases',
 usedVials = range(7, 18+1)
 vialOrder = [str(v) for v in vialNumbersByAscendingT1 if v in usedVials]
 
-import pylabs.qt1.corrections.polycurvet1 as correct
+import pylabs.qt1.corrections.jopt as correct
 correctionname = correct.__name__.split('.')[-1]
 
 ## Get brain sample:
@@ -92,6 +92,11 @@ phantom[TR]['fit'] = fitT1(adata[TR], A, B1, TR)
 ## determine Correction
 correction[TR] = correct.create(adata[TR], A, B1, phantom[TR]['model'], 
                                 phantom[TR]['fit'], TR)
+try:
+    if isinstance(correction[TR][0], str):
+        correctionname = correction[TR][0]
+except Exception as e:
+    pass
 ## apply Correction fit on vials
 phantom[TR]['corr'] = correct.apply(correction[TR], adata[TR], A, B1)
 ## apply Correction fit on brain sample
@@ -104,9 +109,13 @@ brain[TR]['corr'] = correct.apply(correction[TR], sample[brainAngles],
 
 ## plotting
 plt.figure()
+pltname = 'phantom_TR{}_{}'.format(TR, correctionname)
 phantom[TR].plot.bar()
-plt.savefig('phantom_TR{}.png'.format(TR))
+plt.title(pltname)
+plt.savefig(pltname+'.png')
 plt.figure()
+pltname = 'brain_TR{}_{}'.format(TR, correctionname)
 brain[TR].plot.bar()
-plt.savefig('brain_TR{}.png'.format(TR))
+plt.title(pltname)
+plt.savefig(pltname+'.png')
 
