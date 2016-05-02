@@ -5,7 +5,7 @@ mako
 nose-timer 
 numpy
 scipy
-nibabel 
+nibabel>=2.1.0dev
 six
 flake8
 nipype

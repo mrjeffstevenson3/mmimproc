@@ -1,4 +1,5 @@
-import numpy, nibabel, collections
+import numpy, nibabel, collections, os, pandas
+from pylabs.correlation.atlas import atlaslabels
 
 
 def statsByRegion(image, atlas):
@@ -29,3 +30,9 @@ def statsByRegion(image, atlas):
         regionData = imgData[regionMask]
         stats['average'][r] = regionData.mean()
     return stats
+
+def averageByRegion(image, atlasfpath):
+    labels = atlaslabels(os.path.basename(atlasfpath))
+    stats = statsByRegion(image, atlasfpath)
+    return pandas.Series(stats['average'], labels)
+

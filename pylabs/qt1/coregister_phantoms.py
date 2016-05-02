@@ -17,7 +17,7 @@ def coregisterPhantoms(uncoregfiles, projectdir, overwrite=False, dirstruct='BID
         fname = os.path.basename(subjectfile)
         print('Aligning file {0} of {1}: {2}'.format(f, nfiles, fname))
 
-        newFile = subjectfile.replace('.nii','_coreg723.nii')
+        newFile = subjectfile.replace('.nii','_coreg302.nii')
 
         image['coreg'] = True
         image['coregtag'] = '_coreg'

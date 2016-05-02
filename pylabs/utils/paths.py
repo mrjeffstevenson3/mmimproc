@@ -9,10 +9,12 @@ def getlocaldataroot():
         return '/home/jasper/mirror/js/'
     elif hostname == 'JVDB':
         return '/diskArray/mirror/js/'
-    elif hostname == 'scotty':
+    elif hostname == 'scotty.ilabs.uw.edu':
         return '/media/DiskArray/shared_data/js/'
     elif hostname == 'redshirt.ilabs.uw.edu':
         return '/redshirt_array/data/'
+    elif hostname == 'Jeffs-MBP-3':
+        return '/Users/mrjeffs/Documents/Research/data'
     else:
         raise ValueError('Don''t know where data root is on this computer.')
 
