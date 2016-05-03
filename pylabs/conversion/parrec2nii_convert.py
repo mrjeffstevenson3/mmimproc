@@ -1,4 +1,5 @@
 from collections import defaultdict
+import pandas as pd
 import dill #to use as pickle replacement of lambda dict
 #call function that knows pardict[parfile] with parfiledictkey
 def convfilepath(projectdir, parfiledictkey, dirstruct):
@@ -11,7 +12,7 @@ def convfilepath(projectdir, parfiledictkey, dirstruct):
     fnametem = 'sub-{0}_{1}.nii.gz'.format(parfiledictkey['subjid'], parfiledictkey['techinfo'])
     return join(outdir, fnametem)
 
-imgdict = defaultdict(lambda: defaultdict(list))
+protocol_dict = defaultdict(lambda: defaultdict(list))
 
 a = [(ref_img, {'zcutoff': 8, 'ztrans': 0, 'meg_vox_origin': (90, 104, 30), 'xrot': -18, 'origdims': (182, 218, 182)}),
      ('ANTS6-0Months3T_head_bias_corrected.nii.gz', {'zcutoff': 48, 'meg_vox_origin': (71, 80, 60), 'xrot': -16, 'origdims': (147, 170, 176)}),
@@ -25,7 +26,13 @@ a = [(ref_img, {'zcutoff': 8, 'ztrans': 0, 'meg_vox_origin': (90, 104, 30), 'xro
      ('ANTS4-0Years_head_bias_corrected.nii.gz', {'zcutoff': 18, 'meg_vox_origin': (75, 83, 37), 'xrot': -14, 'origdims': (150, 256, 256)}),
       ]
 for i in a:
-    pardict[i[0]] = i[1]
+    protocol_dict[i[0]] = i[1]
 
 subjid = '_'.join(parfile.split('_')[0:parfile.split('_').index('WIP')])
 techinfo = '_'.join(parfile.split('_')[parfile.split('_').index('WIP')+1:parfile.split('_').index('SENSE')])
+
+
+img_conv = {'phantom_qT1_slu': pd.DataFrame(),
+            'phantom_qT1_disc': pd.DataFrame(),
+            'self_control': pd.DataFrame(),
+            'roots_of_empathy': pd.DataFrame()}
