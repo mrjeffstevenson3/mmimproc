@@ -1,5 +1,5 @@
 from __future__ import division
-import numpy, nibabel, scipy.stats
+import numpy, nibabel, scipy.stats, math
 from numpy import square, sqrt
 
 
@@ -48,8 +48,20 @@ def correlateWholeBrain(files, variables):
             scalarResults[v, k] = scipy.stats.pearsonr(x,y)[0]
     assert numpy.allclose(r[:,:4], scalarResults)
 
-    t = r * sqrt( (nsubjects - 2) / (1 - square(nsubjects)) )
+    t = r * sqrt( (nsubjects - 2) / (1 - square(r)) ) #abs?
     p = scipy.stats.t.sf(t, nsubjects-2) * 2
+
+    niterations = 100
+    npermutations = math.factorial(n)
+    assert niterations < npermutations
+
+    binedges = numpy.arange(0, 1+0.01, 0.01)
+    Phist = numpy.zeros(100, dtype=int)
+    for j in range(niterations):
+        print(j)
+        I = numpy.random.permutation(numpy.arange(nsubjects))
+        variables.iloc[I]
+        Phist += numpy.histogram(p, bins)[0]
 
     output2d = numpy.zeros((nvars, nvoxels))
     output2d[:, mask1d] = r
