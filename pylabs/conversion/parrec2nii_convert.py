@@ -6,14 +6,15 @@ def convfilepath(projectdir, parfiledictkey, dirstruct):
     if dirstruct == 'legacy':
         outdir = join(projectdir, subjid, method)
     elif dirstruct == 'BIDS':
-        outdir = join(projectdir, 'sub-{0}'.format(parfiledictkey['subjid']), '{0}'.format(parfiledictkey['method'])
+        outdir = join(projectdir, 'sub-{0}'.format(parfiledictkey['subjid']), '{0}'.format(parfiledictkey['method']))
     else:
         raise ValueError('Unknown directory structure: '+str(dirstruct))
     fnametem = 'sub-{0}_{1}.nii.gz'.format(parfiledictkey['subjid'], parfiledictkey['techinfo'])
     return join(outdir, fnametem)
 
 protocol_dict = defaultdict(lambda: defaultdict(list))
-
+#reference image dims and origin all others will be centered on
+ref_img = 'xxxxMNI152adult_T1_1mm_head.nii.gz'
 a = [(ref_img, {'zcutoff': 8, 'ztrans': 0, 'meg_vox_origin': (90, 104, 30), 'xrot': -18, 'origdims': (182, 218, 182)}),
      ('ANTS6-0Months3T_head_bias_corrected.nii.gz', {'zcutoff': 48, 'meg_vox_origin': (71, 80, 60), 'xrot': -16, 'origdims': (147, 170, 176)}),
      ('ANTS12-0Months3T_head_bias_corrected.nii.gz', {'zcutoff': 50, 'meg_vox_origin': (74, 93, 68), 'xrot': -22, 'origdims': (149, 178, 190)}),
@@ -28,11 +29,48 @@ a = [(ref_img, {'zcutoff': 8, 'ztrans': 0, 'meg_vox_origin': (90, 104, 30), 'xro
 for i in a:
     protocol_dict[i[0]] = i[1]
 
-subjid = '_'.join(parfile.split('_')[0:parfile.split('_').index('WIP')])
-techinfo = '_'.join(parfile.split('_')[parfile.split('_').index('WIP')+1:parfile.split('_').index('SENSE')])
+#subjid = '_'.join(parfile.split('_')[0:parfile.split('_').index('WIP')])
+#techinfo = '_'.join(parfile.split('_')[parfile.split('_').index('WIP')+1:parfile.split('_').index('SENSE')])
 
+slu_conv = pd.DataFrame({'_B1MAP_': {'--output-dir': 'fmap', '--compressed': False, '--permit-truncated': False, '--bvs': False, '--dwell-time': False,
+                        '--field-strength': False, '--origin': 'scanner', '--minmax': 'parse parse', '--store-header': True,
+                        '--scaling': 'dv', '--keep-trace': False, '--overwrite': True, '--strict-sort': False},
+            '_3D_SPGR_': {'--output-dir': 'anat', '--compressed': False, '--permit-truncated': False, '--bvs': False, '--dwell-time': False,
+                        '--field-strength': False, '--origin': 'scanner', '--minmax': 'parse parse', '--store-header': True,
+                        '--scaling': 'fp', '--keep-trace': False, '--overwrite': True, '--strict-sort': False},
+            '_IR': {'--output-dir': 'anat', '--compressed': False, '--permit-truncated': False, '--bvs': False, '--dwell-time': False,
+                        '--field-strength': False, '--origin': 'scanner', '--minmax': 'parse parse', '--store-header': True,
+                        '--scaling': 'fp', '--keep-trace': False, '--overwrite': True, '--strict-sort': False},
+            })
+disc_conv = pd.DataFrame({'_B1MAP_': {'--output-dir': 'fmap', '--compressed': False, '--permit-truncated': False, '--bvs': False, '--dwell-time': False,
+                        '--field-strength': False, '--origin': 'scanner', '--minmax': 'parse parse', '--store-header': True,
+                        '--scaling': 'dv', '--keep-trace': False, '--overwrite': True, '--strict-sort': False},
+            '_3D_SPGR_': {'--output-dir': 'anat', '--compressed': False, '--permit-truncated': False, '--bvs': False, '--dwell-time': False,
+                        '--field-strength': False, '--origin': 'scanner', '--minmax': 'parse parse', '--store-header': True,
+                        '--scaling': 'fp', '--keep-trace': False, '--overwrite': True, '--strict-sort': False},
+            '_IR': {'--output-dir': 'anat', '--compressed': False, '--permit-truncated': False, '--bvs': False, '--dwell-time': False,
+                        '--field-strength': False, '--origin': 'scanner', '--minmax': 'parse parse', '--store-header': True,
+                        '--scaling': 'fp', '--keep-trace': False, '--overwrite': True, '--strict-sort': False},
+            })
 
-img_conv = {'phantom_qT1_slu': pd.DataFrame(),
-            'phantom_qT1_disc': pd.DataFrame(),
-            'self_control': pd.DataFrame(),
-            'roots_of_empathy': pd.DataFrame()}
+self_control_conv = pd.DataFrame({'_B1MAP_': {'--output-dir': 'fmap', '--compressed': False, '--permit-truncated': False, '--bvs': False, '--dwell-time': False,
+                        '--field-strength': False, '--origin': 'scanner', '--minmax': 'parse parse', '--store-header': True,
+                        '--scaling': 'dv', '--keep-trace': False, '--overwrite': True, '--strict-sort': False},
+            '_3D_SPGR_': {'--output-dir': 'anat', '--compressed': False, '--permit-truncated': False, '--bvs': False, '--dwell-time': False,
+                        '--field-strength': False, '--origin': 'scanner', '--minmax': 'parse parse', '--store-header': True,
+                        '--scaling': 'fp', '--keep-trace': False, '--overwrite': True, '--strict-sort': False},
+            })
+
+roots_conv = pd.DataFrame({'_B1MAP_': {'--output-dir': 'fmap', '--compressed': False, '--permit-truncated': False, '--bvs': False, '--dwell-time': False,
+                        '--field-strength': False, '--origin': 'scanner', '--minmax': 'parse parse', '--store-header': True,
+                        '--scaling': 'dv', '--keep-trace': False, '--overwrite': True, '--strict-sort': False},
+            '_3D_SPGR_': {'--output-dir': 'anat', '--compressed': False, '--permit-truncated': False, '--bvs': False, '--dwell-time': False,
+                        '--field-strength': False, '--origin': 'scanner', '--minmax': 'parse parse', '--store-header': True,
+                        '--scaling': 'fp', '--keep-trace': False, '--overwrite': True, '--strict-sort': False},
+            })
+
+img_conv = pd.Panel({'phantom_qT1_slu': slu_conv,
+            'phantom_qT1_disc': disc_conv,
+            'self_control': self_control_conv,
+            'roots_of_empathy': roots_conv})
+
