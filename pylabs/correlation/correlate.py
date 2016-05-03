@@ -1,6 +1,7 @@
 from __future__ import division
-import numpy, nibabel, scipy.stats, math
+import numpy, nibabel, scipy.stats, math, datetime
 from numpy import square, sqrt
+from pylabs.utils import progress
 
 
 def correlateWholeBrain(files, variables):
@@ -31,13 +32,7 @@ def correlateWholeBrain(files, variables):
 
     X = mdata2d[:, numpy.newaxis, :]
     Y = variables.values[:, :, numpy.newaxis]
-
-    mx = X.mean(axis=0, keepdims=True)
-    my = Y.mean(axis=0, keepdims=True)
-    xm, ym = X-mx, Y-my
-    r_num = (xm * ym).mean(axis=0)
-    r_den = X.std(axis=0) * Y.std(axis=0)
-    r = r_num / r_den
+    r, t, p = corr(X, Y)
 
     nvoxelsScalar = 4
     scalarResults = numpy.zeros((nvars, nvoxelsScalar))
@@ -48,20 +43,24 @@ def correlateWholeBrain(files, variables):
             scalarResults[v, k] = scipy.stats.pearsonr(x,y)[0]
     assert numpy.allclose(r[:,:4], scalarResults)
 
-    t = r * sqrt( (nsubjects - 2) / (1 - square(r)) ) #abs?
-    p = scipy.stats.t.sf(t, nsubjects-2) * 2
-
     niterations = 100
     npermutations = math.factorial(n)
     assert niterations < npermutations
 
-    binedges = numpy.arange(0, 1+0.01, 0.01)
-    Phist = numpy.zeros(100, dtype=int)
+    binedges = numpy.arange(0, 2+0.0001, 0.0001) # 2 for two-tailed, i.e. p*2
+    Phist = numpy.zeros(binedges.size-1, dtype=int)
+    start = datetime.datetime.now()
     for j in range(niterations):
-        print(j)
+        progress.progressbar(j, niterations, start)
         I = numpy.random.permutation(numpy.arange(nsubjects))
-        variables.iloc[I]
-        Phist += numpy.histogram(p, bins)[0]
+        Y = variables.values[:, :, numpy.newaxis]
+        _, _, pp = corr(X, Y)
+        Phist += numpy.histogram(pp, binedges)[0]
+    alpha = .05
+    q = .05
+    cumpdist = numpy.cumsum(Phist)/Phist.sum()
+    pcorr = binedges[numpy.abs(cumpdist-(q*alpha)).argmin()]
+    assert pcorr < alpha
 
     output2d = numpy.zeros((nvars, nvoxels))
     output2d[:, mask1d] = r
@@ -71,6 +70,18 @@ def correlateWholeBrain(files, variables):
     for v, varname in enumerate(variables.columns.values):
         img = nibabel.Nifti1Image(output4d[v,:,:,:], affine)
         nibabel.save(img, 'corr_{}.nii.gz'.format(varname))
+
+def corr(X, Y):
+    n = Y.shape[0]
+    mx = X.mean(axis=0, keepdims=True)
+    my = Y.mean(axis=0, keepdims=True)
+    xm, ym = X-mx, Y-my                             #48ms
+    r_num = (xm * ym).mean(axis=0)                  #167ms
+    r_den = X.std(axis=0) * Y.std(axis=0)           #108ms
+    r = r_num / r_den
+    t = r * sqrt( (n - 2) / (1 - square(r)) )       #19ms
+    p = scipy.stats.t.sf(t, n-2) * 2                #997ms
+    return r, t, p
 
 
 
