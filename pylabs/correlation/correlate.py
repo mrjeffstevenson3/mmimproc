@@ -14,6 +14,7 @@ def correlateWholeBrain(files, variables):
         sdata = img.get_data()
         shapes.append(sdata.shape)
         data.append(sdata)
+    print('Concatenating data..')
     data = numpy.array(data)
     affine = img.get_affine()
     for shape in shapes:
@@ -27,33 +28,34 @@ def correlateWholeBrain(files, variables):
     nvalid = mask1d.sum()
     print('{0:.1f}% of voxels in mask.'.format(nvalid/nvoxels*100))
 
-    result2d = numpy.zeros((nvars, nvalid))
+    X = mdata2d[:, numpy.newaxis, :]
+    Y = variables.values[:, :, numpy.newaxis]
+
+    mx = X.mean(axis=0, keepdims=True)
+    my = Y.mean(axis=0, keepdims=True)
+    xm, ym = X-mx, Y-my
+    r_num = (xm * ym).mean(axis=0)
+    r_den = X.std(axis=0) * Y.std(axis=0)
+    r = r_num / r_den
+
+    nvoxelsScalar = 4
+    scalarResults = numpy.zeros((nvars, nvoxelsScalar))
     for v, varname in enumerate(variables.columns.values):
-        print('Correlating variable {}, {} of {}'.format(varname, v+1, nvars))
-        X = mdata2d
-        Y = variables[varname].values
-
-        mx = X.mean(axis=0, keepdims=True)
-        my = Y.mean(axis=0, keepdims=True)
-        xm, ym = X-mx, Y-my
-        r_num = (xm.T * ym).mean(axis=1)
-        r_den = X.std(axis=0) * Y.std()
-        r = r_num / r_den
-
-        result2d[v, :] = r
-
-    x = mdata2d[:,0]
-    y = variables.iloc[:,0]
-    assert result2d[0,0] == scipy.stats.pearsonr(x,y)[0]
+        for k in range(nvoxelsScalar):
+            x = mdata2d[:, k]
+            y = variables[varname]
+            scalarResults[v, k] = scipy.stats.pearsonr(x,y)[0]
+    assert numpy.allclose(r[:,:4], scalarResults)
 
     output2d = numpy.zeros((nvars, nvoxels))
-    output2d[:, mask1d] = result2d
+    output2d[:, mask1d] = r
    
     print('Unvectorizing and saving to file..')
     output4d = output2d.reshape((nvars,) + spatialdims)
     for v, varname in enumerate(variables.columns.values):
         img = nibabel.Nifti1Image(output4d[v,:,:,:], affine)
         nibabel.save(img, 'corr_{}.nii.gz'.format(varname))
+
 
 
 
