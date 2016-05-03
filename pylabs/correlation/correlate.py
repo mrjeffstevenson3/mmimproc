@@ -1,10 +1,11 @@
 from __future__ import division
 import numpy, nibabel, scipy.stats
+from numpy import square, sqrt
 
 
 def correlateWholeBrain(files, variables):
     assert len(files) == variables.shape[0] # ensure equally many subjects
-    nsubjects = variables.shape[0]
+    n = nsubjects = variables.shape[0]
     nvars = variables.shape[1]
     data = []
     shapes = []
@@ -46,6 +47,9 @@ def correlateWholeBrain(files, variables):
             y = variables[varname]
             scalarResults[v, k] = scipy.stats.pearsonr(x,y)[0]
     assert numpy.allclose(r[:,:4], scalarResults)
+
+    t = r * sqrt( (nsubjects - 2) / (1 - square(nsubjects)) )
+    p = scipy.stats.t.sf(t, nsubjects-2) * 2
 
     output2d = numpy.zeros((nvars, nvoxels))
     output2d[:, mask1d] = r
