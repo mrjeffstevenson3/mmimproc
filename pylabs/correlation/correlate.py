@@ -32,7 +32,8 @@ def correlateWholeBrain(files, variables):
 
     X = mdata2d[:, numpy.newaxis, :]
     Y = variables.values[:, :, numpy.newaxis]
-    r, t, p = corr(X, Y)
+    r, t = corr(X, Y)
+    p = scipy.stats.t.sf(t, n-2) * 2                #997ms
 
     nvoxelsScalar = 4
     scalarResults = numpy.zeros((nvars, nvoxelsScalar))
@@ -43,27 +44,33 @@ def correlateWholeBrain(files, variables):
             scalarResults[v, k] = scipy.stats.pearsonr(x,y)[0]
     assert numpy.allclose(r[:,:4], scalarResults)
 
-    niterations = 100
+    print('Starting FDR permutations..')
+    niterations = 1000
     npermutations = math.factorial(n)
     assert niterations < npermutations
-
-    binedges = numpy.arange(0, 2+0.0001, 0.0001) # 2 for two-tailed, i.e. p*2
-    Phist = numpy.zeros(binedges.size-1, dtype=int)
+    nbins = 1000
+    tmax = 20.
+    tres = tmax/nbins
+    binedges = numpy.arange(0, tmax-tres, tres)
+    tdist = numpy.zeros(binedges.size-1, dtype=int)
     start = datetime.datetime.now()
     for j in range(niterations):
         progress.progressbar(j, niterations, start)
         I = numpy.random.permutation(numpy.arange(nsubjects))
         Y = variables.values[:, :, numpy.newaxis]
-        _, _, pp = corr(X, Y)
-        Phist += numpy.histogram(pp, binedges)[0]
+        _, tp = corr(X, Y)
+        tdist += numpy.histogram(numpy.abs(tp), binedges)[0]
     alpha = .05
     q = .05
-    cumpdist = numpy.cumsum(Phist)/Phist.sum()
-    pcorr = binedges[numpy.abs(cumpdist-(q*alpha)).argmin()]
+    cumtdist = numpy.cumsum(tdist[::-1])/tdist.sum()
+    closestbin = numpy.abs(cumtdist-(q*alpha)).argmin()
+    tcorr = binedges[::-1][closestbin]
+    pcorr = scipy.stats.t.sf(tcorr, n-2)
     assert pcorr < alpha
+    print('\nCorrected p-value: {}'.format(pcorr))
 
     output2d = numpy.zeros((nvars, nvoxels))
-    output2d[:, mask1d] = r
+    output2d[:, mask1d] = p
    
     print('Unvectorizing and saving to file..')
     output4d = output2d.reshape((nvars,) + spatialdims)
@@ -80,8 +87,7 @@ def corr(X, Y):
     r_den = X.std(axis=0) * Y.std(axis=0)           #108ms
     r = r_num / r_den
     t = r * sqrt( (n - 2) / (1 - square(r)) )       #19ms
-    p = scipy.stats.t.sf(t, n-2) * 2                #997ms
-    return r, t, p
+    return r, t
 
 
 
