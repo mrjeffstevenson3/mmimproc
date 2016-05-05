@@ -38,7 +38,7 @@ B1 = B1[:,[yslice],:]   #select one slice
 slicenvoxels = numpy.prod(S.shape[1:])  # total voxels in slice for debugging
 coords = numpy.argwhere((S>0).all(axis=0))  #xyz coordinates with no zeros in S
 nvoxels = coords.shape[0]                   # number of selected voxels
-columnnames = ['x','y','z','fit','B1']+alphas
+columnnames = ['x','y','z','S0','t1','B1']+alphas
 voxelIndex = numpy.arange(nvoxels)+1
 data = pandas.DataFrame(index=voxelIndex, columns=columnnames, dtype=float)
 
@@ -61,13 +61,12 @@ for v in range(nvoxels):
                                     spgrformula, Ab1, Sv, p0=[S0i, T1i])
             except RuntimeError as e:
                 continue
-            t1 = popt[1]
+            s0, t1 = popt
+            data.loc[v] = [x, y, z, s0, t1, B1v]+list(Sv)
 
-            data.loc[v] = [x, y, z, t1, B1v]+list(Sv)
-
-seaborn.distplot(data['fit'][data['fit']>300][data['fit']<3000]) # histogram
+seaborn.distplot(data['t1'][data['t1']>300][data['t1']<3000]) # histogram
 t1targets = numpy.arange(500, 2500, 200)
-vx = [numpy.abs(data['fit']-t).argmin() for t in t1targets]
+vx = [numpy.abs(data['t1']-t).argmin() for t in t1targets]
 sample = data.loc[vx].set_index(t1targets)
 
 

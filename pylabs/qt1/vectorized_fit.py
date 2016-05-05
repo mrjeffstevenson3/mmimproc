@@ -1,5 +1,5 @@
 from __future__ import division
-import collections, numpy, glob, datetime, pandas
+import collections, numpy, glob, datetime, pandas, seaborn
 from numpy import cos, sin, exp, tan, radians, power, square, newaxis
 import matplotlib.pyplot as plt
 
@@ -13,9 +13,10 @@ spgrformula.TR = 11.
 
 
 initial = numpy.array([10000000, 1000]) # So, T1
-A = sample.columns.values[-3:].astype(float)
+alphas = sample.columns.values[-3:].astype(float)
+A = radians(alphas)
 Ab1 = (sample['B1'][:,numpy.newaxis]/100) * A[numpy.newaxis, :]
-S = sample[A].values
+S = sample[alphas].values
 
 
 X = Ab1[:, :, numpy.newaxis]
@@ -26,8 +27,8 @@ nsamples = X.shape[0]
 
 nparams = initial.size
 estimates = numpy.tile(initial, (nsamples,1))
-nbins = 10
-width = .7
+nbins = 100
+width = 1.5
 niterations = 1
 
 for j in range(niterations):
@@ -40,7 +41,7 @@ for j in range(niterations):
     relativeP = numpy.array([pgrid.ravel() for pgrid in pgrids]) # nparams x ncombs
     P = estimates[:,:,newaxis]*relativeP[newaxis,:,:] # nsamples x nparams x ncombs
 
-    P = P.clip(min=0)
+    #P = P.clip(min=0)
 
     Ye = spgrformula(X, P[:,0,:][:,newaxis,:], P[:,1,:][:,newaxis,:])
     ss = square(Y-Ye).sum(axis=1)
@@ -48,18 +49,21 @@ for j in range(niterations):
     minss = ss.min(axis=1)
     bestpraveled = ss.argmin(axis=1)
     oldestimates = estimates
-    estimates = relativeP[:,bestpraveled][::-1].T*oldestimates ## ???
-    estimates = estimates.clip(min=0)
-    width = width*.9
+    estimates = relativeP[:,bestpraveled].T*oldestimates ## ???
+    #estimates = estimates.clip(min=0)
+    width = width*.5
 
 
 print(estimates[:,0])
 print(estimates[:,1])
 
-
-ssdf = pandas.DataFrame(ss[5,:].reshape((nbins,)*nparams), 
-        index = relprange*oldestimates[5,0], 
-        columns = relprange*oldestimates[5,1])
+#for s in range(nsamples):
+#    ssdf = pandas.DataFrame(ss[s,:].reshape((nbins,)*nparams), 
+#            index = relprange*oldestimates[s,0], 
+#            columns = relprange*oldestimates[s,1])
+#    plt.figure()
+#    seaborn.heatmap(ssdf)
+#    plt.savefig('sample_{}.png'.format(s))
 
 
 
