@@ -2,6 +2,15 @@ from __future__ import division
 import numpy, nibabel, scipy.stats, math, datetime
 from numpy import square, sqrt
 from pylabs.utils import progress
+"""
+TODO
+
+* Monte carlo with stopping criterion
+* global mean
+* spearman's ranked correlation
+* One-sided or two sided arg
+* divide niterations by number of variables
+"""
 
 
 def correlateWholeBrain(files, variables):
@@ -87,7 +96,8 @@ def corr(X, Y):
     r_den = X.std(axis=0) * Y.std(axis=0)           #108ms
     r = r_num / r_den
     t = r * sqrt( (n - 2) / (1 - square(r)) )       #19ms
-    return r, t
+
+
 
 
 
