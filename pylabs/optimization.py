@@ -3,17 +3,18 @@ import numpy, pandas, seaborn
 from numpy import radians, square, newaxis
 
 
-def nonlinearfit(f, X, Y, initial):
+def nonlinearfit(f, X, Y, initial, names):
     """ grid-search least-squares estimation of a non-linear curve.
     """
 
     X = X[:, :, numpy.newaxis]
     Y = Y[:, :, numpy.newaxis]
 
+    assert len(initial) == len(names)
     assert X.shape[0] == Y.shape[0]
     nsamples = X.shape[0]
 
-    nparams = initial.size
+    nparams = len(initial)
     estimates = numpy.tile(initial, (nsamples,1))
     nbins = 100
     width = 1.5
@@ -27,8 +28,9 @@ def nonlinearfit(f, X, Y, initial):
         pgrids = numpy.meshgrid(*([relprange]*nparams)) # nparams x nbins x nbins 
         relativeP = numpy.array([pgrid.ravel() for pgrid in pgrids]) # nparams x ncombs
         P = estimates[:,:,newaxis]*relativeP[newaxis,:,:] # nsamples x nparams x ncombs
-
-        Ye = f(X, P[:,0,:][:,newaxis,:], P[:,1,:][:,newaxis,:])
+        Plist = [P[:,p,:][:,newaxis,:] for p in range(nparams)]
+ 
+        Ye = f(X, *Plist)
 
         ss = square(Y-Ye).sum(axis=1)
         minss = ss.min(axis=1)
@@ -37,7 +39,7 @@ def nonlinearfit(f, X, Y, initial):
         estimates = relativeP[:,bestpraveled].T*oldestimates
         width = width * zoomfactor
 
-    return estimates
+    return pandas.DataFrame(estimates, columns=names)
 
 
 #for s in range(nsamples):

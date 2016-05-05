@@ -28,7 +28,7 @@ A = radians(alphas)
 TR = 11. 
 yslice = 80 # y coord that cuts through cerebellum
 
-
+print('Sampling SPGR brain data..')
 S = numpy.array([nibabel.load(f).get_data() for f in alphafiles]) # all data
 B1 = nibabel.load(b1file).get_data() # B1 data
 assert B1.shape == S.shape[1:]  # make sure they have same dimensions
@@ -68,5 +68,6 @@ seaborn.distplot(data['t1'][data['t1']>300][data['t1']<3000]) # histogram
 t1targets = numpy.arange(500, 2500, 200)
 vx = [numpy.abs(data['t1']-t).argmin() for t in t1targets]
 sample = data.loc[vx].set_index(t1targets)
+print('')
 
 
