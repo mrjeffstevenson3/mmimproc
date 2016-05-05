@@ -20,3 +20,7 @@ Y = sample[alphas].values
 estimates = nonlinearfit(f, X, Y, initial, names)
 print(estimates)
 
+
+# Xl = X.repeat(1000*100, axis=0)
+# 50s for 100,000 samples. Estimate that valid voxels is ~1million
+
