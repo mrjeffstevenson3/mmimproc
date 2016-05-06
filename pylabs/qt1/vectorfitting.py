@@ -1,30 +1,44 @@
+from __future__ import division
+import nibabel, numpy, niprov
 from pylabs.optimization import nonlinearfit
 from pylabs.qt1.formulas import spgrformula as f
+provenance = niprov.Context()
+prov = lambda f: provenance.get(forFile=f).provenance
 
 
-def fitT1WholeBrain(alphafiles, b1file):
+def fitT1WholeBrain(sfiles, b1file, outfpath):
 
-    f.TR = 11.
-    initial = [10000000, 1500] # So, T1
+    TR = prov(sfiles[0])['repetition-time']
+    if hasattr(TR, '__iter__'):
+        TR = TR[0]
+    alphas = [prov(sfile)['flip-angle'] for sfile in sfiles]
+
+    f.TR = TR
+    initial = [10000000, 1500]
     names = ('S0', 'T1')
-    A = radians(alphas)
-
+    A = numpy.radians(alphas)
 
     print('Loading data..')
-    S = numpy.array([nibabel.load(f).get_data() for f in alphafiles]) # all data
-    B1 = nibabel.load(b1file).get_data() # B1 data
-    assert B1.shape == S.shape[1:]  # make sure they have same dimensions
+    S_4d = numpy.array([nibabel.load(f).get_data() for f in sfiles]) # all data
+    B1_3d = nibabel.load(b1file).get_data() # B1 data
+    affine = nibabel.load(sfiles[0]).get_affine()
+    assert B1_3d.shape == S_4d.shape[1:]  # make sure they have same dimensions
 
     print('Vectorizing and masking..')
-    spatialdims = data.shape[1:]
+    spatialdims = S_4d.shape[1:]
     nvoxels = numpy.prod(spatialdims)
-    data2d = data.reshape((nvoxels, nangles))
-    mask1d = (data2d>0).all(axis=0)
-    mdata2d = data2d[:, mask1d]
+    S = S_4d.reshape((nvoxels, len(alphas)))
+    B1 = B1_3d.reshape((nvoxels,))
+    mask1d = (S>0).all(axis=1)
+    Smasked = S[mask1d,:]
+    B1masked = B1[mask1d]
     nvalid = mask1d.sum()
     print('{0:.1f}% of voxels in mask.'.format(nvalid/nvoxels*100))
 
-
-    X = (sample['B1'][:,numpy.newaxis]/100) * A[numpy.newaxis, :]
-    Y = sample[alphas].values
+    X = (B1masked[:,numpy.newaxis]/100) * A[numpy.newaxis, :]
+    Y = Smasked
     estimates = nonlinearfit(f, X, Y, initial, names)
+
+    print('Saving file..')
+    t1 = estimates['T1'].rehape(spatialdims)
+    nibabel.save(nibabel.Nifti1Image(t1, affine), outfpath)
