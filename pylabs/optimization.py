@@ -24,7 +24,7 @@ def nonlinearfit(f, X, Y, initial, names):
     for j in range(niterations):
 
         res = (2*width)/nbins
-        msg = '[nonlinearfit] Zoom {} of {}, resolution {}'
+        msg = '[nonlinearfit] Zoom {0} of {1}, resolution {2:.1%}'
         print(msg.format(j+1, niterations, res))
         relprange = numpy.arange(1-width, 1+width, res) # nbins
         pgrids = numpy.meshgrid(*([relprange]*nparams)) # nparams x nbins x nbins 

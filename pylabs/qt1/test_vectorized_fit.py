@@ -10,7 +10,7 @@ from pylabs.qt1.brainsampling import sample
 from pylabs.qt1.formulas import spgrformula as f
 f.TR = 11.
 
-initial = [10000000, 1000] # So, T1
+initial = [10000000, 1500] # So, T1
 names = ('S0', 'T1')
 alphas = sample.columns.values[-3:].astype(float)
 A = radians(alphas)
