@@ -1,9 +1,9 @@
 from __future__ import division
 import nibabel, numpy, niprov
 from pylabs.optimization import nonlinearfit
-from pylabs.qt1.formulas import spgrformula as f
+from pylabs.qt1.formulas import spgrformula
 provenance = niprov.Context()
-prov = lambda f: provenance.get(forFile=f).provenance
+prov = lambda fpath: provenance.get(forFile=fpath).provenance
 
 
 def fitT1WholeBrain(sfiles, b1file, outfpath):
@@ -13,7 +13,7 @@ def fitT1WholeBrain(sfiles, b1file, outfpath):
         TR = TR[0]
     alphas = [prov(sfile)['flip-angle'] for sfile in sfiles]
 
-    f.TR = TR
+    spgrformula.TR = TR
     initial = [10000000, 1500]
     names = ('S0', 'T1')
     A = numpy.radians(alphas)
@@ -37,7 +37,7 @@ def fitT1WholeBrain(sfiles, b1file, outfpath):
 
     X = (B1masked[:,numpy.newaxis]/100) * A[numpy.newaxis, :]
     Y = Smasked
-    estimates = nonlinearfit(f, X, Y, initial, names)
+    estimates = nonlinearfit(spgrformula, X, Y, initial, names)
 
     print('Saving file..')
     t1 = estimates['T1'].rehape(spatialdims)

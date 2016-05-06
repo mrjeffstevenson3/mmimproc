@@ -1,8 +1,10 @@
 from pylabs.conversion.phantom_conv import (phantom_midslice_par2mni, 
                                         phantom_B1_midslice_par2mni)
 from pylabs.utils.files import sortedParGlob
-import collections, itertools, os
+import collections, itertools, os, niprov
 from os.path import join
+from pylabs.conversion.parrec import par_to_nii
+provenance = niprov.Context()
 
 
 def convertSubjectParfiles(subj, subjectdir, niftiDict=None):
@@ -48,7 +50,19 @@ def convertSubjectParfiles(subj, subjectdir, niftiDict=None):
 
     return niftiDict
 
+## temp quickndirty parrec conversion until jeff's pipeline is done
 def par2mni_1file(parfile):
-#    for sfile in sfiles:
-#        provenance.add(sfile)
-    print(parfile)
+    (img, status) = provenance.add(parfile)
+    tech = img.provenance['technique']
+    if 'T1' in tech:
+        scaling = 'fp'
+    else:
+        scaling = 'dv'
+    outfpath = parfile.replace('.PAR', '.nii.gz')
+    args = {'infile':parfile, 'verbose':True, 
+            'outfilename':parfile.replace('.PAR', ''), 'compressed':True, 
+            'overwrite':True, 'field_strength':'3.0', 'scaling':scaling}
+    par_to_nii(**args)
+    provenance.log(outfpath, 'par2nii', parfile)
+    return outfpath
+# see brain_qt1_pipeline_v2.py
