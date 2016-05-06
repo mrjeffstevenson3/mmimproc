@@ -14,11 +14,7 @@ subjects = [os.path.basename(sd) for sd in subjectdirs]
 nsubjects = len(subjects)
 
 ## behavior
-pos = numpy.arange(0, 1, 1./len(subjects))
-neg = 1-pos
-pos += numpy.random.rand(len(subjects))*.2
-neg += numpy.random.rand(len(subjects))*.2
-variables = pandas.DataFrame({'pos':pos, 'neg':neg}, index=subjects)
+from pylabs.projects.roots.behavior import selectedvars
 
 ## fit T1
 files = []
@@ -40,7 +36,7 @@ for s, subject in enumerate(subjects):
 
 
 ## correlation
-outfiles = correlateWholeBrain(files, variables)
+outfiles = correlateWholeBrain(files, selectedvars)
 
 ## Clustering, clustertable? see nipy.labs.statistical_mapping.cluster_stats
 
