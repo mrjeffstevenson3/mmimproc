@@ -3,6 +3,7 @@ from os.path import join
 from pylabs.utils.paths import getlocaldataroot
 from pylabs.correlation.correlate import correlateWholeBrain
 from pylabs.qt1.vectorfitting import fitT1WholeBrain
+from pylabs.conversion.helpers import par2mni_1file as conv
 provenance = niprov.Context()
 
 fs = getlocaldataroot()
@@ -23,12 +24,14 @@ variables = pandas.DataFrame({'pos':pos, 'neg':neg}, index=subjects)
 ## fit T1
 files = []
 for s, subject in enumerate(subjects):
-    print('T1 fitting subject {} of {}: {}'.format(s, nsubjects, subject))
-    sfiles = glob.glob(join(subjectdirs[s], 'qT1', '*flip.nii.gz'))
-    for sfile in sfiles:
-        provenance.add(sfile)
-    b1file = join(subjectdirs[s], 'qT1', 'b1phase_reg_masked_s5.nii.gz')
+
+    parrecdir = join(subjectdirs[s], 'source_parrec')
+    parsfiles = glob.glob(join(parrecdir, '*T1_MAP*.PAR'))
+    sfiles = [conv(p) for p in parsfiles]
+    parb1file = glob.glob(join(parrecdir, '*B1MAP*.PAR'))[0]
+    b1file = conv(parb1file)
     outfpath = join(subjectdirs[s], 'qT1', 't1_{}.nii.gz'.format(subject))
+    print('T1 fitting subject {} of {}: {}'.format(s, nsubjects, subject))
     fitT1WholeBrain(sfiles, b1file, outfpath)
     files.append(outfpath)
 
@@ -38,6 +41,8 @@ for s, subject in enumerate(subjects):
 
 ## correlation
 outfiles = correlateWholeBrain(files, variables)
+
+## Clustering, clustertable? see nipy.labs.statistical_mapping.cluster_stats
 
 
 

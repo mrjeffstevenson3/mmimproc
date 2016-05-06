@@ -47,3 +47,8 @@ def convertSubjectParfiles(subj, subjectdir, niftiDict=None):
             niftiDict[k].append(v)
 
     return niftiDict
+
+def par2mni_1file(parfile):
+#    for sfile in sfiles:
+#        provenance.add(sfile)
+    print(parfile)
