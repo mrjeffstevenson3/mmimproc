@@ -40,5 +40,5 @@ def fitT1WholeBrain(sfiles, b1file, outfpath):
     estimates = nonlinearfit(spgrformula, X, Y, initial, names)
 
     print('Saving file..')
-    t1 = estimates['T1'].rehape(spatialdims)
+    t1 = estimates['T1'].values.reshape(spatialdims)
     nibabel.save(nibabel.Nifti1Image(t1, affine), outfpath)

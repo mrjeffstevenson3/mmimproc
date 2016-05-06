@@ -33,6 +33,7 @@ fslapplyxfm = fsl.ApplyXfm()
 def b1mapcoreg_1file(inb1path, fa02niifile):
     b1mapdir = os.path.dirname(inb1path)
     subjid = os.path.basename(inb1path)
+    print('Starting B1 map coregistration etc..')
     os.chdir(b1mapdir)
     fslroi = fsl.ExtractROI()
     fslroi.inputs.in_file = inb1path
