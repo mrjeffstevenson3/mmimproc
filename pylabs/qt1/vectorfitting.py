@@ -27,7 +27,7 @@ def fitT1WholeBrain(sfiles, b1file, outfpath):
     print('Vectorizing and masking..')
     spatialdims = S_4d.shape[1:]
     nvoxels = numpy.prod(spatialdims)
-    S = S_4d.reshape((nvoxels, len(alphas)))
+    S = S_4d.reshape((len(alphas),nvoxels )).T
     B1 = B1_3d.reshape((nvoxels,))
     mask1d = (S>0).all(axis=1)
     Smasked = S[mask1d,:]
@@ -40,5 +40,7 @@ def fitT1WholeBrain(sfiles, b1file, outfpath):
     estimates = nonlinearfit(spgrformula, X, Y, initial, names)
 
     print('Saving file..')
-    t1 = estimates['T1'].values.reshape(spatialdims)
+    t1vector = numpy.zeros((nvoxels,))
+    t1vector[mask1d] = estimates['T1'].values
+    t1 = t1vector.reshape(spatialdims)
     nibabel.save(nibabel.Nifti1Image(t1, affine), outfpath)
