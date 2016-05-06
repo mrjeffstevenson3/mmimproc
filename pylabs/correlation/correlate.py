@@ -51,12 +51,12 @@ def correlateWholeBrain(files, variables):
             x = mdata2d[:, k]
             y = variables[varname]
             scalarResults[v, k] = scipy.stats.pearsonr(x,y)[0]
-    assert numpy.allclose(r[:,:4], scalarResults)
+    #assert numpy.allclose(r[:,:4], scalarResults)
 
     print('Starting FDR permutations..')
     niterations = 1000
     npermutations = math.factorial(n)
-    assert niterations < npermutations
+    #assert niterations < npermutations
     nbins = 1000
     tmax = 20.
     tres = tmax/nbins
@@ -96,6 +96,7 @@ def corr(X, Y):
     r_den = X.std(axis=0) * Y.std(axis=0)           #108ms
     r = r_num / r_den
     t = r * sqrt( (n - 2) / (1 - square(r)) )       #19ms
+    return (r, t)
 
 
 

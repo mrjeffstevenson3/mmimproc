@@ -11,5 +11,5 @@ selvarnames = ['R-PRE-little-helpers-task', 'R-PRE-SE-IAT-Score',
                'T-PRE-Emotional-Regulation-Checklist-Emotion-Regulation',
                'P-PRE-Child-Behavior-Questionnaire-Surgency',
                'P-PRE-Child-Behavior-Checklist-Total-T-score']
-selected = pre.loc[selvarnames].T
+selectedvars = pre.loc[selvarnames].T
 
