@@ -32,7 +32,12 @@ fs = getlocaldataroot()
 import dill #to use as pickle replacement of lambda dict
 
 class BrainOpts(object):
-    pass
+    def keys(self):
+        return ['a', 'b']
+    def __getitem__(self, key):
+        return key.upper()
+
+#    pass
 
 #nib functions to do heavy lifting using opts object to drive processing
 
