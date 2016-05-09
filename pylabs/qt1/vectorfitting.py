@@ -1,9 +1,15 @@
 from __future__ import division
 import nibabel, numpy, niprov
+from numpy import cos, sin, exp, tan, radians, power
 from pylabs.optimization import nonlinearfit
-from pylabs.qt1.formulas import spgrformula
 provenance = niprov.Context()
 prov = lambda fpath: provenance.get(forFile=fpath).provenance
+
+## Same equation as formulas.spgrformula but without sub function (performance)
+def spgrformula(a, S0, T1):
+    TR = spgrformula.TR
+    expminTRT1 = exp(-TR/T1)
+    return S0 * sin(a) * ((1-expminTRT1) / (1-cos(a) * expminTRT1))
 
 
 def fitT1WholeBrain(sfiles, b1file, outfpath):
