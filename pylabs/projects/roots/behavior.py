@@ -16,20 +16,17 @@ varnamesOfTotals = ['P-POST-Child-Behavior-Questionnaire-Surgency',
        'R-POST-Mean-Questions-1-6',
        'R-POST-Affect-Knowledge-Test-Sum-of-8-Vignettes',
        'R-POST-N-stickers-given-to-other-child',
-       'R-POST-little-helpers-task', 'R-POST-IAT-ID',
-       'R-POST-SE-IAT-Score', 'R-POST-Flag-Switch',
+       'R-POST-little-helpers-task',
+       'R-POST-SE-IAT-Score', 
+       'R-POST-Flag-Switch',
        'R-POST-Peabody-Picture-Vocab-Test-Standard-Score',
-       'T-POST-SDQ-Emotion-Symptoms-Scale-Score',
-       'T-POST-SDQ-Conduct-Problems-Scale-Score',
-       'T-POST-SDQ-Hyperactivity-Scale-Score',
-       'T-POST-SDQ-Peer-problems-Scale-Score',
        'T-POST-SDQ-Prosocial-Scale-Score',
        'T-POST-SDQ-Total-Difficulties-Score',
        'T-POST-Child-Behavior-Scale-Aggression-Scale',
        'T-POST-Child-Behavior-Scale-Prosocial-Scale',
        'T-POST-Emotional-Regulation-Checklist-Lability-Negativity',
        'T-POST-Emotional-Regulation-Checklist-Emotion-Regulation']
-posttotalvars = post.loc[posttotalvarnames]
+posttotalvars = post.loc[varnamesOfTotals]
 
 # Get rid of variables with nans
 varmaskWithoutNans = posttotalvars.notnull().all(axis=1)
