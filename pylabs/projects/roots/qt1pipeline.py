@@ -1,6 +1,6 @@
 import glob, os, pandas, numpy, niprov, nibabel
 from os.path import join
-from pylabs.utils.paths import getlocaldataroot
+from pylabs.utils.paths import getlocaldataroot, getnetworkdataroot
 from pylabs.correlation.correlate import correlateWholeBrain
 from pylabs.qt1.vectorfitting import fitT1WholeBrain
 from pylabs.conversion.helpers import par2mni_1file as conv
@@ -14,16 +14,21 @@ from pylabs.projects.roots.behavior import selectedvars
 behavior = selectedvars.T
 
 ## directories
-fs = getlocaldataroot()
+#fs = getlocaldataroot()
+fs = getnetworkdataroot()
 projectdir = join(fs, 'roots_of_empathy')
-subjects = ['sub-2013_C0{}'.format(s) for s in behavior.index.values]
+resultsdir = join(projectdir, 'correlations_qt1')
+if not os.path.isdir(resultsdir):
+    os.mkdir(resultsdir)
+subjects = ['sub-2013-C0{}'.format(s) for s in behavior.index.values]
 nsubjects = len(subjects)
 
 # convert to nifti and fit T1
 t1files = []
 for s, subject in enumerate(subjects):
     print('Converting parrecs for {} of {}: {}'.format(s+1, nsubjects, subject))
-    outfpath = join(projectdir, subject, 'qT1', '{}_t1.nii.gz'.format(subject))
+    outfpath = join(projectdir, subject, subject+'_qT1', 
+                    '{}_t1.nii.gz'.format(subject))
     parrecdir = join(projectdir, subject, 'source_parrec')
     parsfiles = glob.glob(join(parrecdir, '*T1_MAP*.PAR'))
     sfiles = [conv(p) for p in parsfiles]
@@ -67,7 +72,7 @@ for s, unsmoothfile in enumerate(alignedfiles):
 ## correlation
 cfiles = sorted(smoothedfiles)
 outfiles = correlateWholeBrain(cfiles, behavior, 
-                outdir = projectdir, niterations = 500) # 30mins
+                outdir = resultsdir, niterations = 500) # 30mins
 ## Clustering, clustertable? see nipy.labs.statistical_mapping.cluster_stats
 
 
