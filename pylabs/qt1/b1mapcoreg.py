@@ -34,6 +34,7 @@ def b1mapcoreg_1file(inb1path, fa02niifile):
     b1mapdir = os.path.dirname(inb1path)
     subjid = os.path.basename(inb1path)
     print('Starting B1 map coregistration etc..')
+    oldir = os.getcwd()
     os.chdir(b1mapdir)
     fslroi = fsl.ExtractROI()
     fslroi.inputs.in_file = inb1path
@@ -84,6 +85,7 @@ def b1mapcoreg_1file(inb1path, fa02niifile):
     fslapplyxfm.inputs.apply_xfm = True
     fslapplyxfm.inputs.reference = fa02niifile
     fslapplyxfm.run()
+    os.chdir(olddir)
     return pathjoin(b1mapdir, subjid+'_b1map_phase_rfov_reg2qT1.nii.gz')
 
 #    fslmaths = fsl.BinaryMaths()

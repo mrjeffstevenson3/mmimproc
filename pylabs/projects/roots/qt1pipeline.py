@@ -66,8 +66,8 @@ for s, unsmoothfile in enumerate(alignedfiles):
 
 ## correlation
 cfiles = sorted(smoothedfiles)
-outfiles = correlateWholeBrain(cfiles, behavior, niterations = 500) # 30mins
-
+outfiles = correlateWholeBrain(cfiles, behavior, 
+                outdir = projectdir, niterations = 500) # 30mins
 ## Clustering, clustertable? see nipy.labs.statistical_mapping.cluster_stats
 
 

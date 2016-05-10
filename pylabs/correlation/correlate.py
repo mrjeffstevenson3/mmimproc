@@ -1,4 +1,5 @@
 from __future__ import division
+from os.path import join
 import numpy, nibabel, scipy.stats, math, datetime
 from numpy import square, sqrt
 from pylabs.utils import progress
@@ -13,7 +14,7 @@ TODO
 """
 
 
-def correlateWholeBrain(files, variables, niterations = 1000):
+def correlateWholeBrain(files, variables, outdir = '', niterations = 1000):
     assert len(files) == variables.shape[0] # ensure equally many subjects
     n = nsubjects = variables.shape[0]
     nvars = variables.shape[1]
@@ -76,15 +77,28 @@ def correlateWholeBrain(files, variables, niterations = 1000):
     pcorr = scipy.stats.t.sf(tcorr, n-2)
     assert pcorr < alpha
     print('\nCorrected p-value: {}'.format(pcorr))
+    print('Corresponding t-value: {}'.format(tcorr))
 
-    output2d = numpy.zeros((nvars, nvoxels))
-    output2d[:, mask1d] = p
-   
-    print('Unvectorizing and saving to file..')
-    output4d = output2d.reshape((nvars,) + spatialdims)
-    for v, varname in enumerate(variables.columns.values):
-        img = nibabel.Nifti1Image(output4d[v,:,:,:], affine)
-        nibabel.save(img, 'corr_{}.nii.gz'.format(varname))
+    tneg = t.copy()
+    tpos = t.copy()
+    tneg[tneg>0] = 0
+    tpos[tpos<0] = 0
+    out = {
+        '{}_r.nii.gz': r,
+        '{}_tneg.nii.gz': tneg,
+        '{}_tpos.nii.gz': tpos,
+        '{}_2minp.nii.gz': 2-p,
+    }
+    print('Unvectorizing and saving to files..')
+    for fnametem, vector in out.items():
+        output2d = numpy.zeros((nvars, nvoxels))
+        output2d[:, mask1d] = vector
+        output4d = output2d.reshape((nvars,) + spatialdims)
+        for v, varname in enumerate(variables.columns.values):
+            img = nibabel.Nifti1Image(output4d[v,:,:,:], affine)
+            print('Saving file: {}'.format(fnametem.format(varname)))
+            nibabel.save(img, join(outdir, fnametem.format(varname)))
+
 
 def corr(X, Y):
     n = Y.shape[0]
