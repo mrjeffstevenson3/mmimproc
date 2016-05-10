@@ -1,48 +1,72 @@
-import glob, os, pandas, numpy, niprov
+import glob, os, pandas, numpy, niprov, nibabel
 from os.path import join
 from pylabs.utils.paths import getlocaldataroot
 from pylabs.correlation.correlate import correlateWholeBrain
 from pylabs.qt1.vectorfitting import fitT1WholeBrain
 from pylabs.conversion.helpers import par2mni_1file as conv
 from pylabs.qt1.b1mapcoreg import b1mapcoreg_1file
+from nipype.interfaces import fsl
+from scipy.ndimage.filters import gaussian_filter
 provenance = niprov.Context()
-
-fs = getlocaldataroot()
-projectdir = join(fs, 'roots_of_empathy')
-subjectdirs = glob.glob(join(projectdir, 'sub-*'))
-subjects = [os.path.basename(sd) for sd in subjectdirs]
-nsubjects = len(subjects)
 
 ## behavior
 from pylabs.projects.roots.behavior import selectedvars
+behavior = selectedvars.T
 
-# fit T1
-files = []
+## directories
+fs = getlocaldataroot()
+projectdir = join(fs, 'roots_of_empathy')
+subjects = ['sub-2013_C0{}'.format(s) for s in behavior.index.values]
+nsubjects = len(subjects)
+
+# convert to nifti and fit T1
+t1files = []
 for s, subject in enumerate(subjects):
-    print('Converting parrecs for {} of {}: {}'.format(s, nsubjects, subject))
-    parrecdir = join(subjectdirs[s], 'source_parrec')
+    print('Converting parrecs for {} of {}: {}'.format(s+1, nsubjects, subject))
+    outfpath = join(projectdir, subject, 'qT1', '{}_t1.nii.gz'.format(subject))
+    parrecdir = join(projectdir, subject, 'source_parrec')
     parsfiles = glob.glob(join(parrecdir, '*T1_MAP*.PAR'))
     sfiles = [conv(p) for p in parsfiles]
     parb1file = glob.glob(join(parrecdir, '*B1MAP*.PAR'))[0]
     b1fileLowRes = conv(parb1file)
     b1file = b1mapcoreg_1file(b1fileLowRes, sfiles[0])
-    outfpath = join(subjectdirs[s], 'qT1', 't1_{}.nii.gz'.format(subject))
     print('T1 fitting subject {} of {}: {}'.format(s, nsubjects, subject))
     fitT1WholeBrain(sfiles, b1file, outfpath)
-    files.append(outfpath)
+    t1files.append(outfpath)
 
 
-## alignment?
-# reg2t1flip_1vol.mat only two subj
+## align
+alignedfiles = []
+ref = t1files[0]
+refsub = os.path.basename(ref).split('_')[1]
+for s, unaligned in enumerate(t1files):
+    print('Aligning {} of {}'.format(s+1, nsubjects))
+    aligned = unaligned.replace('.nii', '_flirt2{}.nii'.format(refsub))
+    flt = fsl.FLIRT(bins=640, cost_func='mutualinfo')
+    flt.inputs.in_file = unaligned
+    flt.inputs.reference = ref
+    flt.inputs.out_file = aligned
+    flt.inputs.out_matrix_file = aligned.replace('.nii.gz', '.mat')
+    flt.inputs.interp = 'nearestneighbour'
+    flt.run() 
+    alignedfiles.append(aligned)
 
+## smooth
+sigma = 2
+smoothedfiles = []
+for s, unsmoothfile in enumerate(alignedfiles):
+    print('Smoothing {} of {}'.format(s+1, nsubjects))
+    smoothfile = unsmoothfile.replace('.nii', '_sigma{}.nii'.format(sigma))
+    img = nibabel.load(unsmoothfile)
+    data = img.get_data()
+    affine = img.get_affine()
+    smoothdata = gaussian_filter(data, sigma)
+    nibabel.save(nibabel.Nifti1Image(smoothdata, affine), smoothfile)
+    smoothedfiles.append(smoothfile)
 
 ## correlation
-cfiles = []
-for s in selectedvars.index.values:
-    cfiles.append(join(projectdir, 'sub-2013_C0{}'.format(s),'qT1',
-        't1_sub-2013_C0{}.nii.gz'.format(s)))
-cfiles = sorted(cfiles)
-outfiles = correlateWholeBrain(cfiles, selectedvars)
+cfiles = sorted(smoothedfiles)
+outfiles = correlateWholeBrain(cfiles, behavior, niterations = 500) # 30mins
 
 ## Clustering, clustertable? see nipy.labs.statistical_mapping.cluster_stats
 

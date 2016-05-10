@@ -13,7 +13,7 @@ TODO
 """
 
 
-def correlateWholeBrain(files, variables):
+def correlateWholeBrain(files, variables, niterations = 1000):
     assert len(files) == variables.shape[0] # ensure equally many subjects
     n = nsubjects = variables.shape[0]
     nvars = variables.shape[1]
@@ -54,7 +54,6 @@ def correlateWholeBrain(files, variables):
     #assert numpy.allclose(r[:,:4], scalarResults)
 
     print('Starting FDR permutations..')
-    niterations = 1000
     npermutations = math.factorial(n)
     #assert niterations < npermutations
     nbins = 1000
