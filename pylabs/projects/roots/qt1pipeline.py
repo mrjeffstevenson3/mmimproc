@@ -27,9 +27,12 @@ nsubjects = len(subjects)
 t1files = []
 for s, subject in enumerate(subjects):
     print('Converting parrecs for {} of {}: {}'.format(s+1, nsubjects, subject))
-    outfpath = join(projectdir, subject, subject+'_qT1', 
-                    '{}_t1.nii.gz'.format(subject))
-    parrecdir = join(projectdir, subject, 'source_parrec')
+    sessiondir = join(projectdir, subject, 'ses-1')
+    qt1dir = join(sessiondir, 'qt1')
+    if not os.path.isdir(qt1dir):
+        os.mkdir(qt1dir)
+    outfpath = join(qt1dir, '{}_t1.nii.gz'.format(subject))
+    parrecdir = join(sessiondir, 'source_parrec')
     parsfiles = glob.glob(join(parrecdir, '*T1_MAP*.PAR'))
     sfiles = [conv(p) for p in parsfiles]
     parb1file = glob.glob(join(parrecdir, '*B1MAP*.PAR'))[0]
