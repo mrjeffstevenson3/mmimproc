@@ -52,7 +52,6 @@ def brain_proc_file(opts, niftiDict=None):
     infiles = sortedParGlob(join(fpath, '*'+opts.scan+'*.PAR'))
     for infile in infiles:
         prov.add(infile)
-
         # load the PAR header and data
         scaling = 'dv' if opts.scaling == 'off' else opts.scaling
         infile = fname_ext_ul_case(infile)
@@ -66,7 +65,7 @@ def brain_proc_file(opts, niftiDict=None):
         fa = str(int(pr_hdr.image_defs['image_flip_angle'][0]))
         ti = str(int(round(pr_hdr.image_defs['Inversion delay'][0])))
         tr = str(round(pr_hdr.general_info['repetition_time'][0], 1)).replace('.', 'p')
-
+        scandate = pr_hdr.general_info['exam_date'].split('/')[0].strip().replace(".","")
         if opts.scaling != 'off':
             verbose('Using data scaling "%s"' % opts.scaling)
         # get original scaling, and decide if we scale in-place or not
@@ -111,22 +110,30 @@ def brain_proc_file(opts, niftiDict=None):
                     bvals = bvals[good_mask]
                     bvecs = bvecs[good_mask]
 
-        partialkey = (opts.subj, opts.scan_name, tr)
-        runkeys = [key for key in niftiDict.keys() if key[:2] == partialkey]
-        for run in range(1, len(runkeys) + 1):
-            exvalues = niftiDict[partialkey + (run,)]     #extracts values if matching key found
-            for exvalue in exvalues:
-                if contrast == exvalue[1]:     #this is the matching value that stops run counter
-                    break;
+        partialkey = (opts.subj, 'ses'+str(opts.multisession)+'_', opts.scan_name, tr)
+        seskeys = [key for key in niftiDict.keys() if key[:2] == partialkey]
+        runkeys = [key for key in niftiDict.keys() if key[:4] == partialkey]
+        for ses in range(0, len(seskeys) + 1):
+            sesvalues = niftiDict[partialkey[0:4]]
+            if niftiDict[partialkey[0:2]
+            for run in range(1, len(runkeys) + 1):
+                exvalues = niftiDict[partialkey + (run,)]     #extracts values if matching key found
+                for exvalue in exvalues:
+                    if contrast == exvalue[1]:     #this is the matching value that stops run counter
+                        break;
+                else:
+                    break;  # if you just want the run number  # case 2 key found but value/contrast does not exist eg new file
             else:
-                break;  # if you just want the run number  # case 2 key found but value/contrast does not exist eg new file
-        else:
-            run = len(runkeys) + 1  # need to make new run    case 1, case 3
+                run = len(runkeys) + 1  # need to make new run    case 1, case 3
 
         # do at end when we know file name
         # figure out the output filename, and see if it exists
-        basefilename = str(opts.fname_template).format(subj=opts.subj, run=run, fa=fa, tr=tr, ti=ti, run=str(run),
-                                                       scan_name=opts.scan_name, scan_info=opts.scan_info)
+        if opts.multisession >= 1:
+            basefilename = str(opts.fname_template).format(subj=opts.subj, fa=fa, tr=tr, ti=ti, run=str(run),
+                            session='ses'+str(opts.multisession)+'_', scan_name=opts.scan_name, scan_info=opts.scan_info)
+        elif opts.multisession >= 0:
+            basefilename = str(opts.fname_template).format(subj=opts.subj, fa=fa, tr=tr, ti=ti, run=str(run),
+                            session='', scan_name=opts.scan_name, scan_info=opts.scan_info)
         outfilename = os.path.join(fs, opts.proj, opts.subj, opts.outdir, basefilename)
         if outfilename.count('.') > 1:
             raise ValueError('more than one . was found in '+outfilename+ '! stopping now.!')
