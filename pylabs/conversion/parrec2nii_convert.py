@@ -32,12 +32,7 @@ fs = getlocaldataroot()
 import dill #to use as pickle replacement of lambda dict
 
 class BrainOpts(object):
-    def keys(self):
-        return ['a', 'b']
-    def __getitem__(self, key):
-        return key.upper()
-
-#    pass
+    pass
 
 #nib functions to do heavy lifting using opts object to drive processing
 
@@ -50,26 +45,13 @@ def error(msg, exit_code):
     sys.exit(exit_code)
 
 def brain_proc_file(opts, niftiDict=None):
+    verbose.switch = opts.verbose
     if niftiDict is None:
-        niftiDict = defaultdict(list)
+        niftiDict = defaultdict(lambda: defaultdict(list))
     fpath = join(fs, opts.proj, opts.subj, 'source_parrec')
     infiles = sortedParGlob(join(fpath, '*'+opts.scan+'*.PAR'))
     for infile in infiles:
-        # figure out the output filename, and see if it exists
-        basefilename = splitext_addext(os.path.basename(infile))[0]
-        if opts.outdir is not None:
-            # set output path
-            basefilename = os.path.join(opts.outdir, basefilename)
-
-        # prep a file
-        if opts.compressed:
-            verbose('Using gzip compression')
-            outfilename = basefilename + '.nii.gz'
-        else:
-            outfilename = basefilename + '.nii'
-        if os.path.isfile(outfilename) and not opts.overwrite:
-            raise IOError('Output file "%s" exists, use --overwrite to '
-                          'overwrite it' % outfilename)
+        prov.add(infile)
 
         # load the PAR header and data
         scaling = 'dv' if opts.scaling == 'off' else opts.scaling
@@ -81,6 +63,10 @@ def brain_proc_file(opts, niftiDict=None):
         pr_hdr = pr_img.header
         affine = pr_hdr.get_affine(origin=opts.origin)
         slope, intercept = pr_hdr.get_data_scaling(scaling)
+        fa = str(int(pr_hdr.image_defs['image_flip_angle'][0]))
+        ti = str(int(round(pr_hdr.image_defs['Inversion delay'][0])))
+        tr = str(round(pr_hdr.general_info['repetition_time'][0], 1)).replace('.', 'p')
+
         if opts.scaling != 'off':
             verbose('Using data scaling "%s"' % opts.scaling)
         # get original scaling, and decide if we scale in-place or not
@@ -125,6 +111,34 @@ def brain_proc_file(opts, niftiDict=None):
                     bvals = bvals[good_mask]
                     bvecs = bvecs[good_mask]
 
+        partialkey = (opts.subj, opts.scan_name, tr)
+        runkeys = [key for key in niftiDict.keys() if key[:2] == partialkey]
+        for run in range(1, len(runkeys) + 1):
+            exvalues = niftiDict[partialkey + (run,)]     #extracts values if matching key found
+            for exvalue in exvalues:
+                if contrast == exvalue[1]:     #this is the matching value that stops run counter
+                    break;
+            else:
+                break;  # if you just want the run number  # case 2 key found but value/contrast does not exist eg new file
+        else:
+            run = len(runkeys) + 1  # need to make new run    case 1, case 3
+
+        # do at end when we know file name
+        # figure out the output filename, and see if it exists
+        basefilename = str(opts.fname_template).format(subj=opts.subj, run=run, fa=fa, tr=tr, ti=ti, run=str(run),
+                                                       scan_name=opts.scan_name, scan_info=opts.scan_info)
+        outfilename = os.path.join(fs, opts.proj, opts.subj, opts.outdir, basefilename)
+        if outfilename.count('.') > 1:
+            raise ValueError('more than one . was found in '+outfilename+ '! stopping now.!')
+        # prep a file
+        if opts.compressed:
+            verbose('Using gzip compression')
+            outfilename = outfilename + '.gz'
+
+        if os.path.isfile(outfilename) and not opts.overwrite:
+            raise IOError('Output file "%s" exists, use \'overwrite\': True to '
+                          'overwrite it' % outfilename)
+
         # Make corresponding NIfTI image
         nimg = nifti1.Nifti1Image(in_data, affine, pr_hdr)
         nhdr = nimg.header
@@ -161,7 +175,7 @@ def brain_proc_file(opts, niftiDict=None):
             elif bvecs is None:
                 verbose('DTI volumes detected, but no diffusion direction info was'
                         'found.  Writing .bvals file only.')
-                with open(basefilename + '.bvals', 'w') as fid:
+                with open(outfilename.split('.')[0] + '.bvals', 'w') as fid:
                     # np.savetxt could do this, but it's just a loop anyway
                     for val in bvals:
                         fid.write('%s ' % val)
@@ -172,12 +186,12 @@ def brain_proc_file(opts, niftiDict=None):
                 orig2new = npl.inv(t_aff)
                 bv_reorient = from_matvec(to_matvec(orig2new)[0], [0, 0, 0])
                 bvecs = apply_affine(bv_reorient, bvecs)
-                with open(basefilename + '.bvals', 'w') as fid:
+                with open(outfilename.split('.')[0] + '.bvals', 'w') as fid:
                     # np.savetxt could do this, but it's just a loop anyway
                     for val in bvals:
                         fid.write('%s ' % val)
                     fid.write('\n')
-                with open(basefilename + '.bvecs', 'w') as fid:
+                with open(outfilename.split('.')[0] + '.bvecs', 'w') as fid:
                     for row in bvecs.T:
                         for val in row:
                             fid.write('%s ' % val)
@@ -188,7 +202,7 @@ def brain_proc_file(opts, niftiDict=None):
             labels = pr_img.header.get_volume_labels()
             if len(labels) > 0:
                 vol_keys = list(labels.keys())
-                with open(basefilename + '.ordering.csv', 'w') as csvfile:
+                with open(outfilename.split('.')[0] + '.ordering.csv', 'w') as csvfile:
                     csvwriter = csv.writer(csvfile, delimiter=',')
                     csvwriter.writerow(vol_keys)
                     for vals in zip(*[labels[k] for k in vol_keys]):
@@ -206,8 +220,8 @@ def brain_proc_file(opts, niftiDict=None):
             else:
                 verbose('Writing dwell time (%r sec) calculated assuming %sT '
                         'magnet' % (dwell_time, opts.field_strength))
-                with open(basefilename + '.dwell_time', 'w') as fid:
+                with open(outfilename.split('.')[0] + '.dwell_time', 'w') as fid:
                     fid.write('%r\n' % dwell_time)
-    return niftidict
+    return niftiDict
         # done
 
