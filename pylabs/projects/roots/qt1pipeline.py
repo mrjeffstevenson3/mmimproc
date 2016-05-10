@@ -46,15 +46,15 @@ for s, subject in enumerate(subjects):
 ## align
 alignedfiles = []
 ref = t1files[0]
-refsub = os.path.basename(ref).split('_')[1]
+refsub = os.path.basename(ref).split('_')[0]
 for s, unaligned in enumerate(t1files):
     print('Aligning {} of {}'.format(s+1, nsubjects))
-    aligned = unaligned.replace('.nii', '_flirt2{}.nii'.format(refsub))
+    aligned = unaligned.replace('.nii.gz', '_flirt2{}'.format(refsub))
     flt = fsl.FLIRT(bins=640, cost_func='mutualinfo')
     flt.inputs.in_file = unaligned
     flt.inputs.reference = ref
     flt.inputs.out_file = aligned
-    flt.inputs.out_matrix_file = aligned.replace('.nii.gz', '.mat')
+    flt.inputs.out_matrix_file = aligned
     flt.inputs.interp = 'nearestneighbour'
     flt.run() 
     alignedfiles.append(aligned)
