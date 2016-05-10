@@ -46,7 +46,7 @@ self_control_conv = pd.DataFrame({
             })
 
 roots_conv = pd.DataFrame({
-            '_B1MAP_': {'dirstruct': 'BIDS', 'outdir': 'fmap', 'scan_name': 'b1map', 'scan_info': '', 'fname_template': '{subj}_{session}{scan_name}_{scan_info}_{run}.nii',
+            '_B1MAP_': {'dirstruct': 'BIDS', 'outdir': 'fmap', 'scan_name': 'b1map', 'scan_info': '', 'fname_template': '{subj}_{session}{scan_name}_{scan_info}{run}.nii',
                         'verbose': True, 'compressed': False, 'permit_truncated': False, 'bvs': False, 'dwell_time': False,
                         'field_strength': False, 'vol_info': False, 'origin': 'scanner', 'minmax': 'parse parse', 'store_header': True,
                         'scaling': 'dv', 'keep_trace': False, 'overwrite': True, 'strict_sort': False, 'multisession': [1, 2, 3]},
@@ -83,7 +83,6 @@ img_conv = pd.Panel({'phantom_qT1_slu': slu_phant_conv,
             'roots_of_empathy': roots_conv})
 
 opts = BrainOpts()
-niftiDict = defaultdict(lambda: defaultdict(list))
 
 def set_opts(opt_series): #function to extract params from dataframe
     for index, row in opt_series.iteritems():
@@ -92,7 +91,7 @@ def set_opts(opt_series): #function to extract params from dataframe
 def conv_subj(project, subjects, niftiDict=None):
     #loops over subjects for a single project
     if niftiDict is None:
-        niftiDict = defaultdict(list)
+        niftiDict = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
     if project not in img_conv:
         raise ValueError(project+" not in img_conv Panel. Please check")
     setattr(opts, 'proj', project)

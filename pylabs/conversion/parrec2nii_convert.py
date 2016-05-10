@@ -36,6 +36,8 @@ class BrainOpts(object):
 
 #nib functions to do heavy lifting using opts object to drive processing
 
+
+
 def verbose(msg, indent=0):
     if verbose.switch:
         print("%s%s" % (' ' * indent, msg))
@@ -47,9 +49,22 @@ def error(msg, exit_code):
 def brain_proc_file(opts, niftiDict=None):
     verbose.switch = opts.verbose
     if niftiDict is None:
-        niftiDict = defaultdict(lambda: defaultdict(list))
-    fpath = join(fs, opts.proj, opts.subj, 'source_parrec')
-    infiles = sortedParGlob(join(fpath, '*'+opts.scan+'*.PAR'))
+        niftiDict = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
+    subpath = join(fs, opts.proj, opts.subj)
+    if opts.multisession[0] == 0:
+        setattr(opts, 'session', '')
+        fpath = join(subpath, 'source_parrec')
+        infiles = sortedParGlob(join(fpath, '*' + opts.scan + '*.PAR'))
+    elif opts.multisession[0] != 0 and os.path.isfile(join(subpath, str(opts.subj)+'_sessions.tsv')):
+        subsessionsDF = pd.DataFrame.from_csv(open(join(subpath, str(opts.subj)+'_sessions.tsv')), sep='\t', header=1)
+    else:
+        subsessionsDF = pd.DataFrame(columns=['session_id', 'acq_time', 'scan', 'converted', 'tr', 'fa', 'ti', 'QC', 'pre_proc'])
+    if any(opts.multisession) > 0:
+        infiles = []
+        for s in opts.multisession:
+            ses = 'ses-'+str(s)
+            fpath = join(subpath, ses, 'source_parrec')
+            infiles += sortedParGlob(join(fpath, '*'+opts.scan+'*.PAR'))
     for infile in infiles:
         prov.add(infile)
         # load the PAR header and data
@@ -62,10 +77,15 @@ def brain_proc_file(opts, niftiDict=None):
         pr_hdr = pr_img.header
         affine = pr_hdr.get_affine(origin=opts.origin)
         slope, intercept = pr_hdr.get_data_scaling(scaling)
-        fa = str(int(pr_hdr.image_defs['image_flip_angle'][0]))
-        ti = str(int(round(pr_hdr.image_defs['Inversion delay'][0])))
-        tr = str(round(pr_hdr.general_info['repetition_time'][0], 1)).replace('.', 'p')
-        scandate = pr_hdr.general_info['exam_date'].split('/')[0].strip().replace(".","")
+        setattr(opts, 'fa', int(pr_hdr.image_defs['image_flip_angle'][0]))
+        setattr(opts, 'ti', int(round(pr_hdr.image_defs['Inversion delay'][0])))
+        setattr(opts, 'tr', round(pr_hdr.general_info['repetition_time'][0], 1))
+        setattr(opts, 'acq_time', pr_hdr.general_info['exam_date'].replace(".","-").replace('/','T').replace(' ', ''))
+        if any(opts.multisession) > 0:
+            setattr(opts, 'session_id', infile.split('/')[-3])
+        else:
+            setattr(opts, 'session_id', '')
+
         if opts.scaling != 'off':
             verbose('Using data scaling "%s"' % opts.scaling)
         # get original scaling, and decide if we scale in-place or not
@@ -110,31 +130,36 @@ def brain_proc_file(opts, niftiDict=None):
                     bvals = bvals[good_mask]
                     bvecs = bvecs[good_mask]
 
-        partialkey = (opts.subj, 'ses'+str(opts.multisession)+'_', opts.scan_name, tr)
-        seskeys = [key for key in niftiDict.keys() if key[:2] == partialkey]
-        runkeys = [key for key in niftiDict.keys() if key[:4] == partialkey]
-        for ses in range(0, len(seskeys) + 1):
-            sesvalues = niftiDict[partialkey[0:4]]
-            if niftiDict[partialkey[0:2]
-            for run in range(1, len(runkeys) + 1):
-                exvalues = niftiDict[partialkey + (run,)]     #extracts values if matching key found
-                for exvalue in exvalues:
-                    if contrast == exvalue[1]:     #this is the matching value that stops run counter
-                        break;
-                else:
-                    break;  # if you just want the run number  # case 2 key found but value/contrast does not exist eg new file
-            else:
-                run = len(runkeys) + 1  # need to make new run    case 1, case 3
+
+        # partialkey = (opts.subj, opts.session_id, opts.scan_name, opts.tr)
+        # runkeys = [key for key in niftiDict.keys() if key[:4] == partialkey]
+        # for run in range(1, len(runkeys) + 1):
+        #     exvalues = niftiDict[partialkey + (run,)]     #extracts values if matching key found
+        #     for k, v in exvalues.items():
+        #         # this is the matching value that trips run counter to current value
+        #         if v == getattr(opts, k):
+        #             break;
+        #     else:
+        #         break;  # if you just want the run number  # case 2 key found but value/contrast does not exist eg new file
+        # else:
+        #     setattr(opts, 'run', len(runkeys) + 1)  # need to make new run    case 1, case 3
+
+
 
         # do at end when we know file name
         # figure out the output filename, and see if it exists
-        if opts.multisession >= 1:
-            basefilename = str(opts.fname_template).format(subj=opts.subj, fa=fa, tr=tr, ti=ti, run=str(run),
-                            session='ses'+str(opts.multisession)+'_', scan_name=opts.scan_name, scan_info=opts.scan_info)
-        elif opts.multisession >= 0:
-            basefilename = str(opts.fname_template).format(subj=opts.subj, fa=fa, tr=tr, ti=ti, run=str(run),
-                            session='', scan_name=opts.scan_name, scan_info=opts.scan_info)
-        outfilename = os.path.join(fs, opts.proj, opts.subj, opts.outdir, basefilename)
+        run = 1
+        basefilename = str(opts.fname_template).format(subj=opts.subj, fa=str(opts.fa),
+                            tr=str(opts.tr).replace('.', 'p')), ti=str(opts.ti), run=str(run),
+                            session=opts.session_id, scan_name=opts.scan_name, scan_info=opts.scan_info)
+        if basefilename.split('.')[0] in niftiDict[(opts.subj, opts.scan_name)]:
+
+
+
+        if any(opts.multisession) > 0:
+            outfilename = os.path.join(fs, opts.proj, opts.subj, opts.session_id, opts.outdir, basefilename)
+        else:
+            outfilename = os.path.join(fs, opts.proj, opts.subj, opts.outdir, basefilename)
         if outfilename.count('.') > 1:
             raise ValueError('more than one . was found in '+outfilename+ '! stopping now.!')
         # prep a file
