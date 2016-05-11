@@ -18,6 +18,16 @@ def getlocaldataroot():
     else:
         raise ValueError('Don''t know where data root is on this computer.')
 
+def getnetworkdataroot():
+    hostname = socket.gethostname()
+
+    if hostname == 'JVDB':
+        return '/mnt/users/js/'
+    elif hostname == 'scotty.ilabs.uw.edu':
+        return '/media/DiskArray/shared_data/js/'
+    else:
+        raise ValueError('Don''t know where network data root is on this computer.')
+
 
 def tempfile(extension='.tmp'):
     return os.path.join('/var/tmp',petname.Generate(3,'-')+extension)
