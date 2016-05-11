@@ -13,7 +13,7 @@ def getlocaldataroot():
         return '/media/DiskArray/shared_data/js/'
     elif hostname == 'redshirt.ilabs.uw.edu':
         return '/redshirt_array/data/'
-    elif hostname == 'Jeffs-MBP-3':
+    elif hostname == 'Jeffs-MBP-3' or hostname == 'Jeffs-MacBook-Pro-3.local':
         return '/Users/mrjeffs/Documents/Research/data'
     else:
         raise ValueError('Don''t know where data root is on this computer.')

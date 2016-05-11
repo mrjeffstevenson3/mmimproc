@@ -55,7 +55,7 @@ def brain_proc_file(opts, niftiDict=None):
         setattr(opts, 'session', '')
         fpath = join(subpath, 'source_parrec')
         infiles = sortedParGlob(join(fpath, '*' + opts.scan + '*.PAR'))
-    elif opts.multisession[0] != 0 and os.path.isfile(join(subpath, str(opts.subj)+'_sessions.tsv')):
+    if opts.multisession[0] != 0 and os.path.isfile(join(subpath, str(opts.subj)+'_sessions.tsv')):
         subsessionsDF = pd.DataFrame.from_csv(open(join(subpath, str(opts.subj)+'_sessions.tsv')), sep='\t', header=1)
     else:
         subsessionsDF = pd.DataFrame(columns=['session_id', 'acq_time', 'scan', 'converted', 'tr', 'fa', 'ti', 'QC', 'pre_proc'])
@@ -82,7 +82,7 @@ def brain_proc_file(opts, niftiDict=None):
         setattr(opts, 'tr', round(pr_hdr.general_info['repetition_time'][0], 1))
         setattr(opts, 'acq_time', pr_hdr.general_info['exam_date'].replace(".","-").replace('/','T').replace(' ', ''))
         if any(opts.multisession) > 0:
-            setattr(opts, 'session_id', infile.split('/')[-3])
+            setattr(opts, 'session_id', str(infile.split('/')[-3]))
         else:
             setattr(opts, 'session_id', '')
 
@@ -130,35 +130,25 @@ def brain_proc_file(opts, niftiDict=None):
                     bvals = bvals[good_mask]
                     bvecs = bvecs[good_mask]
 
-
-        # partialkey = (opts.subj, opts.session_id, opts.scan_name, opts.tr)
-        # runkeys = [key for key in niftiDict.keys() if key[:4] == partialkey]
-        # for run in range(1, len(runkeys) + 1):
-        #     exvalues = niftiDict[partialkey + (run,)]     #extracts values if matching key found
-        #     for k, v in exvalues.items():
-        #         # this is the matching value that trips run counter to current value
-        #         if v == getattr(opts, k):
-        #             break;
-        #     else:
-        #         break;  # if you just want the run number  # case 2 key found but value/contrast does not exist eg new file
-        # else:
-        #     setattr(opts, 'run', len(runkeys) + 1)  # need to make new run    case 1, case 3
-
-
-
-        # do at end when we know file name
         # figure out the output filename, and see if it exists
         run = 1
         basefilename = str(opts.fname_template).format(subj=opts.subj, fa=str(opts.fa),
-                            tr=str(opts.tr).replace('.', 'p')), ti=str(opts.ti), run=str(run),
+                            tr=str(opts.tr).replace('.', 'p'), ti=str(opts.ti), run=str(run),
                             session=opts.session_id, scan_name=opts.scan_name, scan_info=opts.scan_info)
-        if basefilename.split('.')[0] in niftiDict[(opts.subj, opts.scan_name)]:
 
+        while opts.acq_time in niftiDict[(opts.subj, opts.outdir)][basefilename.split('.')[0]]:
+            run = run + 1
+            basefilename = str(opts.fname_template).format(subj=opts.subj, fa=str(opts.fa),
+                                tr=str(opts.tr).replace('.', 'p'), ti=str(opts.ti), run=str(run),
+                                session=opts.session_id, scan_name=opts.scan_name, scan_info=opts.scan_info)
 
-
-        if any(opts.multisession) > 0:
+        if any(opts.multisession) != 0:
+            if not os.path.isdir(os.path.join(fs, opts.proj, opts.subj, opts.session_id, opts.outdir)):
+                os.mkdir(os.path.join(fs, opts.proj, opts.subj, opts.session_id, opts.outdir))
             outfilename = os.path.join(fs, opts.proj, opts.subj, opts.session_id, opts.outdir, basefilename)
         else:
+            if not os.path.isdir(os.path.join(fs, opts.proj, opts.subj, opts.outdir)):
+                os.mkdir(os.path.join(fs, opts.proj, opts.subj, opts.outdir))
             outfilename = os.path.join(fs, opts.proj, opts.subj, opts.outdir, basefilename)
         if outfilename.count('.') > 1:
             raise ValueError('more than one . was found in '+outfilename+ '! stopping now.!')
@@ -171,6 +161,8 @@ def brain_proc_file(opts, niftiDict=None):
             raise IOError('Output file "%s" exists, use \'overwrite\': True to '
                           'overwrite it' % outfilename)
 
+        setattr(opts, 'outfilename', outfilename)
+        setattr(opts, 'basefilename', basefilename.split('.')[0])
         # Make corresponding NIfTI image
         nimg = nifti1.Nifti1Image(in_data, affine, pr_hdr)
         nhdr = nimg.header
@@ -228,6 +220,8 @@ def brain_proc_file(opts, niftiDict=None):
                         for val in row:
                             fid.write('%s ' % val)
                         fid.write('\n')
+                setattr(opts, 'bvals', bvals)
+                setattr(opts, 'bvecs', bvecs)
 
         # export data labels varying along the 4th dimensions if requested
         if opts.vol_info:
@@ -254,6 +248,15 @@ def brain_proc_file(opts, niftiDict=None):
                         'magnet' % (dwell_time, opts.field_strength))
                 with open(outfilename.split('.')[0] + '.dwell_time', 'w') as fid:
                     fid.write('%r\n' % dwell_time)
+                setattr(opts, 'dwell_time', dwell_time)
+
+        #subsessionsDF
+
+        niftiDict[(opts.subj, opts.session_id, opts.outdir)][basefilename.split('.')[0]] = opts.__dict__.items()
+
+    #need to make dataframe from opts and save as tsv
+    #need to make k v pairs for niftidict to pass back
+
     return niftiDict
         # done
 
