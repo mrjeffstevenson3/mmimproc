@@ -413,7 +413,6 @@ def phantom_midslice_par2mni(parfile, datadict, method, outdir=None, outfilename
         mydate = datetime.datetime.strptime(scandate, '%Y%m%d').date()
         mymethod = method+'_real'
         partialkey = (mydate, mymethod, tr)
-
         runkeys = [key for key in datadict.keys() if key[:3] == partialkey]
         for run in range(1,len(runkeys)+1):
             exvalues = datadict[partialkey+(run,)]
