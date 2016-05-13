@@ -103,5 +103,5 @@ def conv_subj(project, subjects, niftiDict=None):
                 continue
             setattr(opts, 'scan', scan)
             set_opts(scans[scan])
-            niftiDict = brain_proc_file(opts, niftiDict)
-    return niftiDict
+            niftioutDict = brain_proc_file(opts, niftiDict)
+    return niftioutDict

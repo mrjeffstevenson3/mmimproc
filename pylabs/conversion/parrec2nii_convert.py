@@ -34,10 +34,15 @@ import dill #to use as pickle replacement of lambda dict
 class BrainOpts(object):
     pass
 
+def opts2dict(opts):
+    d = {}
+    for key in dir(opts):
+        value = getattr(opts, key)
+        if not key.startswith('__'):
+            d[key] = value
+    return d
+
 #nib functions to do heavy lifting using opts object to drive processing
-
-
-
 def verbose(msg, indent=0):
     if verbose.switch:
         print("%s%s" % (' ' * indent, msg))
@@ -46,10 +51,10 @@ def error(msg, exit_code):
     sys.stderr.write(msg + '\n')
     sys.exit(exit_code)
 
-def brain_proc_file(opts, niftiDict=None):
+def brain_proc_file(opts, scandict=None):
     verbose.switch = opts.verbose
-    if niftiDict is None:
-        niftiDict = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
+    if scandict is None:
+        scandict = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
     subpath = join(fs, opts.proj, opts.subj)
     if opts.multisession[0] == 0:
         setattr(opts, 'session', '')
@@ -132,7 +137,7 @@ def brain_proc_file(opts, niftiDict=None):
                             tr=str(opts.tr).replace('.', 'p'), ti=str(opts.ti), run=str(run),
                             session=opts.session_id, scan_name=opts.scan_name, scan_info=opts.scan_info)
 
-        while opts.acq_time in niftiDict[(opts.subj, opts.outdir)][basefilename.split('.')[0]]:
+        while opts.acq_time in scandict[(opts.subj, opts.outdir)][basefilename.split('.')[0]]:
             run = run + 1
             basefilename = str(opts.fname_template).format(subj=opts.subj, fa=str(opts.fa),
                                 tr=str(opts.tr).replace('.', 'p'), ti=str(opts.ti), run=str(run),
@@ -186,6 +191,7 @@ def brain_proc_file(opts, niftiDict=None):
             nhdr.extensions.append(dump_ext)
 
         verbose('Writing %s' % outfilename)
+        verbose('session id=%s' % opts.session_id)
         nibabel.save(nimg, outfilename)
 
         # write out bvals/bvecs if requested
@@ -247,12 +253,11 @@ def brain_proc_file(opts, niftiDict=None):
                 setattr(opts, 'dwell_time', dwell_time)
 
         #subsessionsDF
-
-        niftiDict[(opts.subj, opts.session_id, opts.outdir)][basefilename.split('.')[0]] = opts.__dict__.items()
+        scandict[(opts.subj, opts.session_id, opts.outdir)][basefilename.split('.')[0]] = opts2dict(opts)
 
     #need to make dataframe from opts and save as tsv
-    #need to make k v pairs for niftidict to pass back
+    #need to make k v pairs for scandict to pass back
 
-    return niftiDict
+    return scandict
         # done
 
