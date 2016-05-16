@@ -1,9 +1,7 @@
-#test to process conversion settings to opts object
 from pylabs.conversion.parrec2nii_convert import BrainOpts
 import pandas as pd
 from pylabs.conversion.parrec2nii_convert import brain_proc_file
-from collections import defaultdict
-from pylabs.utils import sessions
+from pylabs.utils.sessions import make_sessions_fm_dict
 
 #individual project parameters to be set once here. keys are immutable or code will break.
 slu_phant_conv = pd.DataFrame({
@@ -90,6 +88,7 @@ def set_opts(opt_series): #function to extract params from dataframe
         setattr(opts, index, row)
 
 def conv_subj(project, subjects, niftiDict):
+    niftiDF = pd.DataFrame()
     #loops over subjects for a single project
     if '__missing__' not in dir(niftiDict):
         raise TypeError('Dictionary not a nested 3 level collections.defaultdict, please fix.')
@@ -106,4 +105,6 @@ def conv_subj(project, subjects, niftiDict):
             set_opts(scans[scan])
             niftiDict = brain_proc_file(opts, niftiDict)
 
-    return niftiDict
+        subjDF = make_sessions_fm_dict(niftiDict, project, subject)
+        niftiDF = niftiDF.append(subjDF)
+    return niftiDict, niftiDF
