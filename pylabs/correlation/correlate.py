@@ -82,6 +82,7 @@ def correlateWholeBrain(files, variables, outdir = '', niterations = 1000):
     tneg = t.copy()
     tpos = t.copy()
     tneg[tneg>0] = 0
+    tneg = numpy.abs(tneg)
     tpos[tpos<0] = 0
     out = {
         '{}_r.nii.gz': r,
