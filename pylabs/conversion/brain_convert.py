@@ -3,6 +3,7 @@ from pylabs.conversion.parrec2nii_convert import BrainOpts
 import pandas as pd
 from pylabs.conversion.parrec2nii_convert import brain_proc_file
 from collections import defaultdict
+from pylabs.utils import sessions
 
 #individual project parameters to be set once here. keys are immutable or code will break.
 slu_phant_conv = pd.DataFrame({
@@ -88,10 +89,10 @@ def set_opts(opt_series): #function to extract params from dataframe
     for index, row in opt_series.iteritems():
         setattr(opts, index, row)
 
-def conv_subj(project, subjects, niftiDict=None):
+def conv_subj(project, subjects, niftiDict):
     #loops over subjects for a single project
-    if niftiDict is None:
-        niftiDict = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
+    if '__missing__' not in dir(niftiDict):
+        raise TypeError('Dictionary not a nested 3 level collections.defaultdict, please fix.')
     if project not in img_conv:
         raise ValueError(project+" not in img_conv Panel. Please check")
     setattr(opts, 'proj', project)
@@ -103,5 +104,6 @@ def conv_subj(project, subjects, niftiDict=None):
                 continue
             setattr(opts, 'scan', scan)
             set_opts(scans[scan])
-            niftioutDict = brain_proc_file(opts, niftiDict)
-    return niftioutDict
+            niftiDict = brain_proc_file(opts, niftiDict)
+
+    return niftiDict

@@ -51,10 +51,10 @@ def error(msg, exit_code):
     sys.stderr.write(msg + '\n')
     sys.exit(exit_code)
 
-def brain_proc_file(opts, scandict=None):
+def brain_proc_file(opts, scandict):
     verbose.switch = opts.verbose
-    if scandict is None:
-        scandict = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
+    if '__missing__' not in dir(scandict):
+        raise TypeError('Dictionary not a collections.defaultdict, please fix.')
     subpath = join(fs, opts.proj, opts.subj)
     if opts.multisession[0] == 0:
         setattr(opts, 'session', '')
@@ -69,6 +69,8 @@ def brain_proc_file(opts, scandict=None):
     for infile in infiles:
         prov.add(infile)
         # load the PAR header and data
+        setattr(opts, 'bvals', '')
+        setattr(opts, 'bvecs', '')
         scaling = 'dv' if opts.scaling == 'off' else opts.scaling
         infile = fname_ext_ul_case(infile)
         pr_img = pr.load(infile,
@@ -137,7 +139,7 @@ def brain_proc_file(opts, scandict=None):
                             tr=str(opts.tr).replace('.', 'p'), ti=str(opts.ti), run=str(run),
                             session=opts.session_id, scan_name=opts.scan_name, scan_info=opts.scan_info)
 
-        while opts.acq_time in scandict[(opts.subj, opts.outdir)][basefilename.split('.')[0]]:
+        while opts.acq_time in scandict[(opts.subj, opts.session_id, opts.outdir)][basefilename.split('.')[0]]:
             run = run + 1
             basefilename = str(opts.fname_template).format(subj=opts.subj, fa=str(opts.fa),
                                 tr=str(opts.tr).replace('.', 'p'), ti=str(opts.ti), run=str(run),
@@ -191,7 +193,7 @@ def brain_proc_file(opts, scandict=None):
             nhdr.extensions.append(dump_ext)
 
         verbose('Writing %s' % outfilename)
-        verbose('session id=%s' % opts.session_id)
+        #verbose('session id=%s' % opts.session_id)
         nibabel.save(nimg, outfilename)
 
         # write out bvals/bvecs if requested
@@ -252,7 +254,9 @@ def brain_proc_file(opts, scandict=None):
                     fid.write('%r\n' % dwell_time)
                 setattr(opts, 'dwell_time', dwell_time)
 
-        #subsessionsDF
+        setattr(opts, 'converted', True)
+        setattr(opts, 'QC', False)
+        setattr(opts, 'pre_proc', False)
         scandict[(opts.subj, opts.session_id, opts.outdir)][basefilename.split('.')[0]] = opts2dict(opts)
 
     #need to make dataframe from opts and save as tsv
