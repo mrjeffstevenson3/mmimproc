@@ -87,7 +87,7 @@ def set_opts(opt_series): #function to extract params from dataframe
     for index, row in opt_series.iteritems():
         setattr(opts, index, row)
 
-def conv_subj(project, subjects, niftiDict):
+def conv_subjs(project, subjects, niftiDict):
     niftiDF = pd.DataFrame()
     #loops over subjects for a single project
     if '__missing__' not in dir(niftiDict):
