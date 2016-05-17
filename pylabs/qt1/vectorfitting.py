@@ -48,6 +48,6 @@ def fitT1WholeBrain(sfiles, b1file, outfpath):
     print('Saving file..')
     t1vector = numpy.zeros((nvoxels,))
     t1vector[mask1d] = estimates['T1'].values
-    t1vector[t1vector > 3000] = 0
+    #t1vector[t1vector > 3000] = 0
     t1 = t1vector.reshape(spatialdims)
     nibabel.save(nibabel.Nifti1Image(t1, affine), outfpath)

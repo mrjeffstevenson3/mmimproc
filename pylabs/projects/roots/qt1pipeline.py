@@ -87,7 +87,7 @@ statfiles = correlate.wholeBrain(subjectfiles, behavior,
 ## scatterplots
 scatter.forLowestPvalue(subjectfiles, behavior, statfiles)
 
-## Clustering, clustertable? see nipy.labs.statistical_mapping.cluster_stats
+
 
 
 
