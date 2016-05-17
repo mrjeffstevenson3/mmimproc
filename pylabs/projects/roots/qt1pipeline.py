@@ -84,7 +84,7 @@ for s, subject in enumerate(subjects):
 ## correlation
 subjectfiles = sorted(subjectfiles)
 statfiles = correlate.wholeBrain(subjectfiles, behavior, 
-                outdir = resultsdir, niterations = 5) # 30mins
+                outdir = resultsdir, niterations = 500) # 30mins
 ## scatterplots
 scatter.forLowestPvalue(subjectfiles, behavior, statfiles)
 

@@ -1,4 +1,4 @@
-import nibabel, seaborn
+import numpy, nibabel, seaborn
 import pylabs.io.images
 
 def forLowestPvalue(datafiles, variables, statfiles):
@@ -14,7 +14,7 @@ def forLowestPvalue(datafiles, variables, statfiles):
         R = nibabel.load(statfiles[varname]['r']).get_data()
         voxelIndex = P.argmax()
         voxelCoords = numpy.unravel_index(voxelIndex, spatialdims)
-        r =  R.ravel()[pmax]
+        r =  R.ravel()[voxelIndex]
         braindata = data[(slice(None),)+voxelCoords]
         vardata = variables[varname]
         voxeldata = pandas.DataFrame({'score':variables[varname].values,
