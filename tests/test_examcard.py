@@ -98,7 +98,7 @@ class ExamCardTests(unittest.TestCase):
         fpath = join(path, name)
         par = ParrecFile(fpath)
         par.inspect()
-        diff = exam.compareCorrespondingScan(par)
+        diff = exam.compareCorrespondingScan(par).assertEqualProtocol()
         diff.assertEqualProtocol()
 
 if __name__ == '__main__':
