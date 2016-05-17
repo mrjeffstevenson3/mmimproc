@@ -3,6 +3,7 @@ from os.path import join
 import numpy, nibabel, scipy.stats, math, datetime
 from numpy import square, sqrt
 from pylabs.utils import progress
+import pylabs.io.images
 """
 TODO
 
@@ -14,23 +15,13 @@ TODO
 """
 
 
-def correlateWholeBrain(files, variables, outdir = '', niterations = 1000):
+def wholeBrain(files, variables, outdir = '', niterations = 1000):
     assert len(files) == variables.shape[0] # ensure equally many subjects
     n = nsubjects = variables.shape[0]
     nvars = variables.shape[1]
-    data = []
-    shapes = []
-    for f, fpath in enumerate(files):
-        print('Loading image {} of {}..'.format(f+1, len(files)))
-        img = nibabel.load(fpath)
-        sdata = img.get_data()
-        shapes.append(sdata.shape)
-        data.append(sdata)
-    print('Concatenating data..')
-    data = numpy.array(data)
-    affine = img.get_affine()
-    for shape in shapes:
-        assert shape==shapes[0] # ensure images have same dimensions
+
+    data, affine = pylabs.io.images.loadStack(files)
+
     print('Vectorizing and masking..')
     spatialdims = data.shape[1:]
     nvoxels = numpy.prod(spatialdims)
@@ -84,21 +75,26 @@ def correlateWholeBrain(files, variables, outdir = '', niterations = 1000):
     tneg[tneg>0] = 0
     tneg = numpy.abs(tneg)
     tpos[tpos<0] = 0
-    out = {
-        '{}_r.nii.gz': r,
-        '{}_tneg.nii.gz': tneg,
-        '{}_tpos.nii.gz': tpos,
-        '{}_2minp.nii.gz': 2-p,
+    stats = {
+        'r': r,
+        'tneg': tneg,
+        'tpos': tpos,
+        '2minp': 2-p,
     }
+    ftemplates = {stat:'{}_'+stat+'.nii.gz' for stat in stats.keys()}
     print('Unvectorizing and saving to files..')
-    for fnametem, vector in out.items():
+    outfnames = {var:{} for var in variables.columns.values}
+    for stat, vector in stats.items():
         output2d = numpy.zeros((nvars, nvoxels))
         output2d[:, mask1d] = vector
         output4d = output2d.reshape((nvars,) + spatialdims)
         for v, varname in enumerate(variables.columns.values):
+            outfnames[varname][stat] = join(outdir, 
+                ftemplates[stat].format(varname))
             img = nibabel.Nifti1Image(output4d[v,:,:,:], affine)
-            print('Saving file: {}'.format(fnametem.format(varname)))
-            nibabel.save(img, join(outdir, fnametem.format(varname)))
+            print('Saving file: {}'.format(ftemplates[stat].format(varname)))
+            nibabel.save(img, outfnames[varname][stat])
+    return outfnames
 
 
 def corr(X, Y):

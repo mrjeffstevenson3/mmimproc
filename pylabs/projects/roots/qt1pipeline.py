@@ -1,7 +1,8 @@
 import glob, os, pandas, numpy, niprov, nibabel
 from os.path import join
 from pylabs.utils.paths import getlocaldataroot, getnetworkdataroot
-from pylabs.correlation.correlate import correlateWholeBrain
+import pylabs.correlation.correlate as correlate
+import pylabs.correlation.scatter as scatter
 from pylabs.qt1.vectorfitting import fitT1WholeBrain
 from pylabs.conversion.helpers import par2mni_1file as conv
 from pylabs.qt1.b1mapcoreg import b1mapcoreg_1file
@@ -32,14 +33,14 @@ for s, subject in enumerate(subjects):
     if not os.path.isdir(qt1dir):
         os.mkdir(qt1dir)
     outfpath = join(qt1dir, '{}_t1.nii.gz'.format(subject))
-    parrecdir = join(sessiondir, 'source_parrec')
-    parsfiles = glob.glob(join(parrecdir, '*T1_MAP*.PAR'))
-    sfiles = [conv(p) for p in parsfiles]
-    parb1file = glob.glob(join(parrecdir, '*B1MAP*.PAR'))[0]
-    b1fileLowRes = conv(parb1file)
-    b1file = b1mapcoreg_1file(b1fileLowRes, sfiles[0])
-    print('T1 fitting subject {} of {}: {}'.format(s, nsubjects, subject))
-    fitT1WholeBrain(sfiles, b1file, outfpath)
+#    parrecdir = join(sessiondir, 'source_parrec')
+#    parsfiles = glob.glob(join(parrecdir, '*T1_MAP*.PAR'))
+#    sfiles = [conv(p) for p in parsfiles]
+#    parb1file = glob.glob(join(parrecdir, '*B1MAP*.PAR'))[0]
+#    b1fileLowRes = conv(parb1file)
+#    b1file = b1mapcoreg_1file(b1fileLowRes, sfiles[0])
+#    print('T1 fitting subject {} of {}: {}'.format(s, nsubjects, subject))
+#    fitT1WholeBrain(sfiles, b1file, outfpath)
     t1files.append(outfpath)
 
 
@@ -50,14 +51,14 @@ refsub = os.path.basename(ref).split('_')[0]
 for s, unaligned in enumerate(t1files):
     print('Aligning {} of {}'.format(s+1, nsubjects))
     aligned = unaligned.replace('.nii.gz', '_flirt2{}'.format(refsub))
-    flt = fsl.FLIRT(bins=640, cost_func='mutualinfo')
-    flt.inputs.in_file = unaligned
-    flt.inputs.reference = ref
-    flt.inputs.out_file = aligned
-    flt.inputs.out_matrix_file = aligned
-    flt.inputs.interp = 'nearestneighbour'
-    flt.run() 
-    alignedfiles.append(aligned)
+#    flt = fsl.FLIRT(bins=640, cost_func='mutualinfo')
+#    flt.inputs.in_file = unaligned
+#    flt.inputs.reference = ref
+#    flt.inputs.out_file = aligned
+#    flt.inputs.out_matrix_file = aligned
+#    flt.inputs.interp = 'nearestneighbour'
+#    flt.run() 
+    alignedfiles.append(aligned+'.nii.gz')
 
 ## smooth
 sigma = 2
@@ -65,17 +66,20 @@ smoothedfiles = []
 for s, unsmoothfile in enumerate(alignedfiles):
     print('Smoothing {} of {}'.format(s+1, nsubjects))
     smoothfile = unsmoothfile.replace('.nii', '_sigma{}.nii'.format(sigma))
-    img = nibabel.load(unsmoothfile)
-    data = img.get_data()
-    affine = img.get_affine()
-    smoothdata = gaussian_filter(data, sigma)
-    nibabel.save(nibabel.Nifti1Image(smoothdata, affine), smoothfile)
+#    img = nibabel.load(unsmoothfile)
+#    data = img.get_data()
+#    affine = img.get_affine()
+#    smoothdata = gaussian_filter(data, sigma)
+#    nibabel.save(nibabel.Nifti1Image(smoothdata, affine), smoothfile)
     smoothedfiles.append(smoothfile)
 
 ## correlation
 cfiles = sorted(smoothedfiles)
-outfiles = correlateWholeBrain(cfiles, behavior, 
-                outdir = resultsdir, niterations = 500) # 30mins
+statfiles = correlate.wholeBrain(cfiles, behavior, 
+                outdir = resultsdir, niterations = 5) # 30mins
+## scatterplots
+scatter.forLowestPvalue(cfiles, behavior, statfiles)
+
 ## Clustering, clustertable? see nipy.labs.statistical_mapping.cluster_stats
 
 
