@@ -28,7 +28,7 @@ nsubjects = len(subjects)
 ref = None
 subjectfiles = []
 for s, subject in enumerate(subjects):
-    print('Converting parrecs for {} of {}: {}'.format(s+1, nsubjects, subject))
+    print('Subject {} of {}: {}'.format(s+1, nsubjects, subject))
     sessiondir = join(projectdir, subject, 'ses-1')
     qt1dir = join(sessiondir, 'qt1')
     if not os.path.isdir(qt1dir):
@@ -38,6 +38,7 @@ for s, subject in enumerate(subjects):
     parsfiles = glob.glob(join(parrecdir, '*T1_MAP*.PAR'))
 
     ## parrec to nifti conversion
+    print('Converting parrecs..')
     sfiles = [conv(p) for p in parsfiles]
     parb1file = glob.glob(join(parrecdir, '*B1MAP*.PAR'))[0]
     b1fileLowRes = conv(parb1file)
@@ -51,14 +52,14 @@ for s, subject in enumerate(subjects):
     b1file = masking.apply(brainMask, b1file, provenance)
 
     ## T1 fitting
-    print('T1 fitting subject {} of {}: {}'.format(s, nsubjects, subject))
+    print('T1 fitting..')
     fitT1WholeBrain(sfiles, b1file, outfpath)
 
     ## align subject to target subject
     if ref is None:
         ref = outfpath
     refsub = os.path.basename(ref).split('_')[0]
-    print('Aligning {} of {}'.format(s+1, nsubjects))
+    print('Aligning..')
     aligned = outfpath.replace('.nii.gz', '_flirt2{}'.format(refsub))
     flt = fsl.FLIRT(bins=640, cost_func='mutualinfo')
     flt.inputs.in_file = outfpath
@@ -71,7 +72,7 @@ for s, subject in enumerate(subjects):
 
     ## smooth
     sigma = 2
-    print('Smoothing {} of {}'.format(s+1, nsubjects))
+    print('Smoothing..')
     smoothfile = alignedfpath.replace('.nii', '_sigma{}.nii'.format(sigma))
     img = nibabel.load(alignedfpath)
     data = img.get_data()
