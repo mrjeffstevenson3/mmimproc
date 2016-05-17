@@ -2,6 +2,11 @@ from pylabs.conversion.parrec2nii_convert import BrainOpts
 import pandas as pd
 from pylabs.conversion.parrec2nii_convert import brain_proc_file
 from pylabs.utils.sessions import make_sessions_fm_dict
+from cloud.serialization.cloudpickle import dumps
+from os.path import join
+from datetime import datetime
+from pylabs.utils.paths import getlocaldataroot
+fs = getlocaldataroot()
 
 #individual project parameters to be set once here. keys are immutable or code will break.
 slu_phant_conv = pd.DataFrame({
@@ -87,15 +92,20 @@ def set_opts(opt_series): #function to extract params from dataframe
     for index, row in opt_series.iteritems():
         setattr(opts, index, row)
 
+def default_to_regular(d):
+    if isinstance(d, defaultdict):
+        d = {k: default_to_regular(v) for k, v in d.iteritems()}
+    return d
+
 def conv_subjs(project, subjects, niftiDict):
     niftiDF = pd.DataFrame()
-    #loops over subjects for a single project
-    if '__missing__' not in dir(niftiDict):
+    if isinstance(niftiDict, defaultdict):
         raise TypeError('Dictionary not a nested 3 level collections.defaultdict, please fix.')
     if project not in img_conv:
         raise ValueError(project+" not in img_conv Panel. Please check")
     setattr(opts, 'proj', project)
     scans = img_conv[project]
+    # loops over subjects for a single project
     for subject in subjects:
         setattr(opts, 'subj', subject)
         for scan in scans:                 #col loop is individual scans
@@ -104,7 +114,11 @@ def conv_subjs(project, subjects, niftiDict):
             setattr(opts, 'scan', scan)
             set_opts(scans[scan])
             niftiDict = brain_proc_file(opts, niftiDict)
-
         subjDF = make_sessions_fm_dict(niftiDict, project, subject)
         niftiDF = niftiDF.append(subjDF)
+    niftidict = default_to_regular(niftiDict)
+    with open(join(fs, project, "niftiDict_all_subj_{:%Y%m%d%H%M}.pickle".format(datetime.now())), "wb") as f:
+        f.write(dumps(niftiDict))
+    with open(join(fs, project, "niftidict_all_subj_{:%Y%m%d%H%M}.pickle".format(datetime.now())), "wb") as f:
+        f.write(dumps(niftidict))
     return niftiDict, niftiDF
