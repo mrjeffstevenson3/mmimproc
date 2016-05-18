@@ -71,6 +71,8 @@ def brain_proc_file(opts, scandict):
         # load the PAR header and data
         setattr(opts, 'bvals', '')
         setattr(opts, 'bvecs', '')
+        setattr(opts, 'run', '')
+        setattr(opts, 'outpath', '')
         scaling = 'dv' if opts.scaling == 'off' else opts.scaling
         infile = fname_ext_ul_case(infile)
         pr_img = pr.load(infile,
@@ -146,13 +148,15 @@ def brain_proc_file(opts, scandict):
                                 session=opts.session_id, scan_name=opts.scan_name, scan_info=opts.scan_info)
 
         if any(opts.multisession) != 0:
-            if not os.path.isdir(os.path.join(fs, opts.proj, opts.subj, opts.session_id, opts.outdir)):
-                os.mkdir(os.path.join(fs, opts.proj, opts.subj, opts.session_id, opts.outdir))
-            outfilename = os.path.join(fs, opts.proj, opts.subj, opts.session_id, opts.outdir, basefilename)
+            outpath = join(fs, opts.proj, opts.subj, opts.session_id, opts.outdir)
+            if not os.path.isdir(outpath):
+                os.mkdir(outpath)
+            outfilename = os.path.join(outpath, basefilename)
         else:
-            if not os.path.isdir(os.path.join(fs, opts.proj, opts.subj, opts.outdir)):
-                os.mkdir(os.path.join(fs, opts.proj, opts.subj, opts.outdir))
-            outfilename = os.path.join(fs, opts.proj, opts.subj, opts.outdir, basefilename)
+            outpath = join(fs, opts.proj, opts.subj, opts.outdir)
+            if not os.path.isdir(outpath):
+                os.mkdir(outpath)
+            outfilename = os.path.join(outpath, basefilename)
         if outfilename.count('.') > 1:
             raise ValueError('more than one . was found in '+outfilename+ '! stopping now.!')
         # prep a file
@@ -164,6 +168,7 @@ def brain_proc_file(opts, scandict):
             raise IOError('Output file "%s" exists, use \'overwrite\': True to '
                           'overwrite it' % outfilename)
         setattr(opts, 'run', run)
+        setattr(opts, 'outpath', outpath)
         setattr(opts, 'outfilename', outfilename)
         setattr(opts, 'basefilename', basefilename.split('.')[0])
         # Make corresponding NIfTI image
