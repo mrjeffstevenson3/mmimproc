@@ -16,7 +16,7 @@ if convert:
     niftiDict = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
     niftiDict, niftiDF = conv_subjs(project, subjects, niftiDict)
 else:
-    with open(join(fs, project, 'niftiDict_all_subj_201605181335.pickle'), 'rb') as f:
+    with open(join(fs, project, 'niftiDict_all_subj_201605181441.pickle'), 'rb') as f:
         niftiDict = cPickle.load(f)
 
 for subj in subjects:
