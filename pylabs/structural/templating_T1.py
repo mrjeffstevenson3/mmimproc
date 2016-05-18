@@ -21,7 +21,7 @@ else:
 
 for subj in subjects:
     for ses in [1, 2]:    # arbitrary! fix by testing range in dict
-        for run in [1, 2, 3, 4]      # arbitrary! fix by testing range in dict
+        for run in [1, 2, 3, 4]:      # arbitrary! fix by testing range in dict
         method = 'anat'
         if niftiDict[(subj, 'ses-'+str(ses), method)][subj+'_ses-'+str(ses)+'_wemempr_'+str(run)]['outfilename'] == []:
             continue
