@@ -22,23 +22,23 @@ else:
 for subj in subjects:
     for ses in [1, 2]:    # arbitrary! fix by testing range in dict
         for run in [1, 2, 3, 4]:      # arbitrary! fix by testing range in dict
-        method = 'anat'
-        if niftiDict[(subj, 'ses-'+str(ses), method)][subj+'_ses-'+str(ses)+'_wemempr_'+str(run)]['outfilename'] == []:
-            continue
-        cmd = 'mri_concat --rms --i '
-        cmd += niftiDict[(subj, 'ses-'+str(ses), method)][subj+'_ses-'+str(ses)+'_wemempr_'+str(run)]['outfilename']
-        cmd += ' --o '
-        cmd += niftiDict[(subj, 'ses-'+str(ses), method)][subj+'_ses-'+str(ses)+'_wemempr_'+str(run)]['outpath']
-        wemempr_fname = subj+'_ses-'+str(ses)+'_wemempr_'+str(run)+'_rms.nii'
-        cmd += '/'+wemempr_fname
-        subprocess.check_call(cmd, shell=True)
-        niftiDict[(subj, 'ses-' + str(ses), method)][subj + '_ses-' + str(ses) + '_wemempr_' + str(run) + '_rms']['wemempr_fname'] = wemempr_fname
+            method = 'anat'
+            if niftiDict[(subj, 'ses-'+str(ses), method)][subj+'_ses-'+str(ses)+'_wemempr_'+str(run)]['outfilename'] == []:
+                continue
+            cmd = 'mri_concat --rms --i '
+            cmd += niftiDict[(subj, 'ses-'+str(ses), method)][subj+'_ses-'+str(ses)+'_wemempr_'+str(run)]['outfilename']
+            cmd += ' --o '
+            cmd += niftiDict[(subj, 'ses-'+str(ses), method)][subj+'_ses-'+str(ses)+'_wemempr_'+str(run)]['outpath']
+            wemempr_fname = subj+'_ses-'+str(ses)+'_wemempr_'+str(run)+'_rms.nii'
+            cmd += '/'+wemempr_fname
+            subprocess.check_call(cmd, shell=True)
+            niftiDict[(subj, 'ses-' + str(ses), method)][subj + '_ses-' + str(ses) + '_wemempr_' + str(run) + '_rms']['wemempr_fname'] = wemempr_fname
 
-        cmd = 'mri_concat --rms --i '
-        cmd += niftiDict[(subj, 'ses-' + str(ses), method)][subj + '_ses-' + str(ses) + '_vbmmempr_' + str(run)]['outfilename']
-        cmd += ' --o '
-        cmd += niftiDict[(subj, 'ses-' + str(ses), method)][subj + '_ses-' + str(ses) + '_vbmmempr_' + str(run)]['outpath']
-        vbmmempr_fname = subj + '_ses-' + str(ses) + '_vbmmempr_' + str(run) + '_rms.nii'
-        cmd += '/' + vbmmempr_fname
-        subprocess.check_call(cmd, shell=True)
-        niftiDict[(subj, 'ses-' + str(ses), method)][subj + '_ses-' + str(ses) + '_vbmmempr_' + str(run) + '_rms']['vbmmempr_fname'] = vbmmempr_fname
+            cmd = 'mri_concat --rms --i '
+            cmd += niftiDict[(subj, 'ses-' + str(ses), method)][subj + '_ses-' + str(ses) + '_vbmmempr_' + str(run)]['outfilename']
+            cmd += ' --o '
+            cmd += niftiDict[(subj, 'ses-' + str(ses), method)][subj + '_ses-' + str(ses) + '_vbmmempr_' + str(run)]['outpath']
+            vbmmempr_fname = subj + '_ses-' + str(ses) + '_vbmmempr_' + str(run) + '_rms.nii'
+            cmd += '/' + vbmmempr_fname
+            subprocess.check_call(cmd, shell=True)
+            niftiDict[(subj, 'ses-' + str(ses), method)][subj + '_ses-' + str(ses) + '_vbmmempr_' + str(run) + '_rms']['vbmmempr_fname'] = vbmmempr_fname
