@@ -1,7 +1,7 @@
 import glob, os, pandas, numpy, niprov, nibabel, cPickle
 from os.path import join
 from nipype.interfaces import fsl
-from pylabs.utils._run import run_subprocess
+import subprocess
 from pylabs.conversion.brain_convert import conv_subjs
 from pylabs.utils.paths import getnetworkdataroot
 provenance = niprov.Context()
@@ -25,7 +25,20 @@ for subj in subjects:
         method = 'anat'
         if niftiDict[(subj, 'ses-'+str(ses), method)][subj+'_ses-'+str(ses)+'_wemempr_'+str(run)]['outfilename'] == []:
             continue
-        cmd = 'mri_concat --rms --in '
+        cmd = 'mri_concat --rms --i '
         cmd += niftiDict[(subj, 'ses-'+str(ses), method)][subj+'_ses-'+str(ses)+'_wemempr_'+str(run)]['outfilename']
-        cmd += ' --out '
-        cmd +=
+        cmd += ' --o '
+        cmd += niftiDict[(subj, 'ses-'+str(ses), method)][subj+'_ses-'+str(ses)+'_wemempr_'+str(run)]['outpath']
+        wemempr_fname = subj+'_ses-'+str(ses)+'_wemempr_'+str(run)+'_rms.nii'
+        cmd += '/'+wemempr_fname
+        subprocess.check_call(cmd, shell=True)
+        niftiDict[(subj, 'ses-' + str(ses), method)][subj + '_ses-' + str(ses) + '_wemempr_' + str(run) + '_rms']['wemempr_fname'] = wemempr_fname
+
+        cmd = 'mri_concat --rms --i '
+        cmd += niftiDict[(subj, 'ses-' + str(ses), method)][subj + '_ses-' + str(ses) + '_vbmmempr_' + str(run)]['outfilename']
+        cmd += ' --o '
+        cmd += niftiDict[(subj, 'ses-' + str(ses), method)][subj + '_ses-' + str(ses) + '_vbmmempr_' + str(run)]['outpath']
+        vbmmempr_fname = subj + '_ses-' + str(ses) + '_vbmmempr_' + str(run) + '_rms.nii'
+        cmd += '/' + vbmmempr_fname
+        subprocess.check_call(cmd, shell=True)
+        niftiDict[(subj, 'ses-' + str(ses), method)][subj + '_ses-' + str(ses) + '_vbmmempr_' + str(run) + '_rms']['vbmmempr_fname'] = vbmmempr_fname
