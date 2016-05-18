@@ -163,7 +163,6 @@ def brain_proc_file(opts, scandict):
         if os.path.isfile(outfilename) and not opts.overwrite:
             raise IOError('Output file "%s" exists, use \'overwrite\': True to '
                           'overwrite it' % outfilename)
-
         setattr(opts, 'run', run)
         setattr(opts, 'outfilename', outfilename)
         setattr(opts, 'basefilename', basefilename.split('.')[0])

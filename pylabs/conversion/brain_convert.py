@@ -1,5 +1,6 @@
 from pylabs.conversion.parrec2nii_convert import BrainOpts
 import pandas as pd
+from collections import defaultdict
 from pylabs.conversion.parrec2nii_convert import brain_proc_file
 from pylabs.utils.sessions import make_sessions_fm_dict
 from cloud.serialization.cloudpickle import dumps
@@ -99,7 +100,7 @@ def default_to_regular(d):
 
 def conv_subjs(project, subjects, niftiDict):
     niftiDF = pd.DataFrame()
-    if isinstance(niftiDict, defaultdict):
+    if not isinstance(niftiDict, defaultdict):
         raise TypeError('Dictionary not a nested 3 level collections.defaultdict, please fix.')
     if project not in img_conv:
         raise ValueError(project+" not in img_conv Panel. Please check")
