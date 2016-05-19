@@ -32,7 +32,7 @@ for subj in subjects:
             cmd += niftiDict[k1][k2w]['outfilename']
             cmd += ' --o '
             cmd += niftiDict[k1][k2w]['outpath']
-            cmd += = '/'+k2w+'_rms.nii'
+            cmd += '/'+k2w+'_rms.nii'
             subprocess.check_call(cmd, shell=True)
             niftiDict[k1][k2w + '_rms']['wemempr_fname'] = niftiDict[k1][k2w]['outpath']+'/'+k2w+'_rms.nii'
             niftiDict[k1][k2w]['rms_fname'] = niftiDict[k1][k2w]['outpath']+'/'+k2w+'_rms.nii'
