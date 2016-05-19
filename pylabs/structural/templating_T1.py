@@ -52,24 +52,27 @@ for subj in subjects:
                 continue
             flt.inputs.in_file = niftiDict[k1][k2b]['outfilename']
             flt.inputs.reference = niftiDict[k1][k2v]['rms_fname']
-            flt.inputs.out_matrix_file = niftiDict[k1][k2b]['outpath']+'/'+k2b+'_reg2wempr.mat'
+            flt.inputs.out_matrix_file = niftiDict[k1][k2b]['outpath']+'/'+k2b+'_reg2vbmmpr.mat'
             res = flt.run()
             cmd = 'fslroi '+niftiDict[k1][k2b]['outfilename']+' '+niftiDict[k1][k2b]['outpath']+'/'+k2b+'_phase 2 1'
             subprocess.check_call(cmd, shell=True)
             niftiDict[k1][k2b]['phase_fname'] = niftiDict[k1][k2b]['outpath']+'/'+k2b+'_phase.nii.gz'
-            applyxfm.inputs.in_matrix_file = niftiDict[k1][k2b]['outpath']+'/'+k2b+'_reg2wempr.mat'
+            applyxfm.inputs.in_matrix_file = niftiDict[k1][k2b]['outpath']+'/'+k2b+'_reg2vbmmpr.mat'
             applyxfm.inputs.in_file = niftiDict[k1][k2b]['phase_fname']
-            applyxfm.inputs.out_file = niftiDict[k1][k2b]['outpath']+'/'+k2b+'_phase_reg2wempr.nii.gz'
+            applyxfm.inputs.out_file = niftiDict[k1][k2b]['outpath']+'/'+k2b+'_phase_reg2vbmmpr.nii.gz'
             applyxfm.inputs.reference = niftiDict[k1][k2v]['rms_fname']
             applyxfm.inputs.apply_xfm = True
             result = applyxfm.run()
-            cmd = 'fslmaths '+niftiDict[k1][k2b]['outpath']+'/'+k2b+'_phase_reg2wempr.nii.gz -s 6 '
+            cmd = 'fslmaths '+niftiDict[k1][k2b]['outpath']+'/'+k2b+'_phase_reg2vbmmpr.nii.gz -s 6 '
             cmd += niftiDict[k1][k2b]['outpath']+'/'+k2b+'_phase_reg2wempr.nii.gz'
             subprocess.check_call(cmd, shell=True)
-            niftiDict[k1][k2b]['reg2we_s6_fname'] = niftiDict[k1][k2b]['outpath']+'/'+k2b+'_phase_reg2wempr.nii.gz'
-            cmd = 'fslmaths '+niftiDict[k1][k2v]['rms_fname']+' -div '+niftiDict[k1][k2b]['reg2we_s6_fname']
+            niftiDict[k1][k2b]['phase_reg2vbm_s6_fname'] = niftiDict[k1][k2b]['outpath']+'/'+k2b+'_phase_reg2vbmmpr.nii.gz'
+            cmd = 'fslmaths '+niftiDict[k1][k2v]['rms_fname']+' -div '+niftiDict[k1][k2b]['phase_reg2vbm_s6_fname']
             cmd += ' -mul 100 '+niftiDict[k1][k2v]['outpath']+ '/' + k2v + '_rms_b1corr.nii.gz'
             subprocess.check_call(cmd, shell=True)
             niftiDict[k1][k2v]['rms_b1corr_fname'] = niftiDict[k1][k2v]['outpath']+ '/' + k2v + '_rms_b1corr.nii.gz'
-
+            cmd = 'fslmaths ' + niftiDict[k1][k2w]['rms_fname'] + ' -div ' + niftiDict[k1][k2b]['phase_reg2vbm_s6_fname']
+            cmd += ' -mul 100 ' + niftiDict[k1][k2w]['outpath'] + '/' + k2w + '_rms_b1corr.nii.gz'
+            subprocess.check_call(cmd, shell=True)
+            niftiDict[k1][k2w]['rms_b1corr_fname'] = niftiDict[k1][k2w]['outpath'] + '/' + k2w + '_rms_b1corr.nii.gz'
 
