@@ -1,5 +1,6 @@
 import glob, os, pandas, numpy, niprov, nibabel, cPickle
 from os.path import join
+from collections import defaultdict
 from nipype.interfaces import fsl
 from pylabs.utils._run import run_subprocess
 from pylabs.conversion.brain_convert import conv_subjs
