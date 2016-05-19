@@ -1,10 +1,10 @@
-import glob, os, pandas, numpy, niprov, nibabel, cPickle
+import os, niprov, cPickle
 from os.path import join
 from collections import defaultdict
 from nipype.interfaces import fsl
 import subprocess
 from datetime import datetime
-from time import sleep
+from cloud.serialization.cloudpickle import dumps
 from pylabs.conversion.brain_convert import conv_subjs
 from pylabs.utils.paths import getnetworkdataroot
 provenance = niprov.Context()
@@ -14,6 +14,12 @@ fs = getnetworkdataroot()
 project = 'roots_of_empathy'
 subjects = ['sub-2013-C028', 'sub-2013-C029', 'sub-2013-C030', 'sub-2013-C037', 'sub-2013-C053', 'sub-2013-C065']
 convert = False
+
+def default_to_regular(d):
+    if isinstance(d, defaultdict):
+        d = {k: default_to_regular(v) for k, v in d.iteritems()}
+    return d
+
 #run conversion if needed
 if convert:
     niftiDict = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
@@ -58,7 +64,6 @@ for subj in subjects:
             res = flt.run()
             cmd = 'fslroi '+niftiDict[k1b][k2b]['outfilename']+' '+niftiDict[k1b][k2b]['outpath']+'/'+k2b+'_phase.nii.gz 2 1'
             subprocess.check_call(cmd, shell=True)
-            sleep(5)
             niftiDict[k1b][k2b]['phase_fname'] = niftiDict[k1b][k2b]['outpath']+'/'+k2b+'_phase.nii.gz'
             applyxfm.inputs.in_matrix_file = niftiDict[k1b][k2b]['outpath']+'/'+k2b+'_reg2vbmmpr.mat'
             applyxfm.inputs.in_file = niftiDict[k1b][k2b]['phase_fname']
@@ -86,7 +91,7 @@ for subj in subjects:
             subprocess.check_call(cmd, shell=True)
             niftiDict[k1a][k2t2]['b1corr_fname'] = niftiDict[k1a][k2t2]['outpath'] + '/' + k2t2 + '_b1corr.nii.gz'
 
-
+niftidict = default_to_regular(niftiDict)
 with open(join(fs, project, "niftiDict_all_struc_b1corr_{:%Y%m%d%H%M}.pickle".format(datetime.now())), "wb") as f:
     f.write(dumps(niftiDict))
 with open(join(fs, project, "niftidict_all_struc_b1corr_{:%Y%m%d%H%M}.pickle".format(datetime.now())), "wb") as f:
