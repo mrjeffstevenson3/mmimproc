@@ -27,7 +27,7 @@ for subj in subjects:
             method = 'anat'
             k1a = (subj, 'ses-'+str(ses), method)
             k2w = subj+'_ses-'+str(ses)+'_wemempr_'+str(run)
-            if niftiDict[k1][k2w]['outfilename'] == []:
+            if niftiDict[k1a][k2w]['outfilename'] == []:
                 continue
             cmd = 'mri_concat --rms --i '
             cmd += niftiDict[k1a][k2w]['outfilename']
