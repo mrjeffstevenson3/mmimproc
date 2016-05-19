@@ -61,7 +61,7 @@ for subj in subjects:
             applyxfm.inputs.in_matrix_file = niftiDict[k1b][k2b]['outpath']+'/'+k2b+'_reg2vbmmpr.mat'
             applyxfm.inputs.in_file = niftiDict[k1b][k2b]['phase_fname']
             applyxfm.inputs.out_file = niftiDict[k1b][k2b]['outpath']+'/'+k2b+'_phase_reg2vbmmpr.nii.gz'
-            applyxfm.inputs.reference = niftiDict[k1b][k2v]['rms_fname']
+            applyxfm.inputs.reference = niftiDict[k1a][k2v]['rms_fname']
             applyxfm.inputs.apply_xfm = True
             result = applyxfm.run()
             cmd = 'fslmaths '+niftiDict[k1b][k2b]['outpath']+'/'+k2b+'_phase_reg2vbmmpr.nii.gz -s 6 '
