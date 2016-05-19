@@ -46,7 +46,6 @@ for subj in subjects:
             subprocess.check_call(cmd, shell=True)
             niftiDict[k1a][k2v + '_rms']['vbmmempr_fname'] = niftiDict[k1a][k2v]['outpath']+ '/' + k2v + '_rms.nii'
             niftiDict[k1a][k2v]['rms_fname'] = niftiDict[k1a][k2v]['outpath']+ '/' + k2v + '_rms.nii'
-            sleep(10)
             method = 'fmap'
             k1b = (subj, 'ses-'+str(ses), method)
             k2b = subj+'_ses-'+str(ses)+'_b1map_'+str(run)
