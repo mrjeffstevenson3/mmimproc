@@ -3,6 +3,7 @@ from os.path import join
 from collections import defaultdict
 from nipype.interfaces import fsl
 import subprocess
+from time import sleep
 from pylabs.conversion.brain_convert import conv_subjs
 from pylabs.utils.paths import getnetworkdataroot
 provenance = niprov.Context()
@@ -45,6 +46,7 @@ for subj in subjects:
             subprocess.check_call(cmd, shell=True)
             niftiDict[k1][k2v + '_rms']['vbmmempr_fname'] = niftiDict[k1][k2v]['outpath']+ '/' + k2v + '_rms.nii'
             niftiDict[k1][k2v]['rms_fname'] = niftiDict[k1][k2v]['outpath']+ '/' + k2v + '_rms.nii'
+            sleep(10)
             method = 'fmap'
             k1 = (subj, 'ses-'+str(ses), method)
             k2b = subj+'_ses-'+str(ses)+'_b1map_'+str(run)
