@@ -5,6 +5,7 @@ from nipype.interfaces import fsl
 import subprocess
 from datetime import datetime
 from cloud.serialization.cloudpickle import dumps
+from pylabs.structural.brain_extraction import struc_bet
 from pylabs.conversion.brain_convert import conv_subjs
 from pylabs.utils.paths import getnetworkdataroot
 provenance = niprov.Context()
@@ -12,8 +13,10 @@ flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo', out
 applyxfm = fsl.ApplyXfm(output_type='NIFTI')
 fs = getnetworkdataroot()
 project = 'roots_of_empathy'
-subjects = ['sub-2013-C028', 'sub-2013-C029', 'sub-2013-C030', 'sub-2013-C037', 'sub-2013-C053', 'sub-2013-C065']
-convert = False
+#subjects = ['sub-2013-C028', 'sub-2013-C029', 'sub-2013-C030', 'sub-2013-C037', 'sub-2013-C053', 'sub-2013-C065']
+subjects = ['sub-2013-C028']
+convert = True
+
 
 def default_to_regular(d):
     if isinstance(d, defaultdict):
@@ -27,6 +30,8 @@ if convert:
 else:
     with open(join(fs, project, 'niftiDict_all_subj_201605190953.pickle'), 'rb') as f:
         niftiDict = cPickle.load(f)
+
+
 
 for subj in subjects:
     for ses in [1, 2]:    # arbitrary! fix by testing range in dict
@@ -79,10 +84,12 @@ for subj in subjects:
             cmd += ' -mul 100 '+niftiDict[k1a][k2v]['outpath']+ '/' + k2v + '_rms_b1corr.nii'
             subprocess.check_call(cmd, shell=True)
             niftiDict[k1a][k2v]['b1corr_fname'] = niftiDict[k1a][k2v]['outpath']+ '/' + k2v + '_rms_b1corr.nii.gz'
+            niftiDict = struc_bet(k1a, k2v, 'b1corr_fname', niftiDict)
             cmd = 'fslmaths ' + niftiDict[k1a][k2w]['rms_fname'] + ' -div ' + niftiDict[k1b][k2b]['phase_reg2vbm_s6_fname']
             cmd += ' -mul 100 ' + niftiDict[k1a][k2w]['outpath'] + '/' + k2w + '_rms_b1corr.nii'
             subprocess.check_call(cmd, shell=True)
             niftiDict[k1a][k2w]['b1corr_fname'] = niftiDict[k1a][k2w]['outpath'] + '/' + k2w + '_rms_b1corr.nii.gz'
+            niftiDict = struc_bet(k1a, k2w, 'b1corr_fname', niftiDict)
             k2t2 = subj+'_ses-'+str(ses)+'_3dt2_'+str(run)
             if not os.path.isfile(niftiDict[k1a][k2t2]['outfilename']):
                 continue
@@ -90,6 +97,8 @@ for subj in subjects:
             cmd += ' -mul 100 ' + niftiDict[k1a][k2t2]['outpath'] + '/' + k2t2 + '_b1corr.nii'
             subprocess.check_call(cmd, shell=True)
             niftiDict[k1a][k2t2]['b1corr_fname'] = niftiDict[k1a][k2t2]['outpath'] + '/' + k2t2 + '_b1corr.nii.gz'
+            niftiDict = struc_bet(k1a, k2t2, 'b1corr_fname', niftiDict, frac=0.6)
+
 
 niftidict = default_to_regular(niftiDict)
 with open(join(fs, project, "niftiDict_all_struc_b1corr_{:%Y%m%d%H%M}.pickle".format(datetime.now())), "wb") as f:

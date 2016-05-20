@@ -5,6 +5,7 @@ from pylabs.utils.sessions import make_sessions_fm_dict
 from cloud.serialization.cloudpickle import dumps
 from os.path import join
 from datetime import datetime
+from collections import defaultdict
 from pylabs.utils.paths import getlocaldataroot
 fs = getlocaldataroot()
 
@@ -99,7 +100,7 @@ def default_to_regular(d):
 
 def conv_subjs(project, subjects, niftiDict):
     niftiDF = pd.DataFrame()
-    if isinstance(niftiDict, defaultdict):
+    if not isinstance(niftiDict, defaultdict):
         raise TypeError('Dictionary not a nested 3 level collections.defaultdict, please fix.')
     if project not in img_conv:
         raise ValueError(project+" not in img_conv Panel. Please check")
