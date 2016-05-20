@@ -1,5 +1,6 @@
 from pylabs.conversion.parrec2nii_convert import BrainOpts
 import pandas as pd
+from collections import defaultdict
 from pylabs.conversion.parrec2nii_convert import brain_proc_file
 from pylabs.utils.sessions import make_sessions_fm_dict
 from cloud.serialization.cloudpickle import dumps
