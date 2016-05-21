@@ -51,7 +51,7 @@ struc_betDict[('sub-2013-C065', 'ses-1', 'anat')]['sub-2013-C065_ses-1_3dt2_1'][
 def struc_bet(key1, key2, key3, niftiDict, frac=0.25):
     if key1 not in struc_betDict:
         raise ValueError(key1+' not in struc_betDict! Please check.')
-    if key1 in in struc_betDict and key2 not in struc_betDict[key1]:
+    if key1 in struc_betDict and key2 not in struc_betDict[key1]:
         raise ValueError(key2+' not in 2nd level struc_betDict! Please check.')
     fname = niftiDict[key1][key2][key3]
     head_img = nibabel.load(fname)
