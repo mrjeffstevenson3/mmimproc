@@ -1,11 +1,12 @@
 from collections import defaultdict
+import subprocess
 import numpy as np
 import nibabel
 import nibabel.nifti1 as nifti1
 from nipype.interfaces import fsl
 fslbet = fsl.BET(output_type='NIFTI')
 
-struc_betDict = defaultdict(lambda: defaultdict(lambda: defaultdict(int)))
+struc_betDict = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
 struc_betDict[('sub-2013-C028', 'ses-1', 'anat')]['sub-2013-C028_ses-1_wemempr_1']['bet_com'] = (104, 145, 190)
 struc_betDict[('sub-2013-C028', 'ses-1', 'anat')]['sub-2013-C028_ses-1_wemempr_1']['zcutoff'] = 73
 struc_betDict[('sub-2013-C029', 'ses-2', 'anat')]['sub-2013-C029_ses-2_wemempr_1']['bet_com'] = (104, 142, 213)
@@ -48,8 +49,10 @@ struc_betDict[('sub-2013-C065', 'ses-1', 'anat')]['sub-2013-C065_ses-1_3dt2_1'][
 
 
 def struc_bet(key1, key2, key3, niftiDict, frac=0.25):
-#    if key1 not in niftiDict or key1 not in struc_betDict:
-#        raise ValueError(key1+' not in both struc_betDict and niftiDict! Please check.')
+    if key1 not in struc_betDict:
+        raise ValueError(key1+' not in struc_betDict! Please check.')
+    if key1 in in struc_betDict and key2 not in struc_betDict[key1]:
+        raise ValueError(key2+' not in 2nd level struc_betDict! Please check.')
     fname = niftiDict[key1][key2][key3]
     head_img = nibabel.load(fname)
     head_data = np.array(head_img.dataobj)
@@ -60,12 +63,9 @@ def struc_bet(key1, key2, key3, niftiDict, frac=0.25):
     nibabel.save(ncrop_img, outfname)
     cmd = 'bet '+outfname+' '+fname.split('.')[0] + '_brain.nii.gz'+'-m -f '+frac+' -c '
     cmd += ' '.join(map(str, struc_betDict[('sub-2013-C028', 'ses-1', 'anat')]['sub-2013-C028_ses-1_wemempr_1']['bet_com']))
-    # fslbet.inputs.in_file = outfname
-    # fslbet.inputs.out_file = fname.split('.')[0] + '_brain.nii.gz'
-    # fslbet.inputs.frac = frac
-    # fslbet.inputs.center = list(struc_betDict[key1][key2]['bet_com'])
-    # fslbet.inputs.mask = True
-    # fslbet.run()
+    subprocess.check_call(cmd, shell=True)
     niftiDict[key1][key2]['brain_fname'] = fname.split('.')[0] + '_brain.nii.gz'
     niftiDict[key1][key2]['mask_fname'] = fname.split('.')[0] + '_brain_mask.nii.gz'
+    niftiDict[key1][key2]['bet_com'] = struc_betDict[('sub-2013-C028', 'ses-1', 'anat')]['sub-2013-C028_ses-1_wemempr_1']['bet_com']
+    niftiDict[key1][key2]['zcutoff'] = struc_betDict[key1][key2]['zcutoff']
     return niftiDict
