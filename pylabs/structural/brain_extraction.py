@@ -58,12 +58,14 @@ def struc_bet(key1, key2, key3, niftiDict, frac=0.25):
     ncrop_img = nifti1.Nifti1Image(head_data_zcrop, head_img.affine)
     outfname = fname.split('.')[0] + '_zcrop.nii.gz'
     nibabel.save(ncrop_img, outfname)
-    fslbet.inputs.in_file = outfname
-    fslbet.inputs.out_file = fname.split('.')[0] + '_brain.nii.gz'
-    fslbet.inputs.frac = frac
-    fslbet.inputs.center = list(struc_betDict[key1][key2]['bet_com'])
-    fslbet.inputs.mask = True
-    fslbet.run()
-    niftiDict[key1][key2]['brain_fname'] = fname.split('.')[0] + '_brain.nii'
-    niftiDict[key1][key2]['mask_fname'] = fname.split('.')[0] + '_brain_mask.nii'
+    cmd = 'bet '+outfname+' '+fname.split('.')[0] + '_brain.nii.gz'+'-m -f '+frac+' -c '
+    cmd += ' '.join(map(str, struc_betDict[('sub-2013-C028', 'ses-1', 'anat')]['sub-2013-C028_ses-1_wemempr_1']['bet_com']))
+    # fslbet.inputs.in_file = outfname
+    # fslbet.inputs.out_file = fname.split('.')[0] + '_brain.nii.gz'
+    # fslbet.inputs.frac = frac
+    # fslbet.inputs.center = list(struc_betDict[key1][key2]['bet_com'])
+    # fslbet.inputs.mask = True
+    # fslbet.run()
+    niftiDict[key1][key2]['brain_fname'] = fname.split('.')[0] + '_brain.nii.gz'
+    niftiDict[key1][key2]['mask_fname'] = fname.split('.')[0] + '_brain_mask.nii.gz'
     return niftiDict
