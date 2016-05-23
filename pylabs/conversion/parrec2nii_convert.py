@@ -200,6 +200,7 @@ def brain_proc_file(opts, scandict):
         verbose('Writing %s' % outfilename)
         #verbose('session id=%s' % opts.session_id)
         nibabel.save(nimg, outfilename)
+        niprov.add(outfilename)
 
         # write out bvals/bvecs if requested
         if opts.bvs:
@@ -224,11 +225,13 @@ def brain_proc_file(opts, scandict):
                     for val in bvals:
                         fid.write('%s ' % val)
                     fid.write('\n')
+                niprov.add(outfilename.split('.')[0] + '.bvals')
                 with open(outfilename.split('.')[0] + '.bvecs', 'w') as fid:
                     for row in bvecs.T:
                         for val in row:
                             fid.write('%s ' % val)
                         fid.write('\n')
+                niprov.add(outfilename.split('.')[0] + '.bvecs')
                 setattr(opts, 'bvals', bvals)
                 setattr(opts, 'bvecs', bvecs)
 
@@ -258,6 +261,7 @@ def brain_proc_file(opts, scandict):
                 with open(outfilename.split('.')[0] + '.dwell_time', 'w') as fid:
                     fid.write('%r\n' % dwell_time)
                 setattr(opts, 'dwell_time', dwell_time)
+                niprov.add(outfilename.split('.')[0] + '.dwell_time')
 
         setattr(opts, 'converted', True)
         setattr(opts, 'QC', False)

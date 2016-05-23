@@ -7,11 +7,12 @@ from datetime import datetime
 from cloud.serialization.cloudpickle import dumps
 from pylabs.structural.brain_extraction import struc_bet
 from pylabs.conversion.brain_convert import conv_subjs
-from pylabs.utils.paths import getnetworkdataroot
-provenance = niprov.Context()
+from pylabs.utils.paths import getnetworkdataroot, getlocaldataroot
+prov = niprov.Context()
 flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo', output_type='NIFTI')
 applyxfm = fsl.ApplyXfm(output_type='NIFTI')
-fs = getnetworkdataroot()
+#fs = getnetworkdataroot()
+fs = getlocaldataroot()
 project = 'roots_of_empathy'
 subjects = ['sub-2013-C028', 'sub-2013-C029', 'sub-2013-C030', 'sub-2013-C037', 'sub-2013-C053', 'sub-2013-C065']
 #subjects = ['sub-2013-C053']
@@ -49,6 +50,7 @@ for subj in subjects:
             subprocess.check_call(cmd, shell=True)
             niftiDict[k1a][k2w + '_rms']['wemempr_fname'] = niftiDict[k1a][k2w]['outpath']+'/'+k2w+'_rms.nii'
             niftiDict[k1a][k2w]['rms_fname'] = niftiDict[k1a][k2w]['outpath']+'/'+k2w+'_rms.nii'
+            prov.add(niftiDict[k1a][k2w]['outpath']+'/'+k2w+'_rms.nii')
             k2v = subj+'_ses-'+str(ses)+'_vbmmempr_'+str(run)
             cmd = 'mri_concat --rms --i '
             cmd += niftiDict[k1a][k2v]['outfilename']
@@ -58,6 +60,7 @@ for subj in subjects:
             subprocess.check_call(cmd, shell=True)
             niftiDict[k1a][k2v + '_rms']['vbmmempr_fname'] = niftiDict[k1a][k2v]['outpath']+ '/' + k2v + '_rms.nii'
             niftiDict[k1a][k2v]['rms_fname'] = niftiDict[k1a][k2v]['outpath']+ '/' + k2v + '_rms.nii'
+            prov.add(niftiDict[k1a][k2v]['outpath']+ '/' + k2v + '_rms.nii')
             method = 'fmap'
             k1b = (subj, 'ses-'+str(ses), method)
             k2b = subj+'_ses-'+str(ses)+'_b1map_'+str(run)
@@ -80,6 +83,7 @@ for subj in subjects:
             cmd += niftiDict[k1b][k2b]['outpath']+'/'+k2b+'_phase_reg2vbmmpr_s6.nii.gz'
             subprocess.check_call(cmd, shell=True)
             niftiDict[k1b][k2b]['phase_reg2vbm_s6_fname'] = niftiDict[k1b][k2b]['outpath']+'/'+k2b+'_phase_reg2vbmmpr_s6.nii.gz'
+            niprov.add(niftiDict[k1b][k2b]['outpath']+'/'+k2b+'_phase_reg2vbmmpr_s6.nii.gz')
             cmd = 'fslmaths '+niftiDict[k1a][k2v]['rms_fname']+' -div '+niftiDict[k1b][k2b]['phase_reg2vbm_s6_fname']
             cmd += ' -mul 100 '+niftiDict[k1a][k2v]['outpath']+ '/' + k2v + '_rms_b1corr.nii'
             subprocess.check_call(cmd, shell=True)
@@ -98,6 +102,7 @@ for subj in subjects:
             subprocess.check_call(cmd, shell=True)
             niftiDict[k1a][k2t2]['b1corr_fname'] = niftiDict[k1a][k2t2]['outpath'] + '/' + k2t2 + '_b1corr.nii.gz'
             niftiDict = struc_bet(k1a, k2t2, 'b1corr_fname', niftiDict, frac=0.6)
+
 
 
 niftidict = default_to_regular(niftiDict)
