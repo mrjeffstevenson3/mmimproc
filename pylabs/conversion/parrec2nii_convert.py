@@ -223,13 +223,13 @@ def brain_proc_file(opts, scandict):
                     for val in bvals:
                         fid.write('%s ' % val)
                     fid.write('\n')
-                prov.log(outfilename.split('.')[0] + '.bvals', 'bvalue file created by parrec2nii_convert', infile)
+                prov.log(outfilename.split('.')[0] + '.bvals', 'bvalue file created by parrec2nii_convert', infile, script=__file__)
                 with open(outfilename.split('.')[0] + '.bvecs', 'w') as fid:
                     for row in bvecs.T:
                         for val in row:
                             fid.write('%s ' % val)
                         fid.write('\n')
-                prov.log(outfilename.split('.')[0] + '.bvecs', 'bvectors file created by parrec2nii_convert', infile) )
+                prov.log(outfilename.split('.')[0] + '.bvecs', 'bvectors file created by parrec2nii_convert', infile, script=__file__)
                 setattr(opts, 'bvals', bvals)
                 setattr(opts, 'bvecs', bvecs)
 
@@ -259,20 +259,22 @@ def brain_proc_file(opts, scandict):
                 with open(outfilename.split('.')[0] + '.dwell_time', 'w') as fid:
                     fid.write('%r\n' % dwell_time)
                 setattr(opts, 'dwell_time', dwell_time)
-                prov.log(outfilename.split('.')[0] + '.dwell_time', 'dwell time file created by parrec2nii_convert', infile)
-
+                prov.log(outfilename.split('.')[0] + '.dwell_time', 'dwell time file created by parrec2nii_convert', infile, script=__file__)
+        print (in_data.shape, slope, intercept, nhdr['cal_min'], nhdr['cal_max'])
         setattr(opts, 'converted', True)
         setattr(opts, 'QC', False)
         setattr(opts, 'pre_proc', False)
-        prov.log(outfilename, 'nifti file created by parrec2nii_convert', infile, script=__file__, opts=opts)
+        prov.log(outfilename, 'nifti file created by parrec2nii_convert', infile, script=__file__)
         scandict[(opts.subj, opts.session_id, opts.outdir)][basefilename.split('.')[0]] = opts2dict(opts)
 
         if opts.rms:
-            in_data_rms = np.sqrt(np.sum(np.square(in_data), 4)/in_data.shape[4])
+            print (in_data.shape, slope, intercept)
+            in_data_rms = np.sqrt(np.sum(np.square(in_data), 3)/in_data.shape[3])
             rmsimg = nifti1.Nifti1Image(in_data_rms, affine)
             rmshdr = nimg.header
             rmshdr.set_data_dtype(out_dtype)
             rmshdr.set_slope_inter(slope, intercept)
+
 
             if 'parse' in opts.minmax:
                 # need to get the scaled data
@@ -293,5 +295,6 @@ def brain_proc_file(opts, scandict):
             setattr(opts, 'outfilename', outfilename)
             setattr(opts, 'basefilename', basefilename.split('.')[0]+'_rms')
             scandict[(opts.subj, opts.session_id, opts.outdir)][basefilename.split('.')[0]+'_rms'] = opts2dict(opts)
-
+            prov.log(outfilename, 'rms file created by parrec2nii_convert', infile, script=__file__)
+            print (in_data_rms.shape, slope, intercept, rmshdr['cal_min'], rmshdr['cal_max'])
     return scandict
