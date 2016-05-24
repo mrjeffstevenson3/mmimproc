@@ -198,9 +198,7 @@ def brain_proc_file(opts, scandict):
             nhdr.extensions.append(dump_ext)
 
         verbose('Writing %s' % outfilename)
-        #verbose('session id=%s' % opts.session_id)
         nibabel.save(nimg, outfilename)
-        niprov.add(outfilename)
 
         # write out bvals/bvecs if requested
         if opts.bvs:
@@ -225,13 +223,13 @@ def brain_proc_file(opts, scandict):
                     for val in bvals:
                         fid.write('%s ' % val)
                     fid.write('\n')
-                niprov.add(outfilename.split('.')[0] + '.bvals')
+                prov.log(outfilename.split('.')[0] + '.bvals', 'bvalue file created by parrec2nii_convert', infile)
                 with open(outfilename.split('.')[0] + '.bvecs', 'w') as fid:
                     for row in bvecs.T:
                         for val in row:
                             fid.write('%s ' % val)
                         fid.write('\n')
-                niprov.add(outfilename.split('.')[0] + '.bvecs')
+                prov.log(outfilename.split('.')[0] + '.bvecs', 'bvectors file created by parrec2nii_convert', infile) )
                 setattr(opts, 'bvals', bvals)
                 setattr(opts, 'bvecs', bvecs)
 
@@ -261,16 +259,39 @@ def brain_proc_file(opts, scandict):
                 with open(outfilename.split('.')[0] + '.dwell_time', 'w') as fid:
                     fid.write('%r\n' % dwell_time)
                 setattr(opts, 'dwell_time', dwell_time)
-                niprov.add(outfilename.split('.')[0] + '.dwell_time')
+                prov.log(outfilename.split('.')[0] + '.dwell_time', 'dwell time file created by parrec2nii_convert', infile)
 
         setattr(opts, 'converted', True)
         setattr(opts, 'QC', False)
         setattr(opts, 'pre_proc', False)
+        prov.log(outfilename, 'nifti file created by parrec2nii_convert', infile, script=__file__, opts=opts)
         scandict[(opts.subj, opts.session_id, opts.outdir)][basefilename.split('.')[0]] = opts2dict(opts)
 
-    #need to make dataframe from opts and save as tsv
-    #need to make k v pairs for scandict to pass back
+        if opts.rms:
+            in_data_rms = np.sqrt(np.sum(np.square(in_data), 4)/in_data.shape[4])
+            rmsimg = nifti1.Nifti1Image(in_data_rms, affine)
+            rmshdr = nimg.header
+            rmshdr.set_data_dtype(out_dtype)
+            rmshdr.set_slope_inter(slope, intercept)
+
+            if 'parse' in opts.minmax:
+                # need to get the scaled data
+                verbose('Loading (and scaling) the rms data to determine value range')
+            if opts.minmax[0] == 'parse':
+                rmshdr['cal_min'] = in_data_rms.min() * slope + intercept
+            else:
+                rmshdr['cal_min'] = float(opts.minmax[0])
+            if opts.minmax[1] == 'parse':
+                rmshdr['cal_max'] = in_data_rms.max() * slope + intercept
+            else:
+                rmshdr['cal_max'] = float(opts.minmax[1])
+            outfilename = outfilename.split('.')[0]+'_rms.nii'
+            if opts.compressed:
+                outfilename = outfilename + '.gz'
+            verbose('Writing %s' % outfilename)
+            nibabel.save(rmsimg, outfilename)
+            setattr(opts, 'outfilename', outfilename)
+            setattr(opts, 'basefilename', basefilename.split('.')[0]+'_rms')
+            scandict[(opts.subj, opts.session_id, opts.outdir)][basefilename.split('.')[0]+'_rms'] = opts2dict(opts)
 
     return scandict
-        # done
-
