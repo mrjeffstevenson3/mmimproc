@@ -21,7 +21,7 @@ statsdir = join(fs, project, 'mytbss_mf_v1', 'stats')
 behavdir = 'data/behavior/'
 csvfile = behavdir+'roots_behavior_transposed.csv'
 niprov.add(csvfile)
-maskfile = join(statsdir, 'mean_FA_skeletonised_mask.nii.gz')
+maskfile = join(statsdir, 'mean_FA_skeleton_mask.nii.gz')
 
 imgtemplate = 'all_{0}_skeletonised.nii.gz'
 #measures = ['F1', 'F2', 'FA', 'L1', 'MD', 'MO', 'RA', 'AD', 'L2', 'L3']
