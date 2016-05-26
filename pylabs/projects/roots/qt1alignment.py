@@ -1,4 +1,4 @@
-import glob, os, niprov
+import glob, os, niprov, subprocess
 from os.path import join
 from pylabs.utils.paths import getlocaldataroot, getnetworkdataroot
 from pylabs.utils import WorkingContext
@@ -22,6 +22,8 @@ targettemplate = '{}_ses-1_wemempr_1_rms_b1corr_brain_susan200.nii.gz'
 subjects = ['sub-2013-C0{}'.format(s) for s in behavior.index.values]
 nsubjects = len(subjects)
 
+nthreads = 10
+
 
 ref = None
 subjectfiles = []
@@ -32,15 +34,14 @@ for s, subject in enumerate(subjects):
     movingfpath = join(sessiondir, 'qt1', '{}_t1.nii.gz'.format(subject))
     targetfpath = join(templatedir, targettemplate.format(subject))
     outprefix = subject + '_qt1'
-    print(movingfpath)
-    print(targetfpath)
     cmd = []
     antsbin = join(os.environ['ANTSPATH'], 'antsRegistrationSyN.sh')
-    cmd += ['antsRegistrationSyN.sh', '-d','3','-n','10','-t','s']
+    cmd += [antsbin, '-d','3','-n', str(nthreads),'-t','s']
     cmd += ['-f', targetfpath]
     cmd += ['-m', movingfpath]
     cmd += ['-o', outprefix]
     with WorkingContext(regdir):
+        print(' '.join(cmd))
         output = subprocess.check_output(cmd)
     outputs[subject] = output
 

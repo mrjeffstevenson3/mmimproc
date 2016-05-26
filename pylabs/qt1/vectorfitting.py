@@ -1,5 +1,5 @@
 from __future__ import division
-import nibabel, numpy, niprov
+import nibabel, numpy, niprov, sys
 from numpy import cos, sin, exp, tan, radians, power
 from pylabs.optimization import nonlinearfit
 provenance = niprov.Context()
@@ -12,7 +12,7 @@ def spgrformula(a, S0, T1):
     return S0 * sin(a) * ((1-expminTRT1) / (1-cos(a) * expminTRT1))
 
 
-def fitT1WholeBrain(sfiles, b1file, outfpath):
+def fitT1WholeBrain(sfiles, b1file, outfpath, maxval=sys.maxint):
 
     TR = prov(sfiles[0])['repetition-time']
     if hasattr(TR, '__iter__'):
@@ -48,6 +48,6 @@ def fitT1WholeBrain(sfiles, b1file, outfpath):
     print('Saving file..')
     t1vector = numpy.zeros((nvoxels,))
     t1vector[mask1d] = estimates['T1'].values
-    #t1vector[t1vector > 3000] = 0
+    t1vector[t1vector > maxval] = maxval
     t1 = t1vector.reshape(spatialdims)
     nibabel.save(nibabel.Nifti1Image(t1, affine), outfpath)

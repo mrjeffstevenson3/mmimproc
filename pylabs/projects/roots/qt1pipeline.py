@@ -53,7 +53,7 @@ for s, subject in enumerate(subjects):
 
     ## T1 fitting
     print('T1 fitting..')
-    fitT1WholeBrain(sfiles, b1file, outfpath)
+    fitT1WholeBrain(sfiles, b1file, outfpath, maxval=7000)
 
     ## align subject to target subject
     if ref is None:

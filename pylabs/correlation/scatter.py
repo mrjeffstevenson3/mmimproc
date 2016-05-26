@@ -1,4 +1,4 @@
-import numpy, nibabel, seaborn
+import numpy, nibabel, seaborn, pandas
 import pylabs.io.images
 
 def forLowestPvalue(datafiles, variables, statfiles):

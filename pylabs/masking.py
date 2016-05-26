@@ -3,12 +3,12 @@ from nipype.interfaces import fsl
 from pylabs.utils import WorkingContext
 
 
-def skullStrippedMask(targetfpath, provenance, workingdir='tmpdir'):
+def skullStrippedMask(targetfpath, provenance, frac=0.5, workingdir='tmpdir'):
     print('Skull stripping..')
     ext = '.nii.gz' if '.gz' in targetfpath else '.nii'
     bet = fsl.BET()
     bet.inputs.in_file = targetfpath
-    bet.inputs.frac = 0.7
+    bet.inputs.frac = frac
     bet.inputs.mask = True
     if not os.path.isdir(workingdir):
         os.mkdir(workingdir)
