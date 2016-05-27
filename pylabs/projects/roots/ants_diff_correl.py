@@ -13,6 +13,8 @@ diff_mods = ['FA', 'RA', 'MD']
 subjname_templ = 'sub-2013-C0{sub_nmbr}'
 diff_fname_templ = '{subj_name}_nomo_mf_{diff_mod}.nii.gz'
 sub_names = [str(subjname_templ).format(sub_nmbr=x) for x in sub_nmbrs]
+FA_fnames = [str(diff_fname_templ).format(subj_name=x, diff_mod=diff_mods[0]) for x in sub_names]
+nonFA_fnames = [str(diff_fname_templ).format(subj_name=x, diff_mod=y) for x in sub_names for y in diff_mods[1:]]
 warpfname1_templ = 'T1we_susanthr200{subj_name}_ses-{ses}_wemempr_{run}_rms_b1corr_brain_susan200Warp.nii.gz'
 affinefname_templ = 'T1we_susanthr200{subj_name}_ses-{ses}_wemempr_{run}_rms_b1corr_brain_susan200Affine.txt'
 reffname_templ = 'T1we_susanthr200{subj_name}_ses-{ses}_wemempr_{run}_rms_b1corr_brain_susan200deformed.nii.gz'
@@ -26,5 +28,6 @@ else:
 
 
 for subj in sub_names:
+
 
 
