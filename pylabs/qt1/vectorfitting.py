@@ -48,6 +48,6 @@ def fitT1WholeBrain(sfiles, b1file, outfpath, maxval=sys.maxint):
     print('Saving file..')
     t1vector = numpy.zeros((nvoxels,))
     t1vector[mask1d] = estimates['T1'].values
-    t1vector[t1vector > maxval] = maxval
+    t1vector = t1vector.clip(0, maxval)
     t1 = t1vector.reshape(spatialdims)
     nibabel.save(nibabel.Nifti1Image(t1, affine), outfpath)

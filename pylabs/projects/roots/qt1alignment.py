@@ -1,4 +1,4 @@
-import glob, os, niprov, subprocess
+import glob, os, niprov, subprocess, datetime
 from os.path import join
 from pylabs.utils.paths import getlocaldataroot, getnetworkdataroot
 from pylabs.utils import WorkingContext
@@ -22,7 +22,7 @@ targettemplate = '{}_ses-1_wemempr_1_rms_b1corr_brain_susan200.nii.gz'
 subjects = ['sub-2013-C0{}'.format(s) for s in behavior.index.values]
 nsubjects = len(subjects)
 
-nthreads = 10
+nthreads = 20
 
 
 ref = None
@@ -35,13 +35,24 @@ for s, subject in enumerate(subjects):
     targetfpath = join(templatedir, targettemplate.format(subject))
     outprefix = subject + '_qt1'
     cmd = []
-    antsbin = join(os.environ['ANTSPATH'], 'antsRegistrationSyN.sh')
+    antsbin = join(os.environ['ANTSPATH'], 
+        'antsRegistrationSyN_NearestNeighbor.sh')
     cmd += [antsbin, '-d','3','-n', str(nthreads),'-t','s']
     cmd += ['-f', targetfpath]
     cmd += ['-m', movingfpath]
     cmd += ['-o', outprefix]
+    start = datetime.datetime.now()
     with WorkingContext(regdir):
-        print(' '.join(cmd))
-        output = subprocess.check_output(cmd)
+        try:
+            output = subprocess.check_output(cmd)
+        except subprocess.CalledProcessError as e:
+            output = e.output
+            print('ANTS Exception.')
+        with open(subject+'.txt','w') as logfile:
+            logfile.write(output)
+    end = datetime.datetime.now()
+    duration = end-start
+    print(duration)
     outputs[subject] = output
+
 
