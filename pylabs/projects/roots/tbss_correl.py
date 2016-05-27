@@ -25,7 +25,8 @@ maskfile = join(statsdir, 'mean_FA_skeleton_mask.nii.gz')
 
 imgtemplate = 'all_{0}_skeletonised.nii.gz'
 #measures = ['F1', 'F2', 'FA', 'L1', 'MD', 'MO', 'RA', 'AD', 'L2', 'L3']
-measures = ['FA']
+#measures = ['FA']
+measures = ['F2']
 skellist = [imgtemplate.format(m) for m in measures]
 images = [statsdir+'/'+i for i in skellist]
 [niprov.add(img) for img in images]
