@@ -1,6 +1,10 @@
-
-
+from os.path import join
+from pylabs.utils.paths import getlocaldataroot, getnetworkdataroot
+from pylabs.atlassing import atlasWiseSignificantVoxelsFrame
+fs = getlocaldataroot()
+statsdir = join(fs, 'roots_of_empathy', 'correlations_qt1')
 # atkas + stats > frame > table
+atlasfpath = 'data/atlases/JHU_MNI_SS_WMPM_Type_I_matched.nii.gz'
 
 statfiles = {
     'Affect-Knowledge-Test':{
@@ -16,5 +20,9 @@ statfiles = {
         'tpos':'R-POST-Flag-Switch_tpos.nii.gz',
     }
 }
+for var in statfiles.keys():
+    for stat in statfiles[var].keys():
+        statfiles[var][stat] = join(statsdir, statfiles[var][stat])
 
-#pylabs.tables.atlasframe()
+F = atlasWiseSignificantVoxelsFrame(statfiles, pmax=.001, atlas=atlasfpath)
+print(F)
