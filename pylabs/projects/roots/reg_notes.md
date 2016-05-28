@@ -14,13 +14,13 @@
 ### Registration pipeline
 1. ```antsRegistrationSyN.sh``` for all multi-modal data to viable T1
     1. MEG dipole to subj spheres?
-    2. only one xform for each modality
+    2. only one xform for each modality needed if acquired in same session.
     3. use ```WarpImageMultiTransform``` for rest of images
     4. freesurfer run at this level. generates *aparc_aseg*
-2. ```buildtemplateparallel.sh ``` when all T1s aquired to make template
-3. move all modalities to template space using ```WarpImageMultiTransform``` and warp files from templating.
+2. ```buildtemplateparallel.sh``` when all T1s aquired to make template
+3. move all modalities to template space using ```WarpImageMultiTransform``` and warp files from templating in 2.
 4. do stats at template level
 5. ```antsRegistrationSyN.sh``` to move template into MNI
-6. move significant stats to MNI
+6. move significant stats to MNI using ```WarpImageMultiTransform``` and warp files from 5
 7. atlasing, tables, and higher level spacial mmpa 
 
