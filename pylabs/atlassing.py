@@ -6,5 +6,4 @@ def atlasWiseSignificantVoxelsFrame(statfiles, atlas, pmax=.001):
     for var in statfiles.keys():
         region2minp = statsByRegion(statfiles[var]['2minp'], 
                                     atlas, threshold=thresh2minp)
-    F = pandas.DataFrame()
-    return F
+    return region2minp

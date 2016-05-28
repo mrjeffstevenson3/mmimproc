@@ -25,15 +25,15 @@ def statsByRegion(image, atlas, threshold=None):
     for index in regionIndices:
         regionMasks.append(atlasData == index)
 
-
-    stats = collections.defaultdict(lambda : numpy.zeros((nregions,)))
+    cols = ['all', 'average', 'superthreshold']
+    stats = pandas.DataFrame(index=labels, columns=cols)
     for r, regionMask in enumerate(regionMasks):
         regionData = imgData[regionMask]
         stats['all'][r] = regionData
         stats['average'][r] = regionData.mean()
         if threshold:
             stats['superthreshold'][r] = regionData > threshold
-    return pandas.DataFrame(stats, index=labels)
+    return stats
 
 def averageByRegion(image, atlasfpath):
     return statsByRegion(image, atlasfpath)['average']
