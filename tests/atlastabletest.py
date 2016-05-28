@@ -4,7 +4,7 @@ from pylabs.atlassing import atlasWiseSignificantVoxelsFrame
 fs = getlocaldataroot()
 statsdir = join(fs, 'roots_of_empathy', 'correlations_qt1')
 # atkas + stats > frame > table
-atlasfpath = 'data/atlases/JHU_MNI_SS_WMPM_Type_I_matched.nii.gz'
+atlasfpath = 'data/atlases/test-atlas-240x240x116.nii.gz'
 
 statfiles = {
     'Affect-Knowledge-Test':{
