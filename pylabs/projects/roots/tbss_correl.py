@@ -65,10 +65,10 @@ report(selectedCorrPfiles, atlas, atlaslabels(atlasfile),
 
 combs = deconstructRandparFiles(selectedCorrPfiles, matdir=matfiledir, imgdir=statsdir)
 
-opts.dryrun = True
+prov.dryrun = True
 exptag='testrun_filtered_gender_2col_n5000_select'
 resultdir = join(statsdir,'randomise_runs',exptag)
 masks = {img: maskfile for img in combs.keys()} # Mask is the same for all images
 randparfiles = multirandpar(combs, designfile, masks=masks, niterations=5000,
-    tbss=True, workdir=qsubdir, outdir=resultdir, opts=opts)
+    tbss=True, workdir=qsubdir, outdir=resultdir)
 
