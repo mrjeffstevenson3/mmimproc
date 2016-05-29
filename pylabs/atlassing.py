@@ -16,9 +16,16 @@ def atlasWiseSignificantVoxelsFrame(statfiles, atlas, pmax=.001):
         voxels['neg'] = data['pos'].apply(lambda r: r == False)
         voxels['sigpos'] = voxels['significant'] * voxels['pos']
         voxels['signeg'] = voxels['significant'] * voxels['neg']
+        voxels['r'] = regioncorr['all']
+        voxels['p'] = 2-region2minp['all']
 
-        for directionLabel, d in {'pos': +1, 'neg': -1}.items():
-            data[directionLabel] = 
+        k = lambda row: row['sigpos'].sum()
+        r = lambda row: row['r'][row['sigpos']].mean()
+        data = pandas.DataFrame(index=region2minp.index)
+        data['k'] = voxels.apply(k, axis=1)
+        data['r'] = voxels.apply(r, axis=1)
+        #for directionLabel, d in {'pos': +1, 'neg': -1}.items():
+        #    data[directionLabel] = 
 
 
-    return region2minp
+    return data
