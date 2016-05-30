@@ -14,7 +14,7 @@ def getlocaldataroot():
     elif hostname == 'redshirt.ilabs.uw.edu':
         return '/redshirt_array/data/'
     elif hostname == 'Jeffs-MBP-3' or hostname == 'Jeffs-MacBook-Pro-3.local' or hostname == 'D-140-142-55-182.dhcp4.washington.edu'\
-            or hostname == 'D-69-91-168-96.dhcp4.washington.edu':
+                        or hostname == 'D-69-91-168-96.dhcp4.washington.edu' or hostname == 'D-140-142-55-10.dhcp4.washington.edu':
         return '/Users/mrjeffs/Documents/Research/data'
     else:
         raise ValueError('Don''t know where data root is on this computer.')
