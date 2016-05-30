@@ -2,6 +2,8 @@ import os
 from os.path import join
 from collections import defaultdict
 import nibabel
+import nibabel.nifti1 as nifti1
+import numpy as np
 from pylabs.alignment.ants_reg import subj2templ_applywarp as reg2templ
 from pylabs.utils.paths import getlocaldataroot, getnetworkdataroot
 from pylabs.conversion.brain_convert import conv_subjs
@@ -40,7 +42,7 @@ for i in a:
 
 if convert:
     niftiDict = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
-    niftiDict, niftiDF = conv_subjs(project, subjects, niftiDict)
+    niftiDict, niftiDF = conv_subjs(project, sub_names, niftiDict)
 # else:
 #     with open(join(fs, project, 'niftiDict_all_subj_201605181335.pickle'), 'rb') as f:
 #         niftiDict = cPickle.load(f)
@@ -50,7 +52,7 @@ for i in imgdict:
     t1_img = nibabel.load(i)
     t1_affine = t1_img.affine
     t1_data = np.array(t1_img.dataobj)
-    t1_data_zcrop = tf_data
+    t1_data_zcrop = t1_data
     t1_data_zcrop[:,:,0:int(imgdict[i]['zcutoff'])] = 0
     outfilename = join(fs, project, workdir, 'T1', imgdict[i]['outfile'])
     nimg = nifti1.Nifti1Image(t1_data_zcrop, t1_affine)

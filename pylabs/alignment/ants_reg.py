@@ -29,3 +29,4 @@ def subj2T1(moving, ref_img, outfile, inargs=None):
     subprocess.check_call(cmd, shell=True)
     niprov.log(outfile, 'antsRegistrationSyN', moving, script=__file__)
     return
+
