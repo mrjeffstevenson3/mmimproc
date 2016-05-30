@@ -31,7 +31,7 @@ reffname_templ = 'T1we_susanthr200{subj_name}_ses-{ses}_wemempr_{run}_rms_b1corr
 
 imgdict = defaultdict(lambda: defaultdict(list))
 a = [('sub-2013-C028_ses-1_wemempr_1_rms_b1corr_brain_susan200.nii.gz', {'zcutoff': 90, 'outfile': 'sub-2013-C028_ses-1_wemempr_1_rms_b1corr_brain_susan200_zcrop.nii.gz'}),
-     ('sub-2013-C030_ses-1_wemempr_1_rms_b1corr_brain_susan200.nii.gz ', {'zcutoff': 96, 'outfile': 'sub-2013-C030_ses-1_wemempr_1_rms_b1corr_brain_susan200_zcrop.nii.gz'}),
+     ('sub-2013-C030_ses-1_wemempr_1_rms_b1corr_brain_susan200.nii.gz', {'zcutoff': 96, 'outfile': 'sub-2013-C030_ses-1_wemempr_1_rms_b1corr_brain_susan200_zcrop.nii.gz'}),
      ('sub-2013-C053_ses-1_wemempr_1_rms_b1corr_brain_susan200.nii.gz', {'zcutoff': 100, 'outfile': 'sub-2013-C053_ses-1_wemempr_1_rms_b1corr_brain_susan200_zcrop.nii.gz'}),
      ('sub-2013-C029_ses-2_wemempr_1_rms_b1corr_brain_susan200.nii.gz', {'zcutoff': 114, 'outfile': 'sub-2013-C029_ses-2_wemempr_1_rms_b1corr_brain_susan200_zcrop.nii.gz'}),
      ('sub-2013-C037_ses-1_wemempr_1_rms_b1corr_brain_susan200.nii.gz', {'zcutoff': 101, 'outfile': 'sub-2013-C037_ses-1_wemempr_1_rms_b1corr_brain_susan200_zcrop.nii.gz'}),
