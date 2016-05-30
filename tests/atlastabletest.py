@@ -20,6 +20,7 @@ statfiles = {
         'tpos':'R-POST-Flag-Switch_tpos.nii.gz',
     }
 }
+
 for var in statfiles.keys():
     for stat in statfiles[var].keys():
         statfiles[var][stat] = join(statsdir, statfiles[var][stat])
