@@ -94,7 +94,7 @@ def wholeBrain(files, variables, outdir = '', niterations = 1000):
             img = nibabel.Nifti1Image(output4d[v,:,:,:], affine)
             print('Saving file: {}'.format(ftemplates[stat].format(varname)))
             nibabel.save(img, outfnames[varname][stat])
-    return outfnames
+    return outfnames, pcorr, tcorr
 
 
 def corr(X, Y):

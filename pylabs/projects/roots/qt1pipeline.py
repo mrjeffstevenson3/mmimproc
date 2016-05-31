@@ -3,6 +3,7 @@ from os.path import join
 from pylabs.utils.paths import getlocaldataroot, getnetworkdataroot
 import pylabs.correlation.correlate as correlate
 import pylabs.correlation.scatter as scatter
+from pylabs.atlassing import atlasWiseSignificantVoxelsFrame
 from pylabs.qt1.vectorfitting import fitT1WholeBrain
 from pylabs.conversion.helpers import par2mni_1file as conv
 from pylabs.qt1.b1mapcoreg import b1mapcoreg_1file
@@ -83,10 +84,17 @@ for s, subject in enumerate(subjects):
 
 ## correlation
 subjectfiles = sorted(subjectfiles)
-statfiles = correlate.wholeBrain(subjectfiles, behavior, 
+statfiles, pcorr, tcorr = correlate.wholeBrain(subjectfiles, behavior, 
                 outdir = resultsdir, niterations = 500) # 30mins
+
+## table
+atlasfpath = 'data/atlases/test-atlas-240x240x116.nii.gz'
+frame = atlasWiseSignificantVoxelsFrame(statfiles, pmax=pcorr, atlas=atlasfpath)
+
 ## scatterplots
 scatter.forLowestPvalue(subjectfiles, behavior, statfiles)
+
+
 
 
 
