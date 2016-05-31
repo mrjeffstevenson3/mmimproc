@@ -33,7 +33,7 @@ for s, subject in enumerate(subjects):
     sessiondir = join(projectdir, subject, 'ses-1')
     movingfpath = join(sessiondir, 'qt1', '{}_t1.nii.gz'.format(subject))
     targetfpath = join(templatedir, targettemplate.format(subject))
-    outprefix = subject + '_qt1'
+    outprefix = subject + '_qt1_'
     cmd = []
     antsbin = join(os.environ['ANTSPATH'], 
         'antsRegistrationSyN_NearestNeighbor.sh')
