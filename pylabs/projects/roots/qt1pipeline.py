@@ -4,6 +4,7 @@ from pylabs.utils.paths import getlocaldataroot, getnetworkdataroot
 import pylabs.correlation.correlate as correlate
 import pylabs.correlation.scatter as scatter
 from pylabs.atlassing import atlasWiseSignificantVoxelsFrame
+from pylabs.transformations.standard import standardizeBasedOnAbsoluteMask
 from pylabs.qt1.vectorfitting import fitT1WholeBrain
 from pylabs.conversion.helpers import par2mni_1file as conv
 from pylabs.qt1.b1mapcoreg import b1mapcoreg_1file
@@ -70,12 +71,15 @@ for s, subject in enumerate(subjects):
     flt.inputs.interp = 'nearestneighbour'
     flt.run() 
     alignedfpath = aligned+'.nii.gz'
+    #provenance.add(alignedfpath)
+    stdfpath = standardizeBasedOnAbsoluteMask(alignedfpath, 
+        os.path.dirname(alignedfpath))
 
     ## smooth
-    sigma = 2
+    sigma = 1.5
     print('Smoothing..')
-    smoothfile = alignedfpath.replace('.nii', '_sigma{}.nii'.format(sigma))
-    img = nibabel.load(alignedfpath)
+    smoothfile = stdfpath.replace('.nii', '_sigma{}.nii'.format(sigma))
+    img = nibabel.load(stdfpath)
     data = img.get_data()
     affine = img.get_affine()
     smoothdata = gaussian_filter(data, sigma)
@@ -88,7 +92,7 @@ statfiles, pcorr, tcorr = correlate.wholeBrain(subjectfiles, behavior,
                 outdir = resultsdir, niterations = 500) # 30mins
 
 ## table
-atlasfpath = 'data/atlases/test-atlas-240x240x116.nii.gz'
+atlasfpath = 'data/atlases/JHU_MNI_SS_WMPM_Type_I_matched.nii.gz'
 frame = atlasWiseSignificantVoxelsFrame(statfiles, pmax=pcorr, atlas=atlasfpath)
 
 ## scatterplots
