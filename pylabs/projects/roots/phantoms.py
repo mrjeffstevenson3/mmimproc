@@ -41,8 +41,7 @@ subjectdirs = glob.glob(join(projectdir, 'phantom_qT1_*'))
 for subjectdir in subjectdirs:
     subject = basename(subjectdir)
     date = datetime.datetime.strptime(subject.split('_')[2], '%Y%m%d').date()
-    phantom[date] = pandas.DataFrame(index=vialOrder, 
-                    columns=['model','fit'], dtype=float)
+
 
     ## par2nii
     niftiDict = convertSubjectParfiles(subject, subjectdir)
@@ -54,18 +53,19 @@ for subjectdir in subjectdirs:
         print('\n\n\nNO SPGRS TR11 FOUND FOR {}\n\n\n'.format(subject))
         continue
     assert TR == singletr(provget(alphafiles[0])['repetition-time'])
-    if not xform:
-        xform[date] = align(alphafiles[0], alignmentTarget, delta=10)
 
+    if date not in xform:
+        xform[date] = align(alphafiles[0], alignmentTarget, delta=10)
+    phantom[date] = pandas.DataFrame(index=vialOrder, 
+                    columns=['model','fit'], dtype=float)
     ## model_pipeline
     phantom[date]['model'] = modelForDate(date, scanner)[vialOrder]
 
     ## b1 map
     b1file = join(subjectdir, 'fmap', '{}_b1map_phase_1.nii'.format(subject))
     alignedB1file = b1file.replace('.nii', '_coreg.nii')
-    if not xform:
-        applyXformAndSave(xform[date], b1file, alignmentTarget, 
-            newfile=alignedB1file, provenance=provenance)
+    applyXformAndSave(xform[date], b1file, alignmentTarget, 
+        newfile=alignedB1file, provenance=provenance)
     print('Sampling B1')
     B1 = averageByRegion(alignedB1file, vialAtlas).loc[vialOrder]
 
@@ -73,9 +73,8 @@ for subjectdir in subjectdirs:
     adata[date] = pandas.DataFrame()
     for alphafile in alphafiles:
         alignedAlphafile = alphafile.replace('.nii', '_coreg.nii')
-        if not xform:
-            applyXformAndSave(xform[date], alphafile, alignmentTarget, 
-                newfile=alignedAlphafile, provenance=provenance)
+        applyXformAndSave(xform[date], alphafile, alignmentTarget, 
+            newfile=alignedAlphafile, provenance=provenance)
         print('Sampling signal for one flip angle..')
         vialAverages = averageByRegion(alignedAlphafile, vialAtlas)
         alpha = provenance.get(forFile=alignedAlphafile).provenance['flip-angle']
@@ -87,34 +86,12 @@ for subjectdir in subjectdirs:
 
     ## Initial fit on vials
     phantom[date]['fit'] = fitT1(adata[date], A, B1, TR)
-    ## determine Correction
-    correction[date] = correct.create(adata[date], A, B1, phantom[date]['model'], 
-                                    phantom[date]['fit'], TR)
-
-    try:
-        if isinstance(correction[date][0], str):
-            correctionname = correction[date][0]
-    except Exception as e:
-        pass
-    ## apply Correction fit on vials
-    phantom[date]['corr'] = correct.apply(correction[date], adata[date], A, B1)
-    ## apply Correction fit on brain sample
-    brain[date] = pandas.DataFrame(index=sample.index, 
-                    columns=['fit','corr'], dtype=float)
-    brainAngles = list(sample.columns.values[-3:])
-    brain[date]['fit'] = sample['fit']
-    brain[date]['corr'] = correct.apply(correction[date], sample[brainAngles], 
-                                        radians(brainAngles), sample['B1'])
 
     ## plotting
     plt.figure()
-    pltname = 'phantom_TR{}_{}'.format(TR, correctionname)
+    pltname = 'phantom_TR{}_date_{}'.format(TR, date)
     phantom[date].plot.bar()
     plt.title(pltname)
     plt.savefig(pltname+'.png')
     plt.figure()
-    pltname = 'brain_TR{}_{}'.format(TR, correctionname)
-    brain[date].plot.bar()
-    plt.title(pltname)
-    plt.savefig(pltname+'.png')
 
