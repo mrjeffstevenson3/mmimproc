@@ -41,3 +41,7 @@ def modelForDate(targetdate, scanner):
     expectedByDate[targetdate]
     labels = [str(v) for v in vialsInOrder]
     return pandas.Series(expectedByDate[targetdate], index=labels)
+
+def hasRecordForDate(targetdate, scanner):
+    expectedByDate = calculate_model(scanner)
+    return targetdate in expectedByDate
