@@ -15,7 +15,7 @@ convert = False
 fs = getnetworkdataroot()
 #fs = getlocaldataroot()
 project = 'roots_of_empathy'
-workdir = 'ants_diff_correlations/FA_clamped'
+workdir = 'ants_diff_correlations/FA'
 sub_nmbrs = [28, 29, 30, 37, 53, 65]
 diff_mods = ['FA', 'RA', 'MD', 'F2']
 subjname_templ = 'sub-2013-C0{sub_nmbr}'
@@ -50,12 +50,13 @@ if convert:
 
 for i in imgdict:
     t1_img = nibabel.load(i)
+    t1_hdr = t1_img.header
     t1_affine = t1_img.affine
     t1_data = np.array(t1_img.dataobj)
     t1_data_zcrop = t1_data
     t1_data_zcrop[:,:,0:int(imgdict[i]['zcutoff'])] = 0
     outfilename = join(fs, project, workdir, 'T1', imgdict[i]['outfile'])
-    nimg = nifti1.Nifti1Image(t1_data_zcrop, t1_affine)
+    nimg = nifti1.Nifti1Image(t1_data_zcrop, t1_affine, t1_hdr)
     nibabel.save(nimg, outfilename)
 
 
