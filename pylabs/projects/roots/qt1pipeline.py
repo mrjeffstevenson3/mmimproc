@@ -93,7 +93,7 @@ statfiles, pcorr, tcorr = correlate.wholeBrain(subjectfiles, behavior,
                 outdir = resultsdir, niterations = 500) # 30mins
 
 ## cluster thresholding
-statfiles, clustertables = clusterminsize(statfiles, pcorr, minsize=10)
+statfiles, clutables, clumaps = clusterminsize(statfiles, pcorr, minsize=10)
 
 ## table
 atlasfpath = 'data/atlases/JHU_MNI_SS_WMPM_Type_I_matched.nii.gz'
@@ -101,6 +101,7 @@ frame = atlasWiseSignificantVoxelsFrame(statfiles, pmax=pcorr, atlas=atlasfpath)
 
 ## scatterplots
 scatter.forLowestPvalue(subjectfiles, behavior, statfiles)
+scatter.forClusters(subjectfiles, behavior, clumaps, clutables)
 
 
 

@@ -4,6 +4,11 @@ from pylabs.utils import WorkingContext
 
 
 def skullStrippedMask(targetfpath, provenance, frac=0.5, workingdir='tmpdir'):
+    """
+    Args:
+        workingdir (str): Directory where FSL will run and save intermediate 
+                            files, such as brainmask.
+    """
     print('Skull stripping..')
     ext = '.nii.gz' if '.gz' in targetfpath else '.nii'
     bet = fsl.BET()

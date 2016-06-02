@@ -10,6 +10,7 @@ def clusterminsize(statfiles, pcorr, minsize=0):
     thresh2minp = 2-pcorr
     varnames = statfiles.keys()
     clustertables = {}
+    clustermaps = {}
     for var in varnames:
         print('Clustering stats for '+var)
         clustertables[var] = pandas.DataFrame(columns = ['k', 'x', 'y', 'z'])
@@ -34,6 +35,7 @@ def clusterminsize(statfiles, pcorr, minsize=0):
         pdataVector = pdata.ravel()
         pdataVector[numpy.in1d(pdataVector, tooSmall)] = 0
         maskedData = pdataVector.reshape(pdata.shape)
-        nibabel.save(nibabel.Nifti1Image(maskedData), newfpath)
+        nibabel.save(nibabel.Nifti1Image(maskedData, affine), newfpath)
         statfiles[var]['2minp'] = newfpath
-    return statfiles, clustertables
+        clustermaps[var] = clusters
+    return statfiles, clustertables, clustermaps
