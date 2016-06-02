@@ -90,7 +90,7 @@ for s, subject in enumerate(subjects):
 ## correlation
 subjectfiles = sorted(subjectfiles)
 statfiles, pcorr, tcorr = correlate.wholeBrain(subjectfiles, behavior, 
-                outdir = resultsdir, niterations = 5) # 30mins
+                outdir = resultsdir, niterations = 500) # 30mins
 
 ## cluster thresholding
 statfiles, clustertables = clusterminsize(statfiles, pcorr, minsize=10)
