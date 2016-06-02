@@ -64,7 +64,7 @@ for s, subjectdir in enumerate(subjectdirs):
     applyXformAndSave(phantom['xform'], b1file, alignmentTarget, 
         newfile=alignedB1file, provenance=provenance)
     print('Sampling B1')
-    data['b1'] = averageByRegion(alignedB1file, vialAtlas).loc[vialOrder]
+    data['b1'] = averageByRegion(alignedB1file, vialAtlas)
 
     ## transform and sample flip-angle files
     

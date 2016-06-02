@@ -33,12 +33,12 @@ vialOrder = [str(v) for v in vialNumbersByAscendingT1 if v in usedVials]
 selectedPhantoms = [p for p in phantoms if 
     p['TR']==targetTR and p['method']==targetMethod]
 
-data = pandas.Panel()
+data = pandas.Panel(major_axis=vialOrder, minor_axis=['model','fit'], dtype=float)
 for phantom in selectedPhantoms:
     date = phantom['date']
 
     if not hasRecordForDate(date, scanner):
-        print('\n\n\nNO TEMP FOUND FOR {}\n\n\n'.format(subject))
+        print('\n\n\nNO TEMP FOUND FOR {}\n\n\n'.format(date))
         continue
     data[date] = pandas.DataFrame(index=vialOrder, 
                     columns=['model','fit'], dtype=float)

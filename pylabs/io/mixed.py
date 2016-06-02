@@ -4,7 +4,7 @@ import json, pandas, datetime, dateutil.parser
 class JSONEncoder(json.JSONEncoder):
     def default(self, obj):
         if hasattr(obj, 'to_json'):
-            return obj.to_json(orient='records')
+            return obj.to_json(orient='split')
         if isinstance(obj, datetime.date):
             return obj.isoformat()
         return json.JSONEncoder.default(self, obj)
@@ -19,7 +19,7 @@ def listOfDictsFromJson(fpath):
     assert isinstance(toplevel, list)
     outlist = []
     for item in toplevel:
-        item['data'] = pandas.read_json(item['data'])
+        item['data'] = pandas.read_json(item['data'], orient='split')
         item['date'] = dateutil.parser.parse(item['date']).date()
         outlist.append(item)
     return outlist
