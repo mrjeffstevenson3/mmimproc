@@ -1,5 +1,10 @@
 import json, pandas, datetime, dateutil.parser
 
+"""
+Tools to save a list of dictionaries with pandas Dataframes in them to a 
+json file, and load them back.
+"""
+
 
 class JSONEncoder(json.JSONEncoder):
     def default(self, obj):

@@ -20,8 +20,8 @@ an appropriate stauration correction factor for a given TR and method.
 ## settings
 fs = getnetworkdataroot()
 scanner = 'disc'
-targetTR = 11.
-targetMethod = 'spgr'
+TR = 11.
+method = 'spgr'
 projectdir = join(fs, 'phantom_qT1_{}'.format(scanner))
 phantoms = listOfDictsFromJson(join(projectdir, 'phantomdata.json'))
 usedVials = range(7, 18+1)
@@ -30,15 +30,19 @@ vialOrder = [str(v) for v in vialNumbersByAscendingT1 if v in usedVials]
 ## Get brain sample:
 # from pylabs.qt1.brainsampling import sample # sample a specific file to compare?
 
-selectedPhantoms = [p for p in phantoms if 
-    p['TR']==targetTR and p['method']==targetMethod]
+selectedPhantoms = [p for p in phantoms if p['TR']==TR and p['method']==method]
 
 data = pandas.Panel(major_axis=vialOrder, minor_axis=['model','fit'], dtype=float)
 for phantom in selectedPhantoms:
     date = phantom['date']
+    print('Processing phantom data for {}'.format(date))
+
+    if phantom['xform']['stat'] > 5000:
+        print('Unsuccesful alignment; discarding')
+        continue
 
     if not hasRecordForDate(date, scanner):
-        print('\n\n\nNO TEMP FOUND FOR {}\n\n\n'.format(date))
+        print('No temperature record found; discarding')
         continue
     data[date] = pandas.DataFrame(index=vialOrder, 
                     columns=['model','fit'], dtype=float)
@@ -49,7 +53,15 @@ for phantom in selectedPhantoms:
     alphas = [a for a in phantom['data'].columns.values if a != 'b1']
     A = radians([float(a) for a in alphas])
     S = phantom['data'][alphas]
-    data[date]['fit'] = fitT1(S, A, B1, targetTR)
+    data[date]['fit'] = fitT1(S, A, B1, TR)
+
+    pltname = 'phantom_{}_TR{}_{}'.format(method, TR, date)
+    plt.figure()
+    data[data.items[0]].plot.bar()
+    plt.title(pltname)
+    plt.savefig(pltname+'.png')
+
+    data[date]['reldiff'] = data[date]['fit'] / data[date]['model']
 
 
 
