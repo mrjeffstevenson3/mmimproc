@@ -39,7 +39,7 @@ def clusterminsize(statfiles, pcorr, minsize=0):
             clustertables[name].drop(0, inplace=True) # get rid of background
             tooSmall = clustertables[name][clustertables[name].k<minsize].index
             clustertables[name].drop(tooSmall, inplace=True)
-            clustertables[name].sort_values(by='k',ascending=False)
+            clustertables[name].sort_values(by='k',ascending=False, inplace=True)
             print('Kept {}, dropped {} clusters.'.format(
                 clustertables[name].index.size, tooSmall.size))
             clustertables[name].to_csv('clusters_'+name+'.tsv', sep='\t')
