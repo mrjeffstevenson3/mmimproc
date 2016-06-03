@@ -32,8 +32,8 @@ def standardizeBasedOnAbsoluteMask(image, outdir=None, opts=PylabsOptions()):
     flt.inputs.out_matrix_file = tempfile(extension='.mat')
     flt.inputs.apply_xfm = True
     result = flt.run() 
-    niprov.log(outfile, 'standardized with FLIRT', image, code=flt.cmdline,
-        script=__file__, logtext=result.outputs.out_log, opts=opts)
+    #niprov.log(outfile, 'standardized with FLIRT', image, code=flt.cmdline,
+    #    script=__file__, logtext=result.outputs.out_log, opts=opts)
     return outfile
 
 

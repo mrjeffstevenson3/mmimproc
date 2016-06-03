@@ -4,27 +4,27 @@ from pandas import MultiIndex, DataFrame
 from pylabs.regional import statsByRegion
 
 def atlasWiseSignificantVoxelsFrame(statfiles, atlas, pmax=.001):
-    thresh2minp = 2-pmax
+    thresh1minp = 1-pmax
     varnames = statfiles.keys()
     data = DataFrame(columns = MultiIndex.from_product(
         [varnames, ('pos', 'neg'), ('r','k')], 
         names=['variable', 'direction', 'stat']))
     for var in varnames:
         print('Atlassing stats for '+var)
-        region2minp = statsByRegion(statfiles[var]['2minp'], atlas, 
-                                    threshold=thresh2minp)
+        region1minp = statsByRegion(statfiles[var]['1minp'], atlas, 
+                                    threshold=thresh1minp)
         regiontpos = statsByRegion(statfiles[var]['tpos'], atlas)
         regioncorr = statsByRegion(statfiles[var]['r'], atlas)
 
-        voxels = DataFrame(index=region2minp.index)
-        voxels['significant'] = region2minp['superthreshold']
-        voxels['totalk'] = region2minp['k']
+        voxels = DataFrame(index=region1minp.index)
+        voxels['significant'] = region1minp['superthreshold']
+        voxels['totalk'] = region1minp['k']
         voxels['allpos'] = regiontpos['all'].apply(lambda r: r > 0)
         voxels['allneg'] = voxels['allpos'].apply(lambda r: r == False)
         voxels['pos'] = voxels['significant'] * voxels['allpos']
         voxels['neg'] = voxels['significant'] * voxels['allneg']
         voxels['r'] = regioncorr['all']
-        voxels['p'] = 2-region2minp['all']
+        voxels['p'] = 1-region1minp['all']
 
         for direction in ('pos', 'neg'):
             k = lambda row: row[direction].sum()

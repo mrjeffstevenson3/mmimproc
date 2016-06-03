@@ -24,7 +24,6 @@ import nibabel.parrec as pr
 import nibabel.nifti1 as nifti1
 
 
-bet = fsl.BET()    #instantiate fsl bet command
 fslroi = fsl.ExtractROI()   #instantiate fslroi command
 fslrfov = fsl.RobustFOV()     #instantiate robust fov command for cropping B1map before reg
 fslflirt = fsl.FLIRT()
