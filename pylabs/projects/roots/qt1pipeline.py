@@ -98,6 +98,11 @@ statfiles, clutables, clumaps = clusterminsize(statfiles, pcorr, minsize=10)
 ## table
 atlasfpath = 'data/atlases/JHU_MNI_SS_WMPM_Type_I_matched.nii.gz'
 frame = atlasWiseSignificantVoxelsFrame(statfiles, pmax=pcorr, atlas=atlasfpath)
+frame = frame.dropna(how='all', axis=1)
+frame = frame.loc[:, (frame != 0).any(axis=0)]
+frame.to_json('roots_qt1.json')
+frame.to_csv('roots_qt1.csv')
+
 
 ## scatterplots
 scatter.forLowestPvalue(subjectfiles, behavior, statfiles)
