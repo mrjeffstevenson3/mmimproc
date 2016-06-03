@@ -20,7 +20,7 @@ subjects = [28, 29, 30, 37, 53, 65]
 statsdir = join(fs, project, 'ants_diff_correlations', 'stats')
 behavdir = 'data/behavior/'
 csvfile = behavdir+'roots_behavior_transposed.csv'
-#niprov.add(csvfile)
+niprov.add(csvfile)
 maskfile = join(statsdir, 'all_FA_qformfix_reg2templ_mask_edited.nii.gz')
 
 #imgtemplate = 'all_{0}_skeletonised.nii.gz'
