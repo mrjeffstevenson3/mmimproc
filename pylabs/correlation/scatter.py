@@ -31,17 +31,19 @@ def forClusters(datafiles, variables, clusters, tables):
     spatialdims = data.shape[1:]
 
     for varname in variables.columns.values:
-        labels = tables[varname].index.values
         vardata = variables[varname]
-        for label in labels:
-            name = '{}__clu{}'.format(varname, label)
-            print('Creating scatterplot for '+name)
+        for direction in ('pos', 'neg'):
+            name = varname+'-'+direction
+            labels = tables[name].index.values
+            for label in labels:
+                pname = '{}__clu{}'.format(name, label)
+                print('Creating scatterplot for '+pname)
 
-            braindata = data[slice(None), clusters[varname]==label] #nsubjects * nvoxels
-            clusterdata =  braindata.mean(axis=1)
-            
-            clusterframe = pandas.DataFrame({'score':variables[varname].values,
-                    't1':clusterdata}, index=variables.index.astype(int))
+                braindata = data[slice(None), clusters[name]==label] #nsubjects * nvoxels
+                clusterdata =  braindata.mean(axis=1)
+                
+                clusterframe = pandas.DataFrame({'score':variables[varname].values,
+                        't1':clusterdata}, index=variables.index.astype(int))
 
-            plot = seaborn.lmplot('score','t1',clusterframe)
-            plot.savefig(name+'.png')
+                plot = seaborn.lmplot('score','t1',clusterframe)
+                plot.savefig(pname+'.png')

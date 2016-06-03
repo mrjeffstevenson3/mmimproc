@@ -12,30 +12,40 @@ def clusterminsize(statfiles, pcorr, minsize=0):
     clustertables = {}
     clustermaps = {}
     for var in varnames:
-        print('Clustering stats for '+var)
-        clustertables[var] = pandas.DataFrame(columns = ['k', 'x', 'y', 'z'])
+
         fpath = statfiles[var]['1minp']
         newfpath = fpath.replace('.nii','_clumin{}.nii'.format(minsize))
         pimg = nibabel.load(fpath)
         pdata = pimg.get_data()
-        affine = pimg.get_affine()
-        clusters, _ = measurements.label(pdata>thresh1minp)
-        _, firstIndices = numpy.unique(clusters, return_index=True)
-        coords = numpy.unravel_index(firstIndices, pdata.shape)
-        for d, dim in enumerate(('x', 'y', 'z')):
-            clustertables[var][dim] = coords[d]
-        clustertables[var]['k'] = numpy.bincount(clusters.ravel())
-        clustertables[var].drop(0, inplace=True) # get rid of background
-        tooSmall = clustertables[var][clustertables[var].k<minsize].index
-        clustertables[var].drop(tooSmall, inplace=True)
-        clustertables[var].sort_values(by='k',ascending=False)
-        print('Kept {}, dropped {} clusters.'.format(
-            clustertables[var].index.size, tooSmall.size))
-        clustertables[var].to_csv('clusters_'+var+'.tsv', sep='\t')
         pdataVector = pdata.ravel()
-        pdataVector[numpy.in1d(pdataVector, tooSmall)] = 0
+        pdataVector[pdataVector<thresh1minp] = 0
+        affine = pimg.get_affine()
+
+        for direction in ('pos', 'neg'):
+            name = var+'-'+direction
+            print('Clustering stats for '+name)
+
+            tdirfpath = statfiles[var]['t'+direction]
+            tdir = nibabel.load(tdirfpath).get_data()
+            sigmask = (pdata>thresh1minp) & (tdir > 0)
+
+            clustertables[name] = pandas.DataFrame(columns = ['k', 'x', 'y', 'z'])
+            clusters, _ = measurements.label(sigmask)
+            _, firstIndices = numpy.unique(clusters, return_index=True)
+            coords = numpy.unravel_index(firstIndices, sigmask.shape)
+            for d, dim in enumerate(('x', 'y', 'z')):
+                clustertables[name][dim] = coords[d]
+            clustertables[name]['k'] = numpy.bincount(clusters.ravel())
+            clustertables[name].drop(0, inplace=True) # get rid of background
+            tooSmall = clustertables[name][clustertables[name].k<minsize].index
+            clustertables[name].drop(tooSmall, inplace=True)
+            clustertables[name].sort_values(by='k',ascending=False)
+            print('Kept {}, dropped {} clusters.'.format(
+                clustertables[name].index.size, tooSmall.size))
+            clustertables[name].to_csv('clusters_'+name+'.tsv', sep='\t')
+            clustermaps[name] = clusters
+            pdataVector[numpy.in1d(clusters.ravel(), tooSmall)] = 0
         maskedData = pdataVector.reshape(pdata.shape)
         nibabel.save(nibabel.Nifti1Image(maskedData, affine), newfpath)
         statfiles[var]['1minp'] = newfpath
-        clustermaps[var] = clusters
     return statfiles, clustertables, clustermaps
