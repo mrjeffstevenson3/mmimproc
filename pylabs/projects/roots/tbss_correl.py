@@ -20,7 +20,7 @@ subjects = [28, 29, 30, 37, 53, 65]
 statsdir = join(fs, project, 'ants_diff_correlations', 'stats')
 behavdir = 'data/behavior/'
 csvfile = behavdir+'roots_behavior_transposed.csv'
-niprov.add(csvfile)
+#niprov.add(csvfile)
 maskfile = join(statsdir, 'all_FA_qformfix_reg2templ_mask.nii.gz')
 
 #imgtemplate = 'all_{0}_skeletonised.nii.gz'
@@ -46,6 +46,7 @@ images = multiregfilt(images, matfiles[0])
 designfile = join(statsdir, 'roots_design2col.con')
 assert os.path.isfile(designfile)
 collist = range(24, 105)
+#collist = [96]
 matfiles = csv2fslmat(csvfile, cols=collist, selectSubjects=subjects,
     groupcol=True, outdir=matfiledir)
 masks = {img: maskfile for img in images} # Mask is the same for all images
