@@ -14,7 +14,7 @@ def clusterminsize(statfiles, pcorr, minsize=0):
     for var in varnames:
         print('Clustering stats for '+var)
         clustertables[var] = pandas.DataFrame(columns = ['k', 'x', 'y', 'z'])
-        fpath = statfiles[var]['2minp']
+        fpath = statfiles[var]['1minp']
         newfpath = fpath.replace('.nii','_clumin{}.nii'.format(minsize))
         pimg = nibabel.load(fpath)
         pdata = pimg.get_data()
@@ -36,6 +36,6 @@ def clusterminsize(statfiles, pcorr, minsize=0):
         pdataVector[numpy.in1d(pdataVector, tooSmall)] = 0
         maskedData = pdataVector.reshape(pdata.shape)
         nibabel.save(nibabel.Nifti1Image(maskedData, affine), newfpath)
-        statfiles[var]['2minp'] = newfpath
+        statfiles[var]['1minp'] = newfpath
         clustermaps[var] = clusters
     return statfiles, clustertables, clustermaps
