@@ -10,7 +10,7 @@ def forLowestPvalue(datafiles, variables, statfiles):
     for varname in variables.columns.values:
 
         print('Creating scatterplot for '+varname)
-        P = nibabel.load(statfiles[varname]['2minp']).get_data()
+        P = nibabel.load(statfiles[varname]['1minp']).get_data()
         R = nibabel.load(statfiles[varname]['r']).get_data()
         voxelIndex = P.argmax()
         voxelCoords = numpy.unravel_index(voxelIndex, spatialdims)

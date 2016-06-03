@@ -7,7 +7,7 @@ Reports on and masks clusters of voxels over a certain size.
 """
 
 def clusterminsize(statfiles, pcorr, minsize=0):
-    thresh2minp = 2-pcorr
+    thresh1minp = 1-pcorr
     varnames = statfiles.keys()
     clustertables = {}
     clustermaps = {}
@@ -19,7 +19,7 @@ def clusterminsize(statfiles, pcorr, minsize=0):
         pimg = nibabel.load(fpath)
         pdata = pimg.get_data()
         affine = pimg.get_affine()
-        clusters, _ = measurements.label(pdata>thresh2minp)
+        clusters, _ = measurements.label(pdata>thresh1minp)
         _, firstIndices = numpy.unique(clusters, return_index=True)
         coords = numpy.unravel_index(firstIndices, pdata.shape)
         for d, dim in enumerate(('x', 'y', 'z')):

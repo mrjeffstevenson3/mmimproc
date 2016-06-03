@@ -34,7 +34,7 @@ def wholeBrain(files, variables, outdir = '', niterations = 1000):
     X = mdata2d[:, numpy.newaxis, :]
     Y = variables.values[:, :, numpy.newaxis]
     r, t = corr(X, Y)
-    p = scipy.stats.t.sf(t, n-2) * 2                #997ms
+    p = scipy.stats.t.sf(numpy.abs(t), n-2) * 2       #997ms
 
     nvoxelsScalar = 4
     scalarResults = numpy.zeros((nvars, nvoxelsScalar))
@@ -79,7 +79,7 @@ def wholeBrain(files, variables, outdir = '', niterations = 1000):
         'r': r,
         'tneg': tneg,
         'tpos': tpos,
-        '2minp': 2-p,
+        '1minp': 1-p,
     }
     ftemplates = {stat:'{}_'+stat+'.nii.gz' for stat in stats.keys()}
     print('Unvectorizing and saving to files..')
