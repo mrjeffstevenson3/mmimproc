@@ -37,5 +37,5 @@ def statsByRegion(image, atlas, threshold=None):
     return stats
 
 def averageByRegion(image, atlasfpath):
-    return statsByRegion(image, atlasfpath)['average']
+    return statsByRegion(image, atlasfpath)['average'].astype(float)
 
