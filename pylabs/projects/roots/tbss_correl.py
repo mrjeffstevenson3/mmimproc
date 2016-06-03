@@ -21,7 +21,7 @@ statsdir = join(fs, project, 'ants_diff_correlations', 'stats')
 behavdir = 'data/behavior/'
 csvfile = behavdir+'roots_behavior_transposed.csv'
 #niprov.add(csvfile)
-maskfile = join(statsdir, 'all_FA_qformfix_reg2templ_mask.nii.gz')
+maskfile = join(statsdir, 'all_FA_qformfix_reg2templ_mask_edited.nii.gz')
 
 #imgtemplate = 'all_{0}_skeletonised.nii.gz'
 imgtemplate = 'all_{0}_qformfix_reg2templ.nii.gz'
