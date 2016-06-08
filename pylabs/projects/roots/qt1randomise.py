@@ -8,28 +8,29 @@ from pylabs.utils.paths import getlocaldataroot, getnetworkdataroot
 from pylabs.utils.timing import waitForFiles
 from pylabs.utils.selection import select, withVoxelsOverThresholdOf
 from pylabs.utils.files import deconstructRandparFiles
+from pylabs.io.images import combineAsVolumes
 import niprov
 prov = niprov.Context()
 prov.dryrun = True
 prov.verbose = True
 
 fs = getnetworkdataroot()
-project = 'roots_of_empathy'
+projectdir = join(fs, 'roots_of_empathy')
 subjects = [28, 29, 30, 37, 53, 65]
-#fs = getlocaldataroot()
-statsdir = join(fs, project, 'ants_diff_correlations', 'stats')
-behavdir = 'data/behavior/'
-csvfile = behavdir+'roots_behavior_transposed.csv'
+statsdir = join(projectdir, 'correlations_qt1_randomise')
+csvfile = 'data/behavior/roots_behavior_transposed.csv'
 niprov.add(csvfile)
-maskfile = join(statsdir, 'all_FA_qformfix_reg2templ_mask_edited.nii.gz')
+maskfile = join(statsdir, 'brain_mask.nii.gz')
+assert os.path.isfile(maskfile)
+designfile = join(statsdir, 'roots_design2col.con')
+assert os.path.isfile(designfile)
 
-#imgtemplate = 'all_{0}_skeletonised.nii.gz'
-imgtemplate = 'all_{0}_qformfix_reg2templ.nii.gz'
-#measures = ['F1', 'F2', 'FA', 'L1', 'MD', 'MO', 'RA', 'AD', 'L2', 'L3']
-measures = ['FA']
-#measures = ['F2']
-skellist = [imgtemplate.format(m) for m in measures]
-images = [statsdir+'/'+i for i in skellist]
+fnametem = 'sub-2013-C0{0}_t1_flirt2sub-2013-C028_sigma1.5.nii.gz'
+subjImages = [join(projectdir, 'sub-2013-C0{}'.format(s), 'ses-1', 'qt1', 
+                fnametem.format(s)) for s in subjects]
+combined = join(statsdir, 't1_combined.nii.gz')
+combineAsVolumes(subjImages, combined)
+images = [combined]
 [niprov.add(img) for img in images]
 
 exptag='whole_brain_filter_gender_n500'
@@ -43,17 +44,14 @@ matfiles = csv2fslmat(csvfile, cols=[4], selectSubjects=subjects,
 images = multiregfilt(images, matfiles[0])
 
 ## Randomize n500 test run
-designfile = join(statsdir, 'roots_design2col.con')
-assert os.path.isfile(designfile)
 collist = range(24, 105)
-#collist = [96]
 matfiles = csv2fslmat(csvfile, cols=collist, selectSubjects=subjects,
     groupcol=True, outdir=matfiledir)
 masks = {img: maskfile for img in images} # Mask is the same for all images
 combs = {img:matfiles for img in images}
 randparfiles = multirandpar(combs, designfile, masks=masks, niterations=500,
      tbss=True, workdir=qsubdir, outdir=resultdir)
-#
+
 # corrPfiles = [f+'_tfce_corrp_tstat1.nii.gz' for f in randparfiles]
 # corrPfiles += [f+'_tfce_corrp_tstat2.nii.gz' for f in randparfiles]
 # waitForFiles(corrPfiles, interval=5) # every 5 seconds check if files done.
