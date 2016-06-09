@@ -5,7 +5,7 @@ import niprov
 
 
 def multirandpar(imageMatCombinations, designfile, masks=None, niterations=50, 
-    workdir=os.getcwd(), outdir=None, tbss=False, shell=Shell(), 
+    workdir=os.getcwd(), outdir=None, tbss=False, shell=Shell(), t_thresh=0.0,
     binaries=Binaries(), context=WorkingContext, opts=PylabsOptions()):
     """ randomise_parallel on multiple images and/or multiple predictors
 
@@ -39,6 +39,8 @@ def multirandpar(imageMatCombinations, designfile, masks=None, niterations=50,
         binaries (pylabs.utils.Binaries): Provides paths to binaries
         context (pylabs.utils.WorkingContext): Helps switching to working dir
         opts (pylabs.utils.PylabsOptions): General settings.
+
+        randomise -i GM_mod_merg_s3 -m GM_mask -o fslvbm -d design.mat -t design.con -c 2.3 -n 5000
     """
     outfiles = []
     for image in imageMatCombinations.keys():
@@ -66,11 +68,14 @@ def multirandpar(imageMatCombinations, designfile, masks=None, niterations=50,
             cmd += ' -d {0}'.format(mat)                #behavior .mat file
             cmd += ' -t {0}'.format(designfile)      #design/ contrast file
             cmd += ' -n {0}'.format(niterations)      #number of iterations
-            if tbss:
-                cmd += ' --T2'          # T= TFCE 2D for TBSS type data.
+            if t_thresh:
+                cmd += ' -c '+str(t_thresh)
             else:
-                cmd += ' -T'          # T= TFCE 3D.
-            cmd += ' -V'                            # V=variant smoothing,
+                if tbss:
+                    cmd += ' --T2'          # T= TFCE 2D for TBSS type data.
+                else:
+                    cmd += ' -T'          # T= TFCE 3D.
+                cmd += ' -V'                            # V=variant smoothing,
             with context(workdir):
                 niprov.record(cmd, transient=True, opts=opts)
             outfiles.append(resultfile)
