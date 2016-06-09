@@ -122,6 +122,15 @@ def brain_proc_file(opts, scandict):
             affine = np.dot(affine, t_aff)
             in_data = apply_orientation(in_data, ornt)
 
+        #make rms if asked
+        if opts.rms and len(in_data.shape) == 4:
+            in_data_rms = np.sqrt(np.sum(np.square(in_data, 3)/in_data.shape[3]))
+            rmsimg = nifti1.Nifti1Image(in_data_rms, affine, pr_hdr)
+            rmshdr = rmsimg.header
+            rmshdr.set_data_dtype(out_dtype)
+            rmshdr.set_slope_inter(slope, intercept)
+            rmshdr.set_qform = affine
+
         bvals, bvecs = pr_hdr.get_bvals_bvecs()
         if not opts.keep_trace:  # discard Philips DTI trace if present
             if bvecs is not None:
@@ -141,11 +150,15 @@ def brain_proc_file(opts, scandict):
                             tr=str(opts.tr).replace('.', 'p'), ti=str(opts.ti), run=str(run),
                             session=opts.session_id, scan_name=opts.scan_name, scan_info=opts.scan_info)
 
+        #acq_time would be unique even for 2nd run. should test date part only not time
         while opts.acq_time in scandict[(opts.subj, opts.session_id, opts.outdir)][basefilename.split('.')[0]]:
             run = run + 1
             basefilename = str(opts.fname_template).format(subj=opts.subj, fa=str(opts.fa),
                                 tr=str(opts.tr).replace('.', 'p'), ti=str(opts.ti), run=str(run),
                                 session=opts.session_id, scan_name=opts.scan_name, scan_info=opts.scan_info)
+        if opts.compressed:
+            verbose('Using gzip compression')
+            basefilename = basefilename + '.gz'
 
         if any(opts.multisession) != 0:
             outpath = join(fs, opts.proj, opts.subj, opts.session_id, opts.outdir)
@@ -157,12 +170,11 @@ def brain_proc_file(opts, scandict):
             if not os.path.isdir(outpath):
                 os.mkdir(outpath)
             outfilename = os.path.join(outpath, basefilename)
-        if outfilename.count('.') > 1:
+        if not opts.compressed and outfilename.count('.') > 1:
             raise ValueError('more than one . was found in '+outfilename+ '! stopping now.!')
+        elif opts.compressed and outfilename.count('.') > 2:
+            raise ValueError('more than two . were found in ' + outfilename + '! stopping now.!')
         # prep a file
-        if opts.compressed:
-            verbose('Using gzip compression')
-            outfilename = outfilename + '.gz'
 
         if os.path.isfile(outfilename) and not opts.overwrite:
             raise IOError('Output file "%s" exists, use \'overwrite\': True to '
@@ -170,7 +182,7 @@ def brain_proc_file(opts, scandict):
         setattr(opts, 'run', run)
         setattr(opts, 'outpath', outpath)
         setattr(opts, 'outfilename', outfilename)
-        setattr(opts, 'basefilename', basefilename.split('.')[0])
+        setattr(opts, 'basefilename', basefilename)
         # Make corresponding NIfTI image
         nimg = nifti1.Nifti1Image(in_data, affine, pr_hdr)
         nhdr = nimg.header
@@ -182,12 +194,20 @@ def brain_proc_file(opts, scandict):
             verbose('Loading (and scaling) the data to determine value range')
         if opts.minmax[0] == 'parse':
             nhdr['cal_min'] = in_data.min() * slope + intercept
+            if opts.rms:
+                rmshdr['cal_min'] = in_data_rms.min() * slope + intercept
         else:
             nhdr['cal_min'] = float(opts.minmax[0])
+            if opts.rms:
+                rmshdr['cal_min'] = float(opts.minmax[0])
         if opts.minmax[1] == 'parse':
             nhdr['cal_max'] = in_data.max() * slope + intercept
+            if opts.rms:
+                rmshdr['cal_max'] = in_data_rms.max() * slope + intercept
         else:
             nhdr['cal_max'] = float(opts.minmax[1])
+            if opts.rms:
+                rmshdr['cal_max'] = float(opts.minmax[1])
 
         # container for potential NIfTI1 header extensions
         if opts.store_header:
@@ -196,9 +216,27 @@ def brain_proc_file(opts, scandict):
                 hdr_dump = fobj.read()
                 dump_ext = nifti1.Nifti1Extension('comment', hdr_dump)
             nhdr.extensions.append(dump_ext)
+            if opts.rms:
+                rmshdr.extensions.append(dump_ext)
+        np.testing.assert_almost_equal(affine, nhdr.get_qform(), 5,
+                                       err_msg='output qform in header does not match input qform')
 
         verbose('Writing %s' % outfilename)
         nibabel.save(nimg, outfilename)
+        prov.log(outfilename, 'nifti file created by parrec2nii_convert', infile, script=__file__)
+        if opts.rms:
+            np.testing.assert_almost_equal(affine, rmshdr.get_qform(), 5,
+                                           err_msg='output qform in rms header does not match input qform')
+            rms_outfilename = outfilename.split('.')[0][:-1]+'rms_'+str(run)+'.nii'
+            if opts.compressed:
+                verbose('Using gzip compression for rms')
+                rms_outfilename += '.gz'
+            nibabel.save(rmsimg, rms_outfilename)
+            setattr(opts, 'rms_outfilename', rms_outfilename)
+            setattr(opts, 'rms_basefilename', basefilename.split('.')[0][-1] + '_rms'+str(run)+'.nii')
+            scandict[(opts.subj, opts.session_id, opts.outdir)][opts.rms_basefilename.split('.')[0]] = opts2dict(opts)
+            prov.log(outfilename, 'rms file created by parrec2nii_convert', infile, script=__file__)
+
 
         # write out bvals/bvecs if requested
         if opts.bvs:
@@ -260,41 +298,9 @@ def brain_proc_file(opts, scandict):
                     fid.write('%r\n' % dwell_time)
                 setattr(opts, 'dwell_time', dwell_time)
                 prov.log(outfilename.split('.')[0] + '.dwell_time', 'dwell time file created by parrec2nii_convert', infile, script=__file__)
-        print (in_data.shape, slope, intercept, nhdr['cal_min'], nhdr['cal_max'])
+
         setattr(opts, 'converted', True)
         setattr(opts, 'QC', False)
         setattr(opts, 'pre_proc', False)
-        prov.log(outfilename, 'nifti file created by parrec2nii_convert', infile, script=__file__)
         scandict[(opts.subj, opts.session_id, opts.outdir)][basefilename.split('.')[0]] = opts2dict(opts)
-
-        if opts.rms:
-            print (in_data.shape, slope, intercept)
-            in_data_rms = np.sqrt(np.sum(np.square(in_data), 3)/in_data.shape[3])
-            rmsimg = nifti1.Nifti1Image(in_data_rms, affine)
-            rmshdr = nimg.header
-            rmshdr.set_data_dtype(out_dtype)
-            rmshdr.set_slope_inter(slope, intercept)
-
-
-            if 'parse' in opts.minmax:
-                # need to get the scaled data
-                verbose('Loading (and scaling) the rms data to determine value range')
-            if opts.minmax[0] == 'parse':
-                rmshdr['cal_min'] = in_data_rms.min() * slope + intercept
-            else:
-                rmshdr['cal_min'] = float(opts.minmax[0])
-            if opts.minmax[1] == 'parse':
-                rmshdr['cal_max'] = in_data_rms.max() * slope + intercept
-            else:
-                rmshdr['cal_max'] = float(opts.minmax[1])
-            outfilename = outfilename.split('.')[0]+'_rms.nii'
-            if opts.compressed:
-                outfilename = outfilename + '.gz'
-            verbose('Writing %s' % outfilename)
-            nibabel.save(rmsimg, outfilename)
-            setattr(opts, 'outfilename', outfilename)
-            setattr(opts, 'basefilename', basefilename.split('.')[0]+'_rms')
-            scandict[(opts.subj, opts.session_id, opts.outdir)][basefilename.split('.')[0]+'_rms'] = opts2dict(opts)
-            prov.log(outfilename, 'rms file created by parrec2nii_convert', infile, script=__file__)
-            print (in_data_rms.shape, slope, intercept, rmshdr['cal_min'], rmshdr['cal_max'])
     return scandict
