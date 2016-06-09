@@ -66,7 +66,8 @@ def align(subjectfile, targetfile, delta=5):
     xform = {
         'tx':bestTransform[0],
         'ty':bestTransform[1],
-        'rxy':bestTransform[2]
+        'rxy':bestTransform[2],
+        'stat':best
     }
     return xform
 
