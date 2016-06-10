@@ -9,6 +9,7 @@ from pylabs.utils.timing import waitForFiles
 from pylabs.utils.selection import select, withVoxelsOverThresholdOf
 from pylabs.utils.files import deconstructRandparFiles
 from pylabs.io.images import combineAsVolumes
+import pylabs.masking
 import niprov
 prov = niprov.Context()
 prov.dryrun = True
@@ -21,7 +22,6 @@ statsdir = join(projectdir, 'correlations_qt1_randomise')
 csvfile = 'data/behavior/roots_behavior_transposed.csv'
 niprov.add(csvfile)
 maskfile = join(statsdir, 'brain_mask.nii.gz')
-assert os.path.isfile(maskfile)
 designfile = join(statsdir, 'roots_design2col.con')
 assert os.path.isfile(designfile)
 
@@ -32,6 +32,9 @@ combined = join(statsdir, 't1_combined.nii.gz')
 combineAsVolumes(subjImages, combined)
 images = [combined]
 [niprov.add(img) for img in images]
+
+pylabs.masking.maskForStack(combined, maskfile)
+assert os.path.isfile(maskfile)
 
 exptag='whole_brain_filter_gender_t2p3_n500'
 matfiledir = join(statsdir,'matfiles','matfiles_'+exptag)
