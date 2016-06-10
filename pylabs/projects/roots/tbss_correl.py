@@ -17,22 +17,23 @@ fs = getnetworkdataroot()
 project = 'roots_of_empathy'
 subjects = [28, 29, 30, 37, 53, 65]
 #fs = getlocaldataroot()
-statsdir = join(fs, project, 'ants_diff_correlations', 'stats')
+statsdir = join(fs, project, 'mytbss_mf_v1', 'stats')
 behavdir = 'data/behavior/'
 csvfile = behavdir+'roots_behavior_transposed.csv'
 niprov.add(csvfile)
-maskfile = join(statsdir, 'all_FA_qformfix_reg2templ_mask_edited.nii.gz')
+#maskfile = join(statsdir, 'all_FA_qformfix_reg2templ_mask_edited.nii.gz')
+maskfile = join(statsdir, 'mean_FA_skeleton_mask.nii.gz')
 
-#imgtemplate = 'all_{0}_skeletonised.nii.gz'
-imgtemplate = 'all_{0}_qformfix_reg2templ.nii.gz'
+imgtemplate = 'all_{0}_skeletonised.nii.gz'
+#imgtemplate = 'all_{0}_qformfix_reg2templ.nii.gz'
 #measures = ['F1', 'F2', 'FA', 'L1', 'MD', 'MO', 'RA', 'AD', 'L2', 'L3']
-measures = ['FA']
-#measures = ['F2']
+#measures = ['FA']
+measures = ['FA', 'F2', 'MD', 'RA']
 skellist = [imgtemplate.format(m) for m in measures]
 images = [statsdir+'/'+i for i in skellist]
 [niprov.add(img) for img in images]
 
-exptag='whole_brain_filter_gender_n500'
+exptag='skeletonised_t_thresh_2p_filter_gender_n500'
 matfiledir = join(statsdir,'matfiles','matfiles_'+exptag)
 resultdir = join(statsdir,'randpar',exptag)
 qsubdir = join(resultdir, 'qsubdir_defunctcommands')
@@ -52,7 +53,7 @@ matfiles = csv2fslmat(csvfile, cols=collist, selectSubjects=subjects,
 masks = {img: maskfile for img in images} # Mask is the same for all images
 combs = {img:matfiles for img in images}
 randparfiles = multirandpar(combs, designfile, masks=masks, niterations=500,
-     tbss=True, workdir=qsubdir, outdir=resultdir)
+     tbss=False, workdir=qsubdir, outdir=resultdir, t_thresh=2.3)
 #
 # corrPfiles = [f+'_tfce_corrp_tstat1.nii.gz' for f in randparfiles]
 # corrPfiles += [f+'_tfce_corrp_tstat2.nii.gz' for f in randparfiles]
