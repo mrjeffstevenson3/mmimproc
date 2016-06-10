@@ -33,7 +33,7 @@ combineAsVolumes(subjImages, combined)
 images = [combined]
 [niprov.add(img) for img in images]
 
-exptag='whole_brain_filter_gender_n500'
+exptag='whole_brain_filter_gender_t2p3_n500'
 matfiledir = join(statsdir,'matfiles','matfiles_'+exptag)
 resultdir = join(statsdir,'randpar',exptag)
 qsubdir = join(resultdir, 'qsubdir_defunctcommands')
@@ -50,7 +50,7 @@ matfiles = csv2fslmat(csvfile, cols=collist, selectSubjects=subjects,
 masks = {img: maskfile for img in images} # Mask is the same for all images
 combs = {img:matfiles for img in images}
 randparfiles = multirandpar(combs, designfile, masks=masks, niterations=500,
-     tbss=True, workdir=qsubdir, outdir=resultdir)
+     tbss=True, workdir=qsubdir, outdir=resultdir, t_thresh=2.3)
 
 # corrPfiles = [f+'_tfce_corrp_tstat1.nii.gz' for f in randparfiles]
 # corrPfiles += [f+'_tfce_corrp_tstat2.nii.gz' for f in randparfiles]
