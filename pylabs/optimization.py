@@ -18,7 +18,7 @@ def nonlinearfit(f, X, Y, initial, names):
     estimates = numpy.tile(initial, (nsamples,1))
     nbins = 10
     width = 1.5
-    niterations = 3
+    niterations = 4
     zoomfactor = .11
 
     for j in range(niterations):

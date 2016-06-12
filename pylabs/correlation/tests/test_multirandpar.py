@@ -128,6 +128,18 @@ class MultiRandParTests(TestCase):
         self.assert_recorded_command_matching(
             'randparbin * --T2 *', transient=True, opts=self.opts)
 
+    def test_t_tresh_flag_use_of_TFCE(self):
+        self.multirandpar({'bla.img':['a.mat']}, 'd.con', t_thresh=4.44)
+        self.assert_recorded_command_matching(
+            'randparbin *-c 4.44*', transient=True, opts=self.opts)
+        allCalls = self.niprov.record.call_args_list
+        assert '-T' not in str(allCalls[0]), '-T should not be in cmd with -c'
+        self.multirandpar({'bla.img':['a.mat']}, 'd.con', tbss=True, t_thresh=4.44)
+        self.assert_recorded_command_matching(
+            'randparbin *-c 4.44*', transient=True, opts=self.opts)
+        allCalls = self.niprov.record.call_args_list
+        assert '--T2' not in str(allCalls[0]), '-T should not be in cmd with -c'
+
 class MockWorkingContext(object):
 
     def __init__(self, inner):
