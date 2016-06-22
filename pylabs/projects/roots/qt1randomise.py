@@ -53,7 +53,7 @@ matfiles = csv2fslmat(csvfile, cols=collist, selectSubjects=subjects,
 masks = {img: maskfile for img in images} # Mask is the same for all images
 combs = {img:matfiles for img in images}
 randparfiles = multirandpar(combs, designfile, masks=masks, niterations=500,
-     tbss=True, workdir=qsubdir, outdir=resultdir, t_thresh=2.3)
+     tbss=False, workdir=qsubdir, outdir=resultdir, t_thresh=2.3)
 
 # corrPfiles = [f+'_tfce_corrp_tstat1.nii.gz' for f in randparfiles]
 # corrPfiles += [f+'_tfce_corrp_tstat2.nii.gz' for f in randparfiles]
