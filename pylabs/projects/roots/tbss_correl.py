@@ -27,13 +27,13 @@ maskfile = join(statsdir, 'mean_FA_skeleton_mask.nii.gz')
 imgtemplate = 'all_{0}_skeletonised.nii.gz'
 #imgtemplate = 'all_{0}_qformfix_reg2templ.nii.gz'
 #measures = ['F1', 'F2', 'FA', 'L1', 'MD', 'MO', 'RA', 'AD', 'L2', 'L3']
-#measures = ['FA']
-measures = ['FA', 'F2', 'MD', 'RA']
+measures = ['FA', 'RA']
+#measures = ['FA', 'F2', 'MD', 'RA']
 skellist = [imgtemplate.format(m) for m in measures]
 images = [statsdir+'/'+i for i in skellist]
 [niprov.add(img) for img in images]
 
-exptag='skeletonised_t_thresh_2p_filter_gender_n500'
+exptag='skeletonised_t_thresh_2p7_filter_gender_n500'
 matfiledir = join(statsdir,'matfiles','matfiles_'+exptag)
 resultdir = join(statsdir,'randpar',exptag)
 qsubdir = join(resultdir, 'qsubdir_defunctcommands')
@@ -46,14 +46,14 @@ images = multiregfilt(images, matfiles[0])
 ## Randomize n500 test run
 designfile = join(statsdir, 'roots_design2col.con')
 assert os.path.isfile(designfile)
-collist = range(24, 105)
-#collist = [96]
+#collist = range(24, 105)
+collist = [81, 96]
 matfiles = csv2fslmat(csvfile, cols=collist, selectSubjects=subjects,
     groupcol=True, outdir=matfiledir)
 masks = {img: maskfile for img in images} # Mask is the same for all images
 combs = {img:matfiles for img in images}
 randparfiles = multirandpar(combs, designfile, masks=masks, niterations=500,
-     tbss=False, workdir=qsubdir, outdir=resultdir, t_thresh=2.3)
+     tbss=False, workdir=qsubdir, outdir=resultdir, t_thresh=2.7)
 #
 # corrPfiles = [f+'_tfce_corrp_tstat1.nii.gz' for f in randparfiles]
 # corrPfiles += [f+'_tfce_corrp_tstat2.nii.gz' for f in randparfiles]
