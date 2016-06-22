@@ -47,7 +47,7 @@ matfiles = csv2fslmat(csvfile, cols=[4], selectSubjects=subjects,
 images = multiregfilt(images, matfiles[0])
 
 ## Randomize n500 test run
-collist = [81, 96]
+collist = [64, 92, 96]
 matfiles = csv2fslmat(csvfile, cols=collist, selectSubjects=subjects,
     groupcol=True, outdir=matfiledir)
 masks = {img: maskfile for img in images} # Mask is the same for all images
