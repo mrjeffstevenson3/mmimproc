@@ -36,7 +36,7 @@ images = [combined]
 pylabs.masking.maskForStack(combined, maskfile)
 assert os.path.isfile(maskfile)
 
-exptag='whole_brain_filter_gender_t2p3_n500'
+exptag='whole_brain_filter_gender_t2p7_n500'
 matfiledir = join(statsdir,'matfiles','matfiles_'+exptag)
 resultdir = join(statsdir,'randpar',exptag)
 qsubdir = join(resultdir, 'qsubdir_defunctcommands')
@@ -47,13 +47,13 @@ matfiles = csv2fslmat(csvfile, cols=[4], selectSubjects=subjects,
 images = multiregfilt(images, matfiles[0])
 
 ## Randomize n500 test run
-collist = range(24, 105)
+collist = [81, 96]
 matfiles = csv2fslmat(csvfile, cols=collist, selectSubjects=subjects,
     groupcol=True, outdir=matfiledir)
 masks = {img: maskfile for img in images} # Mask is the same for all images
 combs = {img:matfiles for img in images}
 randparfiles = multirandpar(combs, designfile, masks=masks, niterations=500,
-     tbss=True, workdir=qsubdir, outdir=resultdir, t_thresh=2.3)
+     tbss=True, workdir=qsubdir, outdir=resultdir, t_thresh=2.7)
 
 # corrPfiles = [f+'_tfce_corrp_tstat1.nii.gz' for f in randparfiles]
 # corrPfiles += [f+'_tfce_corrp_tstat2.nii.gz' for f in randparfiles]
