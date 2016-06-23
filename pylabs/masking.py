@@ -1,6 +1,7 @@
 import nibabel, os
 from nipype.interfaces import fsl
 from pylabs.utils import WorkingContext
+import numpy
 
 
 def skullStrippedMask(targetfpath, provenance, frac=0.5, workingdir='tmpdir'):
@@ -35,3 +36,14 @@ def apply(maskfpath, targetfpath, provenance):
     nibabel.save(nibabel.Nifti1Image(data, affine), maskedfpath)
     provenance.log(maskedfpath, 'brain mask', [targetfpath, maskfpath])
     return maskedfpath
+
+def maskForStack(stackfpath, outfile):
+    img = nibabel.load(stackfpath)
+    affine = img.get_affine()
+    data = img.get_data()
+    spatialdims = data.shape[:3]
+    nvoxels = numpy.prod(spatialdims)
+    maskdata = (data>0).all(axis=3)
+    nselected = maskdata.sum()
+    print('{0:.1f}% of voxels in mask.'.format(nselected/nvoxels*100))
+    nibabel.save(nibabel.Nifti1Image(maskdata*1, affine), outfile)

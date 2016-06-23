@@ -16,3 +16,8 @@ def loadStack(files):
     for shape in shapes:
         assert shape==shapes[0] # ensure images have same dimensions
     return data, affine
+
+def combineAsVolumes(files, outfpath):
+    data, affine = loadStack(files)
+    data = numpy.rollaxis(data, 0, 4)
+    nibabel.save(nibabel.Nifti1Image(data, affine), outfpath)
