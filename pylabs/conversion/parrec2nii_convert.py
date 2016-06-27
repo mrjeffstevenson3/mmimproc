@@ -121,10 +121,10 @@ def brain_proc_file(opts, scandict):
             t_aff = inv_ornt_aff(ornt, pr_img.shape)
             affine = np.dot(affine, t_aff)
             in_data = apply_orientation(in_data, ornt)
-
+        setattr(opts, 'orig_affine', affine)
         #make rms if asked
         if opts.rms and len(in_data.shape) == 4:
-            in_data_rms = np.sqrt(np.sum(np.square(in_data, 3)/in_data.shape[3]))
+            in_data_rms = np.sqrt(np.sum(np.square(in_data), axis=3)/in_data.shape[3])
             rmsimg = nifti1.Nifti1Image(in_data_rms, affine, pr_hdr)
             rmshdr = rmsimg.header
             rmshdr.set_data_dtype(out_dtype)
@@ -234,6 +234,7 @@ def brain_proc_file(opts, scandict):
             nibabel.save(rmsimg, rms_outfilename)
             setattr(opts, 'rms_outfilename', rms_outfilename)
             setattr(opts, 'rms_basefilename', basefilename.split('.')[0][-1] + '_rms'+str(run)+'.nii')
+            setattr(opts, 'rms_affine', affine)
             scandict[(opts.subj, opts.session_id, opts.outdir)][opts.rms_basefilename.split('.')[0]] = opts2dict(opts)
             prov.log(outfilename, 'rms file created by parrec2nii_convert', infile, script=__file__)
 
