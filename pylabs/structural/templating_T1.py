@@ -29,7 +29,7 @@ if convert:
     niftiDict = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
     niftiDict, niftiDF = conv_subjs(project, subjects, niftiDict)
 else:
-    with open(join(fs, project, 'niftiDict_all_subj_201605190953.pickle'), 'rb') as f:
+    with open(join(fs, project, 'niftiDict_all_subj_201605232241.pickle'), 'rb') as f:
         niftiDict = cPickle.load(f)
 
 
@@ -37,30 +37,8 @@ else:
 for subj in subjects:
     for ses in [1, 2]:    # arbitrary! fix by testing range in dict
         for run in [1, 2, 3, 4]:      # arbitrary! fix by testing range in dict
-            method = 'anat'
-            k1a = (subj, 'ses-'+str(ses), method)
-            k2w = subj+'_ses-'+str(ses)+'_wemempr_'+str(run)
             if niftiDict[k1a][k2w]['outfilename'] == []:
                 continue
-            cmd = 'mri_concat --rms --i '
-            cmd += niftiDict[k1a][k2w]['outfilename']
-            cmd += ' --o '
-            cmd += niftiDict[k1a][k2w]['outpath']
-            cmd += '/'+k2w+'_rms.nii'
-            subprocess.check_call(cmd, shell=True)
-            niftiDict[k1a][k2w + '_rms']['wemempr_fname'] = niftiDict[k1a][k2w]['outpath']+'/'+k2w+'_rms.nii'
-            niftiDict[k1a][k2w]['rms_fname'] = niftiDict[k1a][k2w]['outpath']+'/'+k2w+'_rms.nii'
-            prov.add(niftiDict[k1a][k2w]['outpath']+'/'+k2w+'_rms.nii')
-            k2v = subj+'_ses-'+str(ses)+'_vbmmempr_'+str(run)
-            cmd = 'mri_concat --rms --i '
-            cmd += niftiDict[k1a][k2v]['outfilename']
-            cmd += ' --o '
-            cmd += niftiDict[k1a][k2v]['outpath']
-            cmd += '/' + k2v + '_rms.nii'
-            subprocess.check_call(cmd, shell=True)
-            niftiDict[k1a][k2v + '_rms']['vbmmempr_fname'] = niftiDict[k1a][k2v]['outpath']+ '/' + k2v + '_rms.nii'
-            niftiDict[k1a][k2v]['rms_fname'] = niftiDict[k1a][k2v]['outpath']+ '/' + k2v + '_rms.nii'
-            prov.add(niftiDict[k1a][k2v]['outpath']+ '/' + k2v + '_rms.nii')
             method = 'fmap'
             k1b = (subj, 'ses-'+str(ses), method)
             k2b = subj+'_ses-'+str(ses)+'_b1map_'+str(run)

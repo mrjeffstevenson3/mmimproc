@@ -31,8 +31,31 @@ prov = niprov.Context()
 fs = getlocaldataroot()
 import dill #to use as pickle replacement of lambda dict
 
+@auto_attr_check
 class BrainOpts(object):
-    pass
+    dirstruct = str
+    outdir = str
+    scan_name = str
+    scan_info = str
+    fname_template = str
+    verbose = bool
+    compressed = bool
+    permit_truncated = bool
+    bvs = bool
+    dwell_time = bool
+    b1corr = bool
+    field_strength = bool
+    vol_info = bool
+    origin = str
+    minmax = tuple
+    store_header = bool
+    scaling = str
+    keep_trace = bool
+    overwrite = bool
+    strict_sort = bool
+    multisession = tuple
+    rms = bool
+
 
 def opts2dict(opts):
     d = {}
@@ -235,6 +258,7 @@ def brain_proc_file(opts, scandict):
             setattr(opts, 'rms_outfilename', rms_outfilename)
             setattr(opts, 'rms_basefilename', basefilename.split('.')[0][-1] + '_rms'+str(run)+'.nii')
             setattr(opts, 'rms_affine', affine)
+            setattr(opts, 'b1corr', True)
             scandict[(opts.subj, opts.session_id, opts.outdir)][opts.rms_basefilename.split('.')[0]] = opts2dict(opts)
             prov.log(outfilename, 'rms file created by parrec2nii_convert', infile, script=__file__)
 
