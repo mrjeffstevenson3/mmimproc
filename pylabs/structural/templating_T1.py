@@ -82,9 +82,25 @@ for subj in subjects:
             niftiDict = struc_bet(k1a, k2t2, 'b1corr_fname', niftiDict, frac=0.6)
 
 
+# old code with skull stripping etc to be refactored and deleted
 
-niftidict = default_to_regular(niftiDict)
-with open(join(fs, project, "niftiDict_all_struc_b1corr_{:%Y%m%d%H%M}.pickle".format(datetime.now())), "wb") as f:
-    f.write(dumps(niftiDict))
-with open(join(fs, project, "niftidict_all_struc_b1corr_{:%Y%m%d%H%M}.pickle".format(datetime.now())), "wb") as f:
-    f.write(dumps(niftidict))
+# niftidict = default_to_regular(niftiDict)
+# with open(join(fs, project, "niftiDict_all_struc_b1corr_{:%Y%m%d%H%M}.pickle".format(datetime.now())), "wb") as f:
+#     f.write(dumps(niftiDict))
+# with open(join(fs, project, "niftidict_all_struc_b1corr_{:%Y%m%d%H%M}.pickle".format(datetime.now())), "wb") as f:
+#     f.write(dumps(niftidict))
+#
+# niftiDict = struc_bet(k1a, k2v, 'b1corr_fname', niftiDict)
+# niftiDict[k1a][k2w]['b1corr_fname'] = niftiDict[k1a][k2w]['outpath'] + '/' + k2w + '_rms_b1corr.nii.gz'
+#
+# niftiDict = struc_bet(k1a, k2w, 'b1corr_fname', niftiDict)
+# k2t2 = subj + '_ses-' + str(ses) + '_3dt2_' + str(run)
+# if not os.path.isfile(niftiDict[k1a][k2t2]['outfilename']):
+#     continue
+# cmd = 'fslmaths ' + niftiDict[k1a][k2t2]['outfilename'] + ' -div ' + niftiDict[akey][bkey][
+#     'phase_reg2vbm_s6_fname']
+# cmd += ' -mul 100 ' + niftiDict[k1a][k2t2]['outpath'] + '/' + k2t2 + '_b1corr.nii'
+# subprocess.check_call(cmd, shell=True)
+# niftiDict[k1a][k2t2]['b1corr_fname'] = niftiDict[k1a][k2t2]['outpath'] + '/' + k2t2 + '_b1corr.nii.gz'
+# niftiDict = struc_bet(k1a, k2t2, 'b1corr_fname', niftiDict, frac=0.6)
+#

@@ -1,5 +1,6 @@
 from pylabs.conversion.parrec2nii_convert import BrainOpts
 import pandas as pd
+import nibabel
 from nipype.interfaces import fsl
 from pylabs.conversion.parrec2nii_convert import brain_proc_file
 from pylabs.utils.sessions import make_sessions_fm_dict
@@ -7,6 +8,7 @@ from cloud.serialization.cloudpickle import dumps
 from os.path import join
 from datetime import datetime
 from collections import defaultdict
+from pylabs.conversion.parrec2nii_convert import mergeddicts
 from pylabs.utils.paths import getlocaldataroot
 fs = getlocaldataroot()
 flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo', output_type='NIFTI')
@@ -133,56 +135,48 @@ def b1corr_anat(project, niftiDict):
             for bkey in niftiDict[akey].keys():
                 if niftiDict[akey][bkey]['b1corr']:
                     fmap_akey = (akey[0], akey[1], 'fmap')
+                    #this will only handle b1 maps. B0 maps in same session are conflicted here.
                     if len(niftiDict[fmap_akey].keys()) != 1:
                         raise ValueError('field map not found or not sure which one to use for '+str(fmap_akey))
                     fmap_bkey = niftiDict[fmap_akey].keys()[0]
-                    if not os.path.isfile(niftiDict[fmap_akey][fmap_bkey]['phase_reg2'+niftiDict[akey][bkey]['scan_name']+'_s6_fname']):
-                        ref = niftiDict[akey][bkey]['rms_outfilename']
+                    b1map_fname = niftiDict[fmap_akey][fmap_bkey]['b1map2'+niftiDict[akey][bkey]['scan_name']+'_fname']
+                    if not os.path.isfile(b1map_fname):
+                        ref = niftiDict[akey][bkey]['outfilename']
                         outmat_fname = join(niftiDict[fmap_akey][fmap_bkey]['outpath'], fmap_bkey + '_b1mag2' +
                                                    niftiDict[akey][bkey]['scan_name']+'.mat')
+                        outmat_key = 'b1mag2' + niftiDict[akey][bkey]['scan_name']+'_mat_fname'
                         flt.inputs.in_file = niftiDict[fmap_akey][fmap_bkey]['outfilename']
                         flt.inputs.reference = ref
                         flt.inputs.out_matrix_file = outmat_fname
                         res = flt.run()
-                        niftiDict[fmap_akey][fmap_bkey]['b1mag2' + niftiDict[akey][bkey]['scan_name']] = \
-                        niftiDict[fmap_akey][fmap_bkey]['outpath'] + '/' + fmap_bkey + '_reg2' + \
-                                                   niftiDict[akey][bkey]['scan_name'] + '.mat'
-                        phase_fname = join(niftiDict[fmap_akey][fmap_bkey]['outpath'],fmap_bkey + '_phase.nii')
+                        niftiDict[fmap_akey][fmap_bkey][outmat_key] = outmat_fname
+                        phase_fname = join(niftiDict[fmap_akey][fmap_bkey]['outpath'],fmap_bkey + '_b1phase')
                         cmd = ['fslroi', niftiDict[fmap_akey][fmap_bkey]['outfilename'], phase_fname, 2, 1]
                         subprocess.check_call(cmd, shell=True)
                         niftiDict[fmap_akey][fmap_bkey]['phase_fname'] = phase_fname
-                        applyxfm.inputs.in_matrix_file = niftiDict[fmap_akey][fmap_bkey]['matfile2' + niftiDict[akey][bkey]['scan_name']]
+                        applyxfm.inputs.in_matrix_file = niftiDict[fmap_akey][fmap_bkey][outmat_key]
                         applyxfm.inputs.in_file = niftiDict[fmap_akey][fmap_bkey]['phase_fname']
-                        applyxfm.inputs.out_file = join(niftiDict[fmap_akey][fmap_bkey]['outpath'], fmap_bkey + '_b1phase2' \
-                                                          + niftiDict[akey][bkey]['scan_name'] + '.nii')
+                        base_b1phase2_fname = phase_fname + '2' + niftiDict[akey][bkey]['scan_name']
+                        applyxfm.inputs.out_file = base_b1phase2_fname + '.nii'
                         applyxfm.inputs.reference = ref
                         applyxfm.inputs.apply_xfm = True
                         result = applyxfm.run()
-                        cmd = 'fslmaths ' + niftiDict[akey][bkey]['outpath'] + '/' + bkey + '_phase_reg2vbmmpr.nii -s 6 '
-                        cmd += join(niftiDict[akey][bkey]['outpath'], bkey + '_phase_reg2vbmmpr_s6.nii.gz'
+                        cmd = ['fslmaths', base_b1phase2_fname, '-s', 6, base_b1phase2_fname + '_s6']
                         subprocess.check_call(cmd, shell=True)
-                        niftiDict[akey][bkey]['phase_reg2vbm_s6_fname'] = niftiDict[akey][bkey][
-                                                                            'outpath'] + '/' + bkey + '_phase_reg2vbmmpr_s6.nii.gz'
-                        niprov.add(niftiDict[akey][bkey]['outpath'] + '/' + bkey + '_phase_reg2vbmmpr_s6.nii.gz')
-                    cmd = 'fslmaths ' + niftiDict[k1a][k2v]['rms_fname'] + ' -div ' + niftiDict[akey][bkey][
-                        'phase_reg2vbm_s6_fname']
-                    cmd += ' -mul 100 ' + niftiDict[k1a][k2v]['outpath'] + '/' + k2v + '_rms_b1corr.nii'
+                        niftiDict[fmap_akey][fmap_bkey][b1map_fname] = base_b1phase2_fname + '.nii.gz'
+                        niftiDict[fmap_akey][fmap_bkey][b1map_fname] = base_b1phase2_fname + '.nii.gz'
+                        niprov.log(niftiDict[fmap_akey][fmap_bkey][b1map_fname], 'b1map registered to '+ bkey, \
+                                   niftiDict[fmap_akey][fmap_bkey]['outfilename'], script=__file__, opts=opts)
+                    cmd = ['fslmaths', niftiDict[akey][bkey]['outfilename'],'-div', \
+                              niftiDict[fmap_akey][fmap_bkey][b1map_fname], '-mul', 100, \
+                              join(niftiDict[akey][bkey]['outpath'], bkey + '_b1corr')]
                     subprocess.check_call(cmd, shell=True)
-                    niftiDict[k1a][k2v]['b1corr_fname'] = niftiDict[k1a][k2v]['outpath'] + '/' + k2v + '_rms_b1corr.nii.gz'
-                    niftiDict = struc_bet(k1a, k2v, 'b1corr_fname', niftiDict)
-                    cmd = 'fslmaths ' + niftiDict[k1a][k2w]['rms_fname'] + ' -div ' + niftiDict[akey][bkey][
-                        'phase_reg2vbm_s6_fname']
-                    cmd += ' -mul 100 ' + niftiDict[k1a][k2w]['outpath'] + '/' + k2w + '_rms_b1corr.nii'
-                    subprocess.check_call(cmd, shell=True)
-                    niftiDict[k1a][k2w]['b1corr_fname'] = niftiDict[k1a][k2w]['outpath'] + '/' + k2w + '_rms_b1corr.nii.gz'
-                    niftiDict = struc_bet(k1a, k2w, 'b1corr_fname', niftiDict)
-                    k2t2 = subj + '_ses-' + str(ses) + '_3dt2_' + str(run)
-                    if not os.path.isfile(niftiDict[k1a][k2t2]['outfilename']):
-                        continue
-                    cmd = 'fslmaths ' + niftiDict[k1a][k2t2]['outfilename'] + ' -div ' + niftiDict[akey][bkey][
-                        'phase_reg2vbm_s6_fname']
-                    cmd += ' -mul 100 ' + niftiDict[k1a][k2t2]['outpath'] + '/' + k2t2 + '_b1corr.nii'
-                    subprocess.check_call(cmd, shell=True)
-                    niftiDict[k1a][k2t2]['b1corr_fname'] = niftiDict[k1a][k2t2]['outpath'] + '/' + k2t2 + '_b1corr.nii.gz'
-                    niftiDict = struc_bet(k1a, k2t2, 'b1corr_fname', niftiDict, frac=0.6)
-
+                    niftiDict[akey][bkey]['b1corr_fname'] = join(niftiDict[akey][bkey]['outpath'], bkey + '_b1corr.nii.gz')
+                    b1corrDict = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
+                    b1corr_middlekey = bkey + '_b1corr'
+                    b1corrDict[akey][b1corr_middlekey] = niftiDict[akey][bkey]
+                    b1corrDict[akey][b1corr_middlekey]['outfilename'] = join(niftiDict[akey][bkey]['outpath'], bkey + '_b1corr.nii.gz')
+                    b1corrDict[akey][b1corr_middlekey]['basefilename'] = bkey + '_b1corr.nii.gz'
+                    b1corrDict[akey][b1corr_middlekey]['qform'] = nibabel.load(b1corrDict[akey][b1corr_middlekey]['outfilename']).get_affine()
+                    b1corrDict[akey][b1corr_middlekey]['b1corr'] = False
+                    mergeddicts(niftiDict, b1corrDict)
