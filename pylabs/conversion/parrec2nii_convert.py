@@ -172,20 +172,24 @@ def brain_proc_file(opts, scandict):
             basefilename = str(opts.fname_template).format(subj=opts.subj, fa=str(opts.fa),
                                 tr=str(opts.tr).replace('.', 'p'), ti=str(opts.ti), run=str(run),
                                 session=opts.session_id, scan_name=opts.scan_name, scan_info=opts.scan_info)
+        if opts.rms:
+            rms_basefilename = basefilename.split('.')[0][-1] + '_rms' + str(run) + '.nii'
+
         if opts.compressed:
             verbose('Using gzip compression')
             basefilename = basefilename + '.gz'
-
+            if opts.rms:
+                rms_basefilename = rms_basefilename + '.gz'
+        #set path for output
         if any(opts.multisession) != 0:
             outpath = join(fs, opts.proj, opts.subj, opts.session_id, opts.outdir)
-            if not os.path.isdir(outpath):
-                os.mkdir(outpath)
-            outfilename = os.path.join(outpath, basefilename)
         else:
             outpath = join(fs, opts.proj, opts.subj, opts.outdir)
-            if not os.path.isdir(outpath):
-                os.mkdir(outpath)
-            outfilename = os.path.join(outpath, basefilename)
+        if not os.path.isdir(outpath):
+            os.mkdir(outpath)
+        outfilename = os.path.join(outpath, basefilename)
+        if opts.rms:
+            rms_outfilename = os.path.join(outpath, rms_basefilename)
         if not opts.compressed and outfilename.count('.') > 1:
             raise ValueError('more than one . was found in '+outfilename+ '! stopping now.!')
         elif opts.compressed and outfilename.count('.') > 2:
@@ -236,25 +240,10 @@ def brain_proc_file(opts, scandict):
                 rmshdr.extensions.append(dump_ext)
         np.testing.assert_almost_equal(affine, nhdr.get_qform(), 5,
                                        err_msg='output qform in header does not match input qform')
-
+        setattr(opts, 'qform', nhdr.get_qform())
         verbose('Writing %s' % outfilename)
         nibabel.save(nimg, outfilename)
         prov.log(outfilename, 'nifti file created by parrec2nii_convert', infile, script=__file__)
-        if opts.rms:
-            np.testing.assert_almost_equal(affine, rmshdr.get_qform(), 5,
-                                           err_msg='output qform in rms header does not match input qform')
-            rms_outfilename = outfilename.split('.')[0][:-1]+'rms_'+str(run)+'.nii'
-            if opts.compressed:
-                verbose('Using gzip compression for rms')
-                rms_outfilename += '.gz'
-            nibabel.save(rmsimg, rms_outfilename)
-            setattr(opts, 'rms_outfilename', rms_outfilename)
-            setattr(opts, 'rms_basefilename', basefilename.split('.')[0][-1] + '_rms'+str(run)+'.nii')
-            setattr(opts, 'rms_affine', affine)
-            setattr(opts, 'b1corr', True)
-            scandict[(opts.subj, opts.session_id, opts.outdir)][opts.rms_basefilename.split('.')[0]] = opts2dict(opts)
-            prov.log(outfilename, 'rms file created by parrec2nii_convert', infile, script=__file__)
-
 
         # write out bvals/bvecs if requested
         if opts.bvs:
@@ -320,5 +309,23 @@ def brain_proc_file(opts, scandict):
         setattr(opts, 'converted', True)
         setattr(opts, 'QC', False)
         setattr(opts, 'pre_proc', False)
-        scandict[(opts.subj, opts.session_id, opts.outdir)][basefilename.split('.')[0]] = opts2dict(opts)
+        outerkey = (opts.subj, opts.session_id, opts.outdir)
+        middlekey = basefilename.split('.')[0]
+        scandict[outerkey][middlekey] = opts2dict(opts)
+
+        #save rms and add new niftiDict data
+        if opts.rms:
+            scandict[outerkey][middlekey] = opts2dict(opts)
+            rms_dict = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
+            rms_middlekey = rms_basefilename.split('.')[0]
+            np.testing.assert_almost_equal(affine, rmshdr.get_qform(), 5,
+                                           err_msg='output qform in rms header does not match input qform')
+            nibabel.save(rmsimg, rms_outfilename)
+            rms_dict[outerkey][rms_middlekey]['outfilename'] = rms_outfilename
+            rms_dict[outerkey][rms_middlekey]['basefilename'] = rms_basefilename
+            rms_dict[outerkey][rms_middlekey]['qform'] = rmshdr.get_qform()
+            rms_dict[outerkey][rms_middlekey]['b1corr'] = True
+            mergeddicts(scandict, rms_dict)
+            prov.log(rms_outfilename, 'rms file created by parrec2nii_convert', infile, script=__file__)
+
     return scandict
