@@ -315,17 +315,17 @@ def brain_proc_file(opts, scandict):
 
         #save rms and add new niftiDict data
         if opts.rms:
-            scandict[outerkey][middlekey] = opts2dict(opts)
-            rms_dict = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
             rms_middlekey = rms_basefilename.split('.')[0]
-            np.testing.assert_almost_equal(affine, rmshdr.get_qform(), 5,
-                                           err_msg='output qform in rms header does not match input qform')
-            nibabel.save(rmsimg, rms_outfilename)
+            scandict[outerkey][rms_middlekey] = opts2dict(opts)
+            rms_dict = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
             rms_dict[outerkey][rms_middlekey]['outfilename'] = rms_outfilename
             rms_dict[outerkey][rms_middlekey]['basefilename'] = rms_basefilename
             rms_dict[outerkey][rms_middlekey]['qform'] = rmshdr.get_qform()
             rms_dict[outerkey][rms_middlekey]['b1corr'] = True
             mergeddicts(scandict, rms_dict)
+            np.testing.assert_almost_equal(affine, rmshdr.get_qform(), 5,
+                                           err_msg='output qform in rms header does not match input qform')
+            nibabel.save(rmsimg, rms_outfilename)
             prov.log(rms_outfilename, 'rms file created by parrec2nii_convert', infile, script=__file__)
 
     return scandict
