@@ -31,31 +31,9 @@ prov = niprov.Context()
 fs = getlocaldataroot()
 import dill #to use as pickle replacement of lambda dict
 
-@auto_attr_check
-class BrainOpts(object):
-    dirstruct = str
-    outdir = str
-    scan_name = str
-    scan_info = str
-    fname_template = str
-    verbose = bool
-    compressed = bool
-    permit_truncated = bool
-    bvs = bool
-    dwell_time = bool
-    b1corr = bool
-    field_strength = bool
-    vol_info = bool
-    origin = str
-    minmax = tuple
-    store_header = bool
-    scaling = str
-    keep_trace = bool
-    overwrite = bool
-    strict_sort = bool
-    multisession = tuple
-    rms = bool
 
+class BrainOpts(object):
+    pass
 
 def opts2dict(opts):
     d = {}
@@ -64,6 +42,14 @@ def opts2dict(opts):
         if not key.startswith('__'):
             d[key] = value
     return d
+
+def appenddict(origdict, appenddict, akey, bkey):
+    if not isinstance(origdict, defaultdict) or not isinstance(appenddict, defaultdict):
+        raise TypeError('One dictionary not a nested 3 level collections.defaultdict(list), please fix.')
+    origdict[akey][bkey].update(appenddict)
+    return origdict
+
+
 
 #nib functions to do heavy lifting using opts object to drive processing
 def verbose(msg, indent=0):
