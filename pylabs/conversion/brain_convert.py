@@ -180,3 +180,4 @@ def b1corr_anat(project, niftiDict):
                     b1corrDict[akey][b1corr_middlekey]['qform'] = nibabel.load(b1corrDict[akey][b1corr_middlekey]['outfilename']).get_affine()
                     b1corrDict[akey][b1corr_middlekey]['b1corr'] = False
                     mergeddicts(niftiDict, b1corrDict)
+    return niftiDict
