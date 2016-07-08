@@ -19,6 +19,7 @@ from nibabel.orientations import (io_orientation, inv_ornt_aff,
 from nibabel.affines import apply_affine, from_matvec, to_matvec
 
 #js addl imports
+import collections
 from collections import defaultdict
 import pandas as pd
 from nibabel.mriutils import calculate_dwell_time
@@ -43,13 +44,19 @@ def opts2dict(opts):
             d[key] = value
     return d
 
-def appenddict(origdict, appenddict, akey, bkey):
-    if not isinstance(origdict, defaultdict) or not isinstance(appenddict, defaultdict):
+def mergeddicts(origdict, appenddict):
+    if not isinstance(origdict, collections.Mapping) or not isinstance(appenddict, collections.Mapping):
         raise TypeError('One dictionary not a nested 3 level collections.defaultdict(list), please fix.')
-    origdict[akey][bkey].update(appenddict)
+    for k, v in appenddict.iteritems():
+        if isinstance(origdict, collections.Mapping):
+            if isinstance(v, collections.Mapping):
+                r = mergeddicts(origdict.get(k, {}), v)
+                origdict[k] = r
+            else:
+                origdict[k] = appenddict[k]
+        else:
+            origdict = {k: appenddict[k]}
     return origdict
-
-
 
 #nib functions to do heavy lifting using opts object to drive processing
 def verbose(msg, indent=0):
