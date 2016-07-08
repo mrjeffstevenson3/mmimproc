@@ -131,7 +131,7 @@ def b1corr_anat(project, niftiDict):
     for akey in niftiDict.keys():
         if akey[2] == 'anat':
             for bkey in niftiDict[akey].keys():
-                if niftiDict[akey][bkey].get('rms_outfilename') or niftiDict[akey][bkey]['scan_name'] == '3dt2':
+                if niftiDict[akey][bkey]['b1corr']:
                     fmap_akey = (akey[0], akey[1], 'fmap')
                     if len(niftiDict[fmap_akey].keys()) != 1:
                         raise ValueError('field map not found or not sure which one to use for '+str(fmap_akey))
