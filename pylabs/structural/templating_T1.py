@@ -28,6 +28,7 @@ def default_to_regular(d):
 if convert:
     niftiDict = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
     niftiDict, niftiDF = conv_subjs(project, subjects, niftiDict)
+
 else:
     with open(join(fs, project, 'niftiDict_all_subj_201605232241.pickle'), 'rb') as f:
         niftiDict = cPickle.load(f)

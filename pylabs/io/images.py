@@ -1,5 +1,5 @@
 import nibabel, numpy
-import subprocess
+from pylabs.utils import run_subprocess
 
 def loadStack(files):
     data = []
@@ -23,5 +23,5 @@ def combineAsVolumes(files, outfpath):
     nibabel.save(nibabel.Nifti1Image(data, affine), outfpath)
 
 def copysform2qform(file):
-    cmd = ['fslorient', '-copysform2qform', file]
-    subprocess.check_call(cmd, shell=True)
+    cmd = 'fslorient -copysform2qform ' + file
+    run_subprocess(cmd)

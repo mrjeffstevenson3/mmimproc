@@ -175,7 +175,7 @@ def brain_proc_file(opts, scandict):
                                 tr=str(opts.tr).replace('.', 'p'), ti=str(opts.ti).zfill(4), run=str(run),
                                 session=opts.session_id, scan_name=opts.scan_name, scan_info=opts.scan_info)
         if opts.rms:
-            rms_basefilename = basefilename.split('.')[0][-1] + '_rms_' + str(run) + '.nii'
+            rms_basefilename = basefilename.split('.')[0][:-1] + 'rms_' + str(run) + '.nii'
 
         if opts.compressed:
             verbose('Using gzip compression')

@@ -86,8 +86,8 @@ roots_conv = pd.DataFrame({
                         'scaling': 'dv', 'keep_trace': False, 'overwrite': True, 'strict_sort': False, 'multisession': (1, 2, 3), 'rms': False},
             })
 
-bbc_conv = pd.DataFrame({
-
+# bbc_conv = pd.DataFrame({
+#
 
 
 #new project DataFrame objects to be added to Panel here
