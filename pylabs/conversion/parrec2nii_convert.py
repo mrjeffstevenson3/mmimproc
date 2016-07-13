@@ -27,6 +27,7 @@ from os.path import join, isfile
 from glob import glob
 from pylabs.utils.files import sortedParGlob
 from pylabs.utils.paths import getlocaldataroot
+from pylabs.io.images import copysform2qform
 import niprov
 prov = niprov.Context()
 fs = getlocaldataroot()
@@ -133,6 +134,7 @@ def brain_proc_file(opts, scandict):
                            [1, 1],
                            [2, 1]]):  # already in LAS+
             t_aff = np.eye(4)
+            print ('orientation = LAS+')
         else:  # Not in LAS+
             t_aff = inv_ornt_aff(ornt, pr_img.shape)
             affine = np.dot(affine, t_aff)
@@ -243,6 +245,7 @@ def brain_proc_file(opts, scandict):
         setattr(opts, 'qform', nhdr.get_qform())
         verbose('Writing %s' % outfilename)
         nibabel.save(nimg, outfilename)
+        copysform2qform(outfilename)
         prov.log(outfilename, 'nifti file created by parrec2nii_convert', infile, script=__file__)
 
         # write out bvals/bvecs if requested
@@ -326,6 +329,7 @@ def brain_proc_file(opts, scandict):
             np.testing.assert_almost_equal(affine, rmshdr.get_qform(), 5,
                                            err_msg='output qform in rms header does not match input qform')
             nibabel.save(rmsimg, rms_outfilename)
+            copysform2qform(rms_outfilename)
             prov.log(rms_outfilename, 'rms file created by parrec2nii_convert', infile, script=__file__)
-
+            print(basefilename, rms_basefilename, rms_outfilename)
     return scandict

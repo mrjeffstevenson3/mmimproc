@@ -86,6 +86,10 @@ roots_conv = pd.DataFrame({
                         'scaling': 'dv', 'keep_trace': False, 'overwrite': True, 'strict_sort': False, 'multisession': (1, 2, 3), 'rms': False},
             })
 
+bbc_conv = pd.DataFrame({
+
+
+
 #new project DataFrame objects to be added to Panel here
 img_conv = pd.Panel({'phantom_qT1_slu': slu_phant_conv,
             'phantom_qT1_disc': disc_phant_conv,

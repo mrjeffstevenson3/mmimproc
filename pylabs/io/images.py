@@ -1,5 +1,5 @@
 import nibabel, numpy
-
+import subprocess
 
 def loadStack(files):
     data = []
@@ -21,3 +21,7 @@ def combineAsVolumes(files, outfpath):
     data, affine = loadStack(files)
     data = numpy.rollaxis(data, 0, 4)
     nibabel.save(nibabel.Nifti1Image(data, affine), outfpath)
+
+def copysform2qform(file):
+    cmd = ['fslorient', '-copysform2qform', file]
+    subprocess.check_call(cmd, shell=True)
