@@ -14,8 +14,8 @@ applyxfm = fsl.ApplyXfm(output_type='NIFTI')
 #fs = getnetworkdataroot()
 fs = getlocaldataroot()
 project = 'roots_of_empathy'
-subjects = ['sub-2013-C028', 'sub-2013-C029', 'sub-2013-C030', 'sub-2013-C037', 'sub-2013-C053', 'sub-2013-C065']
-#subjects = ['sub-2013-C053']
+#subjects = ['sub-2013-C028', 'sub-2013-C029', 'sub-2013-C030', 'sub-2013-C037', 'sub-2013-C053', 'sub-2013-C065']
+subjects = ['sub-2013-C053']
 convert = True
 
 

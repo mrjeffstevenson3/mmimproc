@@ -162,18 +162,18 @@ def brain_proc_file(opts, scandict):
 
         # figure out the output filename, and see if it exists
         run = 1
-        basefilename = str(opts.fname_template).format(subj=opts.subj, fa=str(opts.fa),
-                            tr=str(opts.tr).replace('.', 'p'), ti=str(opts.ti), run=str(run),
+        basefilename = str(opts.fname_template).format(subj=opts.subj, fa=str(opts.fa).zfill(2),
+                            tr=str(opts.tr).replace('.', 'p'), ti=str(opts.ti).zfill(4), run=str(run),
                             session=opts.session_id, scan_name=opts.scan_name, scan_info=opts.scan_info)
 
         #acq_time would be unique even for 2nd run. should test date part only not time
         while opts.acq_time in scandict[(opts.subj, opts.session_id, opts.outdir)][basefilename.split('.')[0]]:
             run = run + 1
-            basefilename = str(opts.fname_template).format(subj=opts.subj, fa=str(opts.fa),
-                                tr=str(opts.tr).replace('.', 'p'), ti=str(opts.ti), run=str(run),
+            basefilename = str(opts.fname_template).format(subj=opts.subj, fa=str(opts.fa).zfill(2),
+                                tr=str(opts.tr).replace('.', 'p'), ti=str(opts.ti).zfill(4), run=str(run),
                                 session=opts.session_id, scan_name=opts.scan_name, scan_info=opts.scan_info)
         if opts.rms:
-            rms_basefilename = basefilename.split('.')[0][-1] + '_rms' + str(run) + '.nii'
+            rms_basefilename = basefilename.split('.')[0][-1] + '_rms_' + str(run) + '.nii'
 
         if opts.compressed:
             verbose('Using gzip compression')
