@@ -107,7 +107,6 @@ def brain_proc_file(opts, scandict):
             setattr(opts, 'session_id', str(infile.split('/')[-3]))
         else:
             setattr(opts, 'session_id', '')
-
         if opts.scaling != 'off':
             verbose('Using data scaling "%s"' % opts.scaling)
         # get original scaling, and decide if we scale in-place or not
@@ -134,7 +133,6 @@ def brain_proc_file(opts, scandict):
                            [1, 1],
                            [2, 1]]):  # already in LAS+
             t_aff = np.eye(4)
-            print ('orientation = LAS+')
         else:  # Not in LAS+
             t_aff = inv_ornt_aff(ornt, pr_img.shape)
             affine = np.dot(affine, t_aff)
@@ -331,5 +329,4 @@ def brain_proc_file(opts, scandict):
             nibabel.save(rmsimg, rms_outfilename)
             copysform2qform(rms_outfilename)
             prov.log(rms_outfilename, 'rms file created by parrec2nii_convert', infile, script=__file__)
-            print(basefilename, rms_basefilename, rms_outfilename)
     return scandict
