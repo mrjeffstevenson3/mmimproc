@@ -115,7 +115,7 @@ bbc_conv = pd.DataFrame({
                         'fname_template': '{subj}_{session}_{scan_name}_{run}.nii',
                         'verbose': True, 'compressed': False, 'permit_truncated': True, 'bvs': False, 'dwell_time': False,
                         'b1corr': False, 'field_strength': False, 'vol_info': False, 'origin': 'scanner', 'minmax': ('parse', 'parse'),
-                        'store_header': True, 'scaling': 'dv', 'keep_trace': False, 'overwrite': True, 'strict_sort': False, 'multisession': (1, 2, 3),
+                        'store_header': True, 'scaling': 'dv', 'keep_trace': False, 'overwrite': True, 'strict_sort': True, 'multisession': (1, 2, 3),
                         'rms': False},
             })
 
