@@ -29,7 +29,7 @@ from pylabs.utils.files import sortedParGlob
 from pylabs.utils.paths import getlocaldataroot
 from pylabs.io.images import copysform2qform
 import niprov
-prov = niprov.Context()
+prov = niprov.ProvenanceContext()
 fs = getlocaldataroot()
 import dill #to use as pickle replacement of lambda dict
 

@@ -6,7 +6,7 @@ import nibabel.nifti1 as nifti1
 import niprov
 from nipype.interfaces import fsl
 fslbet = fsl.BET(output_type='NIFTI')
-prov = niprov.Context()
+prov = niprov.ProvenanceContext()
 
 struc_betDict = defaultdict(lambda: defaultdict(lambda: defaultdict(int)))
 struc_betDict[('sub-2013-C028', 'ses-1', 'anat')]['sub-2013-C028_ses-1_wemempr_1']['bet_com'] = (104, 145, 190)
