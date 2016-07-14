@@ -201,6 +201,7 @@ def b1corr_anat(project, niftiDict):
                         niftiDict[fmap_akey][fmap_bkey][b1map_fname] = base_b1phase2_fname + '.nii.gz'
                         niprov.log(niftiDict[fmap_akey][fmap_bkey][b1map_fname], 'b1map registered to '+ bkey, \
                                    niftiDict[fmap_akey][fmap_bkey]['outfilename'], script=__file__, opts=opts)
+
                     cmd = ['fslmaths', niftiDict[akey][bkey]['outfilename'],'-div', \
                               niftiDict[fmap_akey][fmap_bkey][b1map_fname], '-mul', 100, \
                               join(niftiDict[akey][bkey]['outpath'], bkey + '_b1corr')]
