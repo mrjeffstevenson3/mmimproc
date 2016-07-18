@@ -244,7 +244,7 @@ def brain_proc_file(opts, scandict):
         setattr(opts, 'qform', nhdr.get_qform())
         verbose('Writing %s' % outfilename)
         nibabel.save(nimg, outfilename)
-        copysform2qform(outfilename)
+#        copysform2qform(outfilename)
         prov.log(outfilename, 'nifti file created by parrec2nii_convert', infile, script=__file__)
 
         # write out bvals/bvecs if requested
@@ -328,6 +328,6 @@ def brain_proc_file(opts, scandict):
             np.testing.assert_almost_equal(affine, rmshdr.get_qform(), 5,
                                            err_msg='output qform in rms header does not match input qform')
             nibabel.save(rmsimg, rms_outfilename)
-            copysform2qform(rms_outfilename)
+#            copysform2qform(rms_outfilename)
             prov.log(rms_outfilename, 'rms file created by parrec2nii_convert', infile, script=__file__)
     return scandict
