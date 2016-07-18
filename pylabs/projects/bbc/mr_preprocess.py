@@ -15,9 +15,10 @@ applyxfm = fsl.ApplyXfm(output_type='NIFTI')
 fs = getlocaldataroot()
 project = 'bbc'
 subtemplate = 'sub-bbc{sid}'
-subjid = [101, 105, 106, 108, 109, 113, 116, 118, 119, 120, 202, 208, 209, 211, 212, 215, 218, 219, 231, 236, 241, 243, 249, 252, 253]
+#problem ids 101 - dti, 202 and 218- fmri qform
+subjid = [105, 106, 108, 109, 113, 116, 118, 119, 120, 208, 209, 211, 212, 215, 219, 231, 236, 241, 243, 249, 252, 253]
 #subjects = [subtemplate.format(sid=str(s)) for s in subjid]
-subjects = ['sub-bbc105']
+subjects = ['sub-bbc212']
 
 #stages to run
 convert = True
@@ -41,7 +42,7 @@ else:
         niftiDict = cPickle.load(f)
 
 niftidict = default_to_regular(niftiDict)
-with open(join(fs, project, "niftiDict_all_subj_{:%Y%m%d%H%M}.pickle".format(datetime.now())), "wb") as f:
+with open(join(fs, project, "bbc_niftiDict_all_subj_{:%Y%m%d%H%M}.pickle".format(datetime.now())), "wb") as f:
     f.write(dumps(niftiDict))
-with open(join(fs, project, "niftidict_all_subj_{:%Y%m%d%H%M}.pickle".format(datetime.now())), "wb") as f:
+with open(join(fs, project, "bbc_niftidict_all_subj_{:%Y%m%d%H%M}.pickle".format(datetime.now())), "wb") as f:
     f.write(dumps(niftidict))
