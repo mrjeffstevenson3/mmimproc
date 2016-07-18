@@ -18,7 +18,7 @@ subtemplate = 'sub-bbc{sid}'
 #problem ids 101 - dti, 202 and 218- fmri qform
 subjid = [105, 106, 108, 109, 113, 116, 118, 119, 120, 208, 209, 211, 212, 215, 219, 231, 236, 241, 243, 249, 252, 253]
 #subjects = [subtemplate.format(sid=str(s)) for s in subjid]
-subjects = ['sub-bbc212']
+subjects = ['sub-bbc101']
 
 #stages to run
 convert = True

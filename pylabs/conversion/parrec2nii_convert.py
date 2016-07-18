@@ -120,7 +120,7 @@ def brain_proc_file(opts, scandict):
             slope = slope.ravel()[0]
             intercept = intercept.ravel()[0]
             in_data = pr_img.dataobj.get_unscaled()
-            out_dtype = pr_hdr.get_data_dtype()
+            out_dtype = np.float32
         else:
             # Multi scalefactor case
             slope = np.array([1.])
