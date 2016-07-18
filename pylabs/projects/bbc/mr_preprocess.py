@@ -37,5 +37,11 @@ if convert:
     niftiDict, niftiDF = conv_subjs(project, subjects, niftiDict)
 
 else:
-    with open(join(fs, project, 'niftiDict_all_subj_201605232241.pickle'), 'rb') as f:
+    with open(join(fs, project, 'bbcniftiDict_all_subj_201605232241.pickle'), 'rb') as f:
         niftiDict = cPickle.load(f)
+
+niftidict = default_to_regular(niftiDict)
+with open(join(fs, project, "niftiDict_all_subj_{:%Y%m%d%H%M}.pickle".format(datetime.now())), "wb") as f:
+    f.write(dumps(niftiDict))
+with open(join(fs, project, "niftidict_all_subj_{:%Y%m%d%H%M}.pickle".format(datetime.now())), "wb") as f:
+    f.write(dumps(niftidict))

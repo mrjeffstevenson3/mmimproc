@@ -156,11 +156,6 @@ def conv_subjs(project, subjects, niftiDict):
             niftiDict = brain_proc_file(opts, niftiDict)
         subjDF = make_sessions_fm_dict(niftiDict, project, subject)
         niftiDF = niftiDF.append(subjDF)
-    niftidict = default_to_regular(niftiDict)
-    with open(join(fs, project, "niftiDict_all_subj_{:%Y%m%d%H%M}.pickle".format(datetime.now())), "wb") as f:
-        f.write(dumps(niftiDict))
-    with open(join(fs, project, "niftidict_all_subj_{:%Y%m%d%H%M}.pickle".format(datetime.now())), "wb") as f:
-        f.write(dumps(niftidict))
     return niftiDict, niftiDF
 
 def b1corr_anat(project, niftiDict):

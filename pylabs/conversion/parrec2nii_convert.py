@@ -145,7 +145,7 @@ def brain_proc_file(opts, scandict):
             rmshdr = rmsimg.header
             rmshdr.set_data_dtype(out_dtype)
             rmshdr.set_slope_inter(slope, intercept)
-            rmshdr.set_qform = affine
+            rmshdr.set_qform(affine, code=2)
 
         bvals, bvecs = pr_hdr.get_bvals_bvecs()
         if not opts.keep_trace:  # discard Philips DTI trace if present
@@ -208,6 +208,7 @@ def brain_proc_file(opts, scandict):
         nhdr = nimg.header
         nhdr.set_data_dtype(out_dtype)
         nhdr.set_slope_inter(slope, intercept)
+        nhdr.set_qform(affine, code=2)
 
         if 'parse' in opts.minmax:
             # need to get the scaled data
