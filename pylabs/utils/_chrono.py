@@ -15,3 +15,10 @@ def pr_date(pr_examdate):
     py_datefmat = datetime.strptime(pr_examdate, pr_datefmat)
     return datetime.date(py_datefmat)
 
+def matchscandate(testdate, niftiDict, outkey, midkey):
+    match = False
+    if niftiDict.has_key(outkey):
+        if niftiDict[outkey].has_key(midkey):
+            if niftiDict[outkey][midkey]['exam_date'] == testdate:
+                match =True
+    return match

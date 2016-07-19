@@ -166,13 +166,21 @@ def brain_proc_file(opts, scandict):
         basefilename = str(opts.fname_template).format(subj=opts.subj, fa=str(opts.fa).zfill(2),
                             tr=str(opts.tr).replace('.', 'p'), ti=str(opts.ti).zfill(4), run=str(run),
                             session=opts.session_id, scan_name=opts.scan_name, scan_info=opts.scan_info)
+        outerkey = (opts.subj, opts.session_id, opts.outdir)
+        middlekey = basefilename.split('.')[0]
+        if not scandict[outerkey].has_key(middlekey):
+            #case 1: no dict key found, not in dict - eg 1st instance of exam and/or scan
+            run = 1
+        elif scandict.has_key(outerkey):
+            #exam known
+            if scandict[outerkey].has_key(middlekey):
+                #exam and scan known. need to ascertain run number
+                while scandict[outerkey].has_key(middlekey[:-1]+str(run)) and \
+                        scandict[outerkey][middlekey[:-1]+str(run)]['exam_date'] == opts.exam_date:
+                    run += 1
 
-        #acq_time would be unique even for 2nd run. should test date part only not time
-        while opts.acq_time in scandict[(opts.subj, opts.session_id, opts.outdir)][basefilename.split('.')[0]]:
-            run = run + 1
-            basefilename = str(opts.fname_template).format(subj=opts.subj, fa=str(opts.fa).zfill(2),
-                                tr=str(opts.tr).replace('.', 'p'), ti=str(opts.ti).zfill(4), run=str(run),
-                                session=opts.session_id, scan_name=opts.scan_name, scan_info=opts.scan_info)
+        basefilename = basefilename[:-1]++str(run)
+        middlekey = basefilename.split('.')[0]
         if opts.rms:
             rms_basefilename = basefilename.split('.')[0][:-1] + 'rms_' + str(run) + '.nii'
 
@@ -312,8 +320,6 @@ def brain_proc_file(opts, scandict):
         setattr(opts, 'converted', True)
         setattr(opts, 'QC', False)
         setattr(opts, 'pre_proc', False)
-        outerkey = (opts.subj, opts.session_id, opts.outdir)
-        middlekey = basefilename.split('.')[0]
         scandict[outerkey][middlekey] = opts2dict(opts)
 
         #save rms and add new niftiDict data
