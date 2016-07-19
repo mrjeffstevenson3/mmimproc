@@ -26,6 +26,8 @@ def getnetworkdataroot():
         return '/mnt/users/js/'
     elif hostname == 'scotty.ilabs.uw.edu':
         return '/media/DiskArray/shared_data/js/'
+    elif hostname == 'redshirt.ilabs.uw.edu':
+        return '/mnt/users/js/'
     else:
         raise ValueError('Don''t know where network data root is on this computer.')
 
