@@ -87,7 +87,7 @@ roots_conv = pd.DataFrame({
             })
 
 bbc_conv = pd.DataFrame({
-            '_3DBO_MAP_': {'dirstruct': 'BIDS', 'outdir': 'fmap', 'scan_name': 'b0map', 'scan_info': '',
+            '_3DB0_MAP_': {'dirstruct': 'BIDS', 'outdir': 'fmap', 'scan_name': 'b0map', 'scan_info': '',
                         'fname_template': '{subj}_{session}_{scan_name}_{scan_info}{run}.nii',
                         'verbose': True, 'compressed': False, 'permit_truncated': False, 'bvs': False, 'dwell_time': False,
                         'b1corr': False, 'field_strength': False, 'vol_info': False, 'origin': 'scanner', 'minmax': ('parse', 'parse'),
