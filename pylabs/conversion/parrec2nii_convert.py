@@ -27,7 +27,7 @@ from os.path import join, isfile
 from glob import glob
 from pylabs.utils.files import sortedParGlob
 from pylabs.utils.paths import getlocaldataroot
-from pylabs.io.images import copysform2qform
+from pylabs.utils import pr_examdate2pydatetime, pr_examdate2BIDSdatetime
 import niprov
 prov = niprov.ProvenanceContext()
 fs = getlocaldataroot()
@@ -102,7 +102,8 @@ def brain_proc_file(opts, scandict):
         setattr(opts, 'fa', int(pr_hdr.image_defs['image_flip_angle'][0]))
         setattr(opts, 'ti', int(round(pr_hdr.image_defs['Inversion delay'][0])))
         setattr(opts, 'tr', round(pr_hdr.general_info['repetition_time'][0], 1))
-        setattr(opts, 'acq_time', pr_hdr.general_info['exam_date'].replace(".","-").replace('/','T').replace(' ', ''))
+        setattr(opts, 'exam_date', pr_examdate2pydatetime(pr_hdr.general_info['exam_date']))
+        setattr(opts, 'acq_time', pr_examdate2BIDSdatetime(pr_hdr.general_info['exam_date']))
         if any(opts.multisession) > 0:
             setattr(opts, 'session_id', str(infile.split('/')[-3]))
         else:
