@@ -179,7 +179,7 @@ def brain_proc_file(opts, scandict):
                         scandict[outerkey][middlekey[:-1]+str(run)]['exam_date'] == opts.exam_date:
                     run += 1
 
-        basefilename = basefilename[:-1]++str(run)
+        basefilename = basefilename[:-1]+str(run)
         middlekey = basefilename.split('.')[0]
         if opts.rms:
             rms_basefilename = basefilename.split('.')[0][:-1] + 'rms_' + str(run) + '.nii'
