@@ -1,0 +1,13 @@
+rm -r toddprocess
+mkdir toddprocess
+cp *dti*.nii toddprocess/dtishort.nii
+cp *bvals toddprocess/bvals
+cp *bvecs toddprocess/bvecs
+cd toddprocess
+echo 3.4 > alphalevel.txt
+fslchfiletype ANALYZE dtishort.nii
+/home/mrjeffs/Software/pylabs/pylabs/diffusion/dti_qc_correlation_bval1000
+cp /home/mrjeffs/Software/pylabs/pylabs/diffusion/plotqc1.m .
+octave plotqc1.m
+
+
