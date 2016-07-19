@@ -27,13 +27,13 @@ maskfile = join(statsdir, 'mean_FA_skeleton_mask.nii.gz')
 imgtemplate = 'all_{0}_skeletonised.nii.gz'
 #imgtemplate = 'all_{0}_qformfix_reg2templ.nii.gz'
 #measures = ['F1', 'F2', 'FA', 'L1', 'MD', 'MO', 'RA', 'AD', 'L2', 'L3']
-measures = ['FA', 'RA']
+measures = ['FA', 'RA', 'MD']
 #measures = ['FA', 'F2', 'MD', 'RA']
 skellist = [imgtemplate.format(m) for m in measures]
 images = [statsdir+'/'+i for i in skellist]
 [niprov.add(img) for img in images]
 
-exptag='skeletonised_t_thresh_2p7_filter_gender_n500'
+exptag='skeletonised_t_thresh_2p7_nofilt_n500'
 matfiledir = join(statsdir,'matfiles','matfiles_'+exptag)
 resultdir = join(statsdir,'randpar',exptag)
 qsubdir = join(resultdir, 'qsubdir_defunctcommands')
