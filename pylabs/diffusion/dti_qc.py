@@ -8,6 +8,7 @@ prov = niprov.ProvenanceContext()
 flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo')
 applyxfm = fsl.ApplyXfm()
 fs = getnetworkdataroot()
+alpha = 3.4
 
 
 def dti_motion_qc(project, subjects, alpha):
@@ -15,7 +16,7 @@ def dti_motion_qc(project, subjects, alpha):
     for subject in subjects:
         dwifiles = glob.glob(join(fs, project, subject, 'ses-?', 'dwi', '*.nii'))
         for dwifile in dwifiles:
-            dtidir = join('/', *dwifile.split('/')[:-2])
+            dtidir = join('/', *dwifile.split('/')[:-1])
             dtifbasenm = dwifile.split('.')[0]
             qcdir = join(dtidir, 'dwi_qc')
             if os.path.exists(qcdir):
@@ -26,9 +27,9 @@ def dti_motion_qc(project, subjects, alpha):
             shutil.copy2(dtifbasenm+'.bvecs', join(qcdir, 'bvecs'))
             os.chdir(qcdir)
             with open(join(qcdir, 'alphalevel.txt'), "w") as alphalevel:
-                alphalevel.write({}.format(alpha))
+                alphalevel.write("{}".format(alpha))
             cmd = ['fslchfiletype', 'ANALYZE', join(qcdir, 'dtishort.nii')]
-            run_subprocess(cmd)
-            run_subprocess([join(origdir, 'pylabs/diffusion/dti_qc_correlation_bval1000')])
+            run_subprocess(' '.join(cmd))
+            run_subprocess(join(origdir, 'pylabs/diffusion/dti_qc_correlation_bval1000'))
     os.chdir(origdir)
     return
