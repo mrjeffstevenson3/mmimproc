@@ -17,8 +17,8 @@ fs = getlocaldataroot()
 project = 'bbc'
 subtemplate = 'sub-bbc{sid}'
 subjid = [101, 105, 106, 108, 109, 113, 116, 118, 119, 120, 202, 208, 209, 211, 212, 215, 218, 219, 231, 236, 241, 243, 249, 252, 253]
-#subjects = [subtemplate.format(sid=str(s)) for s in subjid]
-subjects = ['sub-bbc105']
+subjects = [subtemplate.format(sid=str(s)) for s in subjid]
+#subjects = ['sub-bbc105']
 
 niipickle = join(fs, project, 'bbcniftiDict_all_subj_201605232241.pickle')
 #stages to run
