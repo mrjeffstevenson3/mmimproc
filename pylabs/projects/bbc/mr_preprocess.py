@@ -6,6 +6,7 @@ import subprocess
 from datetime import datetime
 from cloud.serialization.cloudpickle import dumps
 from pylabs.structural.brain_extraction import struc_bet
+
 from pylabs.conversion.brain_convert import conv_subjs
 from pylabs.utils.paths import getnetworkdataroot, getlocaldataroot
 prov = niprov.ProvenanceContext()
@@ -41,8 +42,8 @@ else:
     with open(niipickle, 'rb') as f:
         niftiDict = cPickle.load(f)
 
-#if dti_qc:
-#    niftiDict =
+if dti_qc:
+
 
 niftidict = default_to_regular(niftiDict)
 with open(join(fs, project, "bbc_niftiDict_all_subj_{:%Y%m%d%H%M}.pickle".format(datetime.now())), "wb") as f:

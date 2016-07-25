@@ -4,7 +4,7 @@ from collections import defaultdict
 from nipype.interfaces import fsl
 from pylabs.utils._run import run_subprocess
 from pylabs.utils.paths import getnetworkdataroot
-provenance = niprov.Context()
+prov = niprov.ProvenanceContext()
 flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo')
 applyxfm = fsl.ApplyXfm()
 fs = getnetworkdataroot()
@@ -15,7 +15,7 @@ def dti_motion_qc(project, subjects, alpha):
     for subject in subjects:
         dwifiles = glob.glob(join(fs, project, subject, 'ses-?', 'dwi', '*.nii'))
         for dwifile in dwifiles:
-            dtidir = join('/',*dwifile[0].split('/')[:-2])
+            dtidir = join('/', *dwifile.split('/')[:-2])
             dtifbasenm = dwifile.split('.')[0]
             qcdir = join(dtidir, 'dwi_qc')
             if os.path.exists(qcdir):
