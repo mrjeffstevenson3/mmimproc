@@ -16,11 +16,13 @@ fs = getlocaldataroot()
 project = 'bbc'
 subtemplate = 'sub-bbc{sid}'
 subjid = [101, 105, 106, 108, 109, 113, 116, 118, 119, 120, 202, 208, 209, 211, 212, 215, 218, 219, 231, 236, 241, 243, 249, 252, 253]
-subjects = [subtemplate.format(sid=str(s)) for s in subjid]
-#subjects = ['sub-bbc101']
+#subjects = [subtemplate.format(sid=str(s)) for s in subjid]
+subjects = ['sub-bbc105']
 
+niipickle = join(fs, project, 'bbcniftiDict_all_subj_201605232241.pickle')
 #stages to run
 convert = True
+dti_qc = True
 b1corr = False
 bet = False
 prefilter = False
@@ -35,10 +37,12 @@ def default_to_regular(d):
 if convert:
     niftiDict = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
     niftiDict, niftiDF = conv_subjs(project, subjects, niftiDict)
-
 else:
-    with open(join(fs, project, 'bbcniftiDict_all_subj_201605232241.pickle'), 'rb') as f:
+    with open(niipickle, 'rb') as f:
         niftiDict = cPickle.load(f)
+
+#if dti_qc:
+#    niftiDict =
 
 niftidict = default_to_regular(niftiDict)
 with open(join(fs, project, "bbc_niftiDict_all_subj_{:%Y%m%d%H%M}.pickle".format(datetime.now())), "wb") as f:
