@@ -8,8 +8,6 @@ prov = niprov.ProvenanceContext()
 flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo')
 applyxfm = fsl.ApplyXfm()
 fs = getnetworkdataroot()
-alpha = 3.4
-
 
 def dti_motion_qc(project, subjects, alpha=3.4):
     origdir = os.getcwd()
@@ -26,7 +24,7 @@ def dti_motion_qc(project, subjects, alpha=3.4):
             shutil.copy2(dwifile, join(qcdir, 'dtishort.nii'))
             shutil.copy2(dtifbasenm+'.bvals', join(qcdir, 'bvals'))
             shutil.copy2(dtifbasenm+'.bvecs', join(qcdir, 'bvecs'))
-            shutil.copy2(join(origdir, 'pylabs/diffusion/plotqc1.m'), join(qcdir, 'plotqc1.m'))
+            shutil.copy2(join(diffdir, 'plotqc1.m'), join(qcdir, 'plotqc1.m'))
             os.chdir(qcdir)
             with open(join(qcdir, 'alphalevel.txt'), "w") as alphalevel:
                 alphalevel.write("{}".format(alpha))
