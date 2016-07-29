@@ -104,6 +104,27 @@ def brain_proc_file(opts, scandict):
         setattr(opts, 'tr', round(pr_hdr.general_info['repetition_time'][0], 1))
         setattr(opts, 'exam_date', pr_examdate2pydatetime(pr_hdr.general_info['exam_date']))
         setattr(opts, 'acq_time', pr_examdate2BIDSdatetime(pr_hdr.general_info['exam_date']))
+        setattr(opts, 'resolution', int(np.max(pr_hdr.image_defs['recon resolution'])))
+        setattr(opts, 'fov', int(pr_hdr.image_defs['fov']))
+        setattr(opts, 'vols', int(np.max(pr_hdr.image_defs['dynamic scan number'])))
+        setattr(opts, 'slices', int(np.max(pr_hdr.image_defs['slice number'])))
+        setattr(opts, 'slice thickness', int(np.max(pr_hdr.image_defs['slice thickness'])))
+        setattr(opts, 'slope', slope)
+        setattr(opts, 'intercept', intercept)
+
+        setattr(opts, 'patient_name', pr_hdr.general_info['patient_name'])
+        setattr(opts, 'exam_name', pr_hdr.general_info['exam_name'])
+        setattr(opts, 'protocol_name', pr_hdr.general_info['protocol_name'])
+        setattr(opts, 'acq_nr', pr_hdr.general_info['acq_nr'])
+        setattr(opts, 'recon_nr', pr_hdr.general_info['recon_nr'])
+
+
+
+        setattr(opts, 'tr', round(pr_hdr.general_info['repetition_time'][0], 1))
+        setattr(opts, 'tr', round(pr_hdr.general_info['repetition_time'][0], 1))
+        setattr(opts, 'tr', round(pr_hdr.general_info['repetition_time'][0], 1))
+        setattr(opts, 'tr', round(pr_hdr.general_info['repetition_time'][0], 1))
+
         if any(opts.multisession) > 0:
             setattr(opts, 'session_id', str(infile.split('/')[-3]))
         else:
