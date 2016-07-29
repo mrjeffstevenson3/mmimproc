@@ -14,6 +14,6 @@ fslmaths ${subject}.nii -roi 0 -1 0 -1 ${zcut[2]} -1 0 1 ${subject}_zcut2
 bet ${subject}_zcut2 ${subject}_brain -c ${com[*]} -m
 susan ${subject}_brain -1 1 3 1 0 ${subject}_brain_susan1
 fslmaths ${subject}_brain_susan1 -mas ${subject}_brain_mask ${subject}_brain_susan
-imagelist="$imagelist $subject ${subject}_brain";
+imagelist="$imagelist $subject ${subject}_brain_susan";
 done
 slicesdir -o $imagelist
