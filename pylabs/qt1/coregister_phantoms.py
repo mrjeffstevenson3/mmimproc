@@ -8,7 +8,7 @@ targetfile = join(getlocaldataroot(),'phantom_qT1_slu',
     'phantom_alignment_target.nii.gz')
 
 def coregisterPhantoms(uncoregfiles, projectdir, overwrite=False, dirstruct='BIDS'):
-    provenance = niprov.Context()
+    provenance = niprov.ProvenanceContext()
     nfiles = len(uncoregfiles)
     outimages = []
     newAffine = nibabel.load(targetfile).get_affine()

@@ -13,7 +13,7 @@ from copy import copy
 def fitPhantoms(images, projectdir, dirstruct='BIDS', async=False, skipExisting = False, xdict=None):
     #from multiprocessing import Pool
     #pool = Pool(12)
-    provenance = niprov.Context()
+    provenance = niprov.ProvenanceContext()
     outfiles = []
     if xdict is None:
         xdict = {}
@@ -50,7 +50,7 @@ def fitPhantoms(images, projectdir, dirstruct='BIDS', async=False, skipExisting 
 
                 scottybasedir = '/media/DiskArray/shared_data/js'
                 jvdbbasedir = '/diskArray/mirror/js'
-                files = [f.replace(scottybasedir, jvdbbasedir) for f in files]
+                #files = [f.replace(scottybasedir, jvdbbasedir) for f in files]
                 sessiondir = os.sep.join(files[0].split(os.sep)[:-2])
                 maskfname = 'orig_seir_ti_3000_tr_4000_mag_1slmni_1_mask.nii'
                 maskfile = join(sessiondir,'fitted_seir_qT1',maskfname)

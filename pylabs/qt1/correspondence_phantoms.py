@@ -7,7 +7,7 @@ def matchImages(images, query):
     return [i for i in images if set(query.items()).issubset(set(i.items()))]
 
 def createSpgrTseirCorrespondenceImages(t1images, projectdir):
-    provenance = niprov.Context()
+    provenance = niprov.ProvenanceContext()
     spgrQuery = {'method':'orig_spgr_mag', 'b1corr':True}
     spgrImages = matchImages(t1images, spgrQuery)
     for i, spgrImage in enumerate(spgrImages):

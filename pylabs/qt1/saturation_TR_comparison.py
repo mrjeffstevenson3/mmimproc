@@ -7,12 +7,12 @@ from pylabs.qt1.coregister_phantoms import coregisterPhantoms
 from pylabs.qt1.atlassing_phantoms import atlasPhantoms
 from pylabs.qt1.model_pipeline import calculate_model
 import niprov
-prov = niprov.Context()
-#fs = getlocaldataroot()
-fs = '/Users/mrjeffs/Documents/Research/data'
+prov = niprov.ProvenanceContext()
+fs = getlocaldataroot()
+#fs = '/Users/mrjeffs/Documents/Research/data'
 projectdir = join(fs, 'phantom_qT1_slu')
 #subjects = ['sub-phant2016-03-02', 'sub-phant2016-03-11']
-subjects = ['sub-phant2016-07-29']
+subjects = ['sub-phant2016-07-27']
 niftiDict = collections.defaultdict(list)
 
 ## convert parrecs to nifti

@@ -27,7 +27,7 @@ from glob import glob
 from pylabs.utils.files import sortedParGlob
 from pylabs.utils.paths import getlocaldataroot
 import niprov
-prov = niprov.Context()
+prov = niprov.ProvenanceContext()
 fs = getlocaldataroot()
 import dill #to use as pickle replacement of lambda dict
 

@@ -12,7 +12,7 @@ from pylabs.qt1.b1mapcoreg import b1mapcoreg_1file
 import pylabs.masking as masking
 from nipype.interfaces import fsl
 from scipy.ndimage.filters import gaussian_filter
-provenance = niprov.Context()
+provenance = niprov.ProvenanceContext()
 
 ## behavior
 from pylabs.projects.roots.behavior import selectedvars

@@ -11,7 +11,7 @@ from pylabs.utils.files import deconstructRandparFiles
 from pylabs.io.images import combineAsVolumes
 import pylabs.masking
 import niprov
-prov = niprov.Context()
+prov = niprov.ProvenanceContext()
 prov.dryrun = True
 prov.verbose = True
 

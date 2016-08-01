@@ -5,7 +5,7 @@ from nipype.interfaces import fsl
 from pylabs.utils._run import run_subprocess
 from pylabs.conversion.brain_convert import conv_subjs
 from pylabs.utils.paths import getnetworkdataroot
-provenance = niprov.Context()
+provenance = niprov.ProvenanceContext()
 flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo')
 applyxfm = fsl.ApplyXfm()
 fs = getnetworkdataroot()

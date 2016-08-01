@@ -3,7 +3,7 @@ import itertools, datetime
 import nibabel, numpy, scipy.stats, scipy.ndimage, niprov
 from pylabs.utils import progress
 # import niprov
-# provenance = niprov.Context()
+# provenance = niprov.ProvenanceContext()
 
 def nancount(A):
     return numpy.count_nonzero(numpy.isnan(A))
@@ -78,7 +78,7 @@ def savetransformed(subjectfile, xform, newfile, newAffine):
 
 def alignAndSave(subjectfile, targetfile, newfile=None, provenance=None):
     if not provenance:
-        provenance = niprov.Context()
+        provenance = niprov.ProvenanceContext()
     if not newfile:
         newfile = subjectfile.replace('.nii','_coreg.nii')
     newAffine = nibabel.load(targetfile).get_affine()
@@ -92,7 +92,7 @@ def alignAndSave(subjectfile, targetfile, newfile=None, provenance=None):
 def applyXformAndSave(xform, subjectfile, targetfile, newfile=None, 
         provenance=None):
     if not provenance:
-        provenance = niprov.Context()
+        provenance = niprov.ProvenanceContext()
     if not newfile:
         newfile = subjectfile.replace('.nii','_coreg.nii')
     newAffine = nibabel.load(targetfile).get_affine()
