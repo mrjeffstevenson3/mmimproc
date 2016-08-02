@@ -9,8 +9,8 @@ from os.path import join
 from datetime import datetime
 from collections import defaultdict
 from pylabs.conversion.parrec2nii_convert import mergeddicts
-from pylabs.utils.paths import getlocaldataroot
-fs = getlocaldataroot()
+from pylabs.utils.paths import getnetworkdataroot
+fs = getnetworkdataroot()
 flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo', output_type='NIFTI')
 applyxfm = fsl.ApplyXfm(output_type='NIFTI')
 

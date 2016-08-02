@@ -5,7 +5,7 @@ from pylabs.correlation.behavior import csv2fslmat
 from pylabs.correlation.regfilt import multiregfilt
 from pylabs.correlation.randpar import multirandpar
 from pylabs.correlation.atlas import report, atlaslabels
-from pylabs.utils.paths import getlocaldataroot
+from pylabs.utils.paths import getnetworkdataroot
 from pylabs.utils.timing import waitForFiles
 from pylabs.utils.selection import select, withVoxelsOverThresholdOf
 from pylabs.utils.files import deconstructRandparFiles
@@ -17,7 +17,7 @@ opts.verbose = True
 subjects = [201, 202, 203, 204, 205, 206, 209, 210, 211, 212, 216, 219, 220, 221, 222, 223,
             903, 909, 910, 912, 913, 915, 916, 917, 919, 920, 921, 922, 923, 924, 925 ]
 
-fs = getlocaldataroot()
+fs = getnetworkdataroot()
 statsdir = fs+'bilingual_dti/mytbss_31subj_fsl_dtifit_mf_fixed_vecs_v5/stats/'
 behavdir = fs+'bilingual_dti/behavioral_data/'
 csvfile = behavdir+'SPA_group_gender_bilingual_spoken_and_auditory_exposure_and_confidence_SES_Edu_grp_cols_nov16_2015_v13.csv'
