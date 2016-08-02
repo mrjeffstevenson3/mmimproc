@@ -99,31 +99,44 @@ def brain_proc_file(opts, scandict):
         pr_hdr = pr_img.header
         affine = pr_hdr.get_affine(origin=opts.origin)
         slope, intercept = pr_hdr.get_data_scaling(scaling)
-        setattr(opts, 'fa', int(pr_hdr.image_defs['image_flip_angle'][0]))
-        setattr(opts, 'ti', int(round(pr_hdr.image_defs['Inversion delay'][0])))
-        setattr(opts, 'tr', round(pr_hdr.general_info['repetition_time'][0], 1))
+        setattr(opts, 'fa', np.unique(pr_hdr.image_defs['image_flip_angle']))
+        setattr(opts, 'ti', np.unique(np.round(pr_hdr.image_defs['Inversion delay'])))
+        setattr(opts, 'tr', np.round(np.unique(pr_hdr.general_info['repetition_time']), 1))
         setattr(opts, 'exam_date', pr_examdate2pydatetime(pr_hdr.general_info['exam_date']))
         setattr(opts, 'acq_time', pr_examdate2BIDSdatetime(pr_hdr.general_info['exam_date']))
-        setattr(opts, 'resolution', int(np.max(pr_hdr.image_defs['recon resolution'])))
-        setattr(opts, 'fov', int(pr_hdr.image_defs['fov']))
-        setattr(opts, 'vols', int(np.max(pr_hdr.image_defs['dynamic scan number'])))
-        setattr(opts, 'slices', int(np.max(pr_hdr.image_defs['slice number'])))
-        setattr(opts, 'slice thickness', int(np.max(pr_hdr.image_defs['slice thickness'])))
+        setattr(opts, 'resolution', np.int(np.max(pr_hdr.image_defs['recon resolution'])))
+        setattr(opts, 'fov', pr_hdr.image_defs['fov'])
+        setattr(opts, 'vols', np.int(np.max(pr_hdr.image_defs['dynamic scan number'])))
+        setattr(opts, 'slices', np.int(np.max(pr_hdr.image_defs['slice number'])))
+        setattr(opts, 'slice_thickness', np.unique(pr_hdr.image_defs['slice thickness']))
+        setattr(opts, 'slice_gap', np.unique(pr_hdr.image_defs['slice gap']))
+        setattr(opts, 'angulation', pr_hdr.general_info['angulation'])
+        setattr(opts, 'off_center', pr_hdr.general_info['off_center'])
         setattr(opts, 'slope', slope)
         setattr(opts, 'intercept', intercept)
-
         setattr(opts, 'patient_name', pr_hdr.general_info['patient_name'])
         setattr(opts, 'exam_name', pr_hdr.general_info['exam_name'])
         setattr(opts, 'protocol_name', pr_hdr.general_info['protocol_name'])
         setattr(opts, 'acq_nr', pr_hdr.general_info['acq_nr'])
         setattr(opts, 'recon_nr', pr_hdr.general_info['recon_nr'])
+        setattr(opts, 'max_echoes', pr_hdr.general_info['max_echoes'])
+        setattr(opts, 'max_slices', pr_hdr.general_info['max_slices'])
+        setattr(opts, 'tech', pr_hdr.general_info['tech'])
+        setattr(opts, 'epi_factor', pr_hdr.general_info['epi_factor'])
+        setattr(opts, 'max_diffusion_values', pr_hdr.general_info['max_diffusion_values'])
+        setattr(opts, 'max_gradient_orient', pr_hdr.general_info['max_gradient_orient'])
+        setattr(opts, 'diffusion_b_factor', pr_hdr.image_defs['diffusion_b_factor'])
+        setattr(opts, 'diffusion_b_value_number', pr_hdr.image_defs['diffusion b value number'])
+        setattr(opts, 'gradient_orientation_number', pr_hdr.image_defs['gradient orientation number'])
+        setattr(opts, 'num_echos', np.unique(pr_hdr.image_defs['echo number']))
+        setattr(opts, 'echo_time', np.unique(pr_hdr.image_defs['echo_time']))
+        setattr(opts, 'image_type_mr', np.unique(pr_hdr.image_defs['image_type_mr']))
+        setattr(opts, 'scanning_sequence', np.unique(pr_hdr.image_defs['scanning sequence']))
+        setattr(opts, 'image_pixel_size', pr_hdr.image_defs['image pixel size'])
+        setattr(opts, 'pixel_spacing', pr_hdr.image_defs['pixel spacing'])
+        setattr(opts, 'recon_resolution', np.unique(pr_hdr.image_defs['recon resolution']))
+        setattr(opts, 'TURBO_factor', np.unique(pr_hdr.image_defs['TURBO factor']))
 
-
-
-        setattr(opts, 'tr', round(pr_hdr.general_info['repetition_time'][0], 1))
-        setattr(opts, 'tr', round(pr_hdr.general_info['repetition_time'][0], 1))
-        setattr(opts, 'tr', round(pr_hdr.general_info['repetition_time'][0], 1))
-        setattr(opts, 'tr', round(pr_hdr.general_info['repetition_time'][0], 1))
 
         if any(opts.multisession) > 0:
             setattr(opts, 'session_id', str(infile.split('/')[-3]))
@@ -184,8 +197,8 @@ def brain_proc_file(opts, scandict):
 
         # figure out the output filename, and see if it exists
         run = 1
-        basefilename = str(opts.fname_template).format(subj=opts.subj, fa=str(opts.fa).zfill(2),
-                            tr=str(opts.tr).replace('.', 'p'), ti=str(opts.ti).zfill(4), run=str(run),
+        basefilename = str(opts.fname_template).format(subj=opts.subj, fa=str(int(opts.fa[0])).zfill(2),
+                            tr=str(opts.tr[0]).replace('.', 'p'), ti=str(opts.ti[0]).zfill(4), run=str(run),
                             session=opts.session_id, scan_name=opts.scan_name, scan_info=opts.scan_info)
         outerkey = (opts.subj, opts.session_id, opts.outdir)
         middlekey = basefilename.split('.')[0]
@@ -200,8 +213,8 @@ def brain_proc_file(opts, scandict):
                         scandict[outerkey][middlekey[:-1]+str(run)]['exam_date'] == opts.exam_date:
                     run += 1
 
-        basefilename = str(opts.fname_template).format(subj=opts.subj, fa=str(opts.fa).zfill(2),
-                            tr=str(opts.tr).replace('.', 'p'), ti=str(opts.ti).zfill(4), run=str(run),
+        basefilename = str(opts.fname_template).format(subj=opts.subj, fa=str(int(opts.fa[0])).zfill(2),
+                            tr=str(opts.tr[0]).replace('.', 'p'), ti=str(opts.ti[0]).zfill(4), run=str(run),
                             session=opts.session_id, scan_name=opts.scan_name, scan_info=opts.scan_info)
         middlekey = basefilename.split('.')[0]
         if opts.rms:
