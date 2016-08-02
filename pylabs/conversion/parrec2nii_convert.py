@@ -105,7 +105,7 @@ def brain_proc_file(opts, scandict):
         setattr(opts, 'exam_date', pr_examdate2pydatetime(pr_hdr.general_info['exam_date']))
         setattr(opts, 'acq_time', pr_examdate2BIDSdatetime(pr_hdr.general_info['exam_date']))
         setattr(opts, 'resolution', np.int(np.max(pr_hdr.image_defs['recon resolution'])))
-        setattr(opts, 'fov', pr_hdr.image_defs['fov'])
+        setattr(opts, 'fov', pr_hdr.general_info['fov'])
         setattr(opts, 'vols', np.int(np.max(pr_hdr.image_defs['dynamic scan number'])))
         setattr(opts, 'slices', np.int(np.max(pr_hdr.image_defs['slice number'])))
         setattr(opts, 'slice_thickness', np.unique(pr_hdr.image_defs['slice thickness']))
