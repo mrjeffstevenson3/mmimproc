@@ -11,8 +11,7 @@ from pylabs.utils.paths import getnetworkdataroot, getlocaldataroot
 prov = niprov.ProvenanceContext()
 flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo', output_type='NIFTI')
 applyxfm = fsl.ApplyXfm(output_type='NIFTI')
-#fs = getnetworkdataroot()
-fs = getlocaldataroot()
+fs = getnetworkdataroot()
 project = 'bbc'
 subtemplate = 'sub-bbc{sid}'
 subjid = [101, 105, 106, 108, 109, 113, 116, 118, 119, 120, 202, 208, 209, 211, 212, 215, 218, 219, 231, 236, 241, 243, 249, 252, 253]
