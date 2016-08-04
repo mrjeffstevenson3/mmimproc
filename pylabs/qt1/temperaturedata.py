@@ -2,7 +2,7 @@ from os.path import join
 import glob, datetime
 from datetime import datetime
 import numpy
-fpath = 'data/T1_phantom_temperature_readings_inventory.csv'
+
 
 class TemperatureRecord(object):
 
@@ -17,14 +17,15 @@ class TemperatureRecord(object):
                 self.date = datetime.strptime(strval, '%m/%d/%Y').date()
             elif c in [2, 4]:
                 self.temps.append(float(strval))
-        if self.date and (len(self.temps) > 1):
+        if self.date and (len(self.temps) > 0):
             self.valid = True
 
     def averageTemperature(self):
         return sum(self.temps)/len(self.temps)
 
 
-def getSessionRecords():
+def getSessionRecords(scanner):
+    fpath = 'data/T1_phantom_temperature_readings_inventory_{0}.csv'.format(scanner)
     with open(fpath) as tempfile:
         lines = tempfile.readlines()
     sessions = {}
