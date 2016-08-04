@@ -15,7 +15,7 @@ from six import string_types
 import nibabel
 import nibabel.nifti1 as nifti1
 from nipype.interfaces import fsl
-from pylabs.utils.paths import getlocaldataroot
+from pylabs.utils.paths import getnetworkdataroot
 import niprov
 from niprov import Context as ProvenanceContext
 from pylabs.utils._options import PylabsOptions
@@ -87,7 +87,7 @@ def substring_i(the_list, substring):
 verbose = True
 prov.dryrun = False
 
-fs = getlocaldataroot()
+fs = getnetworkdataroot()
 pathtotemplates = pathjoin(fs, 'tadpole/sphere_sources')
 outputdir = pathjoin(fs, 'tadpole/meg_sphere_templates')
 templatefiles = set(glob(pathjoin(fs, pathtotemplates, '*_head*.nii.gz'))) - set(glob(pathjoin(fs, pathtotemplates, '*_t2w_*.nii.gz')))
