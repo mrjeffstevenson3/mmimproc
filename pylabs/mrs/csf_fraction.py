@@ -3,6 +3,7 @@ import nibabel
 import nibabel.nifti1 as nifti1
 
 
+
 f = '/media/DiskArray/shared_data/js/tadpole/JONA_DAY1/csf_segmentation/TADPOLE_PR20160803_MATCHING_SPEC_6_5.nii'
 match_img = nibabel.load(f)
 match_img_data = match_img.get_data()
