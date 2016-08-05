@@ -1,11 +1,12 @@
 import numpy as np
 import os
+import nibabel
 import nibabel.parrec as pr
 import nibabel.nifti1 as nifti1
 import niprov
 from nipype.interfaces import fsl
 from os.path import join
-import pandas as pd
+from scipy.ndimage.measurements import center_of_mass as com
 from pylabs.conversion.parrec2nii_convert import BrainOpts
 from pylabs.conversion.brain_convert import set_opts
 from pylabs.conversion.parrec2nii_convert import brain_proc_file
@@ -16,7 +17,7 @@ fs = getnetworkdataroot()
 opts = BrainOpts()
 prov = niprov.ProvenanceContext()
 flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo', output_type='NIFTI')
-
+applyxfm = fsl.ApplyXfm(output_type='NIFTI')
 project = 'tadpole'
 subject = 'JONAH_DAY2'
 setattr(opts, 'proj', project)
@@ -44,7 +45,7 @@ affine = match_img.get_affine()
 nmatch_img = nifti1.Nifti1Image(match_img, affine, match_hdr)
 nmatch_hdr = nmatch_img.header
 nmatch_hdr.set_qform(affine, code=2)
-np.testing.assert_almost_equal(affine, nmatch_hdr.get_qform(), 4,
+np.testing.assert_almost_equal(affine, nmatch_hdr.get_qform(), 4, \
                                        err_msg='output qform in header does not match input qform')
 nibabel.save(nmatch_img, paroutfname)
 prov.log(paroutfname, 'nifti file created for csf fraction and segmentation', parfile, script=__file__)
@@ -69,18 +70,31 @@ nmask_img = nifti1.Nifti1Image(mask_img, affine, match_hdr)
 nmask_hdr = nmask_img.header
 nmask_hdr.set_qform(affine, code=2)
 nibabel.save(nmask_img, maskfname)
-prov.log(outfilename, 'sv mrs voi mask file created for csf fraction', infile, script=__file__)
+prov.log(maskfname, 'sv mrs voi mask file created for csf fraction', sparfname, script=__file__)
 
 flt.inputs.in_file = join(getpylabspath(), 'data', 'atlases', 'MNI152_T1_1mm_bet_zcut.nii.gz')
 flt.inputs.reference = paroutfname
 flt.inputs.out_matrix_file = join(fs, project, subject, 'mrs', subject + 'mpr_match_sv.mat')
+flt.inputs.out_file = join(fs, project, subject, 'mrs', subject + 'match_bet_zcut.nii')
 res = flt.run()
 applyxfm.inputs.in_matrix_file = join(fs, project, subject, 'mrs', subject + 'mpr_match_sv.mat')
 applyxfm.inputs.in_file = join(getpylabspath(), 'data', 'atlases', 'MNI152_T1_1mm-com-mask8k.nii.gz')
-applyxfm.inputs.out_file =
+applyxfm.inputs.out_file = join(fs, project, subject, 'mrs', subject + 'match_bet_com.nii')
 applyxfm.inputs.reference = paroutfname
 applyxfm.inputs.apply_xfm = True
 result = applyxfm.run()
 
+zcut_data = nibabel.load(join(fs, project, subject, 'mrs', subject + 'match_bet_zcut.nii')).get_data()
+zcut_data = zcut_data > 4000
+zcut = com(zcut_data)[2]
+match_img_data[:,:,0:zcut] = 0
+
+nmatch_img = nifti1.Nifti1Image(match_img, affine, match_hdr)
+nmatch_hdr = nmatch_img.header
+nmatch_hdr.set_qform(affine, code=2)
+np.testing.assert_almost_equal(affine, nmatch_hdr.get_qform(), 4, \
+                                       err_msg='output qform in header does not match input qform')
+nibabel.save(nmatch_img, paroutfname)
+prov.log(paroutfname, 'nifti file created for csf fraction and segmentation', parfile, script=__file__)
 
 
