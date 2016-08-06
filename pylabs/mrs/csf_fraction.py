@@ -8,8 +8,7 @@ from nipype.interfaces import fsl
 from os.path import join
 from scipy.ndimage.measurements import center_of_mass as com
 from pylabs.conversion.parrec2nii_convert import BrainOpts
-from pylabs.conversion.brain_convert import set_opts
-from pylabs.conversion.parrec2nii_convert import brain_proc_file
+from pylabs.conversion.parrec import par_to_nii
 from pylabs.utils.paths import getpylabspath
 from pylabs.io.spar import load as readspar
 from pylabs.utils.paths import getnetworkdataroot
@@ -32,32 +31,21 @@ sparf = 'TADPOLE_PR20160804_WIP_PRESS_TE80_GLU_48MEAS_4_2_raw_act.SPAR'
 sparfname = join(fs, project, subject, 'source_parrec', sparf)
 matching_parfname = 'TADPOLE_PR20160804_MATCHING_SV_6_5.PAR'
 parfile = join(fs, project, subject, 'source_parrec', matching_parfname)
-paroutfname = join(fs, project, subject, 'mrs', subject + 'mpr_match_sv.nii.gz')
+paroutfname = join(fs, project, subject, 'mrs', subject + '_mpr_match_sv')
 maskfname = join(fs, project, subject, 'mrs', subject + '_glu_sv_voi_mask.nii.gz')
 spar = readspar(sparfname)
 
-
-
-match_img = pr.load(parfile, scaling='dv')
-match_img_data = match_img.get_data()
+args = {'infile': parfile, 'outfilename': paroutfname, 'compressed': False,
+        'overwrite': True, 'scaling': 'dv'}
+par_to_nii(**args)
+match_img = nibabel.load(paroutfname + '.nii')
 match_hdr = match_img.header
+match_img_data = match_img.get_data()
 affine = match_img.get_affine()
-nmatch_img = nifti1.Nifti1Image(match_img, affine, match_hdr)
-nmatch_hdr = nmatch_img.header
-nmatch_hdr.set_qform(affine, code=2)
-np.testing.assert_almost_equal(affine, nmatch_hdr.get_qform(), 4, \
-                                       err_msg='output qform in header does not match input qform')
-nibabel.save(nmatch_img, paroutfname)
-prov.log(paroutfname, 'nifti file created for csf fraction and segmentation', parfile, script=__file__)
-sizex = match_hdr['pixdim'][1]
-sizey = match_hdr['pixdim'][2]
-sizez = match_hdr['pixdim'][3]
-
-lr_diff = round((spar['lr_off_center'] / 2.) / sizex)
-ap_diff = round((spar['ap_off_center'] / 2.) / sizey)
-cc_diff = round((spar['cc_off_center'] / 2.) / sizez)
-
 mask_img = np.zeros(match_img_data.shape)
+lr_diff = round((spar['lr_size'] / 2.) / match_hdr.get_zooms()[0])
+ap_diff = round((spar['ap_size'] / 2.) / match_hdr.get_zooms()[1])
+cc_diff = round((spar['cc_size'] / 2.) / match_hdr.get_zooms()[2])
 startx = (match_img_data.shape[0] / 2.0) - lr_diff
 endx = (match_img_data.shape[0] / 2.0) + lr_diff
 starty = (match_img_data.shape[1] / 2.0) - ap_diff
@@ -70,7 +58,7 @@ nmask_img = nifti1.Nifti1Image(mask_img, affine, match_hdr)
 nmask_hdr = nmask_img.header
 nmask_hdr.set_qform(affine, code=2)
 nibabel.save(nmask_img, maskfname)
-prov.log(maskfname, 'sv mrs voi mask file created for csf fraction', sparfname, script=__file__)
+#prov.log(maskfname, 'sv mrs voi mask file created for csf fraction', sparfname, script=__file__)
 
 flt.inputs.in_file = join(getpylabspath(), 'data', 'atlases', 'MNI152_T1_1mm_bet_zcut.nii.gz')
 flt.inputs.reference = paroutfname
@@ -95,6 +83,6 @@ nmatch_hdr.set_qform(affine, code=2)
 np.testing.assert_almost_equal(affine, nmatch_hdr.get_qform(), 4, \
                                        err_msg='output qform in header does not match input qform')
 nibabel.save(nmatch_img, paroutfname)
-prov.log(paroutfname, 'nifti file created for csf fraction and segmentation', parfile, script=__file__)
+#prov.log(paroutfname, 'nifti file created for csf fraction and segmentation', parfile, script=__file__)
 
 

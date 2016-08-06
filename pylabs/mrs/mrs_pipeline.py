@@ -1,8 +1,8 @@
-from pylabs.utils._run import Shell
+from pylabs.utils import Shell, paths
 import subprocess
 shell = Shell()
 
-mpath = '/home/mrjeffs/Software/gannett_spectro/Gannet2/Gannet2.0-master'
+mpath = paths.getgannettpath()
 act = '/mnt/users/js/tadpole/JONAH_DAY2/source_parrec/TADPOLE_PR20160804_WIP_GABAMM_TE80_120DYN_3_2_raw_act.SPAR'
 ref = '/mnt/users/js/tadpole/JONAH_DAY2/source_parrec/TADPOLE_PR20160804_WIP_GABAMM_TE80_120DYN_3_2_raw_ref.SPAR'
 
