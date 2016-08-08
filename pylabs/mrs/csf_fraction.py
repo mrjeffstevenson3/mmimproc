@@ -7,27 +7,26 @@ import niprov
 from nipype.interfaces import fsl
 from os.path import join
 from scipy.ndimage.measurements import center_of_mass as com
-from pylabs.conversion.parrec2nii_convert import BrainOpts
 from pylabs.conversion.parrec import par_to_nii
 from pylabs.utils.paths import getpylabspath
 from pylabs.io.spar import load as readspar
 from pylabs.utils.paths import getnetworkdataroot
 fs = getnetworkdataroot()
-opts = BrainOpts()
 prov = niprov.ProvenanceContext()
 flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo', output_type='NIFTI')
 applyxfm = fsl.ApplyXfm(interp='nearestneighbour', output_type='NIFTI')
+bet = fsl.BET()
+fast = fsl.FAST()
 project = 'tadpole'
 subject = 'JONAH_DAY2'
-setattr(opts, 'proj', project)
-setattr(opts, 'subj', subject)
+
 try:
     os.makedirs(join(fs, project, subject, 'mrs'))
 except OSError:
     if not os.path.isdir(join(fs, project, subject, 'mrs')):
         raise
 
-sparf = 'TADPOLE_PR20160804_WIP_PRESS_TE80_GLU_48MEAS_4_2_raw_act.SPAR'
+sparf = 'TADPOLE_PR20160804_WIP_PRESS_TE80_GLU_48MEAS_7_2_raw_act.SPAR'
 sparfname = join(fs, project, subject, 'source_parrec', sparf)
 matching_parfname = 'TADPOLE_PR20160804_MATCHING_SV_6_5.PAR'
 parfile = join(fs, project, subject, 'source_parrec', matching_parfname)
@@ -63,21 +62,26 @@ nibabel.save(nmask_img, maskfname)
 flt.inputs.in_file = join(getpylabspath(), 'data', 'atlases', 'MNI152_T1_1mm_bet_zcut.nii.gz')
 flt.inputs.reference = paroutfname + '.nii'
 flt.inputs.out_matrix_file = join(fs, project, subject, 'mrs', subject + 'mpr_match_sv.mat')
-flt.inputs.out_file = join(fs, project, subject, 'mrs', subject + 'match_bet_zcut.nii')
+flt.inputs.out_file = join(fs, project, subject, 'mrs', subject + 'match_bet_zcut_MNIroi.nii')
 res = flt.run()
 applyxfm.inputs.in_matrix_file = join(fs, project, subject, 'mrs', subject + 'mpr_match_sv.mat')
 applyxfm.inputs.in_file = join(getpylabspath(), 'data', 'atlases', 'MNI152_T1_1mm-com-mask8k.nii.gz')
-applyxfm.inputs.out_file = join(fs, project, subject, 'mrs', subject + 'match_bet_com.nii')
+applyxfm.inputs.out_file = join(fs, project, subject, 'mrs', subject + 'match_bet_com_roi.nii')
 applyxfm.inputs.reference = paroutfname + '.nii'
 applyxfm.inputs.apply_xfm = True
 result = applyxfm.run()
 
-zcut_data = nibabel.load(join(fs, project, subject, 'mrs', subject + 'match_bet_zcut.nii')).get_data()
+zcut_data = nibabel.load(join(fs, project, subject, 'mrs', subject + 'match_bet_zcut_MNIroi.nii')).get_data()
 zcut_data = zcut_data > 4000
 zcut = com(zcut_data)[2]
 match_img_data[:,:,0:zcut] = 0
+nzcut_img = nibabel.nifti1.Nifti1Image(match_img_data, affine, match_hdr)
+nzcut_img.set_qform(affine, code=2)
+nibabel.save(nzcut_img, join(fs, project, subject, 'mrs', subject + 'match_sv_zcut.nii'))
 
-
+com_data = nibabel.load(join(fs, project, subject, 'mrs', subject + 'match_bet_com_roi.nii')).get_data()
+target_com = com(com_data)
+print(target_com)
 
 
 
