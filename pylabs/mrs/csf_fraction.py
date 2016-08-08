@@ -1,7 +1,6 @@
 import numpy as np
 import os
 import nibabel
-import nibabel.parrec as pr
 import nibabel.nifti1 as nifti1
 import niprov
 from nipype.interfaces import fsl
