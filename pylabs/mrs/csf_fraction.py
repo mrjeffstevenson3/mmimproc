@@ -41,7 +41,7 @@ prov.add(parfile)
 args = {'infile': parfile, 'outfilename': paroutfname, 'compressed': False,
         'overwrite': True, 'scaling': 'dv'}
 par_to_nii(**args)
-prov.log(paroutfname, 'converted fm parfile with par_to_nii', parfile)
+prov.log(paroutfname + '.nii', 'converted fm parfile with par_to_nii', parfile)
 match_img = nibabel.load(paroutfname + '.nii')
 match_hdr = match_img.header
 match_img_data = match_img.get_data()
@@ -103,7 +103,7 @@ bet.inputs.mask = True
 bet.inputs.skull = True
 bet.inputs.out_file = brain_outfname
 betres = bet.run()
-prov.log(brain_outfname, 'bet brain for segmentation', paroutfname, script=__file__)
+prov.log(brain_outfname, 'bet brain for segmentation', paroutfname + '.nii', script=__file__)
 
 #segmentation using fsl fast
 tempmrs.__enter__()
