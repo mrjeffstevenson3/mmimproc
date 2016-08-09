@@ -2,7 +2,6 @@ from __future__ import division
 import numpy as np
 import os
 import nibabel
-from pylabs.conversion.parrec2nii_convert import BrainOpts
 import nibabel.nifti1 as nifti1
 import niprov
 from nipype.interfaces import fsl
@@ -20,7 +19,7 @@ applyxfm = fsl.ApplyXfm(interp='nearestneighbour', output_type='NIFTI')
 bet = fsl.BET(output_type='NIFTI')
 fast = fsl.FAST(output_type='NIFTI')
 project = 'tadpole'
-subject = 'JONAH_DAY2'
+subject = 'JONAH_DAY1'
 
 try:
     os.makedirs(join(fs, project, subject, 'mrs'))
@@ -29,9 +28,9 @@ except OSError:
         raise
 tempmrs = InDir(join(fs, project, subject, 'mrs'))
 
-sparf = 'TADPOLE_PR20160804_WIP_PRESS_TE80_GLU_48MEAS_7_2_raw_act.SPAR'
+sparf = 'TADPOLE_PR20160803_WIP_PRESS_TE80_GLU_48MEAS_4_2_raw_act.SPAR'
 sparfname = join(fs, project, subject, 'source_parrec', sparf)
-matching_parfname = 'TADPOLE_PR20160804_MATCHING_SV_6_5.PAR'
+matching_parfname = 'TADPOLE_PR20160803_MATCHING_SPEC_6_5.PAR'
 parfile = join(fs, project, subject, 'source_parrec', matching_parfname)
 paroutfname = join(fs, project, subject, 'mrs', subject + '_mpr_match_sv')
 maskfname = join(fs, project, subject, 'mrs', subject + '_glu_sv_voi_mask.nii.gz')
