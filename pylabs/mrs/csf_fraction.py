@@ -2,6 +2,7 @@ from __future__ import division
 import numpy as np
 import os
 import nibabel
+from pylabs.conversion.parrec2nii_convert import BrainOpts
 import nibabel.nifti1 as nifti1
 import niprov
 from nipype.interfaces import fsl
@@ -35,10 +36,12 @@ parfile = join(fs, project, subject, 'source_parrec', matching_parfname)
 paroutfname = join(fs, project, subject, 'mrs', subject + '_mpr_match_sv')
 maskfname = join(fs, project, subject, 'mrs', subject + '_glu_sv_voi_mask.nii.gz')
 spar = readspar(sparfname)
+prov.add(parfile)
 
 args = {'infile': parfile, 'outfilename': paroutfname, 'compressed': False,
         'overwrite': True, 'scaling': 'dv'}
 par_to_nii(**args)
+prov.log(paroutfname, 'converted fm parfile with par_to_nii', parfile)
 match_img = nibabel.load(paroutfname + '.nii')
 match_hdr = match_img.header
 match_img_data = match_img.get_data()
@@ -59,7 +62,7 @@ nmask_img = nifti1.Nifti1Image(mask_img, affine, match_hdr)
 nmask_hdr = nmask_img.header
 nmask_hdr.set_qform(affine, code=2)
 nibabel.save(nmask_img, maskfname)
-#prov.log(maskfname, 'sv mrs voi mask file created for csf fraction', sparfname, script=__file__)
+prov.log(maskfname, 'sv mrs voi mask file created for csf fraction', sparfname, script=__file__)
 
 flt.inputs.in_file = join(getpylabspath(), 'data', 'atlases', 'MNI152_T1_1mm_bet_zcut.nii.gz')
 flt.inputs.reference = paroutfname + '.nii'
@@ -92,13 +95,15 @@ com_data_mask[com_data_maskb] = 1
 match_com = np.round(com(com_data_mask)).astype(int)
 
 #extract brain before segmenting
+brain_outfname = join(fs, project, subject, 'mrs', subject + '_mpr_match_sv_brain.nii')
 bet.inputs.in_file = join(fs, project, subject, 'mrs', subject + 'match_sv_zcut.nii')
 bet.inputs.center = list(match_com)
 bet.inputs.frac = 0.3
 bet.inputs.mask = True
 bet.inputs.skull = True
-bet.inputs.out_file = join(fs, project, subject, 'mrs', subject + '_mpr_match_sv_brain.nii')
+bet.inputs.out_file = brain_outfname
 betres = bet.run()
+prov.log(brain_outfname, 'bet brain for segmentation', paroutfname, script=__file__)
 
 #segmentation using fsl fast
 tempmrs.__enter__()
@@ -132,4 +137,8 @@ with open(join(fs, project, subject, 'mrs', subject + '_sv_voi_tissue_proportion
                                                 '{:.3%}'.format(WM_num_vox / mask_num_vox)))
 
 os.chdir(tempmrs._orig_dir)
-
+prov.log(join(fs, project, subject, 'mrs', subject + '_match_sv_seg_0.nii'), 'CSF segmentation', brain_outfname, script=__file__)
+prov.log(join(fs, project, subject, 'mrs', subject + '_match_sv_seg_1.nii'), 'GM segmentation', brain_outfname, script=__file__)
+prov.log(join(fs, project, subject, 'mrs', subject + '_match_sv_seg_2.nii'), 'WM segmentation', brain_outfname, script=__file__)
+prov.log(join(fs, project, subject, 'mrs', subject + '_sv_voi_tissue_proportions.txt'),
+         'results file containing %tissue values', brain_outfname, script=__file__)
