@@ -1,3 +1,4 @@
+from __future__ import division
 import numpy as np
 import os
 import nibabel
@@ -8,14 +9,15 @@ from os.path import join
 from scipy.ndimage.measurements import center_of_mass as com
 from pylabs.conversion.parrec import par_to_nii
 from pylabs.utils.paths import getpylabspath
+from pylabs.utils import InDir
 from pylabs.io.spar import load as readspar
 from pylabs.utils.paths import getnetworkdataroot
 fs = getnetworkdataroot()
 prov = niprov.ProvenanceContext()
 flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo', output_type='NIFTI')
 applyxfm = fsl.ApplyXfm(interp='nearestneighbour', output_type='NIFTI')
-bet = fsl.BET()
-fast = fsl.FAST()
+bet = fsl.BET(output_type='NIFTI')
+fast = fsl.FAST(output_type='NIFTI')
 project = 'tadpole'
 subject = 'JONAH_DAY2'
 
@@ -24,6 +26,7 @@ try:
 except OSError:
     if not os.path.isdir(join(fs, project, subject, 'mrs')):
         raise
+tempmrs = InDir(join(fs, project, subject, 'mrs'))
 
 sparf = 'TADPOLE_PR20160804_WIP_PRESS_TE80_GLU_48MEAS_7_2_raw_act.SPAR'
 sparfname = join(fs, project, subject, 'source_parrec', sparf)
@@ -44,12 +47,12 @@ mask_img = np.zeros(match_img_data.shape)
 lr_diff = round((spar['lr_size'] / 2.) / match_hdr.get_zooms()[0])
 ap_diff = round((spar['ap_size'] / 2.) / match_hdr.get_zooms()[1])
 cc_diff = round((spar['cc_size'] / 2.) / match_hdr.get_zooms()[2])
-startx = (match_img_data.shape[0] / 2.0) - lr_diff
-endx = (match_img_data.shape[0] / 2.0) + lr_diff
-starty = (match_img_data.shape[1] / 2.0) - ap_diff
-endy =(match_img_data.shape[1] / 2.0) + ap_diff
-startz = (match_img_data.shape[2] / 2.0) - cc_diff
-endz = (match_img_data.shape[2] / 2.0) + cc_diff
+startx = int((match_img_data.shape[0] / 2.0) - lr_diff)
+endx = int((match_img_data.shape[0] / 2.0) + lr_diff)
+starty = int((match_img_data.shape[1] / 2.0) - ap_diff)
+endy = int((match_img_data.shape[1] / 2.0) + ap_diff)
+startz = int((match_img_data.shape[2] / 2.0) - cc_diff)
+endz = int((match_img_data.shape[2] / 2.0) + cc_diff)
 mask_img[startx:endx, starty:endy, startz:endz] = 1
 
 nmask_img = nifti1.Nifti1Image(mask_img, affine, match_hdr)
@@ -70,27 +73,63 @@ applyxfm.inputs.reference = paroutfname + '.nii'
 applyxfm.inputs.apply_xfm = True
 result = applyxfm.run()
 
+#chop off neck with MNI zcut
 zcut_data = nibabel.load(join(fs, project, subject, 'mrs', subject + 'match_bet_zcut_MNIroi.nii')).get_data()
-zcut_data = zcut_data > 4000
-zcut = com(zcut_data)[2]
+zcut_data_maskb = zcut_data > 4000
+zcut_data_mask = np.zeros(zcut_data.shape)
+zcut_data_mask[zcut_data_maskb] = 1
+zcut = int(np.round(com(zcut_data_mask))[2])
 match_img_data[:,:,0:zcut] = 0
 nzcut_img = nibabel.nifti1.Nifti1Image(match_img_data, affine, match_hdr)
 nzcut_img.set_qform(affine, code=2)
 nibabel.save(nzcut_img, join(fs, project, subject, 'mrs', subject + 'match_sv_zcut.nii'))
 
+#get com for fsl bet
 com_data = nibabel.load(join(fs, project, subject, 'mrs', subject + 'match_bet_com_roi.nii')).get_data()
-target_com = com(com_data)
-print(target_com)
+com_data_maskb = com_data > 4000
+com_data_mask = np.zeros(com_data.shape)
+com_data_mask[com_data_maskb] = 1
+match_com = np.round(com(com_data_mask)).astype(int)
 
+#extract brain before segmenting
+bet.inputs.in_file = join(fs, project, subject, 'mrs', subject + 'match_sv_zcut.nii')
+bet.inputs.center = list(match_com)
+bet.inputs.frac = 0.3
+bet.inputs.mask = True
+bet.inputs.skull = True
+bet.inputs.out_file = join(fs, project, subject, 'mrs', subject + '_mpr_match_sv_brain.nii')
+betres = bet.run()
 
+#segmentation using fsl fast
+tempmrs.__enter__()
+fast.inputs.in_files = join(fs, project, subject, 'mrs', subject + '_mpr_match_sv_brain.nii')
+fast.inputs.img_type = 1
+fast.inputs.number_classes = 3
+fast.inputs.hyper = 0.1
+fast.inputs.bias_iters = 4
+fast.inputs.bias_lowpass = 20
+fast.inputs.output_biascorrected = True
+fast.inputs.output_biasfield = True
+fast.inputs.segments = True
+fast.inputs.probability_maps = True
+fast.inputs.out_basename = join(fs, project, subject, 'mrs', subject + '_match_sv')
+fastres = fast.run()
 
-#
-# nmatch_img = nifti1.Nifti1Image(match_img, affine, match_hdr)
-# nmatch_hdr = nmatch_img.header
-# nmatch_hdr.set_qform(affine, code=2)
-# np.testing.assert_almost_equal(affine, nmatch_hdr.get_qform(), 4, \
-#                                        err_msg='output qform in header does not match input qform')
-# nibabel.save(nmatch_img, paroutfname)
-#prov.log(paroutfname, 'nifti file created for csf fraction and segmentation', parfile, script=__file__)
+GM_seg_data = nibabel.load(join(fs, project, subject, 'mrs', subject + '_match_sv_seg_1.nii')).get_data()
+GM_voi = GM_seg_data * mask_img
+GM_num_vox = np.count_nonzero(GM_voi)
+WM_seg_data = nibabel.load(join(fs, project, subject, 'mrs', subject + '_match_sv_seg_2.nii')).get_data()
+WM_voi = WM_seg_data * mask_img
+WM_num_vox = np.count_nonzero(WM_voi)
+CSF_seg_data = nibabel.load(join(fs, project, subject, 'mrs', subject + '_match_sv_seg_0.nii')).get_data()
+CSF_voi = CSF_seg_data * mask_img
+CSF_num_vox = np.count_nonzero(CSF_voi)
+mask_num_vox = np.count_nonzero(mask_img)
 
+with open(join(fs, project, subject, 'mrs', subject + '_sv_voi_tissue_proportions.txt'), "w") as f:
+    f.write('CSF: {0}\nGM: {1}\nWM: {2}\n'.format('{:.3%}'.format(CSF_num_vox / mask_num_vox),
+                                                '{:.3%}'.format(GM_num_vox / mask_num_vox),
+                                                '{:.3%}'.format(WM_num_vox / mask_num_vox)))
+
+os.chdir(tempmrs._orig_dir)
 
