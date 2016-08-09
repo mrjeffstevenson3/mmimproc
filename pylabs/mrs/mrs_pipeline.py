@@ -4,9 +4,9 @@ from os.path import join
 from pylabs.utils.paths import getnetworkdataroot
 fs = getnetworkdataroot()
 project = 'tadpole'
-subject = 'JONAH_DAY2'
-actfname = 'TADPOLE_PR20160804_WIP_GABAMM_TE80_120DYN_3_2_raw_act.SDAT'
-reffname = 'TADPOLE_PR20160804_WIP_GABAMM_TE80_120DYN_3_2_raw_ref.SDAT'
+subject = 'JONAH_DAY1'
+actfname = 'TADPOLE_PR20160803_WIP_GABAMM_TE80_120DYN_3_2_raw_act.SDAT'
+reffname = 'TADPOLE_PR20160803_WIP_GABAMM_TE80_120DYN_3_2_raw_ref.SDAT'
 
 shell = Shell()
 
