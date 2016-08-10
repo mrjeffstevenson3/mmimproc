@@ -21,7 +21,7 @@ fs = getlocaldataroot()
 scanner = 'slu'
 phantdirs = sorted(glob(pathjoin(fs, 'phantom_qT1_'+scanner+'/phantom_qT1_*')), key=lambda f: int(f.split('_')[-1]))
 phantom_ddata = defaultdict(list)
-phantom_dict_fname = pathjoin('/'.join(phantdirs[0].split('/')[0:-1]), 'phantom_'+scanner+'_dict_mar10.txt')
+phantom_dict_fname = pathjoin('/'.join(phantdirs[0].split('/')[0:-1]), 'phantom_'+scanner+'_dict_mar22.txt')
 
 #for testing purposes only
 # for i, p in enumerate(phantdirs):
@@ -86,7 +86,7 @@ for dir in phantdirs:
 
     for parfile in phantTSEIRparfiles:
         scaling = 'fp'
-        key, val = phantom_midslice_par2mni(parfile=parfile, datadict=phantom_ddata, method='tseir', outdir=seirepidir,
+        key, val = phantom_midslice_par2mni(parfile=parfile, datadict=phantom_ddata, method='tseir', outdir=tseirdir,
                                                outfilename='tseir', scaling=scaling, scanner=scanner)
         for k, v in zip(key, val):
             phantom_ddata[k].append(v)

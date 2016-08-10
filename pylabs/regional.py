@@ -1,7 +1,9 @@
-import numpy, nibabel, collections
+import numpy, nibabel, collections, os, pandas
+from pylabs.correlation.atlas import atlaslabels
 
 
-def statsByRegion(image, atlas):
+def statsByRegion(image, atlas, threshold=None):
+    labels = atlaslabels(os.path.basename(atlas))
     img = nibabel.load(image)
     imgData = img.get_data()
     if len(imgData.shape) == 4:
@@ -23,9 +25,17 @@ def statsByRegion(image, atlas):
     for index in regionIndices:
         regionMasks.append(atlasData == index)
 
-
-    stats = collections.defaultdict(lambda : numpy.zeros((nregions,)))
+    cols = ['all', 'k', 'average', 'superthreshold']
+    stats = pandas.DataFrame(index=labels, columns=cols)
     for r, regionMask in enumerate(regionMasks):
         regionData = imgData[regionMask]
+        stats['all'][r] = regionData
+        stats['k'][r] = regionData.size
         stats['average'][r] = regionData.mean()
+        if threshold:
+            stats['superthreshold'][r] = regionData > threshold
     return stats
+
+def averageByRegion(image, atlasfpath):
+    return statsByRegion(image, atlasfpath)['average'].astype(float)
+

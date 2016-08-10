@@ -8,6 +8,7 @@ from pylabs.correlation.atlas import atlaslabels
 from pylabs.utils.paths import getlocaldataroot
 import pylabs.qt1.expected
 import pylabs.qt1.blacklist as bad
+from pylabs.qt1.vials import vialNumbersByAscendingT1
 from pylabs.qt1.naming import qt1filepath
 
 
@@ -29,7 +30,7 @@ def plotT1Timeseries(dates, data, labels, title, dtype=None, secondaryData=None,
 
 def atlasPhantoms(images, expectedByDate, projectdir, dirstruct='BIDS'):
 
-    atlasfname = 'phantom_slu_mask_20160113.nii.gz'
+    atlasfname = 'phantom_alignment_target_round_mask.nii.gz'
     atlasfpath = join(projectdir,atlasfname)
 
     ### Gather data by vial
@@ -72,10 +73,19 @@ def atlasPhantoms(images, expectedByDate, projectdir, dirstruct='BIDS'):
         del labels[vialIndex]
     nvials = len(labels)
 
-    ## Start plotting
-    #import pdb
-    #pdb.set_trace()
+    ## Reorder vials according to T1
+    measuredVialsInOrder = [l for l in vialNumbersByAscendingT1 if str(l) in labels]
+    vialIndicesInOrder = [labels.index(str(l)) for l in measuredVialsInOrder]
+    # reorder labels
+    labels = [labels[v] for v in vialIndicesInOrder]
+    # reorder expected
+    for key in expectedByDate.keys():
+        expectedByDate[key] = [expectedByDate[key][v] for v in vialIndicesInOrder]
+    # reorder vialData
+    for key in vialdata.keys():
+        vialdata[key]['average'] = vialdata[key]['average'][vialIndicesInOrder]
 
+    ## Start plotting
     plotdir = join(projectdir,'plots')
     if not os.path.isdir(plotdir):
         os.makedirs(plotdir)
@@ -86,13 +96,17 @@ def atlasPhantoms(images, expectedByDate, projectdir, dirstruct='BIDS'):
     datafile = 'data/t1_factordata.pickle'
     factordata = {}
     for method in methods:
-        methodstr = '{0}_{1}_{2}_{3}'.format(method[0], method[1], b1corrtag[method[2]], method[3])
+        methodstr = '{0}_{1}_{2}_{3}'.format(method[0], method[1],
+                                             b1corrtag[method[2]], method[3])
         print(methodstr)
         thisMethodKeys = [k for k in vialdata.keys() if k[:4] == method]
         dates = sorted([k[4] for k in thisMethodKeys if k[4] in datesWithTemps])
         
         blackListedDates = [k[2] for k in bad.phantoms if k[:2]==method[:2]]
         dates = [d for d in dates if d not in blackListedDates]
+        if not dates:
+            print('No usable dates for this method.')
+            continue # No dates for this method
 
         regStatsInOrder = [vialdata[method+(d,)]['average'] for d in dates]
         obsVialtc = numpy.array(regStatsInOrder)
@@ -134,7 +148,7 @@ def atlasPhantoms(images, expectedByDate, projectdir, dirstruct='BIDS'):
         rects1 = ax.bar(ind,         expVialtc.mean(axis=0), width, color='blue')
         rects2 = ax.bar(ind+width,   obsVialtc.mean(axis=0), width, color='green')
         rects3 = ax.bar(ind+width*2, diffVialtc.mean(axis=0), width, color='red')
-        ax.set_ylim([-300,2500])
+        ax.set_ylim([-500,2500])
         plt.legend((rects1[0],rects2[0],rects3[0]), ['model','observed','diff'], loc=2)
         plotfpath = join(plotdir,'{0}_avg.png'.format(methodstr))
         plt.savefig(plotfpath)

@@ -25,7 +25,7 @@ def run_subprocess(command):
         Stderr returned by the process.
     """
     # code adapted with permission from mne-python
-    kwargs = dict(stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+    kwargs = dict(stderr=subprocess.PIPE, stdout=subprocess.PIPE, shell=True)
 
     p = subprocess.Popen(command, **kwargs)
     stdout_, stderr = p.communicate()

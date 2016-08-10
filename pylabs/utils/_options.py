@@ -14,5 +14,5 @@ class PylabsOptions(niprov.Configuration):
     rthreshpos = 0.7
     rthreshneg = -0.7
     niifiletype = '.nii.gz'
-    orientation = 'LAS'
+    orientation = 'LAS+'
     fsldir = str(os.environ.get('FSLDIR'))

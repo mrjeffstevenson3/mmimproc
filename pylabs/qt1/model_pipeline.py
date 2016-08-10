@@ -1,4 +1,6 @@
-import numpy, math
+import numpy, math, pandas
+
+vialsInOrder = range(18,6,-1)
 
 def calculate_model(scanner):
     ## read in constants (concentrations per vial etc)
@@ -11,7 +13,7 @@ def calculate_model(scanner):
 
     ## calculate expected T1 by vial and session
     from pylabs.qt1.model import expectedT1
-    vialsInOrder = range(18,6,-1)
+
     expected = numpy.zeros((len(sessions), 12)) # dates * vials
     expectedByDate = {}
     for d, date in enumerate(sessions.keys()):
@@ -33,3 +35,13 @@ def calculate_model(scanner):
             expectedT1file.write('{0}\t{1}\n'.format(date, '\t'.join(
                 [str(t1) for t1 in expected[d, :]])))
     return expectedByDate
+
+def modelForDate(targetdate, scanner):
+    expectedByDate = calculate_model(scanner)
+    expectedByDate[targetdate]
+    labels = [str(v) for v in vialsInOrder]
+    return pandas.Series(expectedByDate[targetdate], index=labels)
+
+def hasRecordForDate(targetdate, scanner):
+    expectedByDate = calculate_model(scanner)
+    return targetdate in expectedByDate

@@ -2,10 +2,12 @@
 import sys, os, datetime
 import itertools
 from os.path import join as pathjoin
-import fnmatch, collections, datetime, cPickle, cloud
+import fnmatch, collections, datetime, cPickle
 import numpy as np
 import scipy.ndimage
+import pandas as pd
 from dipy.segment.mask import median_otsu
+import scipy.ndimage.filters as filter
 import nibabel
 import nibabel.parrec as pr
 import nibabel.nifti1 as nifti1
@@ -13,22 +15,14 @@ from nibabel.volumeutils import fname_ext_ul_case
 from nibabel.orientations import apply_orientation
 from nibabel.orientations import inv_ornt_aff
 from nibabel.orientations import io_orientation
-from niprov import Context
+import niprov
 from pylabs.utils._options import PylabsOptions
 opts = PylabsOptions()
-prov = Context()
+prov = niprov.ProvenanceContext()
 
 identity_matrix = np.eye(4)
 mni_affine = np.array([[-1, 0, 0, 90], [0, 1, 0, -126], [0, 0, 1, -72], [0, 0, 0, 1]])
 psl2ras = np.array([[0., 0., -1., 0.], [-1., 0., 0., 0.], [0., 1., 0., 0.], [0., 0., 0., 1.]])
-
-
-protoexception = ['']
-flipexception = ['']
-if scanner == 'disc':
-    flipexception = ['20141108']
-if scanner == 'slu':
-    protoexception = ['20160113']
 
 
 def printmessage(msg, indent=0):
@@ -44,6 +38,13 @@ prov.dryrun = True
 
 def phantom_B1_midslice_par2mni(parfile, datadict, outdir=None, outfilename=None, scanner='slu',
                                 verbose=True, scaling='dv', minmax=('parse', 'parse'), origin='scanner', overwrite=True):
+
+    protoexception = ['']
+    flipexception = ['']
+    if scanner == 'disc':
+        scandateexception = ['20141108']
+        flipexception = ['20141108']
+
     prov.add(parfile)
     key, value = [], []
     if outdir and not os.path.exists(outdir):
@@ -55,12 +56,13 @@ def phantom_B1_midslice_par2mni(parfile, datadict, outdir=None, outfilename=None
     pr_hdr = pr_img.header
     flipangle = int(pr_hdr.image_defs['image_flip_angle'][0])
     ti = int(round(pr_hdr.image_defs['Inversion delay'][0], -1))
-    tr = pr_hdr.general_info['repetition_time']
+    tr = pr_hdr.general_info['repetition_time'][0]
     fov = pr_hdr.general_info['fov'][0]
     spacing = pr_hdr.image_defs['pixel spacing'][0][0]
+    affine = pr_img.affine
 
     if tr > 100:
-        tr = int(round(pr_hdr.general_info['repetition_time'], -1))
+        tr = int(round(pr_hdr.general_info['repetition_time'][0], -1))
     if ti == 0.0:
         contrast = flipangle
     else:
@@ -68,20 +70,25 @@ def phantom_B1_midslice_par2mni(parfile, datadict, outdir=None, outfilename=None
     max_slices = int(pr_hdr.general_info['max_slices'])
     mid_slice_num = int(max_slices) / 2
     scandate = pr_hdr.general_info['exam_date'].split('/')[0].strip().replace(".","")
-
-    xdim, ydim, zdim, tdim = [i for i in iter(pr_hdr._shape)]
-
     slope, intercept = pr_hdr.get_data_scaling(scaling)
     slope = np.array([1.])
     intercept = np.array([0.])
     in_data = np.array(pr_img.dataobj)
     out_dtype = np.float64
+    if pr_hdr.get_slice_orientation() == 'sagittal':
+        #swap z with y axis to make fake axial
+        in_data = np.rollaxis(in_data, 2, 1)
+        in_data = in_data[::-1,:,:,:]
+        mid_slice_num = int(in_data.shape[2]/2.)+1
+        pd_aff = pd.DataFrame(affine)
+        affine = np.array(pd_aff[[1,2,0,3]])
+    xdim, ydim, zdim, tdim = [i for i in iter(in_data.shape)]
     #moving to RAS space
-    ornt = io_orientation(np.diag([-1, 1, 1, 1]).dot(pr_img.affine))
-    t_aff = inv_ornt_aff(ornt, pr_img.shape)
-    affine = np.dot(pr_img.affine, t_aff)
+    ornt = io_orientation(np.diag([-1, 1, 1, 1]).dot(affine))
+    t_aff = inv_ornt_aff(ornt, in_data.shape)
+    affine = np.dot(affine, t_aff)
     in_data_ras = apply_orientation(in_data, affine)
-
+    #test and fix if any dims get swapped by reorienting
     if in_data_ras.shape[3] == zdim and in_data_ras.shape[2] == tdim:
         in_data_ras = np.rollaxis(in_data_ras, 3, 2)
 
@@ -91,19 +98,18 @@ def phantom_B1_midslice_par2mni(parfile, datadict, outdir=None, outfilename=None
     if in_data_ras.shape[3] == ydim and in_data_ras.shape[1] == zdim:
         in_data_ras = np.rollaxis(in_data_ras, 3, 1)
 
+    disc_B1_mag_then_phase_idx = {}
+    slu_B1_mag_then_phase_idx = {'20160113':[1,4], '20160217': [0, 2], '20160302': [0,2]}
     if scanner == 'disc':
         in_slice_mag = in_data_ras[:,:,mid_slice_num-1,0]
-    if scanner == 'slu' and protoexception[0] == '20160113':
-        in_slice_mag = in_data_ras[:,:,mid_slice_num-1,3]
-    else:
-        in_slice_mag = in_data_ras[:,:,mid_slice_num-1,0]
+        in_slice_phase = in_data_ras[:,:,mid_slice_num-1, -1]
 
-    if scanner == 'disc':
-        in_slice_phase = in_data_ras[:,:,mid_slice_num-1, -1]
-    if scanner == 'slu' and scandate in protoexception:
-        in_slice_phase = in_data_ras[:,:,mid_slice_num-1,4]
+    if scanner == 'slu' and scandate in slu_B1_mag_then_phase_idx.keys():
+        in_slice_mag = in_data_ras[:,:,mid_slice_num-1,slu_B1_mag_then_phase_idx.get(scandate)[0]]
+        in_slice_phase = in_data_ras[:,:,mid_slice_num-1,slu_B1_mag_then_phase_idx.get(scandate)[1]]
     else:
-        in_slice_phase = in_data_ras[:,:,mid_slice_num-1, -1]
+        in_slice_mag = in_data_ras[:,:,mid_slice_num-1,0]
+        in_slice_phase = in_data_ras[:,:,mid_slice_num-1, 2]
 
     mmcropfactor = fov/218.
     newsizediff = in_slice_mag.shape[0] - (in_slice_mag.shape[0]*mmcropfactor)
@@ -120,7 +126,7 @@ def phantom_B1_midslice_par2mni(parfile, datadict, outdir=None, outfilename=None
         crop_in_slice_mag[crop: -crop, crop: -crop] = in_slice_mag
         crop_in_slice_phase[crop: -crop, crop: -crop] = in_slice_phase
 
-    zoomto218 = 218./crop_in_slice_mag.shape[0]
+    zoomto218 = (218./crop_in_slice_mag.shape[0], 218./crop_in_slice_mag.shape[1])
     slice_mag218 = scipy.ndimage.zoom(crop_in_slice_mag, zoomto218, order=0)
     slice_phase218 = scipy.ndimage.zoom(crop_in_slice_phase, zoomto218, order=0)
     slice_mag_mni = slice_mag218[18:200,:]
@@ -213,6 +219,13 @@ def phantom_B1_midslice_par2mni(parfile, datadict, outdir=None, outfilename=None
 
 def phantom_midslice_par2mni(parfile, datadict, method, outdir=None, outfilename=None, scanner='slu',
                                 verbose=True, scaling='fp', minmax=('parse', 'parse'), origin='scanner', overwrite=True):
+
+    protoexception = ['']
+    flipexception = ['']
+    if scanner == 'disc':
+        scandateexception = ['20141108']
+        flipexception = ['20141108']
+
     prov.add(parfile)
     key, value = [''], ['']
     if outdir and not os.path.exists(outdir):
@@ -223,11 +236,11 @@ def phantom_midslice_par2mni(parfile, datadict, method, outdir=None, outfilename
     pr_hdr = pr_img.header
     flipangle = int(pr_hdr.image_defs['image_flip_angle'][0])
     ti = int(round(pr_hdr.image_defs['Inversion delay'][0], -1))
-    tr = pr_hdr.general_info['repetition_time']
+    tr = pr_hdr.general_info['repetition_time'][0]
     fov = pr_hdr.general_info['fov'][0]
     spacing = pr_hdr.image_defs['pixel spacing'][0][0]
     if tr > 100:
-        tr = int(round(pr_hdr.general_info['repetition_time'], -1))
+        tr = int(round(pr_hdr.general_info['repetition_time'][0], -1))
     if ti == 0.0:
         contrast = flipangle
         outfilename += '_fa_'+str(flipangle).zfill(2)
@@ -335,7 +348,9 @@ def phantom_midslice_par2mni(parfile, datadict, method, outdir=None, outfilename
         nimg_mm = nifti1.Nifti1Image(slice_mag_mni_mask, mni_affine, pr_hdr)
         nibabel.save(nimg_mm, outfilename+'_mag_1slmni_'+str(run)+'_mask.nii')
 
-    nimg_m = nifti1.Nifti1Image(slice_mag_mni, mni_affine, pr_hdr)
+    slice_mag_mni_mf = filter.median_filter(slice_mag_mni, size=5)
+
+    nimg_m = nifti1.Nifti1Image(slice_mag_mni_mf, mni_affine, pr_hdr)
     nhdr_m = nimg_m.header
     nhdr_m.set_data_dtype(out_dtype)
     nhdr_m.set_slope_inter(slope, intercept)
@@ -399,7 +414,6 @@ def phantom_midslice_par2mni(parfile, datadict, method, outdir=None, outfilename
         mydate = datetime.datetime.strptime(scandate, '%Y%m%d').date()
         mymethod = method+'_real'
         partialkey = (mydate, mymethod, tr)
-
         runkeys = [key for key in datadict.keys() if key[:3] == partialkey]
         for run in range(1,len(runkeys)+1):
             exvalues = datadict[partialkey+(run,)]
