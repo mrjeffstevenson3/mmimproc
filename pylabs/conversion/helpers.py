@@ -4,7 +4,7 @@ from pylabs.utils.files import sortedParGlob
 import collections, itertools, os, niprov
 from os.path import join
 from pylabs.conversion.parrec import par_to_nii
-provenance = niprov.Context()
+prov = niprov.ProvenanceContext()
 
 
 def convertSubjectParfiles(subj, subjectdir, niftiDict=None):
@@ -52,8 +52,8 @@ def convertSubjectParfiles(subj, subjectdir, niftiDict=None):
 
 ## temp quickndirty parrec conversion until jeff's pipeline is done
 def par2mni_1file(parfile):
-    (img, status) = provenance.add(parfile)
-    tech = img.provenance['technique']
+    (img, status) = prov.add(parfile)
+    tech = img.prov['technique']
     if 'T1' in tech:
         scaling = 'fp'
     else:
@@ -63,6 +63,6 @@ def par2mni_1file(parfile):
             'outfilename':parfile.replace('.PAR', ''), 'compressed':True, 
             'overwrite':True, 'field_strength':'3.0', 'scaling':scaling}
     par_to_nii(**args)
-    provenance.log(outfpath, 'par2nii', parfile)
+    prov.log(outfpath, 'par2nii', parfile)
     return outfpath
 # see brain_qt1_pipeline_v2.py

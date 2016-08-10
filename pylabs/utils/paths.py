@@ -1,5 +1,6 @@
 import os, socket, inspect, pylabs
 import petname
+from os.path import expanduser, join
 
 
 def getlocaldataroot():
@@ -38,3 +39,10 @@ def tempfile(extension='.tmp'):
 
 def getpylabspath():
     return os.path.split(os.path.split(inspect.getabsfile(pylabs))[0])[0]
+
+def getgannettpath():
+    hostlist = ['redshirt.ilabs.uw.edu', 'scotty.ilabs.uw.edu', 'sulu.ilabs.uw.edu']
+    hostname = socket.gethostname()
+    if hostname in hostlist:
+        gannettpath = join(expanduser('~'), 'Software', 'Gannet2.0')
+    return gannettpath
