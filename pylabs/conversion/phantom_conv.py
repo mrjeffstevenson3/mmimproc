@@ -24,6 +24,7 @@ identity_matrix = np.eye(4)
 mni_affine = np.array([[-1, 0, 0, 90], [0, 1, 0, -126], [0, 0, 1, -72], [0, 0, 0, 1]])
 psl2ras = np.array([[0., 0., -1., 0.], [-1., 0., 0., 0.], [0., 1., 0., 0.], [0., 0., 0., 1.]])
 
+
 def printmessage(msg, indent=0):
     if verbose:
         print("%s%s" % (' ' * indent, msg))
@@ -137,7 +138,7 @@ def phantom_B1_midslice_par2mni(parfile, datadict, outdir=None, outfilename=None
     slice_phase_mf_mni = scipy.ndimage.filters.median_filter(slice_phase_raw_mni, 6)
     slice_phase_mf_mni_masked = slice_phase_mf_mni * slice_mag_mni_mask
 
-    if scandate is not '20141108':
+    if scandate not in flipexception:
         slice_phase_mf_mni = np.fliplr(slice_phase_mf_mni)
         slice_phase_mf_mni_masked = np.fliplr(slice_phase_mf_mni_masked)
         slice_mag_mni_masked = np.fliplr(slice_mag_mni_masked)
