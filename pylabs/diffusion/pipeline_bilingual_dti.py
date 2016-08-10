@@ -9,43 +9,55 @@ from pylabs.utils.paths import getnetworkdataroot
 from pylabs.utils.timing import waitForFiles
 from pylabs.utils.selection import select, withVoxelsOverThresholdOf
 from pylabs.utils.files import deconstructRandparFiles
-from niprov.options import NiprovOptions
-opts = NiprovOptions()
-opts.dryrun = True
+from niprov.config import Configuration
+opts = Configuration()
+opts.dryrun = False
 opts.verbose = True
 
-subjects = [317, 322, 324, 328, 332, 334, 335, 341, 347, 353, 364, 370, 371, 
-    376, 379, 381, 384, 385, 396 ]
+subjects = [201, 202, 203, 204, 205, 206, 209, 210, 211, 212, 216, 219, 220, 221, 222, 223,
+            903, 909, 910, 912, 913, 915, 916, 917, 919, 920, 921, 922, 923, 924, 925 ]
 
 fs = getnetworkdataroot()
-statsdir = fs+'self_control/hbm_group_data/tbss_19subj/workdir_thr1p5_v3/stats/'
-behavdir = fs+'self_control/behavioral_data/behav_from_andy_march27_2015/'
-csvfile = behavdir+'EF_and_Brain_july08_2015_Meq0_delta.csv'
+statsdir = fs+'bilingual_dti/mytbss_31subj_fsl_dtifit_mf_fixed_vecs_v5/stats/'
+behavdir = fs+'bilingual_dti/behavioral_data/'
+csvfile = behavdir+'SPA_group_gender_bilingual_spoken_and_auditory_exposure_and_confidence_SES_Edu_grp_cols_nov16_2015_v13.csv'
 niprov.add(csvfile)
-maskfile = statsdir+'mean_FA_skeletonised_mask.nii.gz'
+maskfile = statsdir+'mean_FA_skeleton_mask.nii.gz'
 
 imgtemplate = 'all_{0}_skeletonised.nii.gz'
-measures = ['F1', 'F2', 'FA', 'L1', 'MD', 'MO', 'RA', 'AD', 'L2', 'L3']
+measures = [ 'FA', 'l1', 'md', 'mo', 'rd', 'WM', 'l2', 'l3']
 skellist = [imgtemplate.format(m) for m in measures]
 images = [statsdir+i for i in skellist]
 [niprov.add(img) for img in images]
 
-exptag='filter_gender_and_dti_delta_n500'
+exptag='filtered_gend_no_demean_31subj_group_csv13_n5000'
 matfiledir = pathjoin(statsdir,'matfiles','matfiles_'+exptag)
-resultdir = pathjoin(statsdir,'randpar',exptag)
+resultdir = pathjoin(statsdir,'randomise_runs',exptag)
 qsubdir = pathjoin(resultdir, 'qsubdir_defunctcommands')
 
 ## Covariate Filtering
-matfiles = csv2fslmat(csvfile, cols=[2], covarcols=[41], selectSubjects=subjects,
+matfiles = csv2fslmat(csvfile, cols=[3], covarcols=None, selectSubjects=subjects,
      groupcol=False, demean=False, outdir=matfiledir, opts=opts)
 images = multiregfilt(images, matfiles[0], opts=opts)
-
-## Randomize n500 test run
-designfile = statsdir+'scs_design2col.con'
+opts.dryrun = False
+## Randomise Group run
+designfile = statsdir+'design_2col_group_only.con'
 assert os.path.isfile(designfile)
-collist = range(5, 8)+range(18, 32)
+matfiles = csv2fslmat(csvfile, covarcols=[30, 31], selectSubjects=subjects,
+    groupcol=False, demean=False, outdir=matfiledir, opts=opts)
+masks = {img: maskfile for img in images} # Mask is the same for all images
+combs = {img:matfiles for img in images}
+randparfiles = multirandpar(combs, designfile, masks=masks, niterations=5000,
+     tbss=True, workdir=qsubdir, outdir=resultdir, opts=opts)
+opts.dryrun = True
+## Randomize n500 test run
+exptag='filtered_gend_no_demean_31subj_behav_corr_v12_n500'
+resultdir = pathjoin(statsdir,'randomise_runs',exptag)
+designfile = statsdir+'bilingual_dti_design2col.con'
+assert os.path.isfile(designfile)
+collist = range(15,29)
 matfiles = csv2fslmat(csvfile, cols=collist, selectSubjects=subjects,
-    groupcol=True, outdir=matfiledir, opts=opts)
+    groupcol=True, demean=True, outdir=matfiledir, opts=opts)
 masks = {img: maskfile for img in images} # Mask is the same for all images
 combs = {img:matfiles for img in images}
 randparfiles = multirandpar(combs, designfile, masks=masks, niterations=500,
@@ -55,7 +67,7 @@ corrPfiles = [f+'_tfce_corrp_tstat1.nii.gz' for f in randparfiles]
 corrPfiles += [f+'_tfce_corrp_tstat2.nii.gz' for f in randparfiles]
 waitForFiles(corrPfiles, interval=5) # every 5 seconds check if files done.
 
-selectedCorrPfiles = select(corrPfiles, withVoxelsOverThresholdOf(.95))
+selectedCorrPfiles = select(corrPfiles, withVoxelsOverThresholdOf(.97))
 
 atlasfile = 'JHU_MNI_SS_WMPM_Type_I_matched.nii.gz'
 atlas = pathjoin('data','atlases',atlasfile)
@@ -64,10 +76,11 @@ report(selectedCorrPfiles, atlas, atlaslabels(atlasfile),
 
 combs = deconstructRandparFiles(selectedCorrPfiles, matdir=matfiledir, imgdir=statsdir)
 
-opts.dryrun = True
-exptag='filtered_gender_and_dti_delta_2col_n5000_select'
+#opts.dryrun = False
+exptag='filtered_gend_31subj_behav_corr_v12_n5000_sel_thr97'
 resultdir = pathjoin(statsdir,'randomise_runs',exptag)
 masks = {img: maskfile for img in combs.keys()} # Mask is the same for all images
 randparfiles = multirandpar(combs, designfile, masks=masks, niterations=5000,
     tbss=True, workdir=qsubdir, outdir=resultdir, opts=opts)
 
+#plotting

@@ -132,6 +132,9 @@ def par_to_nii(infile, verbose=True, outdir=None, compressed=False, overwrite=Tr
     nhdr = nimg.header
     nhdr.set_data_dtype(out_dtype)
     nhdr.set_slope_inter(slope, intercept)
+    nhdr.set_qform(affine, code=2)
+    np.testing.assert_almost_equal(affine, nhdr.get_qform(), 4,
+                                   err_msg='output qform in header does not match input qform')
 
     if 'parse' in minmax:
         # need to get the scaled data
