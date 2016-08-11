@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-cd /mnt/users/js/bbc/myvbm/usable_wempr
-list="sub-bbc101_ses-1_mpr_3 "`imglob sub*wempr_1.nii`
-PYLABS='/home/mrjeffs/Software/pylabs'
+cd /media/DiskArray/shared_data/js/bbc/myvbm/ants_vbm_template/orig_vbm
+list="sub-bbc116_ses-1_wempr_1 "`imglob sub*_mpr_?.nii`
+PYLABS='/home/toddr/Software/pylabs'
 imagelist="";
 for subject in ${list}
 do
