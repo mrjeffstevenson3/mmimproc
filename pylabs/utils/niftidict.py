@@ -1,6 +1,7 @@
 import os, niprov, cPickle
 from os.path import join
 import numpy as np
+import nibabel
 from collections import defaultdict
 from datetime import datetime
 from pylabs.utils.paths import getnetworkdataroot, getlocaldataroot
@@ -8,7 +9,7 @@ from pylabs.utils.paths import getnetworkdataroot, getlocaldataroot
 fs = getnetworkdataroot()
 project = 'bbc'
 niipickle = join(fs, project, 'bbc_niftiDict_all_subj_201608021057.pickle')
-fpath = join(fs, project, 'myvbm', 'ants_vbm_template')
+fpath = join(fs, project, 'myvbm', 'ants_vbm_template', 'orig_vbm')
 subtemplate = 'sub-bbc{sid}'
 subjid = [101, 105, 106, 108, 113, 116, 118, 119, 120, 202, 208, 209, 211, 212, 215, 218, 219, 231, 236, 241, 243, 249, 252, 253]
 sespassqc = []
@@ -62,12 +63,21 @@ for f in fname:
     new_affine[f] = np.array(niftiDict[(subject, session, 'anat')][f]['orig_affine']) + diff_affine[f]
 
 for f in fname:
-    nfname = join(fpath, fname + '_brain_susan_nl.nii.gz')
+    nfname = join(fpath, f + '_brain_susan_nl.nii.gz')
     subject = f.split('_')[0]
     session = f.split('_')[1]
     oimg = nibabel.load(nfname)
     ohdr = oimg.header
-    oaffine = oimg.get_affine()
-    assert np.allclose(niftiDict[(subject, session, 'anat')][fname]['orig_affine'], oaffine), 'affines are not the same'
-    zooms = ohdr.get_zooms()
-    xyzroll = [int(round(diff_affine[fname[0]][i, 3] / z)) for i, z in enumerate(hdr.get_zooms())]
+    oaffine = oimg.affine
+    assert np.allclose(niftiDict[(subject, session, 'anat')][f]['orig_affine'], oaffine, 6), 'affines are not the same for ' + f
+    xyzroll = [int(round(diff_affine[f][i, 3] / z)) for i, z in enumerate(ohdr.get_zooms())]
+    oimg_data = oimg.get_data()
+    rimg_data = oimg_data
+    for i, r in enumerate(xyzroll):
+        rimg_data = np.roll(rimg_data, r, axis=i)
+    nimg = nibabel.nifti1.Nifti1Image(rimg_data, np.array(new_affine[f]), ohdr)
+    nhdr = nimg.header
+    nhdr.set_qform(new_affine[f], code=1)
+    nhdr.set_sform(new_affine[f], code=1)
+    assert np.allclose(nhdr.get_qform(), new_affine[f], 4), 'qform and new affine do not match for ' + f
+    nibabel.save(nimg, join(fpath, f + '_brain_susan_nl_medroll.nii.gz'))
