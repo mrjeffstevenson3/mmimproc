@@ -45,21 +45,25 @@ for f in fname:
     offsets[f] = niftiDict[(subject, session, 'anat')][f]['orig_affine'][:3,3]
 
 median_offsets = np.median(offsets.values(), axis=0, keepdims=True)
-med_affine = np.zeros((4,4))
-med_affine[0][3] = median_offsets[0][0]
-med_affine[1][3] = median_offsets[0][1]
-med_affine[2][3] = median_offsets[0][2]
+# med_affine = np.zeros((4,4))
+# med_affine[0][3] = median_offsets[0][0]
+# med_affine[1][3] = median_offsets[0][1]
+# med_affine[2][3] = median_offsets[0][2]
 
 diff_affine = {}
 for f in fname:
     subject = f.split('_')[0]
     session = f.split('_')[1]
-    diff_affine[f] = np.array(niftiDict[(subject, session, 'anat')][f]['orig_affine']) - med_affine
+    diff = niftiDict[(subject, session, 'anat')][f]['orig_affine'][:3, 3] - median_offsets
+    diff_affine[f] = np.zeros((4,4))
+    for i in range(3):
+        diff_affine[f][i][3]= diff[0][i]
 
 new_affine = {}
 for f in fname:
     subject = f.split('_')[0]
     session = f.split('_')[1]
-    new_affine[f] = diff_affine[f].dot(np.array(niftiDict[(subject, session, 'anat')][f]['orig_affine']))
+    new_affine[f] = np.array(niftiDict[(subject, session, 'anat')][f]['orig_affine']) + diff_affine[f]
+
 
 
