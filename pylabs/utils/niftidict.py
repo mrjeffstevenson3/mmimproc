@@ -1,12 +1,14 @@
 import os, niprov, cPickle
 from os.path import join
 import numpy as np
+from scipy import spatial
 import nibabel
 from collections import defaultdict
 from datetime import datetime
 from pylabs.utils.paths import getnetworkdataroot, getlocaldataroot
 #prov = niprov.ProvenanceContext()
 fs = getnetworkdataroot()
+orig = np.asarray([0, 0, 0])
 project = 'bbc'
 niipickle = join(fs, project, 'bbc_niftiDict_all_subj_201608021057.pickle')
 fpath = join(fs, project, 'myvbm', 'ants_vbm_template', 'orig_vbm')
@@ -41,14 +43,21 @@ with open(niipickle, 'rb') as f:
         niftiDict = cPickle.load(f)
 offsets = {}
 offcenter = {}
+
 for f in fname:
     subject = f.split('_')[0]
     session = f.split('_')[1]
     offsets[f] = niftiDict[(subject, session, 'anat')][f]['orig_affine'][:3,3]
     offcenter[f] = niftiDict[(subject, session, 'anat')][f]['off_center']  #note y coord [0] index is inverted per philips
 
-median_offsets = np.median(offsets.values(), axis=0, keepdims=True)
-median_offcenter = np.median(offcenter.values(), axis=0, keepdims=True)
+min_offcenter = np.asarray(offcenter.values())[spatial.KDTree(np.asarray(offcenter.values())).query(orig)[1]]
+target_midkey = [key for key, value in offcenter.items() if np.array_equal(np.asarray(value), min_offcenter)][0]
+target_outkey = (target_midkey.split('_')[0], target_midkey.split('_')[1], 'anat')
+tfname = join(fpath, target_midkey + '_brain_susan_nl.nii.gz')
+target_img = nibabel.load(tfname)
+target_hdr = target_img.header
+target_shape = target_img.shape
+target_zooms = target_hdr.get_zooms()
 
 diff_affine = {}
 diff_offcenter = {}
