@@ -40,27 +40,33 @@ fname = [fname_templ.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r)) fo
 with open(niipickle, 'rb') as f:
         niftiDict = cPickle.load(f)
 offsets = {}
+offcenter = {}
 for f in fname:
     subject = f.split('_')[0]
     session = f.split('_')[1]
     offsets[f] = niftiDict[(subject, session, 'anat')][f]['orig_affine'][:3,3]
+    offcenter[f] = niftiDict[(subject, session, 'anat')][f]['off_center']  #note y coord [0] index is inverted per philips
 
 median_offsets = np.median(offsets.values(), axis=0, keepdims=True)
+median_offcenter = np.median(offcenter.values(), axis=0, keepdims=True)
 
 diff_affine = {}
+diff_offcenter = {}
 for f in fname:
     subject = f.split('_')[0]
     session = f.split('_')[1]
-    diff = niftiDict[(subject, session, 'anat')][f]['orig_affine'][:3, 3] - median_offsets
+    diffa = niftiDict[(subject, session, 'anat')][f]['orig_affine'][:3, 3] - median_offsets
     diff_affine[f] = np.zeros((4,4))
     for i in range(3):
-        diff_affine[f][i][3]= diff[0][i]
+        diff_affine[f][i][3]= diffa[0][i]
+    diffo = niftiDict[(subject, session, 'anat')][f]['off_center'] - median_offcenter
+    diff_offcenter[f] = [o - m for o, m in zip(offcenter[f], median_offcenter)]
 
 new_affine = {}
 for f in fname:
     subject = f.split('_')[0]
     session = f.split('_')[1]
-    new_affine[f] = np.array(niftiDict[(subject, session, 'anat')][f]['orig_affine']) + diff_affine[f]
+    new_affine[f] = np.array(niftiDict[(subject, session, 'anat')][f]['orig_affine']) - diff_affine[f]
 
 for f in fname:
     nfname = join(fpath, f + '_brain_susan_nl.nii.gz')
@@ -74,10 +80,14 @@ for f in fname:
     oimg_data = oimg.get_data()
     rimg_data = oimg_data
     for i, r in enumerate(xyzroll):
-        rimg_data = np.roll(rimg_data, r, axis=i)
+        if r > 0:
+            rimg_data = np.roll(rimg_data, r, axis=i)
+        if r < 0:
+            rimg_data = np.roll(rimg_data, rimg_data.shape[i] - r, axis=i)
+
     nimg = nibabel.nifti1.Nifti1Image(rimg_data, np.array(new_affine[f]), ohdr)
     nhdr = nimg.header
     nhdr.set_qform(new_affine[f], code=1)
     nhdr.set_sform(new_affine[f], code=1)
-    assert np.allclose(nhdr.get_qform(), new_affine[f], 4), 'qform and new affine do not match for ' + f
+    #assert np.allclose(nhdr.get_qform(), new_affine[f], 4), 'qform and new affine do not match for ' + f
     nibabel.save(nimg, join(fpath, f + '_brain_susan_nl_medroll.nii.gz'))
