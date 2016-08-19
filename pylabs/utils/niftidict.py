@@ -1,15 +1,15 @@
 import os, niprov, cPickle
 from os.path import join
 import numpy as np
-from scipy import spatial
 from scipy.ndimage.measurements import center_of_mass as com
 import nibabel
 from collections import defaultdict
-from datetime import datetime
-from pylabs.utils.paths import getnetworkdataroot, getlocaldataroot
-#prov = niprov.ProvenanceContext()
+from pylabs.utils.paths import getnetworkdataroot
+prov = niprov.ProvenanceContext()
 fs = getnetworkdataroot()
-origin = np.asarray([0, 0, 0])
+
+
+#should move to bbc proj now that it works
 project = 'bbc'
 niipickle = join(fs, project, 'bbc_niftiDict_all_subj_201608021057.pickle')
 fpath = join(fs, project, 'myvbm', 'ants_vbm_template', 'orig_vbm')
@@ -42,10 +42,12 @@ fname = [fname_templ.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r)) fo
 
 with open(niipickle, 'rb') as f:
         niftiDict = cPickle.load(f)
+#end of bbc specific setup start of function
+#def com2center(niftiDict, filelist, indir=None, outdir=None)
 
+#may not need anymore
 offsets = {}
 offcenter = {}
-
 for f in fname:
     subject = f.split('_')[0]
     session = f.split('_')[1]
@@ -54,12 +56,13 @@ for f in fname:
 #reorder offcenter to xyz with y in RAS coord system eg A is positive
 for k, v in offcenter.items():
     offcenter[k] = np.asarray([v[2], -v[0], v[1]])
-
+#start here
 com_vox = {}
 diff_com = {}
 mm_diff_com = {}
 diff_offcenter2com = {}
 com_affine = {}
+com_matfile = {}
 for f in fname:
     nfname = join(fpath, f + '_brain_susan_nl.nii.gz')
     subject = f.split('_')[0]
@@ -72,9 +75,12 @@ for f in fname:
     com_vox[f] = np.round(com(img_data)).astype(int)
     diff_com[f] = np.asarray([s / 2. - c for s, c in zip(img_data.shape, com_vox[f])])
     mm_diff_com[f] = np.asarray([d * z for d, z in zip(diff_com[f], zooms)])
+    matfile = np.eye(4)
     for i, t in enumerate(mm_diff_com[f]):
-        affine[i][3]= affine[i][3] + t
+        affine[i][3] = affine[i][3] + t
+        matfile[i][3] = t
     com_affine[f] = affine
+    com_matfile[f] = matfile
     for i, r in enumerate(diff_com[f]):
         img_data = np.roll(img_data, int(r), axis=i)
     nimg = nibabel.nifti1.Nifti1Image(img_data, np.array(com_affine[f]), hdr)
@@ -82,4 +88,5 @@ for f in fname:
     nhdr.set_qform(com_affine[f], code=1)
     nhdr.set_sform(com_affine[f], code=1)
     # assert np.allclose(nhdr.get_qform(), new_affine[f], 4), 'qform and new affine do not match for ' + f
-    nibabel.save(nimg, join(fpath, f + '_brain_susan_nl_comroll.nii.gz'))
+    nibabel.save(nimg, join(fpath, f + '_brain_susan_nl_com2center.nii.gz'))
+    #add save matfile class call and save
