@@ -11,6 +11,7 @@ from pylabs.utils.paths import getnetworkdataroot, getlocaldataroot
 fs = getnetworkdataroot()
 origin = np.asarray([0, 0, 0])
 project = 'bbc'
+method = 'wempr'
 niipickle = join(fs, project, 'bbc_niftiDict_all_subj_201608021057.pickle')
 fpath = join(fs, project, 'myvbm', 'ants_vbm_template', 'orig_vbm')
 subtemplate = 'sub-bbc{sid}'
