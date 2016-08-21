@@ -21,7 +21,7 @@ subjects = [subtemplate.format(sid=str(s)) for s in subjid]
 niipickle = join(fs, project, 'bbcniftiDict_all_subj_201605232241.pickle')
 #stages to run
 convert = True
-dti_qc = True
+dti_qc = False
 b1corr = False
 bet = False
 prefilter = False
