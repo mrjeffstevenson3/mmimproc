@@ -5,9 +5,9 @@ from scipy.ndimage.measurements import center_of_mass as com
 import nibabel
 from collections import defaultdict
 from pylabs.utils.paths import getnetworkdataroot
+from pylabs.alignment.affinematfile import FslAffineMat
 prov = niprov.ProvenanceContext()
 fs = getnetworkdataroot()
-
 
 #should move to bbc proj now that it works
 project = 'bbc'
@@ -62,7 +62,7 @@ diff_com = {}
 mm_diff_com = {}
 diff_offcenter2com = {}
 com_affine = {}
-com_matfile = {}
+subj2com = {}
 for f in fname:
     nfname = join(fpath, f + '_brain_susan_nl.nii.gz')
     subject = f.split('_')[0]
@@ -75,12 +75,12 @@ for f in fname:
     com_vox[f] = np.round(com(img_data)).astype(int)
     diff_com[f] = np.asarray([s / 2. - c for s, c in zip(img_data.shape, com_vox[f])])
     mm_diff_com[f] = np.asarray([d * z for d, z in zip(diff_com[f], zooms)])
-    matfile = np.eye(4)
+    subj2comxfm = np.eye(4)
     for i, t in enumerate(mm_diff_com[f]):
         affine[i][3] = affine[i][3] + t
-        matfile[i][3] = t
+        subj2comxfm[i][3] = t
     com_affine[f] = affine
-    com_matfile[f] = matfile
+    subj2com[f] = subj2comxfm
     for i, r in enumerate(diff_com[f]):
         img_data = np.roll(img_data, int(r), axis=i)
     nimg = nibabel.nifti1.Nifti1Image(img_data, np.array(com_affine[f]), hdr)
@@ -90,3 +90,7 @@ for f in fname:
     # assert np.allclose(nhdr.get_qform(), new_affine[f], 4), 'qform and new affine do not match for ' + f
     nibabel.save(nimg, join(fpath, f + '_brain_susan_nl_com2center.nii.gz'))
     #add save matfile class call and save
+    savematf = FslAffineMat()
+    savematf.data = subj2comxfm
+    savematf.saveAs(join(fpath, f + '_brain_susan_nl_com2center.mat'))
+
