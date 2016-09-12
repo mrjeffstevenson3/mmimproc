@@ -1,5 +1,9 @@
-date,datetime before,temp before,datetime after,temp after,project,
-12/30/2015,1:00:00 PM,12.5,2:00:00 PM,20.5,tadpole,
-1/13/2016,2:00:00 PM,23.4,3:00:00 PM,24,tadpole,
-3/2/2016,,24.2,,23.7,tadpole,
-3/11/2016,,23.8,,,,"not sure if before or after, just got one temp"
+date,datetime before,temp before,datetime after,temp after,project
+1/1/1292,1:00:00 PM,18.85,2:00:00 PM,18.85,manual
+1/1/1296,1:00:00 PM,22.85,2:00:00 PM,22.85,manual
+1/1/1300,1:00:00 PM,26.85,2:00:00 PM,26.85,manual
+12/30/2015,1:00:00 PM,12.5,2:00:00 PM,20.5,tadpole
+1/13/2016,2:00:00 PM,23.4,3:00:00 PM,24,tadpole
+3/2/2016,12:00:00 PM,24.02,12:40:00 PM,24.7,tadpole
+3/11/2016,2:00:00 PM,23.8,3:00:00 PM,23.8,tadpole
+7/27/2016,6:00:00 PM,22.5,7:00 PM,23.4,rotated 90 degrees to the left. actual data 7/29.

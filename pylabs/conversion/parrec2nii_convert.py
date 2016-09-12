@@ -19,7 +19,6 @@ from nibabel.orientations import (io_orientation, inv_ornt_aff,
 from nibabel.affines import apply_affine, from_matvec, to_matvec
 
 #js addl imports
-import collections
 from collections import defaultdict
 import pandas as pd
 from nibabel.mriutils import calculate_dwell_time
@@ -32,7 +31,6 @@ import niprov
 prov = niprov.ProvenanceContext()
 fs = getnetworkdataroot()
 import dill #to use as pickle replacement of lambda dict
-
 
 class BrainOpts(object):
     pass
@@ -141,6 +139,7 @@ def brain_proc_file(opts, scandict):
             setattr(opts, 'session_id', str(infile.split('/')[-3]))
         else:
             setattr(opts, 'session_id', '')
+
         if opts.scaling != 'off':
             verbose('Using data scaling "%s"' % opts.scaling)
         # get original scaling, and decide if we scale in-place or not
