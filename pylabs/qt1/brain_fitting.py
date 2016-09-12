@@ -11,12 +11,12 @@ TR = 14.
 pool = Pool(10)
 rootdir = join(getlocaldataroot(),'tadpole')
 
-for subjectdir in glob.glob(join(rootdir, 'TADPOLE_998C')):
+for subjectdir in glob.glob(join(rootdir, 'TADPOLE901')):
     subject = os.path.basename(subjectdir)
     files = glob.glob(join(subjectdir,'fitted_qT1_spgr','*brain.nii.gz'))
     files = sorted(files)
-    assert len(files) == 3
-    X = [7,10,15]
+    assert len(files) == 5
+    X = [7,10,15,20,30]
     maskfile = files[0].replace('brain.nii.gz','brain_mask.nii.gz')
     b1file = join(subjectdir,'B1map_qT1',
         '{0}_b1map_phase_reg2spgr_s6.nii.gz'.format(subject))

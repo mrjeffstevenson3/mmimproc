@@ -2,6 +2,7 @@ from __future__ import division
 import nibabel, os, numpy
 from nipype.interfaces import fsl
 from pylabs.utils import WorkingContext
+import numpy
 
 
 def skullStrippedMask(targetfpath, provenance, frac=0.5, workingdir='tmpdir'):

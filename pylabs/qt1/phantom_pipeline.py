@@ -20,8 +20,6 @@ def sort_par_glob (parglob):
 fs = getlocaldataroot()
 scanner = 'slu'
 phantdirs = sorted(glob(pathjoin(fs, 'phantom_qT1_'+scanner+'/phantom_qT1_*')), key=lambda f: int(f.split('_')[-1]))
-#phantdirs = sorted(glob(pathjoin(fs, 'phantom_test_disc_slu/phantom_qT1_*')), key=lambda f: int(f.split('_')[-1]))
-
 phantom_ddata = defaultdict(list)
 phantom_dict_fname = pathjoin('/'.join(phantdirs[0].split('/')[0:-1]), 'phantom_'+scanner+'_dict_mar22.txt')
 
@@ -60,42 +58,42 @@ for dir in phantdirs:
 
     for parfile in phantSPGRparfiles:
         scaling = 'fp'
-        key, val = phantom_midslice_par2mni(parfile=parfile, datadict=phantom_ddata, method='orig_spgr', outdir=spgrdir, 
+        key, val = phantom_midslice_par2mni(parfile=parfile, datadict=phantom_ddata, method='orig_spgr', outdir=spgrdir,
                                                outfilename='orig_spgr', scaling=scaling, scanner=scanner)
         for k, v in zip(key, val):
             phantom_ddata[k].append(v)
 
     for parfile in phantSEIRparfiles:
         scaling = 'fp'
-        key, val = phantom_midslice_par2mni(parfile=parfile, datadict=phantom_ddata, method='seir', outdir=seirdir, 
+        key, val = phantom_midslice_par2mni(parfile=parfile, datadict=phantom_ddata, method='seir', outdir=seirdir,
                                                outfilename='orig_seir', scaling=scaling, scanner=scanner)
         for k, v in zip(key, val):
              phantom_ddata[k].append(v)
 
     for parfile in phantSEIRHSparfiles:
         scaling = 'fp'
-        key, val = phantom_midslice_par2mni(parfile=parfile, datadict=phantom_ddata, method='seirhs', outdir=seirhsdir, 
+        key, val = phantom_midslice_par2mni(parfile=parfile, datadict=phantom_ddata, method='seirhs', outdir=seirhsdir,
                                                outfilename='orig_seirhs', scaling=scaling, scanner=scanner)
         for k, v in zip(key, val):
             phantom_ddata[k].append(v)
 
     for parfile in phantSEIREPIparfiles:
         scaling = 'fp'
-        key, val = phantom_midslice_par2mni(parfile=parfile, datadict=phantom_ddata, method='seirepi', outdir=seirepidir, 
+        key, val = phantom_midslice_par2mni(parfile=parfile, datadict=phantom_ddata, method='seirepi', outdir=seirepidir,
                                                outfilename='seirepi', scaling=scaling, scanner=scanner)
         for k, v in zip(key, val):
             phantom_ddata[k].append(v)
 
     for parfile in phantTSEIRparfiles:
         scaling = 'fp'
-        key, val = phantom_midslice_par2mni(parfile=parfile, datadict=phantom_ddata, method='tseir', outdir=tseirdir, 
+        key, val = phantom_midslice_par2mni(parfile=parfile, datadict=phantom_ddata, method='tseir', outdir=tseirdir,
                                                outfilename='tseir', scaling=scaling, scanner=scanner)
         for k, v in zip(key, val):
             phantom_ddata[k].append(v)
 
     for parfile in phantB1parfile:
         scaling = 'dv'
-        key, val = phantom_B1_midslice_par2mni(parfile=parfile, datadict=phantom_ddata, outdir=b1mapdir, 
+        key, val = phantom_B1_midslice_par2mni(parfile=parfile, datadict=phantom_ddata, outdir=b1mapdir,
                                                outfilename='b1map', scaling=scaling, scanner=scanner)
         for k, v in zip(key, val):
             phantom_ddata[k].append(v)

@@ -5,7 +5,7 @@ from pylabs.correlation.behavior import csv2fslmat
 from pylabs.correlation.regfilt import multiregfilt
 from pylabs.correlation.randpar import multirandpar
 from pylabs.correlation.atlas import report, atlaslabels
-from pylabs.utils.paths import getlocaldataroot
+from pylabs.utils.paths import getnetworkdataroot
 from pylabs.utils.timing import waitForFiles
 from pylabs.utils.selection import select, withVoxelsOverThresholdOf
 from pylabs.utils.files import deconstructRandparFiles
@@ -17,7 +17,7 @@ opts.verbose = True
 
 subjects = [317, 328, 332, 334, 335, 347, 353, 364, 371, 376, 379, 381, 384, 385, 396]
 
-fs = getlocaldataroot()
+fs = getnetworkdataroot()
 statsdir = fs+'self_control/hbm_group_data/vbm_15subj/workdir_v1/stats/'
 behavdir = fs+'self_control/behavioral_data/behav_from_andy_march27_2015/'
 csvfile = behavdir+'EF_and_Brain_july08_2015_Meq0_delta.csv'

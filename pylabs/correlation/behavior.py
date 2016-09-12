@@ -27,7 +27,6 @@ def csv2fslmat(csvfile, selectSubjects=None, demean=True, groupcol=False,
         list: List of mat files created
     """
 
-
     with open(csvfile) as csv:
         lines = csv.readlines()
     data = numpy.loadtxt(csvfile, skiprows=2)
