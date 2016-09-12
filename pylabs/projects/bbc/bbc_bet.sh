@@ -20,3 +20,4 @@ fslmaths ${subject}_brain_susan -div $mean -mul 5000 ${subject}_brain_susan_nl
 imagelist="$imagelist $subject ${subject}_brain_susan_nl";
 done
 slicesdir -o $imagelist
+echo "if slicedir/index.htm passes qc then ready to build ants template"
