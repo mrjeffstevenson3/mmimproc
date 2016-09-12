@@ -137,7 +137,6 @@ def brain_proc_file(opts, scandict):
         setattr(opts, 'recon_resolution', np.unique(pr_hdr.image_defs['recon resolution']))
         setattr(opts, 'TURBO_factor', np.unique(pr_hdr.image_defs['TURBO factor']))
 
-
         if any(opts.multisession) > 0:
             setattr(opts, 'session_id', str(infile.split('/')[-3]))
         else:
@@ -173,6 +172,7 @@ def brain_proc_file(opts, scandict):
             affine = np.dot(affine, t_aff)
             in_data = apply_orientation(in_data, ornt)
         setattr(opts, 'orig_affine', affine)
+        setattr(opts, 'orig_data_shape', in_data.shape)
         #make rms if asked
         if opts.rms and len(in_data.shape) == 4:
             in_data_rms = np.sqrt(np.sum(np.square(in_data), axis=3)/in_data.shape[3])
@@ -248,6 +248,7 @@ def brain_proc_file(opts, scandict):
         setattr(opts, 'outpath', outpath)
         setattr(opts, 'outfilename', outfilename)
         setattr(opts, 'basefilename', basefilename)
+        setattr(opts, 'zooms', pr_hdr.get_zooms())
         # Make corresponding NIfTI image
         nimg = nifti1.Nifti1Image(in_data, affine, pr_hdr)
         nhdr = nimg.header
@@ -365,7 +366,9 @@ def brain_proc_file(opts, scandict):
             rms_dict[outerkey][rms_middlekey]['outfilename'] = rms_outfilename
             rms_dict[outerkey][rms_middlekey]['basefilename'] = rms_basefilename
             rms_dict[outerkey][rms_middlekey]['qform'] = rmshdr.get_qform()
+            rms_dict[outerkey][rms_middlekey]['zooms'] = rmshdr.get_zooms()
             rms_dict[outerkey][rms_middlekey]['b1corr'] = True
+            rms_dict[outerkey][rms_middlekey]['orig_data_shape'] = rmsimg.shape
             mergeddicts(scandict, rms_dict)
             np.testing.assert_almost_equal(affine, rmshdr.get_qform(), 4,
                                            err_msg='output qform in rms header does not match input qform')
