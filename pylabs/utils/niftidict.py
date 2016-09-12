@@ -15,6 +15,7 @@ niipickle = join(fs, project, 'bbc_niftiDict_all_subj_201608021057.pickle')
 fpath = join(fs, project, 'myvbm', 'ants_wempr_template', 'orig_wempr')
 subtemplate = 'sub-bbc{sid}'
 subjid = [101, 105, 106, 108, 113, 116, 118, 119, 120, 202, 208, 209, 211, 212, 215, 218, 219, 231, 236, 241, 243, 249, 252, 253]
+pairedsid = [101, 209, 105, 211, 106, 208, 108, 202, 113, 249, 116, 241, 118, 243, 119, 231, 120, 253]
 sespassqc = []
 for i in range(len(subjid)):
     if i != 7 and i != 12:
