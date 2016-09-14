@@ -5,7 +5,7 @@ from dipy.align.reslice import reslice
 from pylabs.utils import PylabsOptions
 
 
-def upsample1mm(images, outdir=None, opts=PylabsOptions()):
+def upsample1mm(images, outdir=None, provenance=ProvenanceWrapper()):
     """ Resample images to 1mm isotropic
 
     Uses dipy.align.reslice
@@ -27,8 +27,7 @@ def upsample1mm(images, outdir=None, opts=PylabsOptions()):
         data2, affine2 = reslice(data, affine, zooms, new_zooms)
         img2 = nibabel.Nifti1Image(data2, affine2)
         nibabel.save(img2, outimage)
-        niprov.log(outimage, 'upsampled to 1mm', image, script=__file__, 
-            opts=opts)
+        provenance.log(outimage, 'upsampled to 1mm', image, script=__file__)
         outimages.append(outimage)
     return outimages
 

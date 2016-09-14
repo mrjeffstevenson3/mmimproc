@@ -1,4 +1,4 @@
-import itertools, glob, nibabel, os, niprov
+import itertools, glob, nibabel, os
 from os.path import join
 import pylabs.alignment.phantom
 from pylabs.utils.paths import getlocaldataroot

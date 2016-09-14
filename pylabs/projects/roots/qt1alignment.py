@@ -1,4 +1,4 @@
-import glob, os, niprov, subprocess, datetime
+import glob, os, subprocess, datetime
 from os.path import join
 from pylabs.utils.paths import getlocaldataroot, getnetworkdataroot
 from pylabs.utils import WorkingContext

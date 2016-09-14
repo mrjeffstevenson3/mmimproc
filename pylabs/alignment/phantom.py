@@ -1,6 +1,6 @@
 from os.path import join
 import itertools, datetime
-import nibabel, numpy, scipy.stats, scipy.ndimage, niprov
+import nibabel, numpy, scipy.stats, scipy.ndimage
 from pylabs.utils import progress
 # from pylabs.utils.provenance import ProvenanceWrapper
 # provenance = ProvenanceWrapper()

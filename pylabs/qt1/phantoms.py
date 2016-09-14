@@ -1,7 +1,7 @@
 from __future__ import division
 import collections, numpy, glob, datetime, pandas, itertools
 from os.path import join, isfile, basename
-from niprov import Context
+from pylabs.utils.provenance import ProvenanceWrapper
 from pylabs.io.mixed import listOfDictsToJson
 from pylabs.utils.paths import getnetworkdataroot
 from pylabs.conversion.helpers import convertSubjectParfiles

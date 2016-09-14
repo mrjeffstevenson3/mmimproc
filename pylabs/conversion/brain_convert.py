@@ -10,6 +10,8 @@ from datetime import datetime
 from collections import defaultdict
 from pylabs.conversion.parrec2nii_convert import mergeddicts
 from pylabs.utils.paths import getnetworkdataroot
+from pylabs.utils.provenance import ProvenanceWrapper
+provenance = ProvenanceWrapper()
 fs = getnetworkdataroot()
 flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo', output_type='NIFTI')
 applyxfm = fsl.ApplyXfm(output_type='NIFTI')
@@ -194,7 +196,7 @@ def b1corr_anat(project, niftiDict):
                         subprocess.check_call(cmd, shell=True)
                         niftiDict[fmap_akey][fmap_bkey][b1map_fname] = base_b1phase2_fname + '.nii.gz'
                         niftiDict[fmap_akey][fmap_bkey][b1map_fname] = base_b1phase2_fname + '.nii.gz'
-                        niprov.log(niftiDict[fmap_akey][fmap_bkey][b1map_fname], 'b1map registered to '+ bkey, \
+                        provenance.log(niftiDict[fmap_akey][fmap_bkey][b1map_fname], 'b1map registered to '+ bkey, \
                                    niftiDict[fmap_akey][fmap_bkey]['outfilename'], script=__file__, opts=opts)
 
                     cmd = ['fslmaths', niftiDict[akey][bkey]['outfilename'],'-div', \

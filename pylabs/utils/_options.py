@@ -2,7 +2,7 @@ from pylabs.utils.provenance import ProvenanceWrapper
 import os
 
 
-class PylabsOptions(niprov.Configuration):
+class PylabsOptions(object):
     """General settings for pylabs.
 
     Attributes:

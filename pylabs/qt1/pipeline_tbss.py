@@ -10,10 +10,7 @@ from pylabs.utils.timing import waitForFiles
 from pylabs.utils.selection import select, withVoxelsOverThresholdOf
 from pylabs.utils.files import deconstructRandparFiles
 from pylabs.vbm.upsample import upsample1mm
-from niprov import Context
-from pylabs.utils._options import PylabsOptions
-opts = PylabsOptions()
-prov = Context()
+prov = ProvenanceWrapper()
 prov.dryrun = False
 prov.config.verbose = True
 prov.config.dryrun = False
@@ -25,10 +22,10 @@ fs = getlocaldataroot()
 statsdir = fs+'self_control/hbm_group_data/qT1/stats/'
 behavdir = fs+'self_control/behavioral_data/behav_from_andy_march27_2015/'
 csvfile = behavdir+'SCS_Behavior_dataset_9_14_15_Meq0_delta_qT1_SS_resptime_D_qT1_phantcorr.csv'
-niprov.add(csvfile)
+prov.add(csvfile)
 
 images = glob.glob(statsdir+'all_qT1_*_reg2mni.nii.gz')
-[niprov.add(img) for img in images]
+[prov.add(img) for img in images]
 
 exptag='randpar_qT1_test16subj_dec14_no_cov_n500'
 matfiledir = pathjoin(statsdir,'matfiles','matfiles_'+exptag)

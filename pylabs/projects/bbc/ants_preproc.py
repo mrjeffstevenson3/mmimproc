@@ -1,4 +1,4 @@
-import os, niprov, cPickle
+import os, cPickle
 from os.path import join
 import numpy as np
 from scipy import spatial

@@ -3,7 +3,7 @@ import collections, numpy, glob, datetime, pandas
 from numpy import radians
 import matplotlib.pyplot as plt
 from os.path import join, isfile
-from niprov import Context
+from pylabs.utils.provenance import ProvenanceWrapper
 from pylabs.utils.paths import getlocaldataroot
 from pylabs.conversion.helpers import convertSubjectParfiles
 from pylabs.qt1.model_pipeline import modelForDate

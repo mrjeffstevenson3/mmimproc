@@ -1,4 +1,4 @@
-import os, niprov, cPickle
+import os, cPickle
 from os.path import join
 from collections import defaultdict
 from nipype.interfaces import fsl
@@ -8,6 +8,7 @@ from cloud.serialization.cloudpickle import dumps
 from pylabs.structural.brain_extraction import struc_bet
 from pylabs.conversion.brain_convert import conv_subjs
 from pylabs.utils.paths import getnetworkdataroot, getlocaldataroot
+from pylabs.utils.provenance import ProvenanceWrapper
 prov = ProvenanceWrapper()
 flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo', output_type='NIFTI')
 applyxfm = fsl.ApplyXfm(output_type='NIFTI')
@@ -62,7 +63,7 @@ for subj in subjects:
             cmd += niftiDict[k1b][k2b]['outpath']+'/'+k2b+'_phase_reg2vbmmpr_s6.nii.gz'
             subprocess.check_call(cmd, shell=True)
             niftiDict[k1b][k2b]['phase_reg2vbm_s6_fname'] = niftiDict[k1b][k2b]['outpath']+'/'+k2b+'_phase_reg2vbmmpr_s6.nii.gz'
-            niprov.add(niftiDict[k1b][k2b]['outpath']+'/'+k2b+'_phase_reg2vbmmpr_s6.nii.gz')
+            prov.add(niftiDict[k1b][k2b]['outpath']+'/'+k2b+'_phase_reg2vbmmpr_s6.nii.gz')
             cmd = 'fslmaths '+niftiDict[k1a][k2v]['rms_fname']+' -div '+niftiDict[k1b][k2b]['phase_reg2vbm_s6_fname']
             cmd += ' -mul 100 '+niftiDict[k1a][k2v]['outpath']+ '/' + k2v + '_rms_b1corr.nii'
             subprocess.check_call(cmd, shell=True)

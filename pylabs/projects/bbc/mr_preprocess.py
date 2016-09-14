@@ -1,4 +1,4 @@
-import os, niprov, cPickle
+import os, cPickle
 from os.path import join
 from collections import defaultdict
 from nipype.interfaces import fsl

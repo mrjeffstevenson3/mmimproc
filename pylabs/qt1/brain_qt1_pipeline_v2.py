@@ -28,13 +28,9 @@ from nibabel.volumeutils import fname_ext_ul_case
 from nibabel.orientations import apply_orientation
 from nibabel.orientations import inv_ornt_aff
 from nibabel.orientations import io_orientation
+from pylabs.utils.provenance import ProvenanceWrapper
+prov = ProvenanceWrapper()
 
-
-
-from niprov import Context
-from pylabs.utils._options import PylabsOptions
-_opts = PylabsOptions()
-prov = Context()
 #opts.dryrun = True
 #opts.verbose = True
 verbose = True

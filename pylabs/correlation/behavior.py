@@ -5,7 +5,7 @@ from pylabs.utils.provenance import ProvenanceWrapper
 
 
 def csv2fslmat(csvfile, selectSubjects=None, demean=True, groupcol=False,
-    cols=None, covarcols=None, outdir=os.getcwd(), opts=PylabsOptions(), 
+    cols=None, covarcols=None, outdir=os.getcwd(), provenance=ProvenanceWrapper(), 
     filesys=Filesystem()):
     """Create FSL matrix files from behavioral data in a csv file
 
@@ -20,7 +20,7 @@ def csv2fslmat(csvfile, selectSubjects=None, demean=True, groupcol=False,
             in each matfile created.
         outdir (str): Directory in which to create matfiles. Defaults 
             to current directory.
-        opts (PylabsOptions): General settings
+        provenance (ProvenanceWrapper or niprov.ProvenanceContext): Provenance context
         filesys (pylabs.utils.Filesystem): Pass a mock here for testing purpose.
 
     Returns:
@@ -65,6 +65,6 @@ def csv2fslmat(csvfile, selectSubjects=None, demean=True, groupcol=False,
             indata.shape[1], c, nsubjects, demeanflag, measures[c-1]))
         fnames.append(matfname)
         mat.saveAs(matfname)
-        niprov.log(matfname, 'csv2fslmat', csvfile, script=__file__, opts=opts)
+        provenance.log(matfname, 'csv2fslmat', csvfile, script=__file__)
     return fnames
 

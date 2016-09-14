@@ -1,4 +1,4 @@
-import os, niprov, cPickle
+import os, cPickle
 from os.path import join
 import numpy as np
 from scipy.ndimage.measurements import center_of_mass as com
@@ -6,6 +6,7 @@ import nibabel
 from collections import defaultdict
 from pylabs.utils.paths import getnetworkdataroot
 from pylabs.alignment.affinematfile import FslAffineMat
+from pylabs.utils.provenance import ProvenanceWrapper
 prov = ProvenanceWrapper()
 fs = getnetworkdataroot()
 

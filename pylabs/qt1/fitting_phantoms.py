@@ -2,7 +2,7 @@ from __future__ import print_function
 import os, fnmatch, glob, collections, datetime, cPickle, sys
 from os.path import join
 from collections import defaultdict
-import numpy, niprov
+import numpy
 from pylabs.utils.paths import getlocaldataroot
 from pylabs.qt1.fitting import t1fit
 from pylabs.qt1.naming import qt1filepath

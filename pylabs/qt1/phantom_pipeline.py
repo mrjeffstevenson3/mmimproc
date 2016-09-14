@@ -6,7 +6,7 @@ from cloud.serialization.cloudpickle import dumps
 from pylabs.utils.paths import getlocaldataroot
 from pylabs.conversion.phantom_conv import phantom_B1_midslice_par2mni
 from pylabs.conversion.phantom_conv import phantom_midslice_par2mni
-from niprov import Context
+from pylabs.utils.provenance import ProvenanceWrapper
 from pylabs.utils._options import PylabsOptions
 opts = PylabsOptions()
 prov = Context()

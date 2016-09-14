@@ -1,10 +1,9 @@
 import os, nibabel
 from os.path import join
 from pylabs.utils.provenance import ProvenanceWrapper
-from pylabs.utils import PylabsOptions
 
 
-def analyze2nifti(images, outdir=None, opts=PylabsOptions()):
+def analyze2nifti(images, outdir=None, provenance=ProvenanceWrapper()):
     """ Convert files to .nii format using nibabel.
 
     """
@@ -21,7 +20,6 @@ def analyze2nifti(images, outdir=None, opts=PylabsOptions()):
         affine = img.get_affine()
         img2 = nibabel.Nifti1Image(data, affine)
         nibabel.save(img2, outimage)
-        niprov.log(outimage, 'converted to nii', image, script=__file__, 
-            opts=opts)
+        provenance.log(outimage, 'converted to nii', image, script=__file__)
         outimages.append(outimage)
     return outimages

@@ -2,12 +2,11 @@ import os
 from os.path import join
 from pylabs.utils.provenance import ProvenanceWrapper
 from nipype.interfaces import fsl
-from pylabs.utils import PylabsOptions
 import pylabs.transformations.masks as masks
 from pylabs.utils.paths import tempfile
 
 
-def standardizeBasedOnAbsoluteMask(image, outdir=None, opts=PylabsOptions()):
+def standardizeBasedOnAbsoluteMask(image, outdir=None, provenance=ProvenanceWrapper()):
     """ Use nipype / FLIRT to put the image in MNI space without transforming.
     """
     imagebasename = os.path.basename(image)
@@ -32,8 +31,8 @@ def standardizeBasedOnAbsoluteMask(image, outdir=None, opts=PylabsOptions()):
     flt.inputs.out_matrix_file = tempfile(extension='.mat')
     flt.inputs.apply_xfm = True
     result = flt.run() 
-    #niprov.log(outfile, 'standardized with FLIRT', image, code=flt.cmdline,
-    #    script=__file__, logtext=result.outputs.out_log, opts=opts)
+    provenance.log(outfile, 'standardized with FLIRT', image, code=flt.cmdline,
+        script=__file__, logtext=result.outputs.out_log, opts=opts)
     return outfile
 
 

@@ -70,6 +70,6 @@ def struc_bet(key1, key2, key3, niftiDict, frac=0.25):
     niftiDict[key1][key2]['mask_fname'] = fname.split('.')[0] + '_brain_mask.nii.gz'
     niftiDict[key1][key2]['bet_com'] = struc_betDict[('sub-2013-C028', 'ses-1', 'anat')]['sub-2013-C028_ses-1_wemempr_1']['bet_com']
     niftiDict[key1][key2]['zcutoff'] = struc_betDict[key1][key2]['zcutoff']
-    niprov.add(niftiDict[key1][key2]['brain_fname'])
-    niprov.add(niftiDict[key1][key2]['mask_fname'])
+    prov.add(niftiDict[key1][key2]['brain_fname'])
+    prov.add(niftiDict[key1][key2]['mask_fname'])
     return niftiDict

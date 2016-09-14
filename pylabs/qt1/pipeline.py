@@ -9,11 +9,10 @@ from pylabs.utils.paths import getlocaldataroot
 from pylabs.utils.timing import waitForFiles
 from pylabs.utils.selection import select, withVoxelsOverThresholdOf
 from pylabs.utils.files import deconstructRandparFiles
-from niprov.options import NiprovOptions
 from pylabs.vbm.upsample import upsample1mm
-opts = NiprovOptions()
-opts.dryrun = False
-opts.verbose = True
+provenance = ProvenanceWrapper()
+provenance.config.dryrun = False
+provenance.config.verbose = True
 
 subjects = [317, 328, 332, 334, 335, 347, 353, 364, 370, 371, 376, 379, 381, 384, 385, 396]
 
@@ -21,10 +20,10 @@ fs = getlocaldataroot()
 statsdir = fs+'self_control/hbm_group_data/qT1/ants_qT1_VBM_v6/stats/'
 behavdir = fs+'self_control/behavioral_data/behav_from_andy_march27_2015/'
 csvfile = behavdir+'EF_and_Brain_aug24_2015_Meq0_delta_qT1.csv'
-niprov.add(csvfile)
+provenance.add(csvfile)
 
 images = glob.glob(statsdir+'all_qT1_MNI_1mm.nii.gz')
-[niprov.add(img) for img in images]
+[provenance.add(img) for img in images]
 
 exptag='filter_gender_and_qT1_delta_n500'
 matfiledir = pathjoin(statsdir,'matfiles','matfiles_'+exptag)

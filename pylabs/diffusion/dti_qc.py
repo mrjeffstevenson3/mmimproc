@@ -1,4 +1,4 @@
-import glob, os, pandas, numpy, niprov, nibabel, cPickle, shutil, pylabs
+import glob, os, pandas, numpy, nibabel, cPickle, shutil, pylabs
 from os.path import join
 from collections import defaultdict
 from nipype.interfaces import fsl

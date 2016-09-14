@@ -5,7 +5,7 @@ from os.path import join
 from pylabs.utils.paths import getlocaldataroot
 import pylabs.graphics.tables as tables
 from pylabs.qt1.correction import CorrectionFactor
-from niprov import Context as ProvenanceContext
+from pylabs.utils.provenance import ProvenanceWrapper as ProvenanceContext
 from pylabs.qt1.temperaturedata import getSessionRecords
 provenance = ProvenanceContext()
 from pylabs.correlation.atlas import atlaslabels

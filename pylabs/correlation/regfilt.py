@@ -1,10 +1,10 @@
 import os
 from pylabs.utils.provenance import ProvenanceWrapper
-from pylabs.utils import Shell, PylabsOptions
+from pylabs.utils import Shell
 from pylabs.correlation.fslmatfile import FslMatFile
 
 
-def multiregfilt(images, matfile, shell=Shell(), opts=PylabsOptions()):
+def multiregfilt(images, matfile, shell=Shell(), provenance=ProvenanceWrapper()):
     outfiles = []
     mat = FslMatFile(matfile)
     for image in images:
@@ -21,6 +21,6 @@ def multiregfilt(images, matfile, shell=Shell(), opts=PylabsOptions()):
            filterindices = ','.join([str(c) for c in range(1, 1 + mat.numwaves)])
            cmd += ' -f \"{0}\"'.format(filterindices)
         cmd += ' -o {0}'.format(outfile)
-        niprov.record(cmd, opts=opts)
+        provenance.record(cmd)
         outfiles.append(outfile)
     return outfiles

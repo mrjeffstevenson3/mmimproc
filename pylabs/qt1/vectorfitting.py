@@ -1,5 +1,5 @@
 from __future__ import division
-import nibabel, numpy, niprov, sys
+import nibabel, numpy, sys
 from numpy import cos, sin, exp, tan, radians, power
 from pylabs.optimization import nonlinearfit
 provenance = ProvenanceWrapper()

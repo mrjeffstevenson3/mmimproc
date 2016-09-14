@@ -1,6 +1,6 @@
 from pylabs.qt1.naming import qt1filepath
 from copy import copy
-import nibabel, numpy, niprov
+import nibabel, numpy
 
 
 def matchImages(images, query):

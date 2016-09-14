@@ -3,7 +3,7 @@ import collections, numpy, glob, datetime, pandas, itertools
 from numpy import cos, sin, exp, tan, radians, power
 import matplotlib.pyplot as plt
 from os.path import join, isfile
-from niprov import Context
+from pylabs.utils.provenance import ProvenanceWrapper
 from pylabs.utils.paths import getnetworkdataroot
 from pylabs.qt1.fitting import spgrformula
 from pylabs.qt1.model_pipeline import modelForDate, hasRecordForDate
