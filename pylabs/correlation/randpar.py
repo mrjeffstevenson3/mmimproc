@@ -1,7 +1,7 @@
 # Wrappers to invoke FSL's randomise_parallel routine.
 import os
 from pylabs.utils import Shell, PylabsOptions, Binaries, WorkingContext
-import niprov
+from pylabs.utils.provenance import ProvenanceWrapper
 
 
 def multirandpar(imageMatCombinations, designfile, masks=None, niterations=50, 

@@ -4,7 +4,7 @@ from collections import defaultdict
 from nipype.interfaces import fsl
 from pylabs.utils._run import run_subprocess
 from pylabs.utils.paths import getnetworkdataroot, getpylabspath
-prov = niprov.ProvenanceContext()
+prov = ProvenanceWrapper()
 flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo')
 applyxfm = fsl.ApplyXfm()
 fs = getnetworkdataroot()

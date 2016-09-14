@@ -8,7 +8,7 @@ from cloud.serialization.cloudpickle import dumps
 from pylabs.structural.brain_extraction import struc_bet
 from pylabs.conversion.brain_convert import conv_subjs
 from pylabs.utils.paths import getnetworkdataroot, getlocaldataroot
-prov = niprov.ProvenanceContext()
+prov = ProvenanceWrapper()
 flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo', output_type='NIFTI')
 applyxfm = fsl.ApplyXfm(output_type='NIFTI')
 fs = getnetworkdataroot()

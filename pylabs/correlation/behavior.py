@@ -1,7 +1,7 @@
 import os, numpy
 from pylabs.utils import Filesystem, PylabsOptions
 from pylabs.correlation.fslmatfile import FslMatFile
-import niprov
+from pylabs.utils.provenance import ProvenanceWrapper
 
 
 def csv2fslmat(csvfile, selectSubjects=None, demean=True, groupcol=False,

@@ -10,8 +10,8 @@ from pylabs.utils.selection import select, withVoxelsOverThresholdOf
 from pylabs.utils.files import deconstructRandparFiles
 from pylabs.io.images import combineAsVolumes
 import pylabs.masking
-import niprov
-prov = niprov.ProvenanceContext()
+from pylabs.utils.provenance import ProvenanceWrapper
+prov = ProvenanceWrapper()
 prov.dryrun = True
 prov.verbose = True
 

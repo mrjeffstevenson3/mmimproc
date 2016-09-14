@@ -2,7 +2,7 @@ import glob, os, niprov, subprocess, datetime
 from os.path import join
 from pylabs.utils.paths import getlocaldataroot, getnetworkdataroot
 from pylabs.utils import WorkingContext
-provenance = niprov.ProvenanceContext()
+provenance = ProvenanceWrapper()
 
 """
 The bulk of the roots qt1 pipeline is in qt1pipeline.py,

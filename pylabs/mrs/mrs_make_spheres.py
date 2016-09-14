@@ -16,7 +16,7 @@ import nibabel
 import nibabel.nifti1 as nifti1
 from nipype.interfaces import fsl
 from pylabs.utils.paths import getnetworkdataroot
-import niprov
+from pylabs.utils.provenance import ProvenanceWrapper
 from niprov import Context as ProvenanceContext
 from pylabs.utils._options import PylabsOptions
 from decimal import *

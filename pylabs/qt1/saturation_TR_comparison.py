@@ -6,8 +6,8 @@ from pylabs.qt1.fitting_phantoms import fitPhantoms
 from pylabs.qt1.coregister_phantoms import coregisterPhantoms
 from pylabs.qt1.atlassing_phantoms import atlasPhantoms
 from pylabs.qt1.model_pipeline import calculate_model
-import niprov
-prov = niprov.ProvenanceContext()
+from pylabs.utils.provenance import ProvenanceWrapper
+prov = ProvenanceWrapper()
 fs = getlocaldataroot()
 #fs = '/Users/mrjeffs/Documents/Research/data'
 projectdir = join(fs, 'phantom_qT1_slu')

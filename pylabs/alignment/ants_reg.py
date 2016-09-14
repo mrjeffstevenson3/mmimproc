@@ -1,5 +1,5 @@
 import subprocess
-import niprov
+from pylabs.utils.provenance import ProvenanceWrapper
 from pylabs.utils import run_subprocess
 from pylabs.utils import WorkingContext
 

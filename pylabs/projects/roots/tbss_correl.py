@@ -8,7 +8,7 @@ from pylabs.utils.paths import getlocaldataroot, getnetworkdataroot
 from pylabs.utils.timing import waitForFiles
 from pylabs.utils.selection import select, withVoxelsOverThresholdOf
 from pylabs.utils.files import deconstructRandparFiles
-import niprov
+from pylabs.utils.provenance import ProvenanceWrapper
 prov = niprov.Context()
 prov.dryrun = True
 prov.verbose = True

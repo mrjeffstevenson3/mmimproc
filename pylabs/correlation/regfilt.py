@@ -1,5 +1,5 @@
 import os
-import niprov
+from pylabs.utils.provenance import ProvenanceWrapper
 from pylabs.utils import Shell, PylabsOptions
 from pylabs.correlation.fslmatfile import FslMatFile
 

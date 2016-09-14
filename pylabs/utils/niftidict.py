@@ -6,7 +6,7 @@ import nibabel
 from collections import defaultdict
 from pylabs.utils.paths import getnetworkdataroot
 from pylabs.alignment.affinematfile import FslAffineMat
-prov = niprov.ProvenanceContext()
+prov = ProvenanceWrapper()
 fs = getnetworkdataroot()
 
 #should move to bbc proj now that it works

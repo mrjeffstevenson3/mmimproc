@@ -13,7 +13,7 @@ from copy import copy
 def fitPhantoms(images, projectdir, dirstruct='BIDS', async=False, skipExisting = False, xdict=None):
     #from multiprocessing import Pool
     #pool = Pool(12)
-    provenance = niprov.ProvenanceContext()
+    provenance = ProvenanceWrapper()
     outfiles = []
     if xdict is None:
         xdict = {}

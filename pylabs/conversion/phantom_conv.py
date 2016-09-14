@@ -15,10 +15,10 @@ from nibabel.volumeutils import fname_ext_ul_case
 from nibabel.orientations import apply_orientation
 from nibabel.orientations import inv_ornt_aff
 from nibabel.orientations import io_orientation
-import niprov
+from pylabs.utils.provenance import ProvenanceWrapper
 from pylabs.utils._options import PylabsOptions
 opts = PylabsOptions()
-prov = niprov.ProvenanceContext()
+prov = ProvenanceWrapper()
 
 identity_matrix = np.eye(4)
 mni_affine = np.array([[-1, 0, 0, 90], [0, 1, 0, -126], [0, 0, 1, -72], [0, 0, 0, 1]])

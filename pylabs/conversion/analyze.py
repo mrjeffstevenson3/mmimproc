@@ -1,6 +1,6 @@
 import os, nibabel
 from os.path import join
-import niprov
+from pylabs.utils.provenance import ProvenanceWrapper
 from pylabs.utils import PylabsOptions
 
 

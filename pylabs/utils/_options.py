@@ -1,4 +1,4 @@
-import niprov
+from pylabs.utils.provenance import ProvenanceWrapper
 import os
 
 

@@ -3,7 +3,7 @@ import numpy as np
 import os
 import nibabel
 import nibabel.nifti1 as nifti1
-import niprov
+from pylabs.utils.provenance import ProvenanceWrapper
 from nipype.interfaces import fsl
 from os.path import join
 from scipy.ndimage.measurements import center_of_mass as com
@@ -13,7 +13,7 @@ from pylabs.utils import InDir
 from pylabs.io.spar import load as readspar
 from pylabs.utils.paths import getnetworkdataroot
 fs = getnetworkdataroot()
-prov = niprov.ProvenanceContext()
+prov = ProvenanceWrapper()
 flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo', output_type='NIFTI')
 applyxfm = fsl.ApplyXfm(interp='nearestneighbour', output_type='NIFTI')
 bet = fsl.BET(output_type='NIFTI')

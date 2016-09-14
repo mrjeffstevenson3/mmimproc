@@ -1,6 +1,6 @@
 import os, glob
 from os.path import join as pathjoin
-import niprov
+from pylabs.utils.provenance import ProvenanceWrapper
 from pylabs.correlation.behavior import csv2fslmat
 from pylabs.correlation.regfilt import multiregfilt
 from pylabs.correlation.randpar import multirandpar

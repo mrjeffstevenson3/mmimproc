@@ -7,7 +7,7 @@ import nibabel
 from collections import defaultdict
 from datetime import datetime
 from pylabs.utils.paths import getnetworkdataroot, getlocaldataroot
-#prov = niprov.ProvenanceContext()
+#prov = ProvenanceWrapper()
 fs = getnetworkdataroot()
 origin = np.asarray([0, 0, 0])
 project = 'bbc'
