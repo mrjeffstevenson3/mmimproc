@@ -8,8 +8,8 @@ from os.path import join
 from pylabs.utils.paths import getlocaldataroot
 from pylabs.qt1.formulas import spgrformula
 from pylabs.utils import progress
-from niprov import Context
-provenance = Context()
+from pylabs.utils.provenance import ProvenanceWrapper
+provenance = ProvenanceWrapper()
 import warnings
 from scipy.optimize import OptimizeWarning
 warnings.simplefilter("ignore", OptimizeWarning)

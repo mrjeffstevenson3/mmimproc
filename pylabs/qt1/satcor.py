@@ -3,14 +3,14 @@ import collections, numpy, glob, datetime, pandas, itertools
 from numpy import cos, sin, exp, tan, radians, power
 import matplotlib.pyplot as plt
 from os.path import join, isfile
-from niprov import Context
+from pylabs.utils.provenance import ProvenanceWrapper
 from pylabs.utils.paths import getnetworkdataroot
 from pylabs.qt1.fitting import spgrformula
 from pylabs.qt1.model_pipeline import modelForDate, hasRecordForDate
 from pylabs.qt1.vials import vialNumbersByAscendingT1
 from pylabs.io.mixed import listOfDictsFromJson
 from pylabs.qt1.simplefitting import fitT1
-provenance = Context()
+provenance = ProvenanceWrapper()
 
 """
 This script uses the sampled phantom data (from phantoms.py) to determine

@@ -1,4 +1,4 @@
-import glob, os, pandas, numpy, niprov, nibabel
+import glob, os, pandas, numpy, nibabel
 from os.path import join
 from pylabs.utils.paths import getlocaldataroot, getnetworkdataroot
 import pylabs.correlation.correlate as correlate
@@ -12,7 +12,7 @@ from pylabs.qt1.b1mapcoreg import b1mapcoreg_1file
 import pylabs.masking as masking
 from nipype.interfaces import fsl
 from scipy.ndimage.filters import gaussian_filter
-provenance = niprov.ProvenanceContext()
+provenance = ProvenanceWrapper()
 
 ## behavior
 from pylabs.projects.roots.behavior import selectedvars

@@ -1,8 +1,8 @@
 from __future__ import division
-import nibabel, numpy, niprov, sys
+import nibabel, numpy, sys
 from numpy import cos, sin, exp, tan, radians, power
 from pylabs.optimization import nonlinearfit
-provenance = niprov.ProvenanceContext()
+provenance = ProvenanceWrapper()
 prov = lambda fpath: provenance.get(forFile=fpath).provenance
 
 ## Same equation as formulas.spgrformula but without sub function (performance)

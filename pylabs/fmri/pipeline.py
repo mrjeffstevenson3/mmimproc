@@ -1,11 +1,11 @@
 import os, glob
 from os.path import join
-from niprov import Context
+from pylabs.utils.provenance import ProvenanceWrapper
 import nibabel, numpy
 from pylabs.utils.paths import getlocaldataroot
 from pylabs.utils import Filesystem
 from pylabs.transformations.standard import standardizeBasedOnAbsoluteMask
-provenance = Context()
+provenance = ProvenanceWrapper()
 filesys = Filesystem()
 
 fs = getlocaldataroot()

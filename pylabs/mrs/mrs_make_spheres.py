@@ -16,8 +16,8 @@ import nibabel
 import nibabel.nifti1 as nifti1
 from nipype.interfaces import fsl
 from pylabs.utils.paths import getnetworkdataroot
-import niprov
-from niprov import Context as ProvenanceContext
+from pylabs.utils.provenance import ProvenanceWrapper
+from pylabs.utils.provenance import ProvenanceWrapper as ProvenanceContext
 from pylabs.utils._options import PylabsOptions
 from decimal import *
 getcontext().prec = 8
@@ -94,7 +94,7 @@ templatefiles = set(glob(pathjoin(fs, pathtotemplates, '*_head*.nii.gz'))) - set
 templatefiles = list(templatefiles)
 if outputdir and not os.path.exists(pathjoin(outputdir, 'tmp')):
     os.makedirs(pathjoin(outputdir, 'tmp'))
-[niprov.add(img) for img in templatefiles]
+[prov.add(img) for img in templatefiles]
 
 #tf = templatefiles[2]
 #tf = templatefiles[substring_i(templatefiles, ref_img)]

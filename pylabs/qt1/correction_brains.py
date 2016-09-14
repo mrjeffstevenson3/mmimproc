@@ -3,7 +3,7 @@ import os, glob, nibabel
 from os.path import join
 from pylabs.utils.paths import getlocaldataroot
 from pylabs.qt1.correction import CorrectionFactor
-from niprov import Context as ProvenanceContext
+from pylabs.utils.provenance import ProvenanceWrapper as ProvenanceContext
 
 provenance = ProvenanceContext()
 rootdir = join(getlocaldataroot(),'self_control','hbm_group_data','qT1')

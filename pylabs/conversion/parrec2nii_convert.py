@@ -27,8 +27,8 @@ from glob import glob
 from pylabs.utils.files import sortedParGlob
 from pylabs.utils.paths import getlocaldataroot, getnetworkdataroot
 from pylabs.utils import pr_examdate2pydatetime, pr_examdate2BIDSdatetime
-import niprov
-prov = niprov.ProvenanceContext()
+from pylabs.utils.provenance import ProvenanceWrapper
+prov = ProvenanceWrapper()
 fs = getnetworkdataroot()
 import dill #to use as pickle replacement of lambda dict
 

@@ -8,8 +8,8 @@ from pylabs.utils.paths import getlocaldataroot, getnetworkdataroot
 from pylabs.utils.timing import waitForFiles
 from pylabs.utils.selection import select, withVoxelsOverThresholdOf
 from pylabs.utils.files import deconstructRandparFiles
-import niprov
-prov = niprov.Context()
+from pylabs.utils.provenance import ProvenanceWrapper
+prov = ProvenanceWrapper()
 prov.dryrun = True
 prov.verbose = True
 
@@ -20,14 +20,14 @@ subjects = [28, 29, 30, 37, 53, 65]
 statsdir = join(fs, project, 'myvbm', 'stats')
 behavdir = 'data/behavior/'
 csvfile = behavdir+'roots_behavior_transposed.csv'
-niprov.add(csvfile)
+prov.add(csvfile)
 maskfile = join(statsdir, 'WM_mask.nii.gz')
 imgtemplate = '{0}_mod_merg_s3.nii.gz'
 measures = ['WM']
 
 skellist = [imgtemplate.format(m) for m in measures]
 images = [statsdir+'/'+i for i in skellist]
-[niprov.add(img) for img in images]
+[prov.add(img) for img in images]
 
 exptag='t_thresh_2p7_filter_gender_n500'
 matfiledir = join(statsdir,'matfiles','matfiles_'+exptag)

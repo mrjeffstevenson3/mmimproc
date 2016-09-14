@@ -10,8 +10,8 @@ from pylabs.utils.selection import select, withVoxelsOverThresholdOf
 from pylabs.utils.files import deconstructRandparFiles
 from pylabs.io.images import combineAsVolumes
 import pylabs.masking
-import niprov
-prov = niprov.Context()
+from pylabs.utils.provenance import ProvenanceWrapper
+prov = ProvenanceWrapper()
 prov.dryrun = True
 prov.verbose = True
 
@@ -20,7 +20,7 @@ projectdir = join(fs, 'roots_of_empathy')
 subjects = [28, 29, 30, 37, 53, 65]
 statsdir = join(projectdir, 'correlations_qt1_randomise')
 csvfile = 'data/behavior/roots_behavior_transposed.csv'
-niprov.add(csvfile)
+prov.add(csvfile)
 maskfile = join(statsdir, 'brain_mask.nii.gz')
 designfile = join(statsdir, 'roots_design2col.con')
 assert os.path.isfile(designfile)
@@ -31,7 +31,7 @@ subjImages = [join(projectdir, 'sub-2013-C0{}'.format(s), 'ses-1', 'qt1',
 combined = join(statsdir, 't1_combined.nii.gz')
 combineAsVolumes(subjImages, combined)
 images = [combined]
-[niprov.add(img) for img in images]
+[prov.add(img) for img in images]
 
 pylabs.masking.maskForStack(combined, maskfile)
 assert os.path.isfile(maskfile)

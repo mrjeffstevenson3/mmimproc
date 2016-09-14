@@ -1,14 +1,14 @@
 from __future__ import division
 import collections, numpy, glob, datetime, pandas, itertools
 from os.path import join, isfile, basename
-from niprov import Context
+from pylabs.utils.provenance import ProvenanceWrapper
 from pylabs.io.mixed import listOfDictsToJson
 from pylabs.utils.paths import getnetworkdataroot
 from pylabs.conversion.helpers import convertSubjectParfiles
 from pylabs.qt1.vials import vialNumbersByAscendingT1
 from pylabs.regional import averageByRegion
 from pylabs.alignment.phantom import align, applyXformAndSave
-provenance = Context()
+provenance = ProvenanceWrapper()
 provget = lambda  f: provenance.get(forFile=f).provenance
 singletr = lambda tr: tr[0] if isinstance(tr, list) else tr
 

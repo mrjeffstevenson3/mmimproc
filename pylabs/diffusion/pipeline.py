@@ -1,6 +1,6 @@
 import os, glob
 from os.path import join as pathjoin
-import niprov
+from pylabs.utils.provenance import ProvenanceWrapper
 from pylabs.correlation.behavior import csv2fslmat
 from pylabs.correlation.regfilt import multiregfilt
 from pylabs.correlation.randpar import multirandpar
@@ -9,10 +9,9 @@ from pylabs.utils.paths import getnetworkdataroot
 from pylabs.utils.timing import waitForFiles
 from pylabs.utils.selection import select, withVoxelsOverThresholdOf
 from pylabs.utils.files import deconstructRandparFiles
-from niprov.options import NiprovOptions
-opts = NiprovOptions()
-opts.dryrun = True
-opts.verbose = True
+provenance = ProvenanceWrapper()
+provenance.config.dryrun = True
+provenance.config.verbose = True
 
 subjects = [317, 322, 324, 328, 332, 334, 335, 341, 347, 353, 364, 370, 371, 
     376, 379, 381, 384, 385, 396 ]
@@ -21,14 +20,14 @@ fs = getnetworkdataroot()
 statsdir = fs+'self_control/hbm_group_data/tbss_19subj/workdir_thr1p5_v3/stats/'
 behavdir = fs+'self_control/behavioral_data/behav_from_andy_march27_2015/'
 csvfile = behavdir+'EF_and_Brain_july08_2015_Meq0_delta.csv'
-niprov.add(csvfile)
+provenance.add(csvfile)
 maskfile = statsdir+'mean_FA_skeletonised_mask.nii.gz'
 
 imgtemplate = 'all_{0}_skeletonised.nii.gz'
 measures = ['F1', 'F2', 'FA', 'L1', 'MD', 'MO', 'RA', 'AD', 'L2', 'L3']
 skellist = [imgtemplate.format(m) for m in measures]
 images = [statsdir+i for i in skellist]
-[niprov.add(img) for img in images]
+[provenance.add(img) for img in images]
 
 exptag='filter_gender_and_dti_delta_n500'
 matfiledir = pathjoin(statsdir,'matfiles','matfiles_'+exptag)

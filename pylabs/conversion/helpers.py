@@ -1,10 +1,10 @@
 from pylabs.conversion.phantom_conv import (phantom_midslice_par2mni, 
                                         phantom_B1_midslice_par2mni)
 from pylabs.utils.files import sortedParGlob
-import collections, itertools, os, niprov
+import collections, itertools, os
 from os.path import join
 from pylabs.conversion.parrec import par_to_nii
-provenance = niprov.ProvenanceContext()
+provenance = ProvenanceWrapper()
 
 
 def convertSubjectParfiles(subj, subjectdir, niftiDict=None):

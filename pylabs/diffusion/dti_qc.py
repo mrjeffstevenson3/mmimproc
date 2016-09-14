@@ -1,10 +1,10 @@
-import glob, os, pandas, numpy, niprov, nibabel, cPickle, shutil, pylabs
+import glob, os, pandas, numpy, nibabel, cPickle, shutil, pylabs
 from os.path import join
 from collections import defaultdict
 from nipype.interfaces import fsl
 from pylabs.utils._run import run_subprocess
 from pylabs.utils.paths import getnetworkdataroot, getpylabspath
-prov = niprov.ProvenanceContext()
+prov = ProvenanceWrapper()
 flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo')
 applyxfm = fsl.ApplyXfm()
 fs = getnetworkdataroot()

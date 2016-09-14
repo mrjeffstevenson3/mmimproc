@@ -1,6 +1,6 @@
 import os, glob
 from os.path import join as pathjoin
-import niprov
+from pylabs.utils.provenance import ProvenanceWrapper
 from pylabs.correlation.behavior import csv2fslmat
 from pylabs.correlation.regfilt import multiregfilt
 from pylabs.correlation.randpar import multirandpar
@@ -10,10 +10,10 @@ from pylabs.utils.timing import waitForFiles
 from pylabs.utils.selection import select, withVoxelsOverThresholdOf
 from pylabs.utils.files import deconstructRandparFiles
 from pylabs.vbm.upsample import upsample1mm
-from niprov import Context
+from pylabs.utils.provenance import ProvenanceWrapper
 from pylabs.utils._options import PylabsOptions
 opts = PylabsOptions()
-prov = Context()
+prov = ProvenanceWrapper()
 prov.dryrun = False
 prov.config.dryrun = False
 prov.config.verbose = True
@@ -25,14 +25,14 @@ fs = getlocaldataroot()
 statsdir = fs+'self_control/hbm_group_data/qT1/stats/'
 behavdir = fs+'self_control/behavioral_data/behav_from_andy_march27_2015/'
 csvfile = behavdir+'SCS_Behavior_dataset_9_14_15_Meq0_delta_qT1_SS_resptime_D_qT1_phantcorr.csv'
-niprov.add(csvfile)
+prov.add(csvfile)
 
 #images = glob.glob(statsdir+'all_qT1_b1corr_phantcorr_bydate_dec12b_reg2mni_susan*.nii.gz')
 # images = [ fn for fn in glob.glob(statsdir+'all_qT1_b1corr_phantcorr_bydate_dec12b_reg2mni_f*.nii.gz') if not os.path.basename(fn).endswith('filt_c2b02s16_Gender.nii.gz') ]
 # images += [ fn for fn in glob.glob(statsdir+'all_qT1_b1corr_phantcorr_bydate_dec12b_reg2mni_sigma*.nii.gz') if not os.path.basename(fn).endswith('filt_c2b02s16_Gender.nii.gz') ]
 images = [statsdir+'all_qT1_b1corr_phantcorr_bydate_dec12b_reg2mni_sigma2.nii.gz', statsdir+'all_qT1_b1corr_phantcorr_bydate_dec12b_reg2mni_sigma2_susan344_dt2mm.nii.gz',
           statsdir+'all_qT1_b1corr_phantcorr_bydate_dec12b_reg2mni_susan344_1mm_then_sigma2.nii.gz']
-[niprov.add(img) for img in images]
+[prov.add(img) for img in images]
 
 exptag='randpar_qT1_full_run_gend_qT1delta_filt_dec24_sigma2_susan2_n500'
 matfiledir = pathjoin(statsdir,'matfiles','matfiles_'+exptag)

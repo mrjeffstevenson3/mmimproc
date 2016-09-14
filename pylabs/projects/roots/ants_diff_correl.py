@@ -7,8 +7,8 @@ import numpy as np
 from pylabs.alignment.ants_reg import subj2templ_applywarp as reg2templ
 from pylabs.utils.paths import getlocaldataroot, getnetworkdataroot
 from pylabs.conversion.brain_convert import conv_subjs
-import niprov
-prov = niprov.Context()
+from pylabs.utils.provenance import ProvenanceWrapper
+prov = ProvenanceWrapper()
 prov.dryrun = True
 prov.verbose = True
 convert = False

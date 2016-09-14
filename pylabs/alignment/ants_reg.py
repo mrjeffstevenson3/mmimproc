@@ -1,7 +1,8 @@
 import subprocess
-import niprov
+from pylabs.utils.provenance import ProvenanceWrapper
 from pylabs.utils import run_subprocess
 from pylabs.utils import WorkingContext
+provenance = ProvenanceWrapper()
 
 def subj2templ_applywarp(moving, ref_img, outfile, warpfiles, execwdir, affine_xform=None, args=None):
     cmd = ''
@@ -13,7 +14,7 @@ def subj2templ_applywarp(moving, ref_img, outfile, warpfiles, execwdir, affine_x
         cmd += ' '.join(map(str, args))
     with WorkingContext(execwdir):
         subprocess.check_call(cmd, shell=True)
-    niprov.log(outfile, 'apply WarpImageMultiTransform', moving, script=__file__)
+    provenance.log(outfile, 'apply WarpImageMultiTransform', moving, script=__file__)
     return
 
 def subj2T1(moving, ref_img, outfile, inargs=None):
@@ -27,6 +28,6 @@ def subj2T1(moving, ref_img, outfile, inargs=None):
     cmd += ' -o '+outfile+' '
     cmd += ' '.join(map(str, args))
     subprocess.check_call(cmd, shell=True)
-    niprov.log(outfile, 'antsRegistrationSyN', moving, script=__file__)
+    provenance.log(outfile, 'antsRegistrationSyN', moving, script=__file__)
     return
 

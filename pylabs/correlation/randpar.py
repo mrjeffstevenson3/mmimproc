@@ -1,12 +1,12 @@
 # Wrappers to invoke FSL's randomise_parallel routine.
 import os
-from pylabs.utils import Shell, PylabsOptions, Binaries, WorkingContext
-import niprov
+from pylabs.utils import Shell, Binaries, WorkingContext
+from pylabs.utils.provenance import ProvenanceWrapper
 
 
 def multirandpar(imageMatCombinations, designfile, masks=None, niterations=50, 
     workdir=os.getcwd(), outdir=None, tbss=False, shell=Shell(), t_thresh=0.0,
-    binaries=Binaries(), context=WorkingContext, opts=PylabsOptions()):
+    binaries=Binaries(), context=WorkingContext, provenance=ProvenanceWrapper()):
     """ randomise_parallel on multiple images and/or multiple predictors
 
     Expects mask files to exist for each unique image prefix 
@@ -77,7 +77,7 @@ def multirandpar(imageMatCombinations, designfile, masks=None, niterations=50,
                     cmd += ' -T'          # T= TFCE 3D.
                 cmd += ' -V'                            # V=variant smoothing,
             with context(workdir):
-                niprov.record(cmd, transient=True, opts=opts)
+                provenance.record(cmd, transient=True)
             outfiles.append(resultfile)
     return outfiles
 
