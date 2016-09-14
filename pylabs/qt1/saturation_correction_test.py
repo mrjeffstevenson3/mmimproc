@@ -14,7 +14,7 @@ from pylabs.regional import averageByRegion
 from pylabs.alignment.phantom import align, applyXformAndSave
 from pylabs.qt1.simplefitting import fitT1
 from pylabs.stats import ScaledPolyfit
-provenance = Context()
+provenance = ProvenanceWrapper()
 
 ## settings
 fs = getlocaldataroot()

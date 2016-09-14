@@ -14,7 +14,7 @@ from pylabs.qt1.formulas import sratio
 from pylabs.regional import averageByRegion
 from pylabs.alignment.phantom import align, applyXformAndSave
 from pylabs.stats import ScaledPolyfit
-provenance = Context()
+provenance = ProvenanceWrapper()
 
 ## settings
 fs = getlocaldataroot()

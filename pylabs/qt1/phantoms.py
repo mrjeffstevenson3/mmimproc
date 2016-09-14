@@ -8,7 +8,7 @@ from pylabs.conversion.helpers import convertSubjectParfiles
 from pylabs.qt1.vials import vialNumbersByAscendingT1
 from pylabs.regional import averageByRegion
 from pylabs.alignment.phantom import align, applyXformAndSave
-provenance = Context()
+provenance = ProvenanceWrapper()
 provget = lambda  f: provenance.get(forFile=f).provenance
 singletr = lambda tr: tr[0] if isinstance(tr, list) else tr
 

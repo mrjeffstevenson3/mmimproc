@@ -5,7 +5,7 @@ import nibabel, numpy
 from pylabs.utils.paths import getlocaldataroot
 from pylabs.utils import Filesystem
 from pylabs.transformations.standard import standardizeBasedOnAbsoluteMask
-provenance = Context()
+provenance = ProvenanceWrapper()
 filesys = Filesystem()
 
 fs = getlocaldataroot()

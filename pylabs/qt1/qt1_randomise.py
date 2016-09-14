@@ -13,7 +13,7 @@ from pylabs.vbm.upsample import upsample1mm
 from pylabs.utils.provenance import ProvenanceWrapper
 from pylabs.utils._options import PylabsOptions
 opts = PylabsOptions()
-prov = Context()
+prov = ProvenanceWrapper()
 prov.dryrun = False
 prov.config.dryrun = False
 prov.config.verbose = True

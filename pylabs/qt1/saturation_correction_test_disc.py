@@ -11,7 +11,7 @@ from pylabs.qt1.vials import vialNumbersByAscendingT1
 from pylabs.regional import averageByRegion
 from pylabs.alignment.phantom import align, applyXformAndSave
 from pylabs.qt1.simplefitting import fitT1
-provenance = Context()
+provenance = ProvenanceWrapper()
 def prov(fpath):
     return provenance.get(forFile=fpath).provenance
 

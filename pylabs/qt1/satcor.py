@@ -10,7 +10,7 @@ from pylabs.qt1.model_pipeline import modelForDate, hasRecordForDate
 from pylabs.qt1.vials import vialNumbersByAscendingT1
 from pylabs.io.mixed import listOfDictsFromJson
 from pylabs.qt1.simplefitting import fitT1
-provenance = Context()
+provenance = ProvenanceWrapper()
 
 """
 This script uses the sampled phantom data (from phantoms.py) to determine

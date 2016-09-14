@@ -9,7 +9,7 @@ from pylabs.conversion.phantom_conv import phantom_midslice_par2mni
 from pylabs.utils.provenance import ProvenanceWrapper
 from pylabs.utils._options import PylabsOptions
 opts = PylabsOptions()
-prov = Context()
+prov = ProvenanceWrapper()
 prov.config.dryrun = False
 prov.config.verbosity = True
 opts.verbosity = True

@@ -4,7 +4,7 @@ from pylabs.utils.provenance import ProvenanceWrapper
 import nibabel, numpy
 from pylabs.utils.paths import getlocaldataroot
 from pylabs.vbm.upsample import upsample1mm
-provenance = Context()
+provenance = ProvenanceWrapper()
 
 fs = getlocaldataroot()
 resultdir = join(fs,'self_control/hbm_group_data/mmpa/')
