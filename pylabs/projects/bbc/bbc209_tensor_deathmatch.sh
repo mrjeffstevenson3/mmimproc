@@ -6,10 +6,10 @@ rfn=/media/DiskArray/shared_data/js/bbc/sub-bbc209/ses-1/dwi/sub-bbc209_ses-1_dt
 bvals=${rfn}.bvals
 bvecs=${rfn}_eddy_corrected.eddy_rotated_bvecs
 brm=${rfn}_S0_brain_mask.nii
-mas=(${rfn}_S0_brain-maskCC.nii.gz ${rfn}_S0_brain-maskCO.nii.gz)
+mas=(${rfn}_S0_brain-maskCC.nii.gz ${rfn}_S0_brain-maskCO.nii.gz ${rfn}_S0_brain-maskSL.nii.gz)
 S0=${rfn}_S0.nii
-rm -f ${rfn:0: -34}maskCC.txt ${rfn:0: -34}maskCO.txt ${rfn:0: -34}tmpresult.txt ${rfn:0: -34}tmpstat.txt
-touch ${rfn:0: -34}maskCC.txt ${rfn:0: -34}maskCO.txt
+rm -f ${rfn:0: -34}tensor_stats.txt ${rfn:0: -34}tmpresult.txt ${rfn:0: -34}tmpstat.txt
+touch ${rfn:0: -34}tensor_stats.txt
 for d in "${tens[@]}"; do
     for m in "${meth[@]}"; do
         dtifit -k ${rfn}${d} -o ${rfn}${d:0: -4}`if [ "${m}" == '-w' ]; then echo _wls; else echo _ols; fi` \
@@ -26,8 +26,8 @@ for d in "${tens[@]}"; do
             fslstats -t ${rfn}${d:0: -4}`if [ "${m}" == '-w' ]; then echo _wls; else echo _ols; fi`_dtigen_sub${d:0: -4} \
                 -k $s -M >> ${rfn:0: -34}tmpstat.txt
             cat ${rfn:0: -34}tmpstat.txt
-            paste ${rfn:0: -34}${s: -13: -7}.txt ${rfn:0: -34}tmpstat.txt > ${rfn:0: -34}tmpresult.txt
-            mv ${rfn:0: -34}tmpresult.txt ${rfn:0: -34}${s: -13: -7}.txt
+            paste ${rfn:0: -34}tensor_stats.txt ${rfn:0: -34}tmpstat.txt > ${rfn:0: -34}tmpresult.txt
+            mv ${rfn:0: -34}tmpresult.txt ${rfn:0: -34}tensor_stats.txt
             echo finished $d $m $s
         done
     done
