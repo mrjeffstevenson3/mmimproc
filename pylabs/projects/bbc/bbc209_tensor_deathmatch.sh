@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set +x
 meth=("" -w)
-tens=(_eddy_corrected.nii _ec_den4_dipy.nii _ec_den8_dipy.nii)
+tens=(_eddy_corrected.nii _ec_den4_dipy.nii _ec_den8_dipy.nii _eddy_corrected_restore_tensor_den8.nii _eddy_corrected_restore_tensor.nii)
 rfn=/media/DiskArray/shared_data/js/bbc/sub-bbc209/ses-1/dwi/sub-bbc209_ses-1_dti_15dir_b1000_1
 bvals=${rfn}.bvals
 bvecs=${rfn}_eddy_corrected.eddy_rotated_bvecs
