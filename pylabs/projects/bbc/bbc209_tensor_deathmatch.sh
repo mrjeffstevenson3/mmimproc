@@ -12,8 +12,10 @@ rm -f ${rfn:0: -34}tensor_stats.txt ${rfn:0: -34}tmpresult.txt ${rfn:0: -34}tmps
 touch ${rfn:0: -34}tensor_stats.txt
 for d in "${tens[@]}"; do
     for m in "${meth[@]}"; do
-        dtifit -k ${rfn}${d} -o ${rfn}${d:0: -4}`if [ "${m}" == '-w' ]; then echo _wls; else echo _ols; fi` \
-            -m $brm -r $bvecs -b $bvals $m --save_tensor --sse
+        if [ ${d} == '_eddy_corrected.nii' ] ||  [ ${d} == '_ec_den4_dipy.nii' ] || [ ${d} == '_ec_den8_dipy.nii' ]; then
+            dtifit -k ${rfn}${d} -o ${rfn}${d:0: -4}`if [ "${m}" == '-w' ]; then echo _wls; else echo _ols; fi` \
+                -m $brm -r $bvecs -b $bvals $m --save_tensor --sse
+        fi
         dtigen -t ${rfn}${d:0: -4}`if [ "${m}" == '-w' ]; then echo _wls; else echo _ols; fi`_tensor \
             -o ${rfn}${d:0: -4}`if [ "${m}" == '-w' ]; then echo _wls; else echo _ols; fi`_dtigen \
             -b $bvals -r $bvecs -m $brm --s0=${S0}
