@@ -12,33 +12,33 @@ rm -f ${rfn:0: -34}tensor_stats.txt ${rfn:0: -34}tmpresult.txt ${rfn:0: -34}tmps
 touch ${rfn:0: -34}tensor_stats.txt
 for d in "${tens[@]}"; do
     for m in "${meth[@]}"; do
-        if [ ${d} == '_eddy_corrected.nii' ] ||  [ ${d} == '_ec_den4_dipy.nii' ] || [ ${d} == '_ec_den8_dipy.nii' ]; then
-            dtifit -k ${rfn}${d} -o ${rfn}${d:0: -4}`if [ "${m}" == '-w' ]; then echo _wls; else echo _ols; fi` \
+        if [[ ${d} == '_eddy_corrected.nii' ]] ||  [[ ${d} == '_ec_den4_dipy.nii' ]] || [[ ${d} == '_ec_den8_dipy.nii' ]]; then
+            dtifit -k ${rfn}${d} -o ${rfn}${d:0: -4}`if [[ "${m}" == '-w' ]]; then echo _wls; else echo _ols; fi` \
                 -m $brm -r $bvecs -b $bvals $m --save_tensor --sse
-            dtigen -t ${rfn}${d:0: -4}`if [ "${m}" == '-w' ]; then echo _wls; else echo _ols; fi`_tensor \
-                -o ${rfn}${d:0: -4}`if [ "${m}" == '-w' ]; then echo _wls; else echo _ols; fi`_dtigen \
+            dtigen -t ${rfn}${d:0: -4}`if [[ "${m}" == '-w' ]];  then echo _wls; else echo _ols; fi`_tensor \
+                -o ${rfn}${d:0: -4}`if [[ "${m}" == '-w' ]];  then echo _wls; else echo _ols; fi`_dtigen \
                 -b $bvals -r $bvecs -m $brm --s0=${S0}
-            fslmaths ${rfn}${d:0: -4}`if [ "${m}" == '-w' ]; then echo _wls; else echo _ols; fi`_dtigen -thr 5 -uthr 10000 \
-                -sub ${rfn}${d} ${rfn}${d:0: -4}`if [ "${m}" == '-w' ]; then echo _wls; else echo _ols; fi`_dtigen_sub${d:0: -4}
-        elif [ ${m} == '-w' ]; then
+            fslmaths ${rfn}${d:0: -4}`if [[ "${m}" == '-w' ]];  then echo _wls; else echo _ols; fi`_dtigen -thr 5 -uthr 10000 \
+                -sub ${rfn}${d} ${rfn}${d:0: -4}`if [[ "${m}" == '-w' ]];  then echo _wls; else echo _ols; fi`_dtigen_sub${d:0: -4}
+        elif [[ ${m} == '-w' ]]; then
             dtigen -t ${rfn}${d:0: -4} -o ${rfn}${d:0: -4}_dtigen -b $bvals -r $bvecs -m $brm --s0=${S0}
-            if [ ${d} == '_eddy_corrected_restore_tensor.nii' ]; then
+            if [[ ${d} == '_eddy_corrected_restore_tensor.nii' ]];  then
                 fslmaths ${rfn}${d:0: -4}_dtigen -thr 5 -uthr 10000 -sub ${rfn}_eddy_corrected.nii ${rfn}${d:0: -4}_dtigen_sub_eddy_corrected
             else
                 fslmaths ${rfn}${d:0: -4}_dtigen -thr 5 -uthr 10000 -sub ${rfn}_ec_den8_dipy.nii ${rfn}${d:0: -4}_dtigen_sub_ec_den8_dipy
             fi
         fi
         for s in "${mas[@]}"; do
-            if [ ${d} == '_eddy_corrected.nii' ] ||  [ ${d} == '_ec_den4_dipy.nii' ] || [ ${d} == '_ec_den8_dipy.nii' ]; then
-                echo ${d:0: -4}`if [ "${m}" == '-w' ]; then echo _wls; else echo _ols; fi`_dtigen_sub${d:0: -4}_${s: -9: -7} \
+            if [[ ${d} == '_eddy_corrected.nii' ]] ||  [[ ${d} == '_ec_den4_dipy.nii' ]] || [[ ${d} == '_ec_den8_dipy.nii' ]];  then
+                echo ${d:0: -4}`if [[ "${m}" == '-w' ]];  then echo _wls; else echo _ols; fi`_dtigen_sub${d:0: -4}_${s: -9: -7} \
                     > ${rfn:0: -34}tmpstat.txt
                 ls -l $s
-                fslstats -t ${rfn}${d:0: -4}`if [ "${m}" == '-w' ]; then echo _wls; else echo _ols; fi`_dtigen_sub${d:0: -4} \
+                fslstats -t ${rfn}${d:0: -4}`if [[ "${m}" == '-w' ]];  then echo _wls; else echo _ols; fi`_dtigen_sub${d:0: -4} \
                     -k $s -M >> ${rfn:0: -34}tmpstat.txt
-            elif [ ${d} == '_eddy_corrected_restore_tensor.nii' ] && [ ${m} == '-w' ]; then
+            elif [[ ${d} == '_eddy_corrected_restore_tensor.nii' ]] && [[ ${m} == '-w' ]];  then
                 echo ${d:0: -4}_dtigen_sub_eddy_corrected_${s: -9: -7} > ${rfn:0: -34}tmpstat.txt
                 fslstats -t ${rfn}${d:0: -4}_dtigen_sub_eddy_corrected -k $s -M >> ${rfn:0: -34}tmpstat.txt
-            elif [ ${d} == '_eddy_corrected_restore_tensor_den8.nii' ] && [ ${m} == '-w' ]; then
+            elif [[ ${d} == '_eddy_corrected_restore_tensor_den8.nii' ]] && [[ ${m} == '-w' ]];  then
                 echo ${d:0: -4}_dtigen_sub_ec_den8_dipy_${s: -9: -7} > ${rfn:0: -34}tmpstat.txt
                 fslstats -t ${rfn}${d:0: -4}_dtigen_sub_ec_den8_dipy -k $s -M >> ${rfn:0: -34}tmpstat.txt
             fi
