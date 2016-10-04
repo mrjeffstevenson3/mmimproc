@@ -5,6 +5,7 @@ from scipy.ndimage.measurements import center_of_mass as com
 import nibabel
 from collections import defaultdict
 from pylabs.utils.paths import getnetworkdataroot
+from pylabs.utils import run_subprocess
 from pylabs.alignment.affinematfile import FslAffineMat
 from pylabs.utils.provenance import ProvenanceWrapper
 prov = ProvenanceWrapper()
@@ -95,4 +96,8 @@ for f in fname:
     savematf = FslAffineMat()
     savematf.data = subj2comxfm
     savematf.saveAs(join(fpath, f + '_brain_susan_nl_com2center.mat'))
+    cmd = 'c3d_affine_tool -ref ' + join(fpath, f + '_brain_susan_nl_com2center.nii.gz') + ' -src '
+    cmd += nfname + ' ' + join(fpath, f + '_brain_susan_nl_com2center.mat') + ' -fsl2ras -oitk '
+    cmd += join(fpath, f + '_brain_susan_nl_com2center.txt')
+    run_subprocess(cmd)
 
