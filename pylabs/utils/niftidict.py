@@ -13,30 +13,30 @@ fs = getnetworkdataroot()
 #should move to bbc proj now that it works
 project = 'bbc'
 niipickle = join(fs, project, 'bbc_niftiDict_all_subj_201608021057.pickle')
-fpath = join(fs, project, 'myvbm', 'ants_wempr_template', 'orig_wempr')
+fpath = join(fs, project, 'myvbm', 'ants_vbm_template', 'orig_vbm')
 subtemplate = 'sub-bbc{sid}'
 subjid = [101, 105, 106, 108, 113, 116, 118, 119, 120, 202, 208, 209, 211, 212, 215, 218, 219, 231, 236, 241, 243, 249, 252, 253]
-pairedsid = [101, 209, 105, 211, 106, 208, 108, 202, 113, 249, 116, 241, 118, 243, 119, 231, 120, 253]
+#pairedsid = [101, 209, 105, 211, 106, 208, 108, 202, 113, 249, 116, 241, 118, 243, 119, 231, 120, 253]
 sespassqc = []
 for i in range(len(subjid)):
-    if i != 7 and i != 12:
+    if i != 7 and i != 12 and i != 13:
         sespassqc = sespassqc[:i] + [1]
-    elif i == 12:
+    elif i == 12 or i == 13:
         sespassqc = sespassqc[:i] + [2]
     elif i == 7:
         sespassqc = sespassqc[:i] + [3]
 methodpassqc = []
 for i in range(len(subjid)):
-    if i == 0:
-        methodpassqc = methodpassqc[:i] + ['mpr']
-    else:
+    if i == 5:
         methodpassqc = methodpassqc[:i] + ['wempr']
+    else:
+        methodpassqc = methodpassqc[:i] + ['mpr']
 runpassqc = []
 for i in range(len(subjid)):
-    if i != 0:
+    if i != 0 and i != 6 and i != 14 and i != 19:
         runpassqc = runpassqc[:i] + [1]
-    # elif i == 6 or i == 14 or i == 19:
-    #     runpassqc = runpassqc[:i] + [2]
+    elif i == 6 or i == 14 or i == 19:
+        runpassqc = runpassqc[:i] + [2]
     elif i == 0:
         runpassqc = runpassqc[:i] + [3]
 fname_templ = 'sub-bbc{sid}_ses-{snum}_{meth}_{runnum}'
