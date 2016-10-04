@@ -20,6 +20,9 @@ class InDir(object):
         self._orig_dir = os.getcwd()
         os.chdir(self._dir)
 
+    def __list__(self):
+        print(os.listdir(self._dir))
+
     def __exit__(self, type_, value, tb):
         os.chdir(self._orig_dir)
 

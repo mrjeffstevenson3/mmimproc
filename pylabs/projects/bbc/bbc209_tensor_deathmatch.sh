@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
-set +x
+set -x
 meth=("" -w)
-tens=(_eddy_corrected.nii _ec_den4_dipy.nii _ec_den8_dipy.nii _eddy_corrected_restore_tensor_den8.nii _eddy_corrected_restore_tensor.nii)
-rfn=/media/DiskArray/shared_data/js/bbc/sub-bbc209/ses-1/dwi/sub-bbc209_ses-1_dti_15dir_b1000_1
+#tens=(_eddy_corrected.nii _ec_den4_dipy.nii _ec_den8_dipy.nii _eddy_corrected_restore_tensor_den8.nii _eddy_corrected_restore_tensor.nii)
+tens=(_eddy_corrected.nii  _ec_restore_tensor.nii)
+rfn=/media/DiskArray/shared_data/js/bbc/sub-bbc116/ses-1/dwi/sub-bbc116_ses-1_dti_15dir_b1000_1
 bvals=${rfn}.bvals
 bvecs=${rfn}_eddy_corrected.eddy_rotated_bvecs
 brm=${rfn}_S0_brain_mask.nii
@@ -22,7 +23,7 @@ for d in "${tens[@]}"; do
                 -sub ${rfn}${d} ${rfn}${d:0: -4}`if [[ "${m}" == '-w' ]];  then echo _wls; else echo _ols; fi`_dtigen_sub${d:0: -4}
         elif [[ ${m} == '-w' ]]; then
             dtigen -t ${rfn}${d:0: -4} -o ${rfn}${d:0: -4}_dtigen -b $bvals -r $bvecs -m $brm --s0=${S0}
-            if [[ ${d} == '_eddy_corrected_restore_tensor.nii' ]];  then
+            if [[ ${d} == '_ec_restore_tensor.nii' ]];  then
                 fslmaths ${rfn}${d:0: -4}_dtigen -thr 5 -uthr 10000 -sub ${rfn}_eddy_corrected.nii ${rfn}${d:0: -4}_dtigen_sub_eddy_corrected
             else
                 fslmaths ${rfn}${d:0: -4}_dtigen -thr 5 -uthr 10000 -sub ${rfn}_ec_den8_dipy.nii ${rfn}${d:0: -4}_dtigen_sub_ec_den8_dipy
@@ -35,7 +36,7 @@ for d in "${tens[@]}"; do
                 ls -l $s
                 fslstats -t ${rfn}${d:0: -4}`if [[ "${m}" == '-w' ]];  then echo _wls; else echo _ols; fi`_dtigen_sub${d:0: -4} \
                     -k $s -M >> ${rfn:0: -34}tmpstat.txt
-            elif [[ ${d} == '_eddy_corrected_restore_tensor.nii' ]] && [[ ${m} == '-w' ]];  then
+            elif [[ ${d} == '_ec_restore_tensor.nii' ]] && [[ ${m} == '-w' ]];  then
                 echo ${d:0: -4}_dtigen_sub_eddy_corrected_${s: -9: -7} > ${rfn:0: -34}tmpstat.txt
                 fslstats -t ${rfn}${d:0: -4}_dtigen_sub_eddy_corrected -k $s -M >> ${rfn:0: -34}tmpstat.txt
             elif [[ ${d} == '_eddy_corrected_restore_tensor_den8.nii' ]] && [[ ${m} == '-w' ]];  then
