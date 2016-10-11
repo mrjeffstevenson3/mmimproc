@@ -1,4 +1,5 @@
 import subprocess
+from os.path import join
 from pylabs.utils.provenance import ProvenanceWrapper
 from pylabs.utils import run_subprocess
 from pylabs.utils import WorkingContext
@@ -31,3 +32,13 @@ def subj2T1(moving, ref_img, outfile, inargs=None):
     provenance.log(outfile, 'antsRegistrationSyN', moving, script=__file__)
     return
 
+def fsl2ants_affine(execwdir, ref, src, fslmatfilename):
+    cmd = ''
+    cmd += 'c3d_affine_tool -ref '+ref+' -src '+src+' '+fslmatfilename+' -fsl2ras -oitk '
+    cmd += fslmatfilename.replace('.mat', '.txt')
+    with WorkingContext(execwdir):
+        subprocess.check_call(cmd, shell=True)
+    provenance.log(join(execwdir, fslmatfilename.replace('.mat', '.txt')),
+                   'used c3d_affine_tool to convert fsl .mat file to itk affine',
+                   join(execwdir, fslmatfilename), script=__file__)
+    return
