@@ -11,6 +11,7 @@ from dipy.core.gradients import gradient_table
 from dipy.io import read_bvals_bvecs
 from pylabs.utils.paths import getnetworkdataroot
 fs = getnetworkdataroot()
+from pylabs.projects.bbc.dwi.passed_qc import dwi_passed_qc
 from nipype.interfaces.fsl import Eddy
 eddy = Eddy(num_threads=24, output_type='NIFTI')
 from nipype.interfaces import fsl
@@ -25,8 +26,9 @@ from os.path import join
 pylabs_basepath = split(split(inspect.getabsfile(pylabs))[0])[0]
 #set up files to process
 project = 'bbc'
-subjid = [105]
 fname_templ = 'sub-bbc{sid}_ses-{snum}_{meth}_{runnum}'
+
+subjid = [105]
 sespassqc = [1]
 methodpassqc = ['dti_15dir_b1000']
 runpassqc = [1]

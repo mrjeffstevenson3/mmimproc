@@ -17,6 +17,11 @@
 3. do brain extraction with bbc/dti_bet.sh
 4. run QC with diffusion/dti_qc.py
 to do:
-5. need to build update to niftiDict function to add field 'QC': True
+5. need to build function to update niftiDict and google spreadsheet to add field 'QC': True
 6. build query niftiDict function to get status of any variable and return values
 7. build eddy current with subprocess and parallel
+8. build dti fit method
+9. build dti reg module that generates warp and affines
+10. apply warps and affines moving to template space
+11. run paired randomise runs onn all dti
+
