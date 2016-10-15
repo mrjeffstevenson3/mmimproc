@@ -4,9 +4,10 @@ import numpy as np
 import nibabel as nib
 import niprov, pylabs
 from scipy.ndimage.measurements import center_of_mass as com
+#use if python console fails to capture env variables for FSL
 # os.environ['FSLDIR'] = '/usr/share/fsl/5.0'
 # os.environ['FSLBIN'] = '/usr/share/fsl/5.0/bin'
-# os.environ['FSLOUTPUTTYPE'] = 'NIFTI'
+# os.environ['FSLOUTPUTTYPE'] = 'NIFTI_GZ'
 from nipype.interfaces import fsl
 flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo', output_type='NIFTI')
 applyxfm = fsl.ApplyXfm(interp='nearestneighbour', output_type='NIFTI')
