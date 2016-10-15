@@ -2,8 +2,11 @@ import os, inspect
 from os.path import join, basename, dirname, isfile, isdir, split
 import numpy as np
 import nibabel as nib
-import pylabs, niprov
+import niprov
 from scipy.ndimage.measurements import center_of_mass as com
+os.environ['FSLDIR'] = '/usr/share/fsl/5.0'
+os.environ['FSLBIN'] = '/usr/share/fsl/5.0/bin'
+os.environ['FSLOUTPUTTYPE'] = 'NIFTI'
 from nipype.interfaces import fsl
 flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo', output_type='NIFTI')
 applyxfm = fsl.ApplyXfm(interp='nearestneighbour', output_type='NIFTI')
@@ -16,7 +19,9 @@ from pylabs.projects.bbc.dwi.passed_qc import dwi_passed_qc
 from pylabs.utils.paths import getnetworkdataroot
 from pylabs.utils import run_subprocess, WorkingContext
 fs = getnetworkdataroot()
-pylabs_basepath = split(split(inspect.getabsfile(pylabs))[0])[0]
+#pylabs_basepath = split(split(inspect.getabsfile(pylabs))[0])[0]
+#hard code solution for redshirt
+pylabs_basepath = '/home/toddr/Software/pylabs'
 project = 'bbc'
 fname_templ = 'sub-bbc{sid}_ses-{snum}_{meth}_{runnum}'
 subjid, sespassqc, runpassqc = zip(*dwi_passed_qc)
