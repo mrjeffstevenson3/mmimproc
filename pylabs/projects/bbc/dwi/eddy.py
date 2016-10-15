@@ -47,6 +47,7 @@ for dwif in dwi_fnames:
         nS0_img = nib.Nifti1Image(S0, img.affine)
         nS0_img.set_qform(img.affine, code=1)
         nib.save(nS0_img, S0_fname)
+        prov.log(S0_fname, 'S0 dwi from '+dwif, fdwi, code=__file__)
         # make mat file to apply mask and com
         flt.inputs.in_file = join(pylabs_basepath, 'data', 'atlases', 'MNI152_T1_1mm_bet_zcut.nii.gz')
         flt.inputs.reference = S0_fname
@@ -93,6 +94,8 @@ for dwif in dwi_fnames:
         bet.inputs.skull = True
         bet.inputs.out_file = brain_outfname + '.nii'
         betres = bet.run()
+        prov.log( brain_outfname + '_brain.nii', 'brain extracted S0 dwi from ' + dwif, S0_fname, code=__file__)
+        prov.log(brain_outfname + '_brain_mask.nii', 'dwi brain mask from ' + dwif, S0_fname, code=__file__)
         # make index and acquisition parameters files
         with open(join(infpath, 'index.txt'), 'w') as f:
             f.write('1 ' * len(gtab.bvals))
@@ -111,6 +114,7 @@ for dwif in dwi_fnames:
         cmd += ' --imain=' + fdwi + ' --index=index.txt --mask=' + brain_outfname + '_mask.nii '
         cmd += '--out=' + join(outpath, dwif + '_eddy_corrected')
         run_subprocess(cmd)
+        prov.log(join(outpath, dwif + '_eddy_corrected.nii.gz'), 'dwi eddy current correction using default options', fdwi, code=__file__)
         # execute eddy command in subprocess in local working directory using repol
         outpath = join(infpath, 'cuda_repol')
         if not isdir(outpath):
@@ -120,3 +124,5 @@ for dwif in dwi_fnames:
         cmd += ' --imain=' + fdwi + ' --index=index.txt --mask=' + brain_outfname + '_mask.nii '
         cmd += '--out=' + join(outpath, dwif + '_eddy_corrected_repol') + ' --repol'
         run_subprocess(cmd)
+        prov.log(join(outpath, dwif + '_eddy_corrected_repol.nii.gz'), 'dwi eddy current correction using --repol options',
+                 fdwi, code=__file__)
