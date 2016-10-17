@@ -4,16 +4,10 @@ from os.path import join, basename, dirname, isfile, isdir, split
 import numpy as np
 import nibabel as nib
 import niprov, pylabs
-from scipy.ndimage.measurements import center_of_mass as com
-from nipype.interfaces import fsl
-flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo', output_type='NIFTI')
-applyxfm = fsl.ApplyXfm(interp='nearestneighbour', output_type='NIFTI')
-bet = fsl.BET(output_type='NIFTI')
 from dipy.io import read_bvals_bvecs
 from dipy.core.gradients import gradient_table
 import dipy.reconst.dti as dti
 import dipy.denoise.noise_estimate as ne
-from dipy.segment.mask import applymask
 prov = niprov.ProvenanceContext()
 from pylabs.projects.bbc.dwi.passed_qc import dwi_passed_qc
 from pylabs.utils.paths import getnetworkdataroot
