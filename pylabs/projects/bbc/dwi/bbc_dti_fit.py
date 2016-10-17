@@ -27,7 +27,7 @@ methodpassqc = ['dti_15dir_b1000'] * len(dwi_passed_qc)
 dwi_fnames = [fname_templ.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r)) for s, ses, m, r in zip(subjid, sespassqc, methodpassqc, runpassqc)]
 
 for dwif in dwi_fnames:
-    for ec_meth in ['cuda_defaults', 'cuda_repol']:
+    for ec_meth in ['cuda_defaults', 'cuda_repol', 'cuda_repol_std2']:
         infpath = fs / project / dwif.split('_')[0] / dwif.split('_')[1] / 'dwi' / ec_meth
         fdwi_basen = dwif + '_eddy_corrected'
         if ec_meth == 'cuda_repol':
@@ -67,5 +67,10 @@ for dwif in dwi_fnames:
                 ad_img = nib.nifti1.Nifti1Image(ad, img.affine)
                 ad_img.set_qform(img.affine, code=1)
                 nib.save(ad_img, str(infpath / str(fdwi_basen +'_'+m+'_ad.nii')))
+                mo = fit.mode
+                mo_img = nib.nifti1.Nifti1Image(mo, img.affine)
+                mo_img.set_qform(img.affine, code=1)
+                nib.save(mo_img, str(infpath / str(fdwi_basen +'_'+m+'_mo.nii')))
+
 
 

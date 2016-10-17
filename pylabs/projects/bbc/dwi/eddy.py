@@ -129,7 +129,7 @@ for dwif in dwi_fnames:
         cmd = ''
         cmd += 'eddy_cuda7.5 --acqp=acq_params.txt --bvals=' + fbvals + ' --bvecs=' + fbvecs
         cmd += ' --imain=' + fdwi + ' --index=index.txt --mask=' + brain_outfname + '_mask.nii '
-        cmd += '--out=' + join(outpath, dwif + '_eddy_corrected_repol_std2') + ' --repol --ol_srq --slm=linear --ol_nstd=2 --fwhm=20,20,0,0,0'
+        cmd += '--out=' + join(outpath, dwif + '_eddy_corrected_repol_std2') + ' --repol --ol_sqr --slm=linear --ol_nstd=2 --fwhm=20,20,0,0,0'
         run_subprocess(cmd)
-        prov.log(join(outpath, dwif + '_eddy_corrected_repol_std2.nii.gz'), 'eddy using --repol --ol_srq --slm=linear --ol_nstd=2 --fwhm=20,20,0,0,0',
+        prov.log(join(outpath, dwif + '_eddy_corrected_repol_std2.nii.gz'), 'eddy using --repol --ol_sqr --slm=linear --ol_nstd=2 --fwhm=20,20,0,0,0',
                  fdwi, code=__file__)
