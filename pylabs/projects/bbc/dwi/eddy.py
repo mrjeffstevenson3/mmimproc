@@ -111,17 +111,17 @@ for dwif in dwi_fnames:
         cmd += '--out=' + join(outpath, dwif + '_eddy_corrected')
         run_subprocess(cmd)
         prov.log(join(outpath, dwif + '_eddy_corrected.nii.gz'), 'dwi eddy current correction using default options', fdwi, code=__file__)
-        # execute eddy command in subprocess in local working directory using repol
-        outpath = join(infpath, 'cuda_repol')
-        if not isdir(outpath):
-            os.makedirs(outpath)
-        cmd = ''
-        cmd += 'eddy_cuda7.5 --acqp=acq_params.txt --bvals=' + fbvals + ' --bvecs=' + fbvecs
-        cmd += ' --imain=' + fdwi + ' --index=index.txt --mask=' + brain_outfname + '_mask.nii '
-        cmd += '--out=' + join(outpath, dwif + '_eddy_corrected_repol') + ' --repol'
-        run_subprocess(cmd)
-        prov.log(join(outpath, dwif + '_eddy_corrected_repol.nii.gz'), 'dwi eddy current correction using --repol options',
-                 fdwi, code=__file__)
+        # # execute eddy command in subprocess in local working directory using repol
+        # outpath = join(infpath, 'cuda_repol')
+        # if not isdir(outpath):
+        #     os.makedirs(outpath)
+        # cmd = ''
+        # cmd += 'eddy_cuda7.5 --acqp=acq_params.txt --bvals=' + fbvals + ' --bvecs=' + fbvecs
+        # cmd += ' --imain=' + fdwi + ' --index=index.txt --mask=' + brain_outfname + '_mask.nii '
+        # cmd += '--out=' + join(outpath, dwif + '_eddy_corrected_repol') + ' --repol'
+        # run_subprocess(cmd)
+        # prov.log(join(outpath, dwif + '_eddy_corrected_repol.nii.gz'), 'dwi eddy current correction using --repol options',
+        #          fdwi, code=__file__)
         # execute eddy command in subprocess in local working directory using repol and lower stddev and linear 2nd level model
         outpath = join(infpath, 'cuda_repol_std2')
         if not isdir(outpath):
