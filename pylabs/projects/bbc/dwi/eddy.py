@@ -1,13 +1,11 @@
+#this script takes converted bbc dti data, skull strips and performs eddy current correction with and without
+#--repol replace outliers
 import os, inspect
 from os.path import join, basename, dirname, isfile, isdir, split
 import numpy as np
 import nibabel as nib
 import niprov, pylabs
 from scipy.ndimage.measurements import center_of_mass as com
-#use if python console fails to capture env variables for FSL
-# os.environ['FSLDIR'] = '/usr/share/fsl/5.0'
-# os.environ['FSLBIN'] = '/usr/share/fsl/5.0/bin'
-# os.environ['FSLOUTPUTTYPE'] = 'NIFTI_GZ'
 from nipype.interfaces import fsl
 flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo', output_type='NIFTI')
 applyxfm = fsl.ApplyXfm(interp='nearestneighbour', output_type='NIFTI')
@@ -21,8 +19,6 @@ from pylabs.utils.paths import getnetworkdataroot
 from pylabs.utils import run_subprocess, WorkingContext
 fs = getnetworkdataroot()
 pylabs_basepath = split(split(inspect.getabsfile(pylabs))[0])[0]
-#hard code solution for redshirt
-#pylabs_basepath = '/home/toddr/Software/pylabs'
 project = 'bbc'
 fname_templ = 'sub-bbc{sid}_ses-{snum}_{meth}_{runnum}'
 subjid, sespassqc, runpassqc = zip(*dwi_passed_qc)
