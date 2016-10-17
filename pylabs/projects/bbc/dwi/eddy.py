@@ -131,5 +131,5 @@ for dwif in dwi_fnames:
         cmd += ' --imain=' + fdwi + ' --index=index.txt --mask=' + brain_outfname + '_mask.nii '
         cmd += '--out=' + join(outpath, dwif + '_eddy_corrected_repol_std2') + ' --repol --ol_srq --slm=linear --ol_nstd=2 --fwhm=20,20,0,0,0'
         run_subprocess(cmd)
-        prov.log(join(outpath, dwif + '_eddy_corrected_repol.nii.gz'), 'dwi eddy current correction using --repol options',
+        prov.log(join(outpath, dwif + '_eddy_corrected_repol_std2.nii.gz'), 'eddy using --repol --ol_srq --slm=linear --ol_nstd=2 --fwhm=20,20,0,0,0',
                  fdwi, code=__file__)
