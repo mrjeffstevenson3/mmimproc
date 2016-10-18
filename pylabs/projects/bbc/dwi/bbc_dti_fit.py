@@ -82,6 +82,14 @@ for dwif in dwi_fnames:
                     run_subprocess('fslmerge -t '+str(fdwi_basen)+'_'+m.lower()+'_V1 eigsys_0002.nii.gz  eigsys_0003.nii.gz  eigsys_0004.nii.gz')
                     run_subprocess('fslmerge -t '+str(fdwi_basen)+'_'+m.lower()+'_V2 eigsys_0006.nii.gz  eigsys_0007.nii.gz  eigsys_0008.nii.gz')
                     run_subprocess('fslmerge -t '+str(fdwi_basen)+'_'+m.lower()+'_V3 eigsys_0010.nii.gz  eigsys_0011.nii.gz  eigsys_0012.nii.gz')
+                    #fix output headers
+                    for f in [str(fdwi_basen)+'_'+m.lower()+'_fa.nii.gz', str(fdwi_basen)+'_'+m.lower()+'_md.nii.gz', str(fdwi_basen)+'_'+m.lower()+'_L1.nii.gz']:
+                        r_img = nib.load(f)
+                        r_img.set_qform(img.affine, code=1)
+                        r_img.set_sform(img.affine, code=1)
+                        np.testing.assert_almost_equal(img.affine, r_img.get_qform(), 4,
+                                                       err_msg='output qform in header does not match input qform')
+                        nib.save(r_img, f)
 
                 else:
                     tenmodel = dti.TensorModel(gtab, fit_method=m)
