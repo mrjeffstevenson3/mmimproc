@@ -36,11 +36,12 @@ for dwif in dwi_fnames:
             bvals, bvecs = read_bvals_bvecs(str(fbvals), str(fbvecs))
             # make dipy gtab and load dwi data
             gtab = gradient_table(bvals, bvecs)
+            num_dirs = np.count_nonzero(~gtab.b0s_mask)
             img = nib.load(str(fdwi))
             data = img.get_data()
             mask_img = nib.load(str(mask_fname))
             mask = mask_img.get_data()
-            for m in ['WLS', 'OLS']: # 'RESTORE']:
+            for m in ['WLS', 'OLS', 'RESTORE']:
                 if m == 'RESTORE':
                     #dipy restore fails
                     # sigma = ne.estimate_sigma(data, N=1)  #N=1 for SENSE reconstruction (Philips scanners)
@@ -61,26 +62,26 @@ for dwif in dwi_fnames:
                     cmd = 'modelfit -inputfile '+str(fdwi)+' -schemefile scheme.txt -model restore -sigma '+sigma+' -outliermap outlier_map.Bbyte -bgmask '
                     cmd += str(mask_fname)+' -outputfile restore_tensor.Bfloat'
                     run_subprocess(cmd)
-                    ## rename and convert files
-                    run_subprocess('cat restore_tensor.Bfloat | fa -header '+str(fdwi)+' -outputfile '+str(fdwi_basen+'_'+m+'_fa.nii.gz'))
-                    run_subprocess('cat restore_tensor.Bfloat | md -header '+str(fdwi)+' -outputfile '+str(fdwi_basen+'_'+m+'_md.nii.gz'))
-                    run_subprocess('cat restore_tensor.Bfloat | voxel2image -components 8 -header '+str(fdwi)+' -outputroot '+str(fdwi_basen+'_'+m+'_tensor_'))
-                    run_subprocess('cat outlier_map.Bbyte | voxel2image -inputdatatype byte -components 15 -header '+str(fdwi)+' -outputroot '+str(fdwi_basen+'_'+m+'_outlier_map_'))
+                    ## rename and convert files back to nii
+                    run_subprocess('cat restore_tensor.Bfloat | fa -header '+str(fdwi)+' -outputfile '+str(fdwi_basen)+'_'+m.lower()+'_fa.nii.gz')
+                    run_subprocess('cat restore_tensor.Bfloat | md -header '+str(fdwi)+' -outputfile '+str(fdwi_basen)+'_'+m.lower()+'_md.nii.gz')
+                    run_subprocess('cat restore_tensor.Bfloat | voxel2image -components 8 -header '+str(fdwi)+' -outputroot '+str(fdwi_basen)+'_'+m.lower()+'_tensor_')
+                    run_subprocess('cat outlier_map.Bbyte | voxel2image -inputdatatype byte -components '+str(num_dirs)+' -header '+str(fdwi)+' -outputroot '+str(fdwi_basen+'_'+m.lower()+'_outlier_map_'))
                     run_subprocess('cat restore_tensor.Bfloat | dteig | voxel2image -components 12 -inputdatatype double -header '+str(fdwi)+' -outputroot eigsys_')
-                    imcp str(fdwi_basen+'_'+m+'_tensor_0001.nii.gz') exit_code
-                    imcp str(fdwi_basen+'_'+m+'_tensor_0002.nii.gz log_s0
-                    imcp str(fdwi_basen+'_'+m+'_tensor_0003.nii.gz dxx
-                    imcp str(fdwi_basen+'_'+m+'_tensor_0004.nii.gz dxy
-                    imcp str(fdwi_basen+'_'+m+'_tensor_0005.nii.gz dxz
-                    imcp str(fdwi_basen+'_'+m+'_tensor_0006.nii.gz dyy
-                    imcp str(fdwi_basen+'_'+m+'_tensor_0007.nii.gz dyz
-                    imcp str(fdwi_basen+'_'+m+'_tensor_0008.nii.gz dzz
-                    imcp eigsys_0001.nii.gz '+str(fdwi_basen+'_'+m+'_L1')
-                    imcp eigsys_0005.nii.gz '+str(fdwi_basen+'_'+m+'_L2')
-                    imcp eigsys_0009.nii.gz '+str(fdwi_basen+'_'+m+'_L3')
-                    'fslmerge -t '+str(fdwi_basen+'_'+m+'_V1')+' eigsys_0002.nii.gz  eigsys_0003.nii.gz  eigsys_0004.nii.gz'
-                    'fslmerge -t '+str(fdwi_basen+'_'+m+'_V2')+' eigsys_0006.nii.gz  eigsys_0007.nii.gz  eigsys_0008.nii.gz'
-                    'fslmerge -t '+str(fdwi_basen+'_'+m+'_V3')+' eigsys_0010.nii.gz  eigsys_0011.nii.gz  eigsys_0012.nii.gz'
+                    run_subprocess('imcp '+str(fdwi_basen)+'_'+m+'_tensor_0001.nii.gz exit_code')
+                    run_subprocess('imcp '+str(fdwi_basen)+'_'+m+'_tensor_0002.nii.gz log_s0')
+                    run_subprocess('imcp '+str(fdwi_basen)+'_'+m+'_tensor_0003.nii.gz dxx')
+                    run_subprocess('imcp '+str(fdwi_basen)+'_'+m+'_tensor_0004.nii.gz dxy')
+                    run_subprocess('imcp '+str(fdwi_basen)+'_'+m+'_tensor_0005.nii.gz dxz')
+                    run_subprocess('imcp '+str(fdwi_basen)+'_'+m+'_tensor_0006.nii.gz dyy')
+                    run_subprocess('imcp '+str(fdwi_basen)+'_'+m+'_tensor_0007.nii.gz dyz')
+                    run_subprocess('imcp '+str(fdwi_basen)+'_'+m+'_tensor_0008.nii.gz dzz')
+                    run_subprocess('imcp eigsys_0001.nii.gz '+str(fdwi_basen)+'_'+m.lower()+'_L1')
+                    run_subprocess('imcp eigsys_0005.nii.gz '+str(fdwi_basen)+'_'+m.lower()+'_L2')
+                    run_subprocess('imcp eigsys_0009.nii.gz '+str(fdwi_basen)+'_'+m.lower()+'_L3')
+                    run_subprocess('fslmerge -t '+str(fdwi_basen)+'_'+m.lower()+'_V1 eigsys_0002.nii.gz  eigsys_0003.nii.gz  eigsys_0004.nii.gz')
+                    run_subprocess('fslmerge -t '+str(fdwi_basen)+'_'+m.lower()+'_V2 eigsys_0006.nii.gz  eigsys_0007.nii.gz  eigsys_0008.nii.gz')
+                    run_subprocess('fslmerge -t '+str(fdwi_basen)+'_'+m.lower()+'_V3 eigsys_0010.nii.gz  eigsys_0011.nii.gz  eigsys_0012.nii.gz')
 
                 else:
                     tenmodel = dti.TensorModel(gtab, fit_method=m)
