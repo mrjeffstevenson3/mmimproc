@@ -42,54 +42,57 @@ for dwif in dwi_fnames:
             mask_img = nib.load(str(mask_fname))
             mask = mask_img.get_data()
             for m in ['WLS', 'OLS', 'RESTORE']:
+                if not os.path.isdir(m):
+                    os.makedirs(m)
                 if m == 'RESTORE':
                     #dipy restore fails
                     # sigma = ne.estimate_sigma(data, N=1)  #N=1 for SENSE reconstruction (Philips scanners)
                     # tenmodel = dti.TensorModel(gtab, fit_method=m, sigma=sigma, jac=False)
-                    run_subprocess('fsl2scheme -bvecfile '+str(fbvecs)+' -bvalfile '+str(fbvals)+' > scheme.txt')
+                    run_subprocess('fsl2scheme -bvecfile '+str(fbvecs)+' -bvalfile '+str(fbvals)+' > '+m+'/scheme.txt')
                     cmd = 'modelfit -inputfile '+str(fdwi)+' -schemefile scheme.txt -model ldt_wtd -noisemap noise_map.Bdouble -bgmask '
-                    cmd += str(mask_fname)+' -outputfile linear_tensor.Bfloat'  # -residualmap $tmpdir/residual_map.Bdouble
+                    cmd += str(mask_fname)+' -outputfile '+m+'/linear_tensor.Bfloat'  # -residualmap $tmpdir/residual_map.Bdouble
                     run_subprocess(cmd)
                     ## grab noise map twice b/c of strange camino bug where the noise map is undersized
-                    cmd = 'cat noise_map.Bdouble noise_map.Bdouble | voxel2image -inputdatatype double -header '+str(mask_fname)+' -outputroot noise_map'
+                    cmd = 'cat '+m+'/noise_map.Bdouble '+m+'/noise_map.Bdouble | voxel2image -inputdatatype double -header '+str(mask_fname)+' -outputroot '+m+'/noise_map'
                     run_subprocess(cmd)
                     ## square root of the variance of the noise is sigma
-                    run_subprocess('fslmaths noise_map -sqrt sigma_map')
+                    run_subprocess('fslmaths '+m+'/noise_map -sqrt '+m+'/sigma_map')
                     ## get median of sigma map
-                    result = run_subprocess('fslstats sigma_map -P 50')
+                    result = run_subprocess('fslstats '+m+'/sigma_map -P 50')
                     sigma = result[0].strip(' \n')
                     ## do the fitting
-                    cmd = 'modelfit -inputfile '+str(fdwi)+' -schemefile scheme.txt -model restore -sigma '+sigma+' -outliermap outlier_map.Bbyte -bgmask '
-                    cmd += str(mask_fname)+' -outputfile restore_tensor.Bfloat'
+                    cmd = 'modelfit -inputfile '+str(fdwi)+' -schemefile '+m+'/scheme.txt -model restore -sigma '+sigma+' -outliermap '+m+'/outlier_map.Bbyte -bgmask '
+                    cmd += str(mask_fname)+' -outputfile '+m+'/restore_tensor.Bfloat'
                     run_subprocess(cmd)
-                    ## rename and convert files back to nii
-                    run_subprocess('cat restore_tensor.Bfloat | fa -header '+str(fdwi)+' -outputfile '+str(fdwi_basen)+'_'+m.lower()+'_fa.nii.gz')
-                    run_subprocess('cat restore_tensor.Bfloat | md -header '+str(fdwi)+' -outputfile '+str(fdwi_basen)+'_'+m.lower()+'_md.nii.gz')
-                    run_subprocess('cat restore_tensor.Bfloat | voxel2image -components 8 -header '+str(fdwi)+' -outputroot '+str(fdwi_basen)+'_'+m.lower()+'_tensor_')
-                    run_subprocess('cat outlier_map.Bbyte | voxel2image -inputdatatype byte -components '+str(num_dirs)+' -header '+str(fdwi)+' -outputroot '+str(fdwi_basen+'_'+m.lower()+'_outlier_map_'))
-                    run_subprocess('cat restore_tensor.Bfloat | dteig | voxel2image -components 12 -inputdatatype double -header '+str(fdwi)+' -outputroot eigsys_')
-                    run_subprocess('imcp '+str(fdwi_basen)+'_'+m+'_tensor_0001.nii.gz exit_code')
-                    run_subprocess('imcp '+str(fdwi_basen)+'_'+m+'_tensor_0002.nii.gz log_s0')
-                    run_subprocess('imcp '+str(fdwi_basen)+'_'+m+'_tensor_0003.nii.gz dxx')
-                    run_subprocess('imcp '+str(fdwi_basen)+'_'+m+'_tensor_0004.nii.gz dxy')
-                    run_subprocess('imcp '+str(fdwi_basen)+'_'+m+'_tensor_0005.nii.gz dxz')
-                    run_subprocess('imcp '+str(fdwi_basen)+'_'+m+'_tensor_0006.nii.gz dyy')
-                    run_subprocess('imcp '+str(fdwi_basen)+'_'+m+'_tensor_0007.nii.gz dyz')
-                    run_subprocess('imcp '+str(fdwi_basen)+'_'+m+'_tensor_0008.nii.gz dzz')
-                    run_subprocess('imcp eigsys_0001.nii.gz '+str(fdwi_basen)+'_'+m.lower()+'_L1')
-                    run_subprocess('imcp eigsys_0005.nii.gz '+str(fdwi_basen)+'_'+m.lower()+'_L2')
-                    run_subprocess('imcp eigsys_0009.nii.gz '+str(fdwi_basen)+'_'+m.lower()+'_L3')
-                    run_subprocess('fslmerge -t '+str(fdwi_basen)+'_'+m.lower()+'_V1 eigsys_0002.nii.gz  eigsys_0003.nii.gz  eigsys_0004.nii.gz')
-                    run_subprocess('fslmerge -t '+str(fdwi_basen)+'_'+m.lower()+'_V2 eigsys_0006.nii.gz  eigsys_0007.nii.gz  eigsys_0008.nii.gz')
-                    run_subprocess('fslmerge -t '+str(fdwi_basen)+'_'+m.lower()+'_V3 eigsys_0010.nii.gz  eigsys_0011.nii.gz  eigsys_0012.nii.gz')
-                    #fix output headers
-                    for f in [str(fdwi_basen)+'_'+m.lower()+'_fa.nii.gz', str(fdwi_basen)+'_'+m.lower()+'_md.nii.gz', str(fdwi_basen)+'_'+m.lower()+'_L1.nii.gz']:
-                        r_img = nib.load(f)
-                        r_img.set_qform(img.affine, code=1)
-                        r_img.set_sform(img.affine, code=1)
-                        np.testing.assert_almost_equal(img.affine, r_img.get_qform(), 4,
-                                                       err_msg='output qform in header does not match input qform')
-                        nib.save(r_img, f)
+                    with WorkingContext(m):
+                        ## rename and convert files back to nii
+                        run_subprocess('cat restore_tensor.Bfloat | fa -header '+str(fdwi)+' -outputfile '+str(fdwi_basen)+'_'+m.lower()+'_fa.nii.gz')
+                        run_subprocess('cat restore_tensor.Bfloat | md -header '+str(fdwi)+' -outputfile '+str(fdwi_basen)+'_'+m.lower()+'_md.nii.gz')
+                        run_subprocess('cat restore_tensor.Bfloat | voxel2image -components 8 -header '+str(fdwi)+' -outputroot '+str(fdwi_basen)+'_'+m.lower()+'_tensor_')
+                        run_subprocess('cat outlier_map.Bbyte | voxel2image -inputdatatype byte -components '+str(num_dirs)+' -header '+str(fdwi)+' -outputroot '+str(fdwi_basen+'_'+m.lower()+'_outlier_map_'))
+                        run_subprocess('cat restore_tensor.Bfloat | dteig | voxel2image -components 12 -inputdatatype double -header '+str(fdwi)+' -outputroot eigsys_')
+                        run_subprocess('imcp '+str(fdwi_basen)+'_'+m+'_tensor_0001.nii.gz exit_code')
+                        run_subprocess('imcp '+str(fdwi_basen)+'_'+m+'_tensor_0002.nii.gz log_s0')
+                        run_subprocess('imcp '+str(fdwi_basen)+'_'+m+'_tensor_0003.nii.gz dxx')
+                        run_subprocess('imcp '+str(fdwi_basen)+'_'+m+'_tensor_0004.nii.gz dxy')
+                        run_subprocess('imcp '+str(fdwi_basen)+'_'+m+'_tensor_0005.nii.gz dxz')
+                        run_subprocess('imcp '+str(fdwi_basen)+'_'+m+'_tensor_0006.nii.gz dyy')
+                        run_subprocess('imcp '+str(fdwi_basen)+'_'+m+'_tensor_0007.nii.gz dyz')
+                        run_subprocess('imcp '+str(fdwi_basen)+'_'+m+'_tensor_0008.nii.gz dzz')
+                        run_subprocess('imcp eigsys_0001.nii.gz '+str(fdwi_basen)+'_'+m.lower()+'_L1')
+                        run_subprocess('imcp eigsys_0005.nii.gz '+str(fdwi_basen)+'_'+m.lower()+'_L2')
+                        run_subprocess('imcp eigsys_0009.nii.gz '+str(fdwi_basen)+'_'+m.lower()+'_L3')
+                        run_subprocess('fslmerge -t '+str(fdwi_basen)+'_'+m.lower()+'_V1 eigsys_0002.nii.gz  eigsys_0003.nii.gz  eigsys_0004.nii.gz')
+                        run_subprocess('fslmerge -t '+str(fdwi_basen)+'_'+m.lower()+'_V2 eigsys_0006.nii.gz  eigsys_0007.nii.gz  eigsys_0008.nii.gz')
+                        run_subprocess('fslmerge -t '+str(fdwi_basen)+'_'+m.lower()+'_V3 eigsys_0010.nii.gz  eigsys_0011.nii.gz  eigsys_0012.nii.gz')
+                        #fix output headers
+                        for f in [str(fdwi_basen)+'_'+m.lower()+'_fa.nii.gz', str(fdwi_basen)+'_'+m.lower()+'_md.nii.gz', str(fdwi_basen)+'_'+m.lower()+'_L1.nii.gz']:
+                            r_img = nib.load(f)
+                            r_img.set_qform(img.affine, code=1)
+                            r_img.set_sform(img.affine, code=1)
+                            np.testing.assert_almost_equal(img.affine, r_img.get_qform(), 4,
+                                                           err_msg='output qform in header does not match input qform')
+                            nib.save(r_img, f)
 
                 else:
                     tenmodel = dti.TensorModel(gtab, fit_method=m)
@@ -99,19 +102,19 @@ for dwif in dwi_fnames:
                     fa_img.set_qform(img.affine, code=1)
                     np.testing.assert_almost_equal(img.affine, fa_img.get_qform(), 4,
                                                    err_msg='output qform in header does not match input qform')
-                    nib.save(fa_img, str(infpath / str(fdwi_basen +'_'+m+'_fa.nii')))
+                    nib.save(fa_img, str(infpath / m / str(fdwi_basen +'_'+m+'_fa.nii')))
                     md = fit.md
                     md_img = nib.nifti1.Nifti1Image(md, img.affine)
                     md_img.set_qform(img.affine, code=1)
                     np.testing.assert_almost_equal(img.affine, md_img.get_qform(), 4,
                                                    err_msg='output qform in header does not match input qform')
-                    nib.save(md_img, str(infpath / str(fdwi_basen +'_'+m+'_md.nii')))
+                    nib.save(md_img, str(infpath / m / str(fdwi_basen +'_'+m+'_md.nii')))
                     rd = fit.rd
                     rd_img = nib.nifti1.Nifti1Image(rd, img.affine)
                     rd_img.set_qform(img.affine, code=1)
                     np.testing.assert_almost_equal(img.affine, rd_img.get_qform(), 4,
                                                    err_msg='output qform in header does not match input qform')
-                    nib.save(rd_img, str(infpath / str(fdwi_basen +'_'+m+'_rd.nii')))
+                    nib.save(rd_img, str(infpath / m / str(fdwi_basen +'_'+m+'_rd.nii')))
                     ad = fit.ad
                     ad_img = nib.nifti1.Nifti1Image(ad, img.affine)
                     ad_img.set_qform(img.affine, code=1)
