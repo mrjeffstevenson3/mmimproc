@@ -99,31 +99,31 @@ for dwif in dwi_fnames:
                     fa_img.set_qform(img.affine, code=1)
                     np.testing.assert_almost_equal(img.affine, fa_img.get_qform(), 4,
                                                    err_msg='output qform in header does not match input qform')
-                    nib.save(fa_img, str(infpath / str(fdwi_basen +'_'+m+'_fa.nii')))
+                    nib.save(fa_img, str(infpath / str(fdwi_basen +'_'+m.lower()+'_fa.nii')))
                     md = fit.md
                     md_img = nib.nifti1.Nifti1Image(md, img.affine)
                     md_img.set_qform(img.affine, code=1)
                     np.testing.assert_almost_equal(img.affine, md_img.get_qform(), 4,
                                                    err_msg='output qform in header does not match input qform')
-                    nib.save(md_img, str(infpath / str(fdwi_basen +'_'+m+'_md.nii')))
+                    nib.save(md_img, str(infpath / str(fdwi_basen +'_'+m.lower()+'_md.nii')))
                     rd = fit.rd
                     rd_img = nib.nifti1.Nifti1Image(rd, img.affine)
                     rd_img.set_qform(img.affine, code=1)
                     np.testing.assert_almost_equal(img.affine, rd_img.get_qform(), 4,
                                                    err_msg='output qform in header does not match input qform')
-                    nib.save(rd_img, str(infpath / str(fdwi_basen +'_'+m+'_rd.nii')))
+                    nib.save(rd_img, str(infpath / str(fdwi_basen +'_'+m.lower()+'_rd.nii')))
                     ad = fit.ad
                     ad_img = nib.nifti1.Nifti1Image(ad, img.affine)
                     ad_img.set_qform(img.affine, code=1)
                     np.testing.assert_almost_equal(img.affine, ad_img.get_qform(), 4,
                                                    err_msg='output qform in header does not match input qform')
-                    nib.save(ad_img, str(infpath / str(fdwi_basen +'_'+m+'_ad.nii')))
+                    nib.save(ad_img, str(infpath / str(fdwi_basen +'_'+m.lower()+'_ad.nii')))
                     mo = fit.mode
                     mo_img = nib.nifti1.Nifti1Image(mo, img.affine)
                     mo_img.set_qform(img.affine, code=1)
                     np.testing.assert_almost_equal(img.affine, mo_img.get_qform(), 4,
                                                    err_msg='output qform in header does not match input qform')
-                    nib.save(mo_img, str(infpath / str(fdwi_basen +'_'+m+'_mo.nii')))
+                    nib.save(mo_img, str(infpath / str(fdwi_basen +'_'+m.lower()+'_mo.nii')))
 
 
 
