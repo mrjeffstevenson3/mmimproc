@@ -16,7 +16,7 @@ fs = Path(getnetworkdataroot())
 pylabs_basepath = split(split(inspect.getabsfile(pylabs))[0])[0]
 project = 'bbc'
 fname_templ = 'sub-bbc{sid}_ses-{snum}_{meth}_{runnum}'
-dwi_fnames = [fname_templ.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r)) for s, ses, m, r in dwi_passed_101]
+dwi_fnames = [fname_templ.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r)) for s, ses, m, r in dwi_passed_qc]
 
 for dwif in dwi_fnames:
 #    for ec_meth in ['cuda_repol_std2']:     # death match ['cuda_defaults', 'cuda_repol', 'cuda_repol_std2']:
@@ -48,7 +48,7 @@ for dwif in dwi_fnames:
                 # sigma = ne.estimate_sigma(data, N=1)  #N=1 for SENSE reconstruction (Philips scanners)
                 # tenmodel = dti.TensorModel(gtab, fit_method=m, sigma=sigma, jac=False)
                 run_subprocess('fsl2scheme -bvecfile '+str(fbvecs)+' -bvalfile '+str(fbvals)+' > '+m+'/scheme.txt')
-                cmd = 'modelfit -inputfile '+str(fdwi)+' -schemefile scheme.txt -model ldt_wtd -noisemap noise_map.Bdouble -bgmask '
+                cmd = 'modelfit -inputfile '+str(fdwi)+' -schemefile '+m+'/scheme.txt -model ldt_wtd -noisemap '+m+'/noise_map.Bdouble -bgmask '
                 cmd += str(mask_fname)+' -outputfile '+m+'/linear_tensor.Bfloat'  # -residualmap $tmpdir/residual_map.Bdouble
                 run_subprocess(cmd)
                 ## grab noise map twice b/c of strange camino bug where the noise map is undersized
@@ -70,14 +70,14 @@ for dwif in dwi_fnames:
                     run_subprocess('cat restore_tensor.Bfloat | voxel2image -components 8 -header '+str(fdwi)+' -outputroot '+str(fdwi_basen)+'_'+m.lower()+'_tensor_')
                     run_subprocess('cat outlier_map.Bbyte | voxel2image -inputdatatype byte -components '+str(num_dirs)+' -header '+str(fdwi)+' -outputroot '+str(fdwi_basen+'_'+m.lower()+'_outlier_map_'))
                     run_subprocess('cat restore_tensor.Bfloat | dteig | voxel2image -components 12 -inputdatatype double -header '+str(fdwi)+' -outputroot eigsys_')
-                    run_subprocess('imcp '+str(fdwi_basen)+'_'+m+'_tensor_0001.nii.gz exit_code')
-                    run_subprocess('imcp '+str(fdwi_basen)+'_'+m+'_tensor_0002.nii.gz log_s0')
-                    run_subprocess('imcp '+str(fdwi_basen)+'_'+m+'_tensor_0003.nii.gz dxx')
-                    run_subprocess('imcp '+str(fdwi_basen)+'_'+m+'_tensor_0004.nii.gz dxy')
-                    run_subprocess('imcp '+str(fdwi_basen)+'_'+m+'_tensor_0005.nii.gz dxz')
-                    run_subprocess('imcp '+str(fdwi_basen)+'_'+m+'_tensor_0006.nii.gz dyy')
-                    run_subprocess('imcp '+str(fdwi_basen)+'_'+m+'_tensor_0007.nii.gz dyz')
-                    run_subprocess('imcp '+str(fdwi_basen)+'_'+m+'_tensor_0008.nii.gz dzz')
+                    run_subprocess('fslmerge -t '+str(fdwi_basen)+'_'+m.lower()+'_cam2fsl_tensor '+str(fdwi_basen)+'_'+m.lower()+'_tensor_0003.nii.gz '
+                                    +str(fdwi_basen)+'_'+m.lower()+'_tensor_0004.nii.gz '
+                                    +str(fdwi_basen)+'_'+m.lower()+'_tensor_0005.nii.gz '
+                                    +str(fdwi_basen)+'_'+m.lower()+'_tensor_0006.nii.gz '
+                                    +str(fdwi_basen)+'_'+m.lower()+'_tensor_0007.nii.gz '
+                                    +str(fdwi_basen)+'_'+m.lower()+'_tensor_0008.nii.gz ')
+                    run_subprocess('fslmaths '+str(fdwi_basen)+'_'+m.lower()+'_cam2fsl_tensor -fmedian '+str(fdwi_basen + '_' + m.lower()+ '_cam2fsl_tensor_mf'))
+                    run_subprocess('fslmaths '+str(fdwi_basen)+'_'+m.lower()+'_cam2fsl_tensor_mf -tensor_decomp '+str(fdwi_basen+'_'+m.lower()+'_cam2fsl_tensor_mf'))
                     run_subprocess('imcp eigsys_0001.nii.gz '+str(fdwi_basen)+'_'+m.lower()+'_L1')
                     run_subprocess('imcp eigsys_0005.nii.gz '+str(fdwi_basen)+'_'+m.lower()+'_L2')
                     run_subprocess('imcp eigsys_0009.nii.gz '+str(fdwi_basen)+'_'+m.lower()+'_L3')
@@ -136,14 +136,14 @@ for dwif in dwi_fnames:
                                                err_msg='output qform in header does not match input qform')
                 nib.save(mo_img, str(infpath / m / str(fdwi_basen +'_'+m.lower()+'_dipy_mo.nii')))
                 if m == 'OLS':
-                    run_subprocess('dtifit --data='+str(fdwi)+' -m '+str(mask_fname)+'--bvecs='+str(fbvecs)+' --bvals='+str(fbvals)+'--sse --save_tensor -o '+str(infpath / m / str(fdwi_basen +'_'+m.lower()+'_fsl')))
+                    run_subprocess('dtifit --data='+str(fdwi)+' -m '+str(mask_fname)+' --bvecs='+str(fbvecs)+' --bvals='+str(fbvals)+' --sse --save_tensor -o '+str(infpath / m / str(fdwi_basen +'_'+m.lower()+'_fsl')))
                     with WorkingContext(str(infpath / m)):
                         run_subprocess('fslmaths '+str(fdwi_basen)+ '_'+m.lower()+'_fsl_tensor -fmedian '+str(fdwi_basen + '_' + m.lower() + '_fsl_tensor_mf'))
                         run_subprocess('fslmaths '+str(fdwi_basen)+'_'+m.lower()+'_fsl_tensor_mf -tensor_decomp '+str(fdwi_basen + '_' + m.lower() + '_fsl_tensor_mf'))
                 if m == 'WLS':
                     run_subprocess(
-                        'dtifit --data=' + str(fdwi) + ' -m ' + str(mask_fname) + '--bvecs=' + str(fbvecs) + ' --bvals=' + str(
-                            fbvals) + '--sse --save_tensor --wls -o ' + str(infpath / m / str(fdwi_basen + '_' + m.lower() + '_fsl')))
+                        'dtifit --data=' + str(fdwi) + ' -m ' + str(mask_fname) + ' --bvecs=' + str(fbvecs) + ' --bvals=' + str(
+                            fbvals) + ' --sse --save_tensor --wls -o ' + str(infpath / m / str(fdwi_basen + '_' + m.lower() + '_fsl')))
                     with WorkingContext(str(infpath / m)):
                         run_subprocess('fslmaths ' + str(fdwi_basen) + '_' + m.lower() + '_fsl_tensor -fmedian ' + str(
                             fdwi_basen + '_' + m.lower() + '_fsl_tensor_mf'))
