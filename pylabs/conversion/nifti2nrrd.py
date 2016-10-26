@@ -3,6 +3,7 @@ from pathlib import *
 from os.path import join, basename, dirname, isfile, isdir, split
 import numpy as np
 import nibabel as nib
+from nibabel.orientations import (io_orientation, inv_ornt_aff, apply_orientation)
 import nrrd
 import niprov, pylabs
 from pylabs.utils import run_subprocess, WorkingContext
@@ -24,18 +25,27 @@ def nii2nrrd(niftifile, nrrd_fname, bvalsf=None, bvecsf=None):
     if bvalsf != None: bvals = np.loadtxt(str(bvalsf))
     if bvecsf !=None: bvecs = np.loadtxt(str(bvecsf))
     if bvecsf !=None and bvalsf != None:
-        options.update({u'keyvaluepairs': {u'modality': u'DWMRI', u'DWMRI_b-value': np.max(bvals).astype(unicode)}})
+        options[u'keyvaluepairs'] = {u'modality': u'DWMRI', u'DWMRI_b-value': np.max(bvals).astype(unicode)}
         for i, x in enumerate(bvecs.T):
-            if i < 10:
-                for k, v in options.iteritems():
-                    if u'DWMRI_gradient_000'+unicode(i) in options['keyvaluepairs']:
-                        options[u'keyvaluepairs'][u'DWMRI_gradient_000'+unicode(i)].update(' '.join(map(unicode, x)))
-                    else:
-
+            if u'DWMRI_gradient_'+unicode(i).zfill(4) in options[u'keyvaluepairs']:
+                options[u'keyvaluepairs'][u'DWMRI_gradient_'+unicode(i).zfill(4)].update(' '.join(map(unicode, x)))
             else:
-                options.update({u'keyvaluepairs': {u'DWMRI_gradient_00' + unicode(i): ' '.join(map(unicode, x))}})
+                options[u'keyvaluepairs'][u'DWMRI_gradient_' + unicode(i).zfill(4)] = ' '.join(map(unicode, x))
     img = nib.load(str(niftifile))
     hdr = img.header
     img_data = img.get_data()
-    nrrd.write(nrrd_fname, img_data, **options)
+    # Reorient data block to LPS+ if necessary
+    ornt = io_orientation(np.diag([1, -1, 1, 1]).dot(img.affine))
+    if np.all(ornt == [[0, 1],
+                       [1, 1],
+                       [2, 1]]):  # already in LPS+
+        t_aff = np.eye(4)
+        affine = img.affine
+    else:  # Not in LPS+. fix affine and apply correct orientation
+        t_aff = inv_ornt_aff(ornt, img.shape)
+        affine = np.dot(img.affine, t_aff)
+        img_data = apply_orientation(img_data, ornt)
+
+
+    nrrd.write(nrrd_fname, img_data, options=options)
     return
