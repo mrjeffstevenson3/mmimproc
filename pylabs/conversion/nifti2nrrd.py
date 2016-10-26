@@ -34,22 +34,22 @@ def nii2nrrd(niftifile, nrrd_fname, bvalsf=None, bvecsf=None):
     img = nib.load(str(niftifile))
     hdr = img.header
     img_data = img.get_data()
-    # Reorient data block to LPS+ if necessary
-    ornt = io_orientation(np.diag([1, -1, 1, 1]).dot(img.affine))
+    # Reorient data block to RAS+ if necessary
+    ornt = io_orientation(np.diag([-1, 1, 1, 1]).dot(img.affine))
     if np.all(ornt == [[0, 1],
                        [1, 1],
                        [2, 1]]):  # already in LPS+
         t_aff = np.eye(4)
         affine = img.affine
-    else:  # Not in LPS+. fix affine and apply correct orientation
+    else:  # Not in RAS+. fix affine and apply correct orientation
         t_aff = inv_ornt_aff(ornt, img.shape)
         affine = np.dot(img.affine, t_aff)
         img_data = apply_orientation(img_data, ornt)
     options[u'dimension'] = unicode(len(img_data.shape))
-    options[u'measurement frame'] = [['1', '0', '0'], ['0', '-1', '0'], ['0', '0', '1']]
+    options[u'measurement frame'] = [['-1', '0', '0'], ['0', '1', '0'], ['0', '0', '1']]
     options[u'sizes'] = list(img_data.shape)
     options[u'kinds'] =  ['space', 'space', 'space', 'vector']
-    options[u'space'] = 'left-posterior-superior'
+    options[u'space'] = 'right-anterior-superior'
     options[u'space directions'] = [list(x) for x in affine[:3,:3].astype(str)] + [u'none']
     options[ u'space origin'] = [x for x in affine[:3,3].astype(str)]
     options[u'thicknesses'] = ['nan', 'nan', affine[2,2].astype(str), 'nan']
