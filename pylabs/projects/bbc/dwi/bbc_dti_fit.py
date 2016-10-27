@@ -85,8 +85,8 @@ for dwif in dwi_fnames:
                                    +str(fdwi_basen)+'_'+m.lower()+'_tensor_0007.nii.gz '
                                    +str(fdwi_basen)+'_'+m.lower()+'_tensor_0008.nii.gz ')
                     run_subprocess('fslmaths '+str(fdwi_basen)+'_'+m.lower()+'_cam2fsl_tensor -fmedian '+str(
-                        fdwi_basen + '_' + m.lower()+ '_cam2fsl_tensor_mf'))
-                    run_subprocess('fslmaths '+str(fdwi_basen)+'_'+m.lower()+'_cam2fsl_tensor_mf -tensor_decomp '+str(
+                        fdwi_basen + '_' + m.lower()+ '_cam2fsl_tensor_medfilt'))
+                    run_subprocess('fslmaths '+str(fdwi_basen)+'_'+m.lower()+'_cam2fsl_tensor_medfilt -tensor_decomp '+str(
                         fdwi_basen+'_'+m.lower()+'_cam2fsl_tensor_mf'))
                     run_subprocess('imcp eigsys_0001.nii.gz '+str(fdwi_basen)+'_'+m.lower()+'_L1')
                     run_subprocess('imcp eigsys_0005.nii.gz '+str(fdwi_basen)+'_'+m.lower()+'_L2')
@@ -152,14 +152,14 @@ for dwif in dwi_fnames:
                     run_subprocess('dtifit --data='+str(fdwi)+' -m '+str(mask_fname)+' --bvecs='+str(fbvecs)+' --bvals='+str(
                         fbvals)+' --sse --save_tensor -o '+str(infpath / m / str(fdwi_basen +'_'+m.lower()+'_fsl')))
                     with WorkingContext(str(infpath / m)):
-                        run_subprocess('fslmaths '+str(fdwi_basen)+ '_'+m.lower()+'_fsl_tensor -fmedian '+str(fdwi_basen+'_'+m.lower()+'_fsl_tensor_mf'))
-                        run_subprocess('fslmaths '+str(fdwi_basen)+'_'+m.lower()+'_fsl_tensor_mf -tensor_decomp '+str(fdwi_basen+'_'+m.lower()+'_fsl_tensor_mf'))
+                        run_subprocess('fslmaths '+str(fdwi_basen)+ '_'+m.lower()+'_fsl_tensor -fmedian '+str(fdwi_basen+'_'+m.lower()+'_fsl_tensor_medfilt'))
+                        run_subprocess('fslmaths '+str(fdwi_basen)+'_'+m.lower()+'_fsl_tensor_medfilt -tensor_decomp '+str(fdwi_basen+'_'+m.lower()+'_fsl_tensor_mf'))
                 if m == 'WLS':
                     run_subprocess('dtifit --data='+str(fdwi)+' -m '+str(mask_fname)+' --bvecs='+str(fbvecs)+' --bvals='+str(
                             fbvals)+' --sse --save_tensor --wls -o '+str(infpath / m / str(fdwi_basen+'_'+m.lower()+'_fsl')))
                     with WorkingContext(str(infpath / m)):
                         run_subprocess('fslmaths ' + str(fdwi_basen) + '_' + m.lower() + '_fsl_tensor -fmedian ' + str(
-                            fdwi_basen + '_' + m.lower() + '_fsl_tensor_mf'))
-                        run_subprocess('fslmaths ' + str(fdwi_basen) + '_' + m.lower() + '_fsl_tensor_mf -tensor_decomp ' + str(
+                            fdwi_basen + '_' + m.lower() + '_fsl_tensor_medfilt'))
+                        run_subprocess('fslmaths ' + str(fdwi_basen) + '_' + m.lower() + '_fsl_tensor_medfilt -tensor_decomp ' + str(
                             fdwi_basen + '_' + m.lower() + '_fsl_tensor_mf'))
 

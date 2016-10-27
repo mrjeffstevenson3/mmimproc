@@ -19,9 +19,17 @@
 to do:
 5. need to build function to update niftiDict and google spreadsheet to add field 'QC': True
 6. build query niftiDict function to get status of any variable and return values
+Done:
 7. build eddy current with subprocess and parallel
-8. build dti fit method
+8. build dti fit methods
+still to do:
 9. build dti reg module that generates warp and affines
 10. apply warps and affines moving to template space
-11. run paired randomise runs onn all dti
+11. filter and extract tensor from dipy and reg to template and atlases
+12. run paired randomise runs onn all dti measures
 
+**Forward path subj dti to template to MNI:**
+FA-->warp/affine to T1 comroll-->warp/afffine to template T1-->warp/affine to MNI/atlas
+
+**Reverse path MNI to subject dti used for atlas/ROI:**
+MNI/atlas-->Inverse warp/affine to template T1-->Inverse warp/affine to comroll T1-->Inverse warp/affine to subject FA/dwi

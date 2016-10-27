@@ -45,7 +45,7 @@ def nii2nrrd(niftifile, nrrd_fname, bvalsf=None, bvecsf=None):
         t_aff = inv_ornt_aff(ornt, img.shape)
         affine = np.dot(img.affine, t_aff)
         img_data = apply_orientation(img_data, ornt)
-    options[u'dimension'] = unicode(len(img_data.shape))
+    options[u'dimension'] = unicode(len(img_data.shape) + 1)
     options[u'measurement frame'] = [['-1', '0', '0'], ['0', '1', '0'], ['0', '0', '1']]
     options[u'sizes'] = list(img_data.shape)
     options[u'kinds'] =  ['space', 'space', 'space', 'vector']
