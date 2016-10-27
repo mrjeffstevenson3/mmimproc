@@ -31,3 +31,10 @@ with WorkingContext(str(fs / project / 'reg' / 'FA_fsl_wls_tensor_mf_ero_paired'
         cmd = 'fslmaths '+str(mask)+' -ero -mul '+str(oFA)+' '+str(out)
         run_subprocess(cmd)
 
+with WorkingContext(str(fs / project / 'reg')):
+    for fa, t1 in zip(dwi_fnames[1:], vbm_fnames[1:]):
+        mov = fs / project / 'reg' / 'FA_fsl_wls_tensor_mf_ero_paired' / str(fa+'_eddy_corrected_repol_std2_wls_fsl_tensor_mf_FA_ero.nii.gz')
+        ref = orig_vbmdir.resolve() / str('_'.join(vbm_fnames[1].split('_')[2:])+'.nii.gz')
+        out = 'reg_subFA2suborigvbmpaired/'+fa+'_eddy_corrected_repol_std2_wls_fsl_tensor_mf_FA_ero_reg2sorigvbm_'
+        cmd = 'antsRegistrationSyN.sh -d 3 -f '+str(ref)+' -m '+str(mov)+' -o '+str(out)+' -n 20'
+        run_subprocess(cmd)
