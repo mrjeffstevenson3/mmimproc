@@ -8,7 +8,7 @@ import nrrd
 import niprov, pylabs
 from pylabs.utils import run_subprocess, WorkingContext
 
-def nii2nrrd(niftifile, nrrd_fname, bvalsf=None, bvecsf=None):
+def nii2nrrd(niftifile, nrrd_fname, bvalsf=None, bvecsf=None, istensor=False):
     options = {}
     if bvalsf != None: bvalsf = Path(bvalsf)
     if bvecsf !=None: bvecsf = Path(bvecsf)
@@ -45,13 +45,22 @@ def nii2nrrd(niftifile, nrrd_fname, bvalsf=None, bvecsf=None):
         t_aff = inv_ornt_aff(ornt, img.shape)
         affine = np.dot(img.affine, t_aff)
         img_data = apply_orientation(img_data, ornt)
-    options[u'dimension'] = unicode(len(img_data.shape) + 1)
+    options[u'dimension'] = unicode(len(img_data.shape))
     options[u'measurement frame'] = [['-1', '0', '0'], ['0', '1', '0'], ['0', '0', '1']]
     options[u'sizes'] = list(img_data.shape)
-    options[u'kinds'] =  ['space', 'space', 'space', 'vector']
+    if istensor:
+        options[u'kinds'] = ['space', 'space', 'space', '3D-symmetric-matrix']
+    elif len(img_data.shape) == 4:
+        options[u'kinds'] =  ['space', 'space', 'space', 'vector']
+    else:
+        options[u'kinds'] =  ['space', 'space', 'space']
     options[u'space'] = 'right-anterior-superior'
-    options[u'space directions'] = [list(x) for x in affine[:3,:3].astype(str)] + [u'none']
+    if len(img_data.shape) == 4:
+        options[u'space directions'] = [list(x) for x in affine[:3,:3].astype(str)] + [u'none']
+        options[u'thicknesses'] = ['nan', 'nan', affine[2, 2].astype(str), 'nan']
+    else:
+        options[u'space directions'] = [list(x) for x in affine[:3,:3].astype(str)]
+        options[u'thicknesses'] = ['nan', 'nan', affine[2, 2].astype(str)]
     options[ u'space origin'] = [x for x in affine[:3,3].astype(str)]
-    options[u'thicknesses'] = ['nan', 'nan', affine[2,2].astype(str), 'nan']
     nrrd.write(nrrd_fname, img_data, options=options)
     return
