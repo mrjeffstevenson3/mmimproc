@@ -32,11 +32,14 @@ with WorkingContext(str(fs / project / 'reg' / fadir)):
         out = fs / project / 'reg' / 'FA_fsl_wls_tensor_mf_ero_paired' / str(d + '_eddy_corrected_repol_std2_wls_fsl_tensor_mf_FA_ero.nii.gz')
         cmd = 'fslmaths '+str(mask)+' -ero -mul '+str(oFA)+' '+str(out)
         run_subprocess(cmd)
-
+regsyn_output = ()
 with WorkingContext(str(fs / project / 'reg')):
     for fa, t1 in zip(dwi_fnames[1:], vbm_fnames[1:]):
         mov = fs / project / 'reg' / 'FA_fsl_wls_tensor_mf_ero_paired' / str(fa+'_eddy_corrected_repol_std2_wls_fsl_tensor_mf_FA_ero.nii.gz')
         ref = orig_vbmdir.resolve() / str('_'.join(t1.split('_')[2:])+'.nii.gz')
         out = fa2t1_outdir+'/'+fa+'_eddy_corrected_repol_std2_wls_fsl_tensor_mf_FA_ero_reg2sorigvbm_'
         cmd = 'antsRegistrationSyN.sh -d 3 -f '+str(ref)+' -m '+str(mov)+' -o '+str(out)+' -n 20'
-        run_subprocess(cmd)
+        regsyn_output += run_subprocess(cmd)
+    with open('regsyn_fa2t1.log', mode='r') as logf
+        logf.write(regsyn_output)
+    print(regsyn_output)
