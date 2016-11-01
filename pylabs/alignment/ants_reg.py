@@ -5,12 +5,18 @@ from pylabs.utils import run_subprocess
 from pylabs.utils import WorkingContext
 provenance = ProvenanceWrapper()
 
-def subj2templ_applywarp(moving, ref_img, outfile, warpfiles, execwdir, affine_xform=None, args=None):
+def subj2templ_applywarp(moving, ref_img, outfile, warpfiles, execwdir, affine_xform=None, inv=False, args=['--use-NN']):
+    if not type(warpfiles) == list:
+        raise TypeError('warp file must be a list.')
+    if not type(affine_xform) == list:
+        raise TypeError('affine file must be a list.')
     cmd = ''
-    cmd += 'WarpImageMultiTransform 3 '+moving+' '+outfile+' -R '+ref_img+' --use-NN '
-    cmd += ' '.join(map(str, warpfiles))+' '
-    if not affine_xform == None:
-        cmd += affine_xform+' '
+    cmd += 'WarpImageMultiTransform 3 '+moving+' '+outfile+' -R '+ref_img
+    cmd += ' '.join(map(str, warpfiles))
+    if not affine_xform == None and not inv:
+        cmd += ' '.join(map(str, affine_xform))
+    elif not affine_xform == None and inv:
+        cmd += ' -i '.join(map(str, affine_xform))
     if not args == None:
         cmd += ' '.join(map(str, args))
     with WorkingContext(execwdir):
