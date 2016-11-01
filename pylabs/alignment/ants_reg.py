@@ -1,5 +1,7 @@
 import subprocess
 from os.path import join
+import json
+import datetime
 from pylabs.utils.provenance import ProvenanceWrapper
 from pylabs.utils import run_subprocess
 from pylabs.utils import WorkingContext
@@ -7,20 +9,34 @@ provenance = ProvenanceWrapper()
 
 def subj2templ_applywarp(moving, ref_img, outfile, warpfiles, execwdir, affine_xform=None, inv=False, args=['--use-NN']):
     if not type(warpfiles) == list:
-        raise TypeError('warp file must be a list.')
+        raise TypeError('warpfiles must be a list.')
     if not type(affine_xform) == list:
-        raise TypeError('affine file must be a list.')
+        raise TypeError('affine_xform must be a list.')
+    if not type(args) == list:
+        raise TypeError('args must be a list.')
+    if inv and affine_xform == None:
+        raise ValueError('must have affine list when using inverse xfm.')
     cmd = ''
     cmd += 'WarpImageMultiTransform 3 '+moving+' '+outfile+' -R '+ref_img
-    cmd += ' '.join(map(str, warpfiles))
-    if not affine_xform == None and not inv:
-        cmd += ' '.join(map(str, affine_xform))
-    elif not affine_xform == None and inv:
-        cmd += ' -i '.join(map(str, affine_xform))
+    if inv:
+        cmd += ' '.join([' -i ' + a for a in map(str, affine_xform)])
+        cmd += ' '.join([' ' + w for w in map(str, warpfiles)])
+    else:
+        cmd += ' '.join([' ' + w for w in map(str, warpfiles)])
+        if not affine_xform == None:
+            cmd += ' '.join([' '+a for a in map(str, affine_xform)])
     if not args == None:
-        cmd += ' '.join(map(str, args))
+        cmd += ' '.join([' '+a for a in map(str, args)])
+    output = ()
+    t = datetime.datetime.now()
+    output += (str(t),)
+    cmdt = (cmd,)
+    output += cmdt
     with WorkingContext(execwdir):
-        subprocess.check_call(cmd, shell=True)
+        print(cmd)
+        output += run_subprocess(cmd)
+        with open('applywarp_log.json', mode='a') as logf:
+            json.dump(output, logf, indent=2)
     provenance.log(outfile, 'apply WarpImageMultiTransform', moving, script=__file__)
     return
 
