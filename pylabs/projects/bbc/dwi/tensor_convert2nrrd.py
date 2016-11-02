@@ -7,6 +7,7 @@ prov = niprov.ProvenanceContext()
 from pylabs.projects.bbc.dwi.passed_qc import dwi_passed_qc, dwi_passed_101
 from pylabs.utils.paths import getnetworkdataroot
 from pylabs.utils import run_subprocess, WorkingContext
+from pylabs.conversion.nifti2nrrd import nii2nrrd
 fs = Path(getnetworkdataroot())
 pylabs_basepath = Path(*Path(inspect.getabsfile(pylabs)).parts[:-1])
 project = 'bbc'
@@ -21,5 +22,14 @@ for dwif in dwi_fnames:
     for m in ['WLS', 'OLS', 'RESTORE']:
         tenpath = dwipath / ec_meth / m
         if m == 'RESTORE':
-            ten_fname = str(fdwi_basen + '_' + m.lower() + '_cam2fsl_tensor_medfilt.nii.gz'))
+            ten_fname =  str(tenpath / str(fdwi_basen + '_' + m.lower() + '_cam2fsl_tensor_medfilt'))
+            nii2nrrd(ten_fname+'.nii.gz', ten_fname+'.nhdr', istensor=True)
+            ten_fname = str(tenpath / str(fdwi_basen + '_' + m.lower() + '_cam2fsl_tensor'))
+            nii2nrrd(ten_fname + '.nii.gz', ten_fname + '.nhdr', istensor=True)
+        else:
+            ten_fname =  str(tenpath / str(fdwi_basen + '_' + m.lower() + '_fsl_tensor_medfilt'))
+            nii2nrrd(ten_fname+'.nii.gz', ten_fname+'.nhdr', istensor=True)
+            ten_fname = str(tenpath / str(fdwi_basen + '_' + m.lower() + '_fsl_tensor'))
+            nii2nrrd(ten_fname + '.nii.gz', ten_fname + '.nhdr', istensor=True)
+
 
