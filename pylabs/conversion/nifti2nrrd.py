@@ -1,12 +1,10 @@
-import os, inspect
 from pathlib import *
-from os.path import join, basename, dirname, isfile, isdir, split
 import numpy as np
 import nibabel as nib
 from nibabel.orientations import (io_orientation, inv_ornt_aff, apply_orientation)
 import nrrd
-import niprov, pylabs
-from pylabs.utils import run_subprocess, WorkingContext
+from pylabs.utils.provenance import ProvenanceWrapper
+provenance = ProvenanceWrapper()
 
 def nii2nrrd(niftifile, nrrd_fname, bvalsf=None, bvecsf=None, istensor=False):
     options = {}
@@ -63,4 +61,5 @@ def nii2nrrd(niftifile, nrrd_fname, bvalsf=None, bvecsf=None, istensor=False):
         options[u'thicknesses'] = ['nan', 'nan', affine[2, 2].astype(str)]
     options[ u'space origin'] = [x for x in affine[:3,3].astype(str)]
     nrrd.write(nrrd_fname, img_data, options=options)
+    #provenance.log(nrrd_fname, 'convert nii to nrrd using pynrrd', niftifile, script=__file__, provenance=options)
     return
