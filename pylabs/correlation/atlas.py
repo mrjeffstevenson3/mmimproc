@@ -3,7 +3,8 @@ from pathlib import *
 import nibabel, numpy, pylabs
 from pylabs.utils.tables import TablePublisher
 from pylabs.utils import Filesystem
-
+from pylabs.utils.provenance import ProvenanceWrapper
+provenance = ProvenanceWrapper()
 filesys = Filesystem()
 pylabs_atlasdir = Path(*Path(inspect.getabsfile(pylabs)).parts[:-2]) / 'data' / 'atlases'
 
@@ -70,5 +71,8 @@ def make_mask_fm_atlas_parts(atlas, roi_list, mask_fname):
     mask_img.set_qform(img.affine, code=1)
     mask_img.header['cal_max'] = 1
     nibabel.save(mask_img, mask_fname)
+    roi_list_dict = {}
+    roi_list_dict['roi_list'] = roi_list
+    provenance.log(mask_fname, 'extract roi_list regions from atlas into mask', atlas, script=__file__, provenance=roi_list_dict)
     return
 
