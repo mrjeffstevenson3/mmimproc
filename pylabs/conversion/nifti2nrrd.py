@@ -61,5 +61,5 @@ def nii2nrrd(niftifile, nrrd_fname, bvalsf=None, bvecsf=None, istensor=False):
         options[u'thicknesses'] = ['nan', 'nan', affine[2, 2].astype(str)]
     options[ u'space origin'] = [x for x in affine[:3,3].astype(str)]
     nrrd.write(nrrd_fname, img_data, options=options)
-    #provenance.log(nrrd_fname, 'convert nii to nrrd using pynrrd', niftifile, script=__file__, provenance=options)
+    provenance.log(nrrd_fname, 'convert nii to nrrd using pynrrd', str(niftifile), script=__file__, provenance=options)
     return
