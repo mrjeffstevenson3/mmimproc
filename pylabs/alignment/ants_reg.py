@@ -37,7 +37,14 @@ def subj2templ_applywarp(moving, ref_img, outfile, warpfiles, execwdir, affine_x
         output += run_subprocess(cmd)
         with open('applywarp_log.json', mode='a') as logf:
             json.dump(output, logf, indent=2)
-    provenance.log(outfile, 'apply WarpImageMultiTransform', moving, script=__file__)
+    params = {}
+    params['warpfiles'] = warpfiles
+    params['affine_xform'] = affine_xform
+    params['args'] = args
+    params['cmd'] = cmd
+    params['output'] = output
+    params['ref_img'] = ref_img
+    provenance.log(outfile, 'apply WarpImageMultiTransform', moving, script=__file__, provenance=params)
     return
 
 def subj2T1(moving, ref_img, outfile, inargs=None):
