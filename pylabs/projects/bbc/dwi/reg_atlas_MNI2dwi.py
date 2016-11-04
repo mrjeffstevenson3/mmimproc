@@ -25,13 +25,14 @@ dwi_fnames = [dwi_templ.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r))
 vbm_templ = 'bbc_pairedLH_sub-bbc{sid}_ses-{snum}_{meth}_{runnum}_brain_susan_nl_comroll'
 vbm_fnames = [vbm_templ.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r)) for s, ses, m, r in vbmpairing]
 templdir = fs / project / 'reg' / 'ants_vbm_pairedLH_in_template_space'
-MNI2templ_invwarp = templdir / 'bbc_pairedLH_template_reg2MNI_InverseWarped.nii.gz'
+MNI2templ_invwarp = templdir / 'bbc_pairedLH_template_reg2MNI_1InverseWarp.nii.gz'
 MNI2templ_aff = templdir / 'bbc_pairedLH_template_reg2MNI_0GenericAffine.mat'
 dwi2vbmsubjdir = fs / project / 'reg' / 'reg_subFA2suborigvbmpaired'
 dwi_reg_append = '_eddy_corrected_repol_std2_wls_fsl_tensor_mf_FA_ero_reg2sorigvbm_'
 
-
-for dwif, vbmf in zip(dwi_fnames[1], vbm_fnames[1]):
+# dwif = dwi_fnames[1]
+# vbmf = vbm_fnames[1]
+for dwif, vbmf in zip(dwi_fnames[1:], vbm_fnames[1:]):
     for k, a in MNI_atlases.iteritems():
         execwdir = fs / project /  dwif.split('_')[0] / dwif.split('_')[1] / 'dwi'
         mov = a
