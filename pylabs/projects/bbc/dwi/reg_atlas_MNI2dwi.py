@@ -1,5 +1,6 @@
 import os, inspect
 from pathlib import *
+import datetime
 from os.path import split
 import numpy as np
 import nibabel as nib
@@ -11,21 +12,19 @@ from pylabs.utils import run_subprocess, WorkingContext
 #setup paths and file names to process
 fs = Path(getnetworkdataroot())
 pylabs_atlasdir = Path(*Path(inspect.getabsfile(pylabs)).parts[:-2]) / 'data' / 'atlases'
-slicer_path = Path(*Path(inspect.getabsfile(pylabs)).parts[:-3]) / 'Slicer-dir' / 'Slicer'
+slicer_path = Path(*Path(inspect.getabsfile(pylabs)).parts[:-3]) / 'Slicer-4.5.0-2016-05-02-linux-amd64' / 'Slicer --launch '
 MNI_atlases = {'mori': pylabs_atlasdir / 'JHU_MNI_SS_WMPM_Type_I_matched.nii.gz',
                 'aal_motor': pylabs_atlasdir / 'aal_1mm_motorcortex.nii',
                 'mori_LeftPostIntCap-35': pylabs_atlasdir / 'mori_LeftPostIntCap-35.nii',
                 'mori_RightPostIntCap-123': pylabs_atlasdir / 'mori_RightPostIntCap-123.nii',
                 'mori_base_mask52only': pylabs_atlasdir / 'mori_base_mask52only.nii'
                 }
-cmd = { 'mori': None,
-        'aal_motor': pylabs_atlasdir / 'aal_1mm_motorcortex.nii',
-        'mori_LeftPostIntCap-35': pylabs_atlasdir / 'mori_LeftPostIntCap-35.nii',
-        'mori_RightPostIntCap-123': pylabs_atlasdir / 'mori_RightPostIntCap-123.nii',
-        'mori_base_mask52only':
-
-
-    }
+Slicer_cmd = { 'mori': None,
+        'aal_motor': 'ModelMaker -l 1 -n ',
+        'mori_LeftPostIntCap-35': 'TractographyLabelMapSeeding -m 2000 -l 2 -x -a -v 0.1 -a ',
+        'mori_RightPostIntCap-123': 'TractographyLabelMapSeeding -m 2000 -l 2 -x -a -v 0.1 -a ',
+        'mori_base_mask52only': 'ModelMaker -l 1 -n '
+        }
 project = 'bbc'
 fa2t1_outdir = 'reg_subFA2suborigvbmpaired'
 fadir = 'FA_fsl_wls_tensor_mf_ero_paired'
@@ -46,11 +45,44 @@ for dwif, vbmf in zip(dwi_fnames[1:], vbm_fnames[1:]):
         execwdir = fs / project /  dwif.split('_')[0] / dwif.split('_')[1] / 'dwi'
         mov = a
         ref = execwdir / str(dwif+'_S0_brain.nii')
-        outf = execwdir / str(dwif+'_'+k+'.nii')
+        outf = execwdir / str(dwif+'_'+k)
         iwarp_templ2vbmsubj = templdir / str(vbmf+'InverseWarp.nii.gz')
         iwarp_vbmsub2dwi = fs / project / 'reg' / 'reg_subFA2suborigvbmpaired' / str(dwif+ dwi_reg_append +'1InverseWarp.nii.gz')
         aff_templ2vbmsubj = templdir / str(vbmf+'Affine.txt')
         aff_vbmsub2dwi = fs / project / 'reg' / 'reg_subFA2suborigvbmpaired' / str(dwif + dwi_reg_append + '0GenericAffine.mat')
         warpfiles = [str(MNI2templ_invwarp), str(iwarp_templ2vbmsubj), str(iwarp_vbmsub2dwi)]
         affine_xform = [str(MNI2templ_aff), str(aff_templ2vbmsubj), str(aff_vbmsub2dwi)]
-        subj2templ_applywarp(str(mov), str(ref), str(outf), warpfiles, str(execwdir), affine_xform=affine_xform, inv=True)
+        subj2templ_applywarp(str(mov), str(ref), str(outf)+'.nii', warpfiles, str(execwdir), affine_xform=affine_xform, inv=True)
+        vtkdir = execwdir / 'vtk_tensor_comp'
+        if not vtkdir.is_dir():
+            vtkdir.mkdir()
+        if not Slicer_cmd[k] == None:
+            cmd = ''
+            cmd += str(slicer_path) + Slicer_cmd[k]
+            if Slicer_cmd[k] == 'ModelMaker -l 1 -n ':
+                cmd += 'vtk_tensor_comp/'dwif + '_' + k + ' '+ dwif+'_'+k +'.nii'
+            else:
+                for m in ['WLS', 'OLS', 'RESTORE']:
+                    tenpath = execwdir / 'cuda_repol_std2' / m
+                    if m == 'RESTORE':
+                        cmd += str(outf)+'.nii'
+
+                    else:
+
+            output = ()
+            t = datetime.datetime.now()
+            output += (str(t),)
+            cmdt = (cmd,)
+            output += cmdt
+            with WorkingContext(execwdir):
+                print(cmd)
+                output += run_subprocess(cmd)
+            params = {}
+            params['warpfiles'] = warpfiles
+            params['affine_xform'] = affine_xform
+            params['args'] = args
+            params['cmd'] = cmd
+            params['output'] = output
+            params['ref_img'] = ref_img
+            provenance.log(outfile, 'apply WarpImageMultiTransform', moving, script=__file__,
+                           provenance=params)
