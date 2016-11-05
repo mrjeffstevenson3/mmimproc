@@ -1,7 +1,12 @@
-import nibabel, numpy
+import os, inspect
+from pathlib import *
+import nibabel, numpy, pylabs
 from pylabs.utils.tables import TablePublisher
 from pylabs.utils import Filesystem
-
+from pylabs.utils.provenance import ProvenanceWrapper
+provenance = ProvenanceWrapper()
+filesys = Filesystem()
+pylabs_atlasdir = Path(*Path(inspect.getabsfile(pylabs)).parts[:-2]) / 'data' / 'atlases'
 
 def report(images, atlas, regionnames=None, threshold = .95,
     relevantImageFilenameSegment=0, table=TablePublisher()):
@@ -53,4 +58,21 @@ def report(images, atlas, regionnames=None, threshold = .95,
 
 def atlaslabels(atlasfilename, filesys=Filesystem()):
     return filesys.readlines('data/atlaslabels/{0}.txt'.format(atlasfilename))
+
+def make_mask_fm_atlas_parts(atlas, roi_list, mask_fname):
+    if not filesys.fileExists(atlas):
+        raise IOError(atlas + " atlas file File Doesn't Exist. Please check.")
+    img = nibabel.load(atlas)
+    img_data = img.get_data()
+    mask = numpy.zeros(img_data.shape)
+    for roi in roi_list:
+        mask[img_data == roi] = 1
+    mask_img = nibabel.Nifti1Image(mask, img.affine, img.header)
+    mask_img.set_qform(img.affine, code=1)
+    mask_img.header['cal_max'] = 1
+    nibabel.save(mask_img, mask_fname)
+    roi_list_dict = {}
+    roi_list_dict['roi_list'] = roi_list
+    provenance.log(mask_fname, 'extract roi_list regions from atlas into mask', atlas, script=__file__, provenance=roi_list_dict)
+    return
 

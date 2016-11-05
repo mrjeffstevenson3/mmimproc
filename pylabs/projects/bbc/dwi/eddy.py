@@ -120,7 +120,9 @@ for dwif in dwi_fnames:
         # run_subprocess(cmd)
         # prov.log(join(outpath, dwif + '_eddy_corrected_repol.nii.gz'), 'dwi eddy current correction using --repol options',
         #          fdwi, code=__file__)
+
         # execute eddy command in subprocess in local working directory using repol and lower stddev and linear 2nd level model
+        # winner of DWI preproc deathmatch Oct-2016
         outpath = join(infpath, 'cuda_repol_std2')
         if not isdir(outpath):
             os.makedirs(outpath)

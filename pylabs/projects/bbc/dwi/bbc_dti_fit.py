@@ -12,6 +12,8 @@ prov = niprov.ProvenanceContext()
 from pylabs.projects.bbc.dwi.passed_qc import dwi_passed_qc, dwi_passed_101
 from pylabs.utils.paths import getnetworkdataroot
 from pylabs.utils import run_subprocess, WorkingContext
+from pylabs.utils.provenance import ProvenanceWrapper
+provenance = ProvenanceWrapper()
 fs = Path(getnetworkdataroot())
 pylabs_basepath = Path(*Path(inspect.getabsfile(pylabs)).parts[:-1])
 project = 'bbc'
