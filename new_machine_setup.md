@@ -2,13 +2,34 @@
 on brand new system:
 1. install chrome browser
 2. `mkdir ~/Software`
-3. install pycharm into ~/Software and register
-4. install pycharm plugins bashsupport and markdown
-5. clone pylabs from your github repo into ~/Software
-6. `sudo apt install python-pip`
-7. `pip install conda`
-8. download to ~/Software the py2.7 64bit anaconda installer from https://www.continuum.io/downloads#linux
-9. in terminal `cd ~/Software && bash Anaconda2-4.2.0-Linux-x86_64.sh` #nb version numbers will change.
-10. review and accept license and enter install location as /home/toddr/Software/anaconda2  and say yes to prepend to .bashrc
-11. either open a new terminal or `source ~/.bashrc` then in pycharm settings Project interpreter cogwheel button add local
-12. in ~/Software dir for each of the following github packages clone, cd into and `python setup.py develop`
+3. `sudo apt-get install python-pip gfortran`
+4. `pip install conda`
+5. download to ~/Software the py2.7 64bit anaconda installer from https://www.continuum.io/downloads#linux
+6. in terminal `cd ~/Software && bash Anaconda2-4.2.0-Linux-x86_64.sh` #nb version numbers will change.
+7. review and accept license and enter install location as /home/toddr/Software/anaconda2  and say yes to prepend to .bashrc
+8. either open a new terminal or `source ~/.bashrc` 
+9. then add basic dependencies: `pip install pynrrd pathlib
+10. and from conda
+	`conda install --channel https://conda.anaconda.org/dfroger pygpgme`
+	`conda upgrade --all`
+11. install pycharm into ~/Software and register
+12. install pycharm plugins bashsupport and markdown, restart pycharm then in pycharm settings Project interpreter press cogwheel button add local and select the anaconda python interpreter at /home/mrjeffs/Software/anaconda2/bin/python
+13. clone your master branch of pylabs from your github repo into ~/Software: `cd ~/Software && git clone https://github.com/mrjeffs/pylabs.git` (Replace mrjeffs with your github account id.)
+14. Add the main pylabs repo as upstream: `cd ~/Software/pylabs && git remote add upstream https://github.com/ilabsbrainteam/pylabs.git`
+15. in `cd ~/Software` dir for each of the following github packages clone, cd into and `python setup.py develop`:
+	`cd ~/Software && git clone https://github.com/nipy/nibabel.git && cd nibabel && python setup.py develop`
+	`cd ~/Software && git clone https://github.com/ilogue/niprov.git && cd niprov && python setup.py develop`
+	`cd ~/Software && git clone https://github.com/nipy/dipy.git && cd dipy && python setup.py develop`
+
+16. install ANTS:
+	`sudo apt-get install cmake-curses-gui`
+	`cd ~/Software && git clone https://github.com/stnava/ANTs.git && mkdir antsbin && cd antsbin && ccmake ../ANTs`
+	when the cmake interface comes onscreen press c twice (to configure) till you see the option g appear on bottom middle, then press g to save and exit
+	then type `make -j 4`
+and open another terminal tab since this will take a while and there is more to do.
+17. If you like, Install Dropbox `https://www.dropbox.com` and teamviewer `https://www.teamviewer.com/en/`
+18. install FSL. in terminal paste:
+	`wget -O- http://neuro.debian.net/lists/xenial.us-ca.full | sudo tee /etc/apt/sources.list.d/neurodebian.sources.list` and enter your admin pwd then
+	`sudo apt-get update && sudo apt-get install fsl-5.0-core`
+19. Download and unpack Freesurfer latest Linux-centos6 development release into ~/Software at `ftp://surfer.nmr.mgh.harvard.edu/pub/dist/freesurfer/dev` and copy your .license file into the folder
+
