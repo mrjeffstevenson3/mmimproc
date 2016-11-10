@@ -29,8 +29,8 @@ Slicer_cmd = { 'mori': None,
         'mori_base_mask52only': 'ModelMaker -l 1 -n '
         }
 tensors = {'RESTORE':['_eddy_corrected_repol_std2_restore_cam2fsl_tensor_medfilt.nhdr', '_eddy_corrected_repol_std2_restore_cam2fsl_tensor.nhdr'],
-            'OLS': ['_eddy_corrected_repol_std2_ols_fsl_tensor_medfilt.nhdr', '_eddy_corrected_repol_std2_ols_fsl_tensor.nhdr'],
-            'WLS': ['_eddy_corrected_repol_std2_wls_fsl_tensor_medfilt.nhdr', '_eddy_corrected_repol_std2_wls_fsl_tensor.nhdr']
+            'OLS': ['_eddy_corrected_repol_std2_ols_fsl_tensor_medfilt.nhdr', '_eddy_corrected_repol_std2_ols_fsl_tensor.nhdr', '_eddy_corrected_repol_std2_ols_dipy_tensor.nhdr', '_eddy_corrected_repol_std2_ols_dipy_tensor_mf.nhdr'],
+            'WLS': ['_eddy_corrected_repol_std2_wls_fsl_tensor_medfilt.nhdr', '_eddy_corrected_repol_std2_wls_fsl_tensor.nhdr', '_eddy_corrected_repol_std2_wls_dipy_tensor.nhdr', '_eddy_corrected_repol_std2_wls_dipy_tensor_mf.nhdr']
             }
 project = 'bbc'
 fa2t1_outdir = 'reg_subFA2suborigvbmpaired'
