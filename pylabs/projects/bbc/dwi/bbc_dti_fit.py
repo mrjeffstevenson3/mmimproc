@@ -1,4 +1,4 @@
-import os, inspect
+import os, inspect, itertools
 from pathlib import *
 from os.path import join, basename, dirname, isfile, isdir, split
 import numpy as np
@@ -22,6 +22,11 @@ fname_templ = 'sub-bbc{sid}_ses-{snum}_{meth}_{runnum}'
 dwi_fnames = [fname_templ.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r)) for s, ses, m, r in dwi_passed_101]
 _ut_rows = np.array([0, 0, 0, 1, 1, 2])
 _ut_cols = np.array([0, 1, 2, 1, 2, 2])
+_all_cols = np.zeros(9, dtype=np.int)
+_all_rows = np.zeros(9, dtype=np.int)
+for i, j in enumerate(list(itertools.product(*(range(3), range(3))))):
+    _all_rows[i] = int(j[0])
+    _all_cols[i] = int(j[1])
 
 for dwif in dwi_fnames:
     #for ec_meth in ['cuda_repol_std2']:     # death match ['cuda_defaults', 'cuda_repol', 'cuda_repol_std2']:
@@ -115,8 +120,13 @@ for dwif in dwi_fnames:
                 tenmodel = dti.TensorModel(gtab, fit_method=m)
                 fit = tenmodel.fit(data, mask)
                 fit_quad_form = fit.quadratic_form
+                fit_quad_form_mf = np.zeros(fit_quad_form.shape)
+                for r, c in zip(_all_rows, _all_cols):
+                    fit_quad_form_mf[..., r, c] = medianf(fit_quad_form[..., r, c], size=3, mode='constant', cval=0)
                 tensor_ut = fit_quad_form[..., _ut_rows, _ut_cols]
-                tensor_ut_mf = medianf(tensor_ut, mode='nearest')
+                tensor_ut_mf = fit_quad_form_mf[..., _ut_rows, _ut_cols]
+                for i in range(6):
+                    tensor_ut_mf[..., i] = medianf(tensor_ut[..., i], footprint=np.ones((3,3,3)), mode='constant', cval=0)
                 tensor_ut_img = nib.nifti1.Nifti1Image(tensor_ut, img.affine)
                 tensor_ut_img.header['cal_max'] = np.max(tensor_ut)
                 tensor_ut_img.header['cal_min'] = np.min(tensor_ut)
@@ -130,7 +140,7 @@ for dwif in dwi_fnames:
                 tensor_ut_mf_img.set_qform(img.affine, code=1)
                 np.testing.assert_almost_equal(img.affine, tensor_ut_mf_img.get_qform(), 4,
                                                err_msg='output qform in header does not match input qform')
-                nib.save(tensor_ut_mf_img, str(infpath / m / str(fdwi_basen + '_' + m.lower() + '_dipy_tensor_mf.nii')))
+                nib.save(tensor_ut_mf_img, str(infpath / m / str(fdwi_basen + '_' + m.lower() + '_dipy_tensor_medfilt.nii')))
 
                 fa = fit.fa
                 fa_img = nib.nifti1.Nifti1Image(fa, img.affine)
@@ -139,6 +149,16 @@ for dwif in dwi_fnames:
                 np.testing.assert_almost_equal(img.affine, fa_img.get_qform(), 4,
                                                err_msg='output qform in header does not match input qform')
                 nib.save(fa_img, str(infpath / m / str(fdwi_basen +'_'+m.lower()+'_dipy_fa.nii')))
+
+                fa_mf = fit.fa
+                fa_img = nib.nifti1.Nifti1Image(fa, img.affine)
+                fa_img.header['cal_max'] = 1
+                fa_img.set_qform(img.affine, code=1)
+                np.testing.assert_almost_equal(img.affine, fa_img.get_qform(), 4,
+                                               err_msg='output qform in header does not match input qform')
+                nib.save(fa_img, str(infpath / m / str(fdwi_basen +'_'+m.lower()+'_dipy_fa.nii')))
+
+
                 md = fit.md
                 md_img = nib.nifti1.Nifti1Image(md, img.affine)
                 md_img.header['cal_max'] = 1e-9
