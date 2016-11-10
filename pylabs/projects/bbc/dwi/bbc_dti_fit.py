@@ -7,6 +7,7 @@ import niprov, pylabs
 from dipy.io import read_bvals_bvecs
 from dipy.core.gradients import gradient_table
 import dipy.reconst.dti as dti
+from scipy.ndimage.filters import median_filter as medianf
 import dipy.denoise.noise_estimate as ne
 prov = niprov.ProvenanceContext()
 from pylabs.projects.bbc.dwi.passed_qc import dwi_passed_qc, dwi_passed_101
@@ -18,7 +19,9 @@ fs = Path(getnetworkdataroot())
 pylabs_basepath = Path(*Path(inspect.getabsfile(pylabs)).parts[:-1])
 project = 'bbc'
 fname_templ = 'sub-bbc{sid}_ses-{snum}_{meth}_{runnum}'
-dwi_fnames = [fname_templ.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r)) for s, ses, m, r in dwi_passed_qc]
+dwi_fnames = [fname_templ.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r)) for s, ses, m, r in dwi_passed_101]
+_ut_rows = np.array([0, 0, 0, 1, 1, 2])
+_ut_cols = np.array([0, 1, 2, 1, 2, 2])
 
 for dwif in dwi_fnames:
     #for ec_meth in ['cuda_repol_std2']:     # death match ['cuda_defaults', 'cuda_repol', 'cuda_repol_std2']:
@@ -111,6 +114,16 @@ for dwif in dwi_fnames:
             else:
                 tenmodel = dti.TensorModel(gtab, fit_method=m)
                 fit = tenmodel.fit(data, mask)
+                fit_quad_form = fit.quadratic_form
+                tensor_ut = fit_quad_form[..., _ut_rows, _ut_cols]
+                tensor_ut_mf = medianf(tensor_ut, mode='nearest')
+                tensor_ut_img = nib.nifti1.Nifti1Image(tensor_ut, img.affine)
+                tensor_ut_img.header['cal_max'] = np.max(tensor_ut)
+                tensor_ut_img.header['cal_min'] = np.min(tensor_ut)
+                tensor_ut_img.set_qform(img.affine, code=1)
+                np.testing.assert_almost_equal(img.affine, tensor_ut_img.get_qform(), 4,
+                                               err_msg='output qform in header does not match input qform')
+
                 fa = fit.fa
                 fa_img = nib.nifti1.Nifti1Image(fa, img.affine)
                 fa_img.header['cal_max'] = 1
@@ -156,7 +169,7 @@ for dwif in dwi_fnames:
                     with WorkingContext(str(infpath / m)):
                         run_subprocess('fslmaths '+str(fdwi_basen)+ '_'+m.lower()+'_fsl_tensor -fmedian '+str(fdwi_basen+'_'+m.lower()+'_fsl_tensor_medfilt'))
                         run_subprocess('fslmaths '+str(fdwi_basen)+'_'+m.lower()+'_fsl_tensor_medfilt -tensor_decomp '+str(fdwi_basen+'_'+m.lower()+'_fsl_tensor_mf'))
-                if m == 'WLS':
+                if m == 'WLS' and not dwif == 'sub-bbc101_ses-2_dti_15dir_b1000_1':
                     run_subprocess('dtifit --data='+str(fdwi)+' -m '+str(mask_fname)+' --bvecs='+str(fbvecs)+' --bvals='+str(
                             fbvals)+' --sse --save_tensor --wls -o '+str(infpath / m / str(fdwi_basen+'_'+m.lower()+'_fsl')))
                     with WorkingContext(str(infpath / m)):

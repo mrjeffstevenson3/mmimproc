@@ -21,7 +21,7 @@ fs = getnetworkdataroot()
 pylabs_basepath = split(split(inspect.getabsfile(pylabs))[0])[0]
 project = 'bbc'
 fname_templ = 'sub-bbc{sid}_ses-{snum}_{meth}_{runnum}'
-dwi_fnames = [fname_templ.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r)) for s, ses, m, r in dwi_passed_qc]
+dwi_fnames = [fname_templ.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r)) for s, ses, m, r in dwi_passed_101]
 
 for dwif in dwi_fnames:
     infpath = join(fs, project, dwif.split('_')[0] , dwif.split('_')[1], 'dwi')
