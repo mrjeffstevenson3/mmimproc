@@ -123,6 +123,14 @@ for dwif in dwi_fnames:
                 tensor_ut_img.set_qform(img.affine, code=1)
                 np.testing.assert_almost_equal(img.affine, tensor_ut_img.get_qform(), 4,
                                                err_msg='output qform in header does not match input qform')
+                nib.save(tensor_ut_img, str(infpath / m / str(fdwi_basen + '_' + m.lower() + '_dipy_tensor.nii')))
+                tensor_ut_mf_img = nib.nifti1.Nifti1Image(tensor_ut_mf, img.affine)
+                tensor_ut_mf_img.header['cal_max'] = np.max(tensor_ut_mf)
+                tensor_ut_mf_img.header['cal_min'] = np.min(tensor_ut_mf)
+                tensor_ut_mf_img.set_qform(img.affine, code=1)
+                np.testing.assert_almost_equal(img.affine, tensor_ut_mf_img.get_qform(), 4,
+                                               err_msg='output qform in header does not match input qform')
+                nib.save(tensor_ut_mf_img, str(infpath / m / str(fdwi_basen + '_' + m.lower() + '_dipy_tensor_mf.nii')))
 
                 fa = fit.fa
                 fa_img = nib.nifti1.Nifti1Image(fa, img.affine)
