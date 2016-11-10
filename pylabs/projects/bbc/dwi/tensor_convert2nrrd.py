@@ -31,5 +31,10 @@ for dwif in dwi_fnames:
             nii2nrrd(ten_fname+'.nii.gz', ten_fname+'.nhdr', istensor=True)
             ten_fname = str(tenpath / str(fdwi_basen + '_' + m.lower() + '_fsl_tensor'))
             nii2nrrd(ten_fname + '.nii.gz', ten_fname + '.nhdr', istensor=True)
+            ten_fname =  str(tenpath / str(fdwi_basen + '_' + m.lower() + '_dipy_tensor'))
+            nii2nrrd(ten_fname+'.nii', ten_fname+'.nhdr', istensor=True)
+            ten_fname = str(tenpath / str(fdwi_basen + '_' + m.lower() + '_dipy_tensor_mf'))
+            nii2nrrd(ten_fname + '.nii', ten_fname + '.nhdr', istensor=True)
+
 
 
