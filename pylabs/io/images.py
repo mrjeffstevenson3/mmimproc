@@ -25,3 +25,21 @@ def combineAsVolumes(files, outfpath):
 def copysform2qform(file):
     cmd = 'fslorient -copysform2qform ' + file
     run_subprocess(cmd)
+
+def savenii(data, affine, outfile, header=None, minmax=('parse', 'parse'), qform_code=1):
+    if header == None:
+        img = nibabel.nifti1.Nifti1Image(data, affine)
+    else:
+        img = nibabel.nifti1.Nifti1Image(data, affine, header)
+    if minmax[0] == 'parse':
+        img.header['cal_min'] = data.min()
+    else:
+        img.header['cal_min'] = float(minmax[0])
+    if minmax[1] == 'parse':
+        img.header['cal_max'] = data.max()
+    else:
+        img.header['cal_max'] = float(minmax[1])
+    img.set_qform(img.affine, code=qform_code)
+    np.testing.assert_almost_equal(affine, img.get_qform(), 4,
+                                   err_msg='output qform in header does not match input qform')
+    nibabel.save(img, str(outfile))
