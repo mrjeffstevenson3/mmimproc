@@ -6,6 +6,7 @@ import pylabs
 from dipy.io import read_bvals_bvecs
 from dipy.core.gradients import gradient_table
 import dipy.reconst.dti as dti
+from dipy.reconst.dti import mode
 from scipy.ndimage.filters import median_filter as medianf
 from pylabs.projects.bbc.dwi.passed_qc import dwi_passed_qc, dwi_passed_101
 from pylabs.utils.paths import getnetworkdataroot
@@ -27,7 +28,7 @@ for i, j in enumerate(list(itertools.product(*(range(3), range(3))))):
     _all_cols[i] = int(j[1])
 
 for dwif in dwi_fnames:
-    #for ec_meth in ['cuda_repol_std2']:     # death match ['cuda_defaults', 'cuda_repol', 'cuda_repol_std2']:
+    # for ec_meth in ['cuda_repol_std2']:     # death match ['cuda_defaults', 'cuda_repol', 'cuda_repol_std2']:
     ec_meth = 'cuda_repol_std2'
     infpath = fs / project / dwif.split('_')[0] / dwif.split('_')[1] / 'dwi' / ec_meth
     fdwi_basen = dwif + '_eddy_corrected'
@@ -52,7 +53,7 @@ for dwif in dwi_fnames:
             if not os.path.isdir(m):
                 os.makedirs(m)
             if m == 'RESTORE':
-                #dipy restore fails
+                # dipy restore fails
                 # sigma = ne.estimate_sigma(data, N=1)  #N=1 for SENSE reconstruction (Philips scanners)
                 # tenmodel = dti.TensorModel(gtab, fit_method=m, sigma=sigma, jac=False)
                 run_subprocess('fsl2scheme -bvecfile '+str(fbvecs)+' -bvalfile '+str(fbvals)+' > '+m+'/scheme.txt')
@@ -125,8 +126,6 @@ for dwif in dwi_fnames:
                     fit_quad_form_mf[..., r, c] = medianf(fit_quad_form[..., r, c], size=3, mode='constant', cval=0)
                 tensor_ut = fit_quad_form[..., _ut_rows, _ut_cols]
                 tensor_ut_mf = fit_quad_form_mf[..., _ut_rows, _ut_cols]
-                for i in range(6):
-                    tensor_ut_mf[..., i] = medianf(tensor_ut[..., i], footprint=np.ones((3,3,3)), mode='constant', cval=0)
                 savenii(tensor_ut, img.affine, infpath / m / str(fdwi_basen + '_' + m.lower() + '_dipy_tensor.nii'))
                 savenii(tensor_ut_mf, img.affine, infpath / m / str(fdwi_basen + '_' + m.lower() + '_dipy_tensor_medfilt.nii'))
                 savenii(fit.fa, img.affine, infpath / m / str(fdwi_basen +'_'+m.lower()+'_dipy_fa.nii'), minmax=(0,1))
@@ -134,10 +133,10 @@ for dwif in dwi_fnames:
                 savenii(fit.rd, img.affine, infpath / m / str(fdwi_basen +'_'+m.lower()+'_dipy_rd.nii'))
                 savenii(fit.ad, img.affine, infpath / m / str(fdwi_basen +'_'+m.lower()+'_dipy_ad.nii'))
                 savenii(fit.mode, img.affine, infpath / m / str(fdwi_basen + '_' + m.lower() + '_dipy_mo.nii'), minmax=(-1,1))
-                #calculate eigenvalues and then FA, MD, RD etc
+                #calculate eigenvalues for median filtered tensor and then FA, MD, RD etc and save
                 evals, evecs = np.linalg.eigh(fit_quad_form_mf)
-                evals = np.rollaxis(evals, axis=-1)
-                all_zero = (evals == 0).all(axis=0)
+                evals = np.rollaxis(evals, axis=-1)  #order evals
+                all_zero = (evals == 0).all(axis=0)  #remove NaNs
                 ev1, ev2, ev3 = evals
                 fa_mf = np.sqrt(0.5 * ((ev1 - ev2) ** 2 +
                                        (ev2 - ev3) ** 2 +
@@ -147,7 +146,7 @@ for dwif in dwi_fnames:
                 savenii(evals.mean(0), img.affine, infpath / m / str(fdwi_basen + '_' + m.lower() + '_dipy_md_mf.nii'))
                 savenii(ev1, img.affine, infpath / m / str(fdwi_basen + '_' + m.lower() + '_dipy_ad_mf.nii'))
                 savenii(evals[1:].mean(0), img.affine, infpath / m / str(fdwi_basen + '_' + m.lower() + '_dipy_rd_mf.nii'))
-
+                savenii(mode(fit_quad_form_mf), img.affine, infpath / m / str(fdwi_basen + '_' + m.lower() + '_dipy_mode_mf.nii'), minmax=(-1, 1))
                 if m == 'OLS':
                     run_subprocess('dtifit --data='+str(fdwi)+' -m '+str(mask_fname)+' --bvecs='+str(fbvecs)+' --bvals='+str(
                         fbvals)+' --sse --save_tensor -o '+str(infpath / m / str(fdwi_basen +'_'+m.lower()+'_fsl')))
