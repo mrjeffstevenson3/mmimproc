@@ -130,7 +130,7 @@ for dwif in dwi_fnames:
                 evals, evecs = np.linalg.eigh(fit_quad_form_mf)
                 evals = np.rollaxis(evals, axis=-1)  #order evals
                 all_zero = (evals == 0).all(axis=0)  #remove NaNs
-                ev1, ev2, ev3 = evals
+                ev1, ev2, ev3 = evals   # need to test if ev1 > ev2 > ev3
                 fa_mf = np.sqrt(0.5 * ((ev1 - ev2) ** 2 +
                                        (ev2 - ev3) ** 2 +
                                        (ev3 - ev1) ** 2) /
