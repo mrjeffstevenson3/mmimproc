@@ -146,7 +146,7 @@ for dwif in dwi_fnames:
                 savenii(fa_mf, img.affine, infpath / m / str(fdwi_basen + '_' + m.lower() + '_dipy_fa_mf.nii'), minmax=(0, 1))
                 savenii(evals.mean(0), img.affine, infpath / m / str(fdwi_basen + '_' + m.lower() + '_dipy_md_mf.nii'))
                 savenii(ev1, img.affine, infpath / m / str(fdwi_basen + '_' + m.lower() + '_dipy_ad_mf.nii'))
-                savenii(evals[1:].mean(0), img.affine, infpath / m / str(fdwi_basen + '_' + m.lower() + '_dipy_ad_mf.nii'))
+                savenii(evals[1:].mean(0), img.affine, infpath / m / str(fdwi_basen + '_' + m.lower() + '_dipy_rd_mf.nii'))
 
                 if m == 'OLS':
                     run_subprocess('dtifit --data='+str(fdwi)+' -m '+str(mask_fname)+' --bvecs='+str(fbvecs)+' --bvals='+str(
