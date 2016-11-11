@@ -1,18 +1,16 @@
 import os, inspect, itertools
 from pathlib import *
-from os.path import join, basename, dirname, isfile, isdir, split
 import numpy as np
 import nibabel as nib
-import niprov, pylabs
+import pylabs
 from dipy.io import read_bvals_bvecs
 from dipy.core.gradients import gradient_table
 import dipy.reconst.dti as dti
 from scipy.ndimage.filters import median_filter as medianf
-import dipy.denoise.noise_estimate as ne
-prov = niprov.ProvenanceContext()
 from pylabs.projects.bbc.dwi.passed_qc import dwi_passed_qc, dwi_passed_101
 from pylabs.utils.paths import getnetworkdataroot
 from pylabs.utils import run_subprocess, WorkingContext
+from pylabs.io.images import savenii
 from pylabs.utils.provenance import ProvenanceWrapper
 provenance = ProvenanceWrapper()
 fs = Path(getnetworkdataroot())
@@ -110,11 +108,13 @@ for dwif in dwi_fnames:
                     #fix output headers
                     for f in [str(fdwi_basen)+'_'+m.lower()+'_fa.nii.gz', str(fdwi_basen)+'_'+m.lower()+'_md.nii.gz', str(fdwi_basen)+'_'+m.lower()+'_L1.nii.gz']:
                         r_img = nib.load(f)
-                        r_img.set_qform(img.affine, code=1)
-                        r_img.set_sform(img.affine, code=1)
-                        np.testing.assert_almost_equal(img.affine, r_img.get_qform(), 4,
-                                                       err_msg='output qform in header does not match input qform')
-                        nib.save(r_img, f)
+                        savenii(r_img.get_data(), img.affine, f)
+
+                        # r_img.set_qform(img.affine, code=1)
+                        # r_img.set_sform(img.affine, code=1)
+                        # np.testing.assert_almost_equal(img.affine, r_img.get_qform(), 4,
+                        #                                err_msg='output qform in header does not match input qform')
+                        # nib.save(r_img, f)
 
             else:
                 tenmodel = dti.TensorModel(gtab, fit_method=m)
@@ -127,70 +127,27 @@ for dwif in dwi_fnames:
                 tensor_ut_mf = fit_quad_form_mf[..., _ut_rows, _ut_cols]
                 for i in range(6):
                     tensor_ut_mf[..., i] = medianf(tensor_ut[..., i], footprint=np.ones((3,3,3)), mode='constant', cval=0)
-                tensor_ut_img = nib.nifti1.Nifti1Image(tensor_ut, img.affine)
-                tensor_ut_img.header['cal_max'] = np.max(tensor_ut)
-                tensor_ut_img.header['cal_min'] = np.min(tensor_ut)
-                tensor_ut_img.set_qform(img.affine, code=1)
-                np.testing.assert_almost_equal(img.affine, tensor_ut_img.get_qform(), 4,
-                                               err_msg='output qform in header does not match input qform')
-                nib.save(tensor_ut_img, str(infpath / m / str(fdwi_basen + '_' + m.lower() + '_dipy_tensor.nii')))
-                tensor_ut_mf_img = nib.nifti1.Nifti1Image(tensor_ut_mf, img.affine)
-                tensor_ut_mf_img.header['cal_max'] = np.max(tensor_ut_mf)
-                tensor_ut_mf_img.header['cal_min'] = np.min(tensor_ut_mf)
-                tensor_ut_mf_img.set_qform(img.affine, code=1)
-                np.testing.assert_almost_equal(img.affine, tensor_ut_mf_img.get_qform(), 4,
-                                               err_msg='output qform in header does not match input qform')
-                nib.save(tensor_ut_mf_img, str(infpath / m / str(fdwi_basen + '_' + m.lower() + '_dipy_tensor_medfilt.nii')))
+                savenii(tensor_ut, img.affine, infpath / m / str(fdwi_basen + '_' + m.lower() + '_dipy_tensor.nii'))
+                savenii(tensor_ut_mf, img.affine, infpath / m / str(fdwi_basen + '_' + m.lower() + '_dipy_tensor_medfilt.nii'))
+                savenii(fit.fa, img.affine, infpath / m / str(fdwi_basen +'_'+m.lower()+'_dipy_fa.nii'), minmax=(0,1))
+                savenii(fit.md, img.affine, infpath / m / str(fdwi_basen +'_'+m.lower()+'_dipy_md.nii'))
+                savenii(fit.rd, img.affine, infpath / m / str(fdwi_basen +'_'+m.lower()+'_dipy_rd.nii'))
+                savenii(fit.ad, img.affine, infpath / m / str(fdwi_basen +'_'+m.lower()+'_dipy_ad.nii'))
+                savenii(fit.mode, img.affine, infpath / m / str(fdwi_basen + '_' + m.lower() + '_dipy_mo.nii'), minmax=(-1,1))
+                #calculate eigenvalues and then FA, MD, RD etc
+                evals, evecs = np.linalg.eigh(fit_quad_form_mf)
+                evals = np.rollaxis(evals, axis=-1)
+                all_zero = (evals == 0).all(axis=0)
+                ev1, ev2, ev3 = evals
+                fa_mf = np.sqrt(0.5 * ((ev1 - ev2) ** 2 +
+                                       (ev2 - ev3) ** 2 +
+                                       (ev3 - ev1) ** 2) /
+                                ((evals * evals).sum(0) + all_zero))
+                savenii(fa_mf, img.affine, infpath / m / str(fdwi_basen + '_' + m.lower() + '_dipy_fa_mf.nii'), minmax=(0, 1))
+                savenii(evals.mean(0), img.affine, infpath / m / str(fdwi_basen + '_' + m.lower() + '_dipy_md_mf.nii'))
+                savenii(ev1, img.affine, infpath / m / str(fdwi_basen + '_' + m.lower() + '_dipy_ad_mf.nii'))
+                savenii(evals[1:].mean(0), img.affine, infpath / m / str(fdwi_basen + '_' + m.lower() + '_dipy_ad_mf.nii'))
 
-                fa = fit.fa
-                fa_img = nib.nifti1.Nifti1Image(fa, img.affine)
-                fa_img.header['cal_max'] = 1
-                fa_img.set_qform(img.affine, code=1)
-                np.testing.assert_almost_equal(img.affine, fa_img.get_qform(), 4,
-                                               err_msg='output qform in header does not match input qform')
-                nib.save(fa_img, str(infpath / m / str(fdwi_basen +'_'+m.lower()+'_dipy_fa.nii')))
-
-                fa_mf = fit.fa
-                fa_img = nib.nifti1.Nifti1Image(fa, img.affine)
-                fa_img.header['cal_max'] = 1
-                fa_img.set_qform(img.affine, code=1)
-                np.testing.assert_almost_equal(img.affine, fa_img.get_qform(), 4,
-                                               err_msg='output qform in header does not match input qform')
-                nib.save(fa_img, str(infpath / m / str(fdwi_basen +'_'+m.lower()+'_dipy_fa.nii')))
-
-
-                md = fit.md
-                md_img = nib.nifti1.Nifti1Image(md, img.affine)
-                md_img.header['cal_max'] = 1e-9
-                md_img.header['cal_min'] = 0
-                md_img.set_qform(img.affine, code=1)
-                np.testing.assert_almost_equal(img.affine, md_img.get_qform(), 4,
-                                               err_msg='output qform in header does not match input qform')
-                nib.save(md_img, str(infpath / m / str(fdwi_basen +'_'+m.lower()+'_dipy_md.nii')))
-                rd = fit.rd
-                rd_img = nib.nifti1.Nifti1Image(rd, img.affine)
-                rd_img.header['cal_max'] = 1e-9
-                rd_img.header['cal_min'] = 0
-                rd_img.set_qform(img.affine, code=1)
-                np.testing.assert_almost_equal(img.affine, rd_img.get_qform(), 4,
-                                               err_msg='output qform in header does not match input qform')
-                nib.save(rd_img, str(infpath / m / str(fdwi_basen +'_'+m.lower()+'_dipy_rd.nii')))
-                ad = fit.ad
-                ad_img = nib.nifti1.Nifti1Image(ad, img.affine)
-                ad_img.header['cal_max'] = 1e-9
-                ad_img.header['cal_min'] = 0
-                ad_img.set_qform(img.affine, code=1)
-                np.testing.assert_almost_equal(img.affine, ad_img.get_qform(), 4,
-                                               err_msg='output qform in header does not match input qform')
-                nib.save(ad_img, str(infpath / m / str(fdwi_basen +'_'+m.lower()+'_dipy_ad.nii')))
-                mo = fit.mode
-                mo_img = nib.nifti1.Nifti1Image(mo, img.affine)
-                mo_img.header['cal_max'] = 1
-                mo_img.header['cal_min'] = -1
-                mo_img.set_qform(img.affine, code=1)
-                np.testing.assert_almost_equal(img.affine, mo_img.get_qform(), 4,
-                                               err_msg='output qform in header does not match input qform')
-                nib.save(mo_img, str(infpath / m / str(fdwi_basen +'_'+m.lower()+'_dipy_mo.nii')))
                 if m == 'OLS':
                     run_subprocess('dtifit --data='+str(fdwi)+' -m '+str(mask_fname)+' --bvecs='+str(fbvecs)+' --bvals='+str(
                         fbvals)+' --sse --save_tensor -o '+str(infpath / m / str(fdwi_basen +'_'+m.lower()+'_fsl')))
