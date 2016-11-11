@@ -18,7 +18,7 @@ fs = Path(getnetworkdataroot())
 pylabs_basepath = Path(*Path(inspect.getabsfile(pylabs)).parts[:-1])
 project = 'bbc'
 fname_templ = 'sub-bbc{sid}_ses-{snum}_{meth}_{runnum}'
-dwi_fnames = [fname_templ.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r)) for s, ses, m, r in dwi_passed_101]
+dwi_fnames = [fname_templ.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r)) for s, ses, m, r in dwi_passed_qc]
 _ut_rows = np.array([0, 0, 0, 1, 1, 2])
 _ut_cols = np.array([0, 1, 2, 1, 2, 2])
 _all_cols = np.zeros(9, dtype=np.int)
@@ -110,13 +110,6 @@ for dwif in dwi_fnames:
                     for f in [str(fdwi_basen)+'_'+m.lower()+'_fa.nii.gz', str(fdwi_basen)+'_'+m.lower()+'_md.nii.gz', str(fdwi_basen)+'_'+m.lower()+'_L1.nii.gz']:
                         r_img = nib.load(f)
                         savenii(r_img.get_data(), img.affine, f)
-
-                        # r_img.set_qform(img.affine, code=1)
-                        # r_img.set_sform(img.affine, code=1)
-                        # np.testing.assert_almost_equal(img.affine, r_img.get_qform(), 4,
-                        #                                err_msg='output qform in header does not match input qform')
-                        # nib.save(r_img, f)
-
             else:
                 tenmodel = dti.TensorModel(gtab, fit_method=m)
                 fit = tenmodel.fit(data, mask)
