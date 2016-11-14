@@ -21,7 +21,7 @@ fs = getnetworkdataroot()
 pylabs_basepath = split(split(inspect.getabsfile(pylabs))[0])[0]
 project = 'bbc'
 fname_templ = 'sub-bbc{sid}_ses-{snum}_{meth}_{runnum}'
-dwi_fnames = [fname_templ.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r)) for s, ses, m, r in dwi_passed_101]
+dwi_fnames = [fname_templ.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r)) for s, ses, m, r in dwi_passed_qc]
 
 for dwif in dwi_fnames:
     infpath = join(fs, project, dwif.split('_')[0] , dwif.split('_')[1], 'dwi')
@@ -126,12 +126,12 @@ for dwif in dwi_fnames:
         outpath = join(infpath, 'cuda_repol_std2')
         if not isdir(outpath):
             os.makedirs(outpath)
+        cmd = ''
         output = ()
         dt = datetime.datetime.now()
         output += (str(dt),)
         cmdt = (cmd,)
         output += cmdt
-        cmd = ''
         cmd += 'eddy_cuda7.5 --acqp=acq_params.txt --bvals=' + fbvals + ' --bvecs=' + fbvecs
         cmd += ' --imain=' + fdwi + ' --index=index.txt --mask=' + brain_outfname + '_mask.nii '
         cmd += '--out=' + join(outpath, dwif + '_eddy_corrected_repol_std2') + ' --repol --ol_sqr --slm=linear --ol_nstd=2 --niter=9 --fwhm=20,5,0,0,0,0,0,0,0'
@@ -139,13 +139,13 @@ for dwif in dwi_fnames:
         params = {}
         params['eddy cmd'] = cmd
         params['eddy output'] = output
+        cmd = ''
         output = ()
         dt = datetime.datetime.now()
         output += (str(dt),)
         cmdt = (cmd,)
         output += cmdt
-        cmd = ''
-        cmd += 'fslmaths 'join(outpath, dwif + '_eddy_corrected_repol_std2') + ' -thr 1 ' + join(outpath, dwif + '_eddy_corrected_repol_std2_thr1')
+        cmd += 'fslmaths '+ join(outpath, dwif + '_eddy_corrected_repol_std2') + ' -thr 1 ' + join(outpath, dwif + '_eddy_corrected_repol_std2_thr1')
         output += run_subprocess(cmd)
         params['flsmaths clamping cmd'] = cmd
         params['flsmaths output'] = output
