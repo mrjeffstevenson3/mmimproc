@@ -1,6 +1,6 @@
 #this script takes converted bbc dti data, skull strips and performs eddy current correction with and without
 #--repol replace outliers
-import os, inspect
+import os, inspect, datetime
 from os.path import join, basename, dirname, isfile, isdir, split
 import numpy as np
 import nibabel as nib
@@ -126,10 +126,28 @@ for dwif in dwi_fnames:
         outpath = join(infpath, 'cuda_repol_std2')
         if not isdir(outpath):
             os.makedirs(outpath)
+        output = ()
+        dt = datetime.datetime.now()
+        output += (str(dt),)
+        cmdt = (cmd,)
+        output += cmdt
         cmd = ''
         cmd += 'eddy_cuda7.5 --acqp=acq_params.txt --bvals=' + fbvals + ' --bvecs=' + fbvecs
         cmd += ' --imain=' + fdwi + ' --index=index.txt --mask=' + brain_outfname + '_mask.nii '
         cmd += '--out=' + join(outpath, dwif + '_eddy_corrected_repol_std2') + ' --repol --ol_sqr --slm=linear --ol_nstd=2 --niter=9 --fwhm=20,5,0,0,0,0,0,0,0'
-        run_subprocess(cmd)
-        prov.log(join(outpath, dwif + '_eddy_corrected_repol_std2.nii.gz'), 'eddy using --repol --ol_sqr --slm=linear --ol_nstd=2 --niter=9 --fwhm=20,5,0,0,0,0,0,0,0',
-                 fdwi, code=__file__)
+        output += run_subprocess(cmd)
+        params = {}
+        params['eddy cmd'] = cmd
+        params['eddy output'] = output
+        output = ()
+        dt = datetime.datetime.now()
+        output += (str(dt),)
+        cmdt = (cmd,)
+        output += cmdt
+        cmd = ''
+        cmd += 'fslmaths 'join(outpath, dwif + '_eddy_corrected_repol_std2') + ' -thr 1 ' + join(outpath, dwif + '_eddy_corrected_repol_std2_thr1')
+        output += run_subprocess(cmd)
+        params['flsmaths clamping cmd'] = cmd
+        params['flsmaths output'] = output
+        prov.log(join(outpath, dwif + '_eddy_corrected_repol_std2_thr1.nii.gz'), 'eddy using --repol --ol_sqr --slm=linear --ol_nstd=2 --niter=9 --fwhm=20,5,0,0,0,0,0,0,0',
+                 fdwi, code=__file__, provenance=params)

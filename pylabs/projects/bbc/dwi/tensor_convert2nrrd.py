@@ -17,7 +17,7 @@ dwi_fnames = [fname_templ.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r
 for dwif in dwi_fnames:
     ec_meth = 'cuda_repol_std2'
     dwipath = fs / project / dwif.split('_')[0] / dwif.split('_')[1] / 'dwi'
-    fdwi_basen = dwif + '_eddy_corrected_repol_std2'
+    fdwi_basen = dwif + '_eddy_corrected_repol_std2_thr1'
     mask_fname = dwipath / str(dwif + '_S0_brain_mask.nii')
     for m in ['WLS', 'OLS', 'RESTORE']:
         tenpath = dwipath / ec_meth / m

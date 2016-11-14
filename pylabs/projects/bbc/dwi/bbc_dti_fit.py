@@ -18,7 +18,7 @@ fs = Path(getnetworkdataroot())
 pylabs_basepath = Path(*Path(inspect.getabsfile(pylabs)).parts[:-1])
 project = 'bbc'
 fname_templ = 'sub-bbc{sid}_ses-{snum}_{meth}_{runnum}'
-dwi_fnames = [fname_templ.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r)) for s, ses, m, r in dwi_passed_qc]
+dwi_fnames = [fname_templ.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r)) for s, ses, m, r in dwi_passed_101]
 _ut_rows = np.array([0, 0, 0, 1, 1, 2])
 _ut_cols = np.array([0, 1, 2, 1, 2, 2])
 _all_cols = np.zeros(9, dtype=np.int)
@@ -36,7 +36,7 @@ for dwif in dwi_fnames:
         fdwi_basen += '_repol'
     elif ec_meth == 'cuda_repol_std2':
         fdwi_basen += '_repol_std2'
-    fdwi = infpath / str(fdwi_basen + '.nii.gz')
+    fdwi = infpath / str(fdwi_basen + '_thr1.nii.gz')
     fbvecs = infpath / str(fdwi_basen + '.eddy_rotated_bvecs')
     fbvals = Path(*infpath.parts[:-1]) / str(dwif + '.bvals')
     mask_fname = Path(*infpath.parts[:-1]) / str(dwif + '_S0_brain_mask.nii')
@@ -140,18 +140,11 @@ for dwif in dwi_fnames:
                 savenii(ev1, img.affine, infpath / m / str(fdwi_basen + '_' + m.lower() + '_dipy_ad_mf.nii'))
                 savenii(evals[1:].mean(0), img.affine, infpath / m / str(fdwi_basen + '_' + m.lower() + '_dipy_rd_mf.nii'))
                 savenii(mode(fit_quad_form_mf), img.affine, infpath / m / str(fdwi_basen + '_' + m.lower() + '_dipy_mode_mf.nii'), minmax=(-1, 1))
-                if m == 'OLS':
-                    run_subprocess('dtifit --data='+str(fdwi)+' -m '+str(mask_fname)+' --bvecs='+str(fbvecs)+' --bvals='+str(
-                        fbvals)+' --sse --save_tensor -o '+str(infpath / m / str(fdwi_basen +'_'+m.lower()+'_fsl')))
-                    with WorkingContext(str(infpath / m)):
-                        run_subprocess('fslmaths '+str(fdwi_basen)+ '_'+m.lower()+'_fsl_tensor -fmedian '+str(fdwi_basen+'_'+m.lower()+'_fsl_tensor_medfilt'))
-                        run_subprocess('fslmaths '+str(fdwi_basen)+'_'+m.lower()+'_fsl_tensor_medfilt -tensor_decomp '+str(fdwi_basen+'_'+m.lower()+'_fsl_tensor_mf'))
-                if m == 'WLS' and not dwif == 'sub-bbc101_ses-2_dti_15dir_b1000_1':
+                with WorkingContext(str(infpath / m)):
                     run_subprocess('dtifit --data='+str(fdwi)+' -m '+str(mask_fname)+' --bvecs='+str(fbvecs)+' --bvals='+str(
                             fbvals)+' --sse --save_tensor --wls -o '+str(infpath / m / str(fdwi_basen+'_'+m.lower()+'_fsl')))
-                    with WorkingContext(str(infpath / m)):
-                        run_subprocess('fslmaths ' + str(fdwi_basen) + '_' + m.lower() + '_fsl_tensor -fmedian ' + str(
-                            fdwi_basen + '_' + m.lower() + '_fsl_tensor_medfilt'))
-                        run_subprocess('fslmaths ' + str(fdwi_basen) + '_' + m.lower() + '_fsl_tensor_medfilt -tensor_decomp ' + str(
-                            fdwi_basen + '_' + m.lower() + '_fsl_tensor_mf'))
+                    run_subprocess('fslmaths ' + str(fdwi_basen) + '_' + m.lower() + '_fsl_tensor -fmedian ' + str(
+                        fdwi_basen + '_' + m.lower() + '_fsl_tensor_medfilt'))
+                    run_subprocess('fslmaths ' + str(fdwi_basen) + '_' + m.lower() + '_fsl_tensor_medfilt -tensor_decomp ' + str(
+                        fdwi_basen + '_' + m.lower() + '_fsl_tensor_mf'))
 

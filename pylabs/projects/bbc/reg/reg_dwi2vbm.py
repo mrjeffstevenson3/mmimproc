@@ -27,7 +27,7 @@ if not orig_vbmdir.is_symlink():
 #these loops skip bbc101 due to bug
 #1st we erode FA 1 pixel to clean up edges.
 with WorkingContext(str(fs / project / 'reg' / fadir)):
-    for d in dwi_fnames[1:]:
+    for d in dwi_fnames[:1]:
         mask = fs / project / d.split('_')[0] / d.split('_')[1] / 'dwi' / str(d+'_S0_brain_mask.nii')
         oFA = fs / project / d.split('_')[0] / d.split('_')[1] / 'dwi' / 'cuda_repol_std2' / 'WLS' / str(d+'_eddy_corrected_repol_std2_wls_fsl_tensor_mf_FA.nii.gz')
         out = fs / project / 'reg' / 'FA_fsl_wls_tensor_mf_ero_paired' / str(d + '_eddy_corrected_repol_std2_wls_fsl_tensor_mf_FA_ero.nii.gz')
@@ -36,7 +36,7 @@ with WorkingContext(str(fs / project / 'reg' / fadir)):
 #run ants on every FA reg to subj VBM comroll (starting point of templating)
 regsyn_output = ()
 with WorkingContext(str(fs / project / 'reg')):
-    for fa, t1 in zip(dwi_fnames[1:], vbm_fnames[1:]):
+    for fa, t1 in zip(dwi_fnames[:1], vbm_fnames[:1]):
         mov = fs / project / 'reg' / 'FA_fsl_wls_tensor_mf_ero_paired' / str(fa+'_eddy_corrected_repol_std2_wls_fsl_tensor_mf_FA_ero.nii.gz')
         ref = orig_vbmdir.resolve() / str('_'.join(t1.split('_')[2:])+'.nii.gz')
         out = fa2t1_outdir+'/'+fa+'_eddy_corrected_repol_std2_wls_fsl_tensor_mf_FA_ero_reg2sorigvbm_'
