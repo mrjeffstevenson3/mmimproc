@@ -14,19 +14,20 @@
 **For DTI**
 1. Add file name glob wildcard to bbc_conv dict in conversion/brain_convert.py
 2. convert PAR/REC using bbc/mr_preprocess.py (as above)
-3. do brain extraction with bbc/dti_bet.sh
+3. do brain extraction with bbc/dti_bet.sh <- make into python
 4. run QC with diffusion/dti_qc.py
-to do:
+5. build cuda eddy current with subprocess and parallel
+6. build dti fit methods OLS, WLS and Restore
+7. build dti reg module that generates warp and affines
+8. apply inverse warps to mori atlas and generate VTKs for dti deathmatch
+8. apply forward warps and affines moving to template space # waiting for bbc101
+9. filter and extract tensor from dipy and reg to template and atlases
+still to do:
+10. generate mat files
+11. run paired randomise runs on all dti measures
+todo - rethink items 5 and 6:
 5. need to build function to update niftiDict and google spreadsheet to add field 'QC': True
 6. build query niftiDict function to get status of any variable and return values
-Done:
-7. build eddy current with subprocess and parallel
-8. build dti fit methods
-still to do:
-9. build dti reg module that generates warp and affines
-10. apply warps and affines moving to template space
-11. filter and extract tensor from dipy and reg to template and atlases
-12. run paired randomise runs onn all dti measures
 
 **Forward path subj dti to template to MNI:**
 FA-->warp/affine to T1 comroll-->warp/afffine to template T1-->warp/affine to MNI/atlas

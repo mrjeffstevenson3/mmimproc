@@ -6,6 +6,7 @@ import pylabs
 from dipy.io import read_bvals_bvecs
 from dipy.core.gradients import gradient_table
 import dipy.reconst.dti as dti
+import dipy.denoise.noise_estimate as ne
 from dipy.reconst.dti import mode
 from scipy.ndimage.filters import median_filter as medianf
 from pylabs.projects.bbc.dwi.passed_qc import dwi_passed_qc, dwi_passed_101
