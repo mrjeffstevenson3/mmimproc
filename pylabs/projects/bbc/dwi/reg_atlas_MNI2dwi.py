@@ -29,8 +29,8 @@ Slicer_cmd = { 'mori': None,
         'mori_base_mask52only': 'ModelMaker -l 1 -n '
         }
 tensors = {'RESTORE':['_eddy_corrected_repol_std2_restore_cam2fsl_tensor_medfilt.nhdr', '_eddy_corrected_repol_std2_restore_cam2fsl_tensor.nhdr'],
-            'OLS': ['_eddy_corrected_repol_std2_ols_fsl_tensor_medfilt.nhdr', '_eddy_corrected_repol_std2_ols_fsl_tensor.nhdr', '_eddy_corrected_repol_std2_ols_dipy_tensor.nhdr', '_eddy_corrected_repol_std2_ols_dipy_tensor_mf.nhdr'],
-            'WLS': ['_eddy_corrected_repol_std2_wls_fsl_tensor_medfilt.nhdr', '_eddy_corrected_repol_std2_wls_fsl_tensor.nhdr', '_eddy_corrected_repol_std2_wls_dipy_tensor.nhdr', '_eddy_corrected_repol_std2_wls_dipy_tensor_mf.nhdr']
+            'OLS': ['_eddy_corrected_repol_std2_ols_fsl_tensor_medfilt.nhdr', '_eddy_corrected_repol_std2_ols_fsl_tensor.nhdr', '_eddy_corrected_repol_std2_ols_dipy_tensor.nhdr', '_eddy_corrected_repol_std2_ols_dipy_tensor_medfilt.nhdr'],
+            'WLS': ['_eddy_corrected_repol_std2_wls_fsl_tensor_medfilt.nhdr', '_eddy_corrected_repol_std2_wls_fsl_tensor.nhdr', '_eddy_corrected_repol_std2_wls_dipy_tensor.nhdr', '_eddy_corrected_repol_std2_wls_dipy_tensor_medfilt.nhdr']
             }
 project = 'bbc'
 fa2t1_outdir = 'reg_subFA2suborigvbmpaired'
@@ -82,20 +82,21 @@ for dwif, vbmf in zip(dwi_fnames[1:], vbm_fnames[1:]):
                 provenance.log(str(vtkdir / str(dwif+'_'+k+'.vtk')), 'generate model vtk', str(outf)+'.nii', script=__file__, provenance=params)
             else:
                 for m, ts in tensors.iteritems():
-                    tenpath = execwdir / 'cuda_repol_std2' / m
-                    for t in ts:
-                        cmd = ''
-                        cmd += str(slicer_path) + Slicer_cmd[k]
-                        cmd += str(outf)+'.nii '+str(tenpath / str(dwif+t))+' '+str(vtkdir / str(dwif+t.split('.')[0]+'_'+k))+'.vtk'
-                        output = ()
-                        dt = datetime.datetime.now()
-                        output += (str(dt),)
-                        cmdt = (cmd,)
-                        output += cmdt
-                        with WorkingContext(str(execwdir)):
-                            print(cmd)
-                            output += run_subprocess(cmd)
-                        params = {}
-                        params['cmd'] = cmd
-                        params['output'] = output
-                        provenance.log(str(vtkdir / str(dwif+t.split('.')[0]+'_'+k))+'.vtk', 'generate fiberbundle vtk from tensors', [str(outf)+'.nii', str(tenpath / str(dwif+t))] , script=__file__, provenance=params)
+                    if (m == 'WLS' and not dwif == 'sub-bbc101_ses-2_dti_15dir_b1000_1') or m in ['OLS', 'WLS']:
+                        tenpath = execwdir / 'cuda_repol_std2' / m
+                        for t in ts:
+                            cmd = ''
+                            cmd += str(slicer_path) + Slicer_cmd[k]
+                            cmd += str(outf)+'.nii '+str(tenpath / str(dwif+t))+' '+str(vtkdir / str(dwif+t.split('.')[0]+'_'+k))+'.vtk'
+                            output = ()
+                            dt = datetime.datetime.now()
+                            output += (str(dt),)
+                            cmdt = (cmd,)
+                            output += cmdt
+                            with WorkingContext(str(execwdir)):
+                                print(cmd)
+                                output += run_subprocess(cmd)
+                            params = {}
+                            params['cmd'] = cmd
+                            params['output'] = output
+                            provenance.log(str(vtkdir / str(dwif+t.split('.')[0]+'_'+k))+'.vtk', 'generate fiberbundle vtk from tensors', [str(outf)+'.nii', str(tenpath / str(dwif+t))] , script=__file__, provenance=params)

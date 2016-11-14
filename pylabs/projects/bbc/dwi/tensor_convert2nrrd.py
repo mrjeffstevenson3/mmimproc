@@ -12,7 +12,7 @@ fs = Path(getnetworkdataroot())
 pylabs_basepath = Path(*Path(inspect.getabsfile(pylabs)).parts[:-1])
 project = 'bbc'
 fname_templ = 'sub-bbc{sid}_ses-{snum}_{meth}_{runnum}'
-dwi_fnames = [fname_templ.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r)) for s, ses, m, r in dwi_passed_101]
+dwi_fnames = [fname_templ.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r)) for s, ses, m, r in dwi_passed_qc]
 
 for dwif in dwi_fnames:
     ec_meth = 'cuda_repol_std2'
@@ -27,13 +27,14 @@ for dwif in dwi_fnames:
             ten_fname = str(tenpath / str(fdwi_basen + '_' + m.lower() + '_cam2fsl_tensor'))
             nii2nrrd(ten_fname + '.nii.gz', ten_fname + '.nhdr', istensor=True)
         else:
-            ten_fname =  str(tenpath / str(fdwi_basen + '_' + m.lower() + '_fsl_tensor_medfilt'))
-            nii2nrrd(ten_fname+'.nii.gz', ten_fname+'.nhdr', istensor=True)
-            ten_fname = str(tenpath / str(fdwi_basen + '_' + m.lower() + '_fsl_tensor'))
-            nii2nrrd(ten_fname + '.nii.gz', ten_fname + '.nhdr', istensor=True)
+            if (m == 'WLS' and not dwif == 'sub-bbc101_ses-2_dti_15dir_b1000_1') or m == 'OLS':
+                ten_fname =  str(tenpath / str(fdwi_basen + '_' + m.lower() + '_fsl_tensor_medfilt'))
+                nii2nrrd(ten_fname+'.nii.gz', ten_fname+'.nhdr', istensor=True)
+                ten_fname = str(tenpath / str(fdwi_basen + '_' + m.lower() + '_fsl_tensor'))
+                nii2nrrd(ten_fname + '.nii.gz', ten_fname + '.nhdr', istensor=True)
             ten_fname =  str(tenpath / str(fdwi_basen + '_' + m.lower() + '_dipy_tensor'))
             nii2nrrd(ten_fname+'.nii', ten_fname+'.nhdr', istensor=True)
-            ten_fname = str(tenpath / str(fdwi_basen + '_' + m.lower() + '_dipy_tensor_mf'))
+            ten_fname = str(tenpath / str(fdwi_basen + '_' + m.lower() + '_dipy_tensor_medfilt'))
             nii2nrrd(ten_fname + '.nii', ten_fname + '.nhdr', istensor=True)
 
 
