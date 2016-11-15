@@ -1,13 +1,13 @@
 #recipe to install cuda 7.5 on ubuntu 14.04 - assumes ~/Software is target directory
 
-1. get cuda 7.5 ubuntu at https://developer.nvidia.com/cuda-75-downloads-archive amd save into ~/Software
+1. get cuda 7.5 ubuntu at https://developer.nvidia.com/cuda-75-downloads-archive amd save into ~/Software. note for ubuntu 16.04 cuda 7.5 binaries not available cuda 8.0 FSL tests currently fail. stay tuned
 2. cd ~/Software
 3. sudo dpkg -i cuda-repo-ubuntu1404-7-5-local_7.5-18_amd64.deb
 4. sudo apt-get update
 5. sudo apt-get install cuda
 6. then using http://www.r-tutor.com/gpu-computing/cuda-installation/cuda7.5-ubuntu
     as a guide - beware! it has errors in pathnames and export lib cmds
-7. add the following to ~/.bashrc
+7. add the following to ~/.bashrc. for 16.04 change lines 1 & 2 to /usr/local/cuda-8.0
     #cuda paths
     export CUDA_ROOT=/usr/local/cuda-7.5
     export CUDA_HOME=/usr/local/cuda-7.5

@@ -8,7 +8,7 @@ on brand new system:
 6. in terminal `cd ~/Software && bash Anaconda2-4.2.0-Linux-x86_64.sh` #nb version numbers will change.
 7. review and accept license and enter install location as /home/toddr/Software/anaconda2  and say yes to prepend to .bashrc
 8. either open a new terminal or `source ~/.bashrc` 
-9. then add basic dependencies: `pip install pynrrd pathlib`
+9. then add basic python dependencies: `pip install pynrrd pathlib`
 10. and from conda
 	`conda install --channel https://conda.anaconda.org/dfroger pygpgme`
 	`conda upgrade --all`
