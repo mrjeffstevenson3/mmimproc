@@ -122,11 +122,11 @@ for dwif in dwi_fnames:
                 tensor_ut_mf = fit_quad_form_mf[..., _ut_rows, _ut_cols]
                 savenii(tensor_ut, img.affine, infpath / m / str(fdwi_basen + '_' + m.lower() + '_dipy_tensor.nii'))
                 savenii(tensor_ut_mf, img.affine, infpath / m / str(fdwi_basen + '_' + m.lower() + '_dipy_tensor_medfilt.nii'))
-                savenii(fit.fa, img.affine, infpath / m / str(fdwi_basen +'_'+m.lower()+'_dipy_fa.nii'), minmax=(0,1))
-                savenii(fit.md, img.affine, infpath / m / str(fdwi_basen +'_'+m.lower()+'_dipy_md.nii'))
-                savenii(fit.rd, img.affine, infpath / m / str(fdwi_basen +'_'+m.lower()+'_dipy_rd.nii'))
-                savenii(fit.ad, img.affine, infpath / m / str(fdwi_basen +'_'+m.lower()+'_dipy_ad.nii'))
-                savenii(fit.mode, img.affine, infpath / m / str(fdwi_basen + '_' + m.lower() + '_dipy_mo.nii'), minmax=(-1,1))
+                savenii(fit.fa, img.affine, infpath / m / str(fdwi_basen +'_'+m.lower()+'_dipy_FA.nii'), minmax=(0,1))
+                savenii(fit.md, img.affine, infpath / m / str(fdwi_basen +'_'+m.lower()+'_dipy_MD.nii'))
+                savenii(fit.rd, img.affine, infpath / m / str(fdwi_basen +'_'+m.lower()+'_dipy_RD.nii'))
+                savenii(fit.ad, img.affine, infpath / m / str(fdwi_basen +'_'+m.lower()+'_dipy_AD.nii'))
+                savenii(fit.mode, img.affine, infpath / m / str(fdwi_basen + '_' + m.lower() + '_dipy_MO.nii'), minmax=(-1,1))
                 #calculate eigenvalues for median filtered tensor and then FA, MD, RD etc and save
                 evals, evecs = np.linalg.eigh(fit_quad_form_mf)
                 evals = np.rollaxis(evals, axis=-1)  #order evals
@@ -136,11 +136,11 @@ for dwif in dwi_fnames:
                                        (ev2 - ev3) ** 2 +
                                        (ev3 - ev1) ** 2) /
                                 ((evals * evals).sum(0) + all_zero))
-                savenii(fa_mf, img.affine, infpath / m / str(fdwi_basen + '_' + m.lower() + '_dipy_fa_mf.nii'), minmax=(0, 1))
-                savenii(evals.mean(0), img.affine, infpath / m / str(fdwi_basen + '_' + m.lower() + '_dipy_md_mf.nii'))
-                savenii(ev1, img.affine, infpath / m / str(fdwi_basen + '_' + m.lower() + '_dipy_ad_mf.nii'))
-                savenii(evals[1:].mean(0), img.affine, infpath / m / str(fdwi_basen + '_' + m.lower() + '_dipy_rd_mf.nii'))
-                savenii(mode(fit_quad_form_mf), img.affine, infpath / m / str(fdwi_basen + '_' + m.lower() + '_dipy_mode_mf.nii'), minmax=(-1, 1))
+                savenii(fa_mf, img.affine, infpath / m / str(fdwi_basen + '_' + m.lower() + '_dipy_mf_FA.nii'), minmax=(0, 1))
+                savenii(evals.mean(0), img.affine, infpath / m / str(fdwi_basen + '_' + m.lower() + '_dipy_mf_MD.nii'))
+                savenii(ev1, img.affine, infpath / m / str(fdwi_basen + '_' + m.lower() + '_dipy_mf_AD.nii'))
+                savenii(evals[1:].mean(0), img.affine, infpath / m / str(fdwi_basen + '_' + m.lower() + '_dipy_mf_RD.nii'))
+                savenii(mode(fit_quad_form_mf), img.affine, infpath / m / str(fdwi_basen + '_' + m.lower() + '_dipy_mf_MO.nii'), minmax=(-1, 1))
                 with WorkingContext(str(infpath / m)):
                     run_subprocess('dtifit --data='+str(fdwi)+' -m '+str(mask_fname)+' --bvecs='+str(fbvecs)+' --bvals='+str(
                             fbvals)+' --sse --save_tensor --wls -o '+str(infpath / m / str(fdwi_basen+'_'+m.lower()+'_fsl')))
