@@ -19,7 +19,7 @@ fs = Path(getnetworkdataroot())
 pylabs_basepath = Path(*Path(inspect.getabsfile(pylabs)).parts[:-1])
 project = 'bbc'
 fname_templ = 'sub-bbc{sid}_ses-{snum}_{meth}_{runnum}'
-dwi_fnames = [fname_templ.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r)) for s, ses, m, r in dwi_passed_101]
+dwi_fnames = [fname_templ.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r)) for s, ses, m, r in dwi_passed_qc]
 _ut_rows = np.array([0, 0, 0, 1, 1, 2])
 _ut_cols = np.array([0, 1, 2, 1, 2, 2])
 _all_cols = np.zeros(9, dtype=np.int)

@@ -1,4 +1,6 @@
 #recipe to install cuda 7.5 on ubuntu 14.04 - assumes ~/Software is target directory
+if you need the make/model of your Graphics card do one of either:
+`sudo lshw -C video` or `sudo lspci | grep -i nvidia` then check that you have the appropriate driver installed by going to http://www.nvidia.com/Download/index.aspx and filling in info.
 
 1. get cuda 7.5 ubuntu at https://developer.nvidia.com/cuda-75-downloads-archive amd save into ~/Software. note for ubuntu 16.04 cuda 7.5 binaries not available cuda 8.0 FSL tests currently fail. stay tuned
 2. cd ~/Software

@@ -17,10 +17,14 @@ fs = Path(getnetworkdataroot())
 pylabs_atlasdir = Path(*Path(inspect.getabsfile(pylabs)).parts[:-2]) / 'data' / 'atlases'
 slicer_path = Path(*Path(inspect.getabsfile(pylabs)).parts[:-3]) / 'Slicer-4.5.0-2016-05-02-linux-amd64' / 'Slicer --launch '
 
-mods = {'RESTORE':['_eddy_corrected_repol_std2_restore_cam2fsl_tensor_mf', '_eddy_corrected_repol_std2_restore'],
+meths = {'RESTORE':['_eddy_corrected_repol_std2_restore_cam2fsl_tensor_mf', '_eddy_corrected_repol_std2_restore'],
             'OLS': ['_eddy_corrected_repol_std2_ols_fsl_tensor_medfilt.nhdr', '_eddy_corrected_repol_std2_ols_fsl_tensor.nhdr', '_eddy_corrected_repol_std2_ols_dipy_tensor.nhdr', '_eddy_corrected_repol_std2_ols_dipy_tensor_medfilt.nhdr'],
             'WLS': ['_eddy_corrected_repol_std2_wls_fsl_tensor_medfilt.nhdr', '_eddy_corrected_repol_std2_wls_fsl_tensor.nhdr', '_eddy_corrected_repol_std2_wls_dipy_tensor.nhdr', '_eddy_corrected_repol_std2_wls_dipy_tensor_medfilt.nhdr']
             }
+mods = {'RESTORE':[['_FA', '_L1', '_MD', '_MO'],['_fa', '_L1', '_md']]
+            'OLS': ['
+            'WLS': ['
+        }
 project = 'bbc'
 fa2t1_outdir = 'reg_subFA2suborigvbmpaired'
 fadir = 'FA_fsl_wls_tensor_mf_ero_paired'
@@ -49,3 +53,10 @@ for dwif, vbmf in zip(dwi_fnames, vbm_fnames):
         warpfiles = [str(MNI2templ_invwarp), str(iwarp_templ2vbmsubj), str(iwarp_vbmsub2dwi)]
         affine_xform = [str(MNI2templ_aff), str(aff_templ2vbmsubj), str(aff_vbmsub2dwi)]
         subj2templ_applywarp(str(mov), str(ref), str(outf)+'.nii', warpfiles, str(execwdir), affine_xform=affine_xform, inv=True)
+
+
+
+'''
+Restore
+
+'''

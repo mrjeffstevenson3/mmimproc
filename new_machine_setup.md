@@ -33,4 +33,9 @@ and open another terminal tab since this will take a while and there is more to 
 	when done download and copy into $FSLDIR/bin the cuda and/or openmp eddy current correction binaries
 	`cd ~/Software && wget http://fsl.fmrib.ox.ac.uk/fsldownloads/patches/eddy-patch-fsl-5.0.9/centos6/{eddy_cuda7.5,eddy_openmp} && sudo cp {eddy_cuda7.5,eddy_openmp} /usr/share/fsl/5.0/bin`
 19. Download and unpack Freesurfer latest Linux-centos6 development release into ~/Software at `ftp://surfer.nmr.mgh.harvard.edu/pub/dist/freesurfer/dev` and copy your .license file into the folder
-
+20. using https://help.ubuntu.com/community/SettingUpNFSHowTo to set up NFS mounts:
+    `sudo apt-get install nfs-common` and then `gksudo gedit /etc/fstab` and add the following tab delim line under #mount for NFS:
+    <scotty_ip_addr>:/export /mnt    nfs auto    0   0
+    `sudo ufw allow from <scotty_ip_addr>` on new machine and `sudo ufw allow from <your_new_ip_addr>` on scotty
+    on scotty set up /etc/exports add to /exports AND /exports/users lines ` <your_new_ip_addr>(rw,nohide,insecure,no_subtree_check,async)` - pls include leading space.
+    
