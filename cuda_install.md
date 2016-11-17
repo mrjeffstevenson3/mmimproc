@@ -1,10 +1,11 @@
-#recipe to install cuda 7.5 on ubuntu 14.04 - assumes ~/Software is target directory
+**recipe to install cuda 7.5 - assumes ~/Software is target directory.**
+on ubuntu 14.04 use std repos, 16.04 has hack at `https://www.pugetsystems.com/labs/hpc/Install-Ubuntu-16-04-or-14-04-and-CUDA-8-and-7-5-for-NVIDIA-Pascal-GPU-825/`**
 if you need the make/model of your Graphics card do one of either:
-`sudo lshw -C video` or `sudo lspci | grep -i nvidia` then check that you have the appropriate driver installed by going to http://www.nvidia.com/Download/index.aspx and filling in info.
+`sudo lshw -C video` or `sudo lspci | grep -i nvidia` then check that you have the appropriate driver installed by going to `http://www.nvidia.com/Download/index.aspx` and filling in info. download run file if on 16.04 until stock cuda7.5 available.
 
-1. get cuda 7.5 ubuntu at https://developer.nvidia.com/cuda-75-downloads-archive amd save into ~/Software. note for ubuntu 16.04 cuda 7.5 binaries not available cuda 8.0 FSL tests currently fail. stay tuned
-2. cd ~/Software
-3. sudo dpkg -i cuda-repo-ubuntu1404-7-5-local_7.5-18_amd64.deb
+1. get cuda 7.5 ubuntu at `https://developer.nvidia.com/cuda-75-downloads-archive` amd save run file if 16.04 or .deb into ~/Software. note for ubuntu 16.04 cuda 7.5 binaries not available cuda 8.0 FSL tests currently fail. stay tuned
+2. `cd ~/Software`
+3. `sudo dpkg -i cuda-repo-ubuntu1404-7-5-local_7.5-18_amd64.deb`
 4. sudo apt-get update
 5. sudo apt-get install cuda
 6. then using http://www.r-tutor.com/gpu-computing/cuda-installation/cuda7.5-ubuntu

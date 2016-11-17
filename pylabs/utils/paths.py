@@ -30,6 +30,8 @@ def getnetworkdataroot():
         return '/mnt/users/js/'
     elif hostname in ['redshirt.ilabs.uw.edu', 'redshirt']:
         return '/mnt/users/js/'
+    elif hostname == 'uhora.ilabs.uw.edu':
+        return '/mnt/users/js/'
     elif hostname in ['Jeffs-MacBook-Pro-3.local', 'Jeffs-MBP-3']:
         return '/Users/mrjeffs/Documents/Research/data'
     else:
