@@ -20,8 +20,8 @@ from pylabs.utils.provenance import ProvenanceWrapper
 provenance = ProvenanceWrapper()
 from pylabs.utils import run_subprocess, WorkingContext
 from pylabs.utils.paths import getnetworkdataroot
-fs = getnetworkdataroot()
-pylabs_basepath = Path(*Path(inspect.getabsfile(pylabs)).parts[:-1])
+fs = Path(getnetworkdataroot())
+pylabs_basepath = Path(*Path(inspect.getabsfile(pylabs)).parts[:-2])
 MNI_bet_zcut = pylabs_basepath / 'data' / 'atlases' / 'MNI152_T1_1mm_bet_zcut.nii.gz'
 MNI_bet_zcut_mask = pylabs_basepath / 'data' / 'atlases' / 'MNI152_T1_1mm_bet_zcut_mask.nii.gz'
 MNI_bet_com = pylabs_basepath / 'data' / 'atlases' / 'MNI152_T1_1mm-com-mask8k.nii.gz'
@@ -30,7 +30,7 @@ fname_templ = 'sub-bbc{sid}_ses-{snum}_{meth}_{runnum}'
 dwi_fnames = [fname_templ.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r)) for s, ses, m, r in dwi_passed_qc]
 
 for dwif in dwi_fnames:
-    infpath = join(fs, project, dwif.split('_')[0] , dwif.split('_')[1], 'dwi')
+    infpath = join(str(fs), project, dwif.split('_')[0] , dwif.split('_')[1], 'dwi')
     fdwi = join(infpath, dwif + '.nii')
     fbvecs = join(infpath, dwif + '.bvecs')
     fbvals = join(infpath, dwif + '.bvals')
@@ -57,7 +57,8 @@ for dwif in dwi_fnames:
         flt.inputs.reference = S0_fname
         flt.inputs.out_matrix_file = S0_fname[: -6] + 'bet2S0.mat'
         flt.inputs.out_file = S0_fname[: -6] + 'S0_zcut.nii'
-        fslresult += flt.run()
+        result = flt.run()
+        fslresult += (result,)
         # apply mat file to center of mass ROI in MNI template
         dt = datetime.datetime.now()
         fslresult += (str(dt),'applyxfm_com2S0')
@@ -66,7 +67,8 @@ for dwif in dwi_fnames:
         applyxfm.inputs.out_file = join(infpath, dwif + '_S0_match_bet_com_roi.nii')
         applyxfm.inputs.reference = S0_fname
         applyxfm.inputs.apply_xfm = True
-        fslresult += applyxfm.run()
+        result = applyxfm.run()
+        fslresult += (result,)
         # apply mat file to MNI mask file to cut off neck
         dt = datetime.datetime.now()
         fslresult += (str(dt),'applyxfm_mask2S0')
@@ -75,7 +77,8 @@ for dwif in dwi_fnames:
         applyxfm.inputs.out_file = join(infpath, dwif + '_S0_mask.nii')
         applyxfm.inputs.reference = S0_fname
         applyxfm.inputs.apply_xfm = True
-        fslresult += applyxfm.run()
+        result = applyxfm.run()
+        fslresult += (result,)
         # chop off neck with MNI zcut
         zcut_data = nib.load(join(infpath, dwif + '_S0_mask.nii')).get_data()
         zcut_data_maskb = zcut_data > 0
@@ -99,7 +102,8 @@ for dwif in dwi_fnames:
         bet.inputs.mask = True
         bet.inputs.skull = True
         bet.inputs.out_file = brain_outfname + '.nii'
-        fslresult += bet.run()
+        result = bet.run()
+        fslresult += (result,)
         provenance.log(brain_outfname + '.nii', 'brain extracted S0 dwi from ' + dwif, S0_fname, code=__file__, provenance=fslresult)
         provenance.log(brain_outfname + '_mask.nii', 'dwi brain mask from ' + dwif, S0_fname, code=__file__, provenance=fslresult)
         # make index and acquisition parameters files
@@ -120,13 +124,15 @@ for dwif in dwi_fnames:
         cmd = ''
         output = ()
         dt = datetime.datetime.now()
-        output += (str(dt),)
+        output += (str(dt), 'eddy cuda start time for '+fdwi)
         cmd += 'eddy_cuda7.5 --acqp=acq_params.txt --bvals=' + fbvals + ' --bvecs=' + fbvecs
         cmd += ' --imain=' + fdwi + ' --index=index.txt --mask=' + brain_outfname + '_mask.nii '
         cmd += '--out=' + join(outpath, dwif + '_eddy_corrected_repol_std2') + ' --repol --ol_sqr --slm=linear --ol_nstd=2 --niter=9 --fwhm=20,5,0,0,0,0,0,0,0'
         cmdt = (cmd,)
         output += cmdt
         output += run_subprocess(cmd)
+        dt = datetime.datetime.now()
+        output += (str(dt), 'eddy cuda end time for '+fdwi)
         params = {}
         params['eddy cmd'] = cmd
         params['eddy output'] = output
@@ -138,7 +144,7 @@ for dwif in dwi_fnames:
         cmdt = (cmd,)
         output += cmdt
         output += run_subprocess(cmd)
-        params['flsmaths clamping cmd'] = cmd
-        params['flsmaths output'] = output
+        params['fslmaths clamping cmd'] = cmd
+        params['fslmaths output'] = output
         provenance.log(join(outpath, dwif + '_eddy_corrected_repol_std2_thr1.nii.gz'), 'eddy using --repol --ol_sqr --slm=linear --ol_nstd=2 --niter=9 --fwhm=20,5,0,0,0,0,0,0,0',
                  fdwi, code=__file__, provenance=params)
