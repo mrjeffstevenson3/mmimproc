@@ -30,12 +30,12 @@ for i, j in enumerate(list(itertools.product(*(range(3), range(3))))):
 
 for dwif in dwi_fnames:
     # for ec_meth in ['cuda_repol_std2']:     # death match ['cuda_defaults', 'cuda_repol', 'cuda_repol_std2']:
-    ec_meth = 'cuda_repol_std2'
+    ec_meth = 'cuda_repol_std2_v2'
     infpath = fs / project / dwif.split('_')[0] / dwif.split('_')[1] / 'dwi' / ec_meth
     fdwi_basen = dwif + '_eddy_corrected'
     if ec_meth == 'cuda_repol':
         fdwi_basen += '_repol'
-    elif ec_meth == 'cuda_repol_std2':
+    elif ec_meth == 'cuda_repol_std2_v2':
         fdwi_basen += '_repol_std2'
     fdwi = infpath / str(fdwi_basen + '_thr1.nii.gz')
     fbvecs = infpath / str(fdwi_basen + '.eddy_rotated_bvecs')

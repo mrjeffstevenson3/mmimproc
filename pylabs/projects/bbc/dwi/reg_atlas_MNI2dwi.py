@@ -83,7 +83,7 @@ for dwif, vbmf in zip(dwi_fnames[1:], vbm_fnames[1:]):
             else:
                 for m, ts in tensors.iteritems():
                     if (m == 'WLS' and not dwif == 'sub-bbc101_ses-2_dti_15dir_b1000_1') or m in ['OLS', 'WLS']:
-                        tenpath = execwdir / 'cuda_repol_std2' / m
+                        tenpath = execwdir / 'cuda_repol_std2_v2' / m
                         for t in ts:
                             cmd = ''
                             cmd += str(slicer_path) + Slicer_cmd[k]
