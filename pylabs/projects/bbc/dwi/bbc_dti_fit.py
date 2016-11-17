@@ -117,7 +117,7 @@ for dwif in dwi_fnames:
                 fit_quad_form = fit.quadratic_form
                 fit_quad_form_mf = np.zeros(fit_quad_form.shape)
                 for r, c in zip(_all_rows, _all_cols):
-                    fit_quad_form_mf[..., r, c] = medianf(fit_quad_form[..., r, c], size=3, mode='constant', cval=0)
+                    fit_quad_form_mf[..., r, c] = medianf(fit_quad_form[..., r, c], size=1, mode='constant', cval=0)
                 tensor_ut = fit_quad_form[..., _ut_rows, _ut_cols]
                 tensor_ut_mf = fit_quad_form_mf[..., _ut_rows, _ut_cols]
                 savenii(tensor_ut, img.affine, infpath / m / str(fdwi_basen + '_' + m.lower() + '_dipy_tensor.nii'))

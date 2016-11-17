@@ -47,7 +47,7 @@ dwi_reg_append = '_eddy_corrected_repol_std2_wls_fsl_tensor_mf_FA_ero_reg2sorigv
 
 # dwif = dwi_fnames[1]
 # vbmf = vbm_fnames[1]
-for dwif, vbmf in zip(dwi_fnames[1:], vbm_fnames[1:]):
+for dwif, vbmf in zip(dwi_fnames[:1], vbm_fnames[:1]):
     for k, a in MNI_atlases.iteritems():
         execwdir = fs / project /  dwif.split('_')[0] / dwif.split('_')[1] / 'dwi'
         mov = a
