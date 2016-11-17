@@ -27,7 +27,7 @@ MNI_bet_zcut_mask = pylabs_basepath / 'data' / 'atlases' / 'MNI152_T1_1mm_bet_zc
 MNI_bet_com = pylabs_basepath / 'data' / 'atlases' / 'MNI152_T1_1mm-com-mask8k.nii.gz'
 project = 'bbc'
 fname_templ = 'sub-bbc{sid}_ses-{snum}_{meth}_{runnum}'
-dwi_fnames = [fname_templ.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r)) for s, ses, m, r in dwi_passed_qc]
+dwi_fnames = [fname_templ.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r)) for s, ses, m, r in dwi_passed_101]
 
 for dwif in dwi_fnames:
     infpath = join(str(fs), project, dwif.split('_')[0] , dwif.split('_')[1], 'dwi')
@@ -118,7 +118,7 @@ for dwif in dwi_fnames:
 
         # execute eddy command in subprocess in local working directory using repol and lower stddev and linear 2nd level model
         # winner of DWI preproc deathmatch Oct-2016
-        outpath = join(infpath, 'cuda_repol_std2_v2')
+        outpath = join(infpath, 'cuda_repol_std2_v3')
         if not isdir(outpath):
             os.makedirs(outpath)
         cmd = ''
