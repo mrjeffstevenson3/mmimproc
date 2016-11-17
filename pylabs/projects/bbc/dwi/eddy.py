@@ -104,8 +104,8 @@ for dwif in dwi_fnames:
         bet.inputs.out_file = brain_outfname + '.nii'
         result = bet.run()
         fslresult += (result,)
-        provenance.log(brain_outfname + '.nii', 'brain extracted S0 dwi from ' + dwif, S0_fname, code=__file__, provenance=fslresult)
-        provenance.log(brain_outfname + '_mask.nii', 'dwi brain mask from ' + dwif, S0_fname, code=__file__, provenance=fslresult)
+        provenance.log(brain_outfname + '.nii', 'brain extracted S0 dwi from ' + dwif, S0_fname, code=__file__)
+        provenance.log(brain_outfname + '_mask.nii', 'dwi brain mask from ' + dwif, S0_fname, code=__file__)
         # make index and acquisition parameters files
         with open(join(infpath, 'index.txt'), 'w') as f:
             f.write('1 ' * len(gtab.bvals))
