@@ -43,16 +43,18 @@ def nii2nrrd(niftifile, nrrd_fname, bvalsf=None, bvecsf=None, istensor=False):
         t_aff = inv_ornt_aff(ornt, img.shape)
         affine = np.dot(img.affine, t_aff)
         img_data = apply_orientation(img_data, ornt)
+    img_data = np.float32(img_data)
     options[u'dimension'] = unicode(len(img_data.shape))
     options[u'measurement frame'] = [['-1', '0', '0'], ['0', '1', '0'], ['0', '0', '1']]
     options[u'sizes'] = list(img_data.shape)
+    options[u'type'] = unicode(img_data.dtype.str[1:])
     if istensor:
-        options[u'kinds'] = ['space', 'space', 'space', '3D-symmetric-matrix']
+        options[u'kinds'] = [u'space', u'space', u'space', u'3D-symmetric-matrix']
     elif len(img_data.shape) == 4:
-        options[u'kinds'] =  ['space', 'space', 'space', 'vector']
+        options[u'kinds'] =  [u'space', u'space', u'space', u'vector']
     else:
-        options[u'kinds'] =  ['space', 'space', 'space']
-    options[u'space'] = 'right-anterior-superior'
+        options[u'kinds'] =  [u'space', u'space', u'space']
+    options[u'space'] = u'right-anterior-superior'
     if len(img_data.shape) == 4:
         options[u'space directions'] = [list(x) for x in affine[:3,:3].astype(str)] + [u'none']
         options[u'thicknesses'] = ['nan', 'nan', affine[2, 2].astype(str), 'nan']
