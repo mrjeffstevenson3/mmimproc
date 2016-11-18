@@ -15,7 +15,7 @@ from pylabs.utils import run_subprocess, WorkingContext
 fs = Path(getnetworkdataroot())
 pylabs_atlasdir = Path(*Path(inspect.getabsfile(pylabs)).parts[:-2]) / 'data' / 'atlases'
 project = 'bbc'
-fa2t1_outdir = 'reg_subFA2suborigvbmpaired'
+fa2t1_outdir = 'reg_subFA2suborigvbmpaired_run2'
 fadir = 'FA_fsl_wls_tensor_mf_ero_paired'
 dwi_templ = 'sub-bbc{sid}_ses-{snum}_{meth}_{runnum}'
 dwi_fnames = [dwi_templ.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r)) for s, ses, m, r in dwipairing]

@@ -31,7 +31,7 @@ and open another terminal tab since this will take a while and there is more to 
 	`wget -O- http://neuro.debian.net/lists/xenial.us-ca.full | sudo tee /etc/apt/sources.list.d/neurodebian.sources.list` and enter your admin pwd then
 	`sudo apt-get update && sudo apt-get install fsl-5.0-core`
 	when done download and copy into $FSLDIR/bin the cuda and/or openmp eddy current correction binaries
-	`cd ~/Software && wget http://fsl.fmrib.ox.ac.uk/fsldownloads/patches/eddy-patch-fsl-5.0.9/centos6/{eddy_cuda7.5,eddy_openmp} && sudo cp {eddy_cuda7.5,eddy_openmp} /usr/share/fsl/5.0/bin`
+	`cd ~/Software && wget http://fsl.fmrib.ox.ac.uk/fsldownloads/patches/eddy-patch-fsl-5.0.9/centos6/{eddy_cuda7.5,eddy_openmp} && sudo cp {eddy_cuda7.5,eddy_openmp} /usr/share/fsl/5.0/bin && sudo chmod 777 /usr/share/fsl/5.0/bin/{eddy_cuda7.5,eddy_openmp}`
 19. Download and unpack Freesurfer latest Linux-centos6 development release into ~/Software at `ftp://surfer.nmr.mgh.harvard.edu/pub/dist/freesurfer/dev` and copy your .license file into the folder and update ~/.bashrc with
 `# Freesurfer configuration
 export FREESURFER_HOME=/home/toddr/Software/freesurfer_dev20161104 #change date stamp to your dev release date 
