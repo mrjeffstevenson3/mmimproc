@@ -46,7 +46,7 @@ with WorkingContext(str(fa_regdir)):
 regsyn_output = ()
 with WorkingContext(str(fs / project / 'reg')):
     for fa, t1 in zip(dwi_fnames, vbm_fnames):
-        mov = fs / project / 'reg' / fadir / str(fa+'_eddy_corrected_repol_std2_wls_fsl_tensor_mf_FA_ero.nii.gz')
+        mov = fs / project / 'reg' / fadir / str(fa+'_eddy_corrected_repol_std2_wls_fsl_tensor_mf_FA_ero.nii')
         ref = orig_vbmdir.resolve() / str('_'.join(t1.split('_')[2:])+'.nii.gz')
         out = fa2t1_outdir+'/'+fa+'_eddy_corrected_repol_std2_wls_fsl_tensor_mf_FA_ero_reg2sorigvbm_'
         cmd = str(antsregscript)+' -d 3 -f '+str(ref)+' -m '+str(mov)+' -o '+str(out)+' -n '+str(ncpu)
