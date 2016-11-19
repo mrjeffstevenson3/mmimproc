@@ -14,6 +14,10 @@ from pylabs.utils import run_subprocess, WorkingContext
 #setup paths and file names to process
 fs = Path(getnetworkdataroot())
 pylabs_atlasdir = Path(*Path(inspect.getabsfile(pylabs)).parts[:-2]) / 'data' / 'atlases'
+antsregscript = Path(*Path(os.environ.get('ANTSPATH')).parts[:-2]) / 'ANTs' / 'Scripts' / 'antsRegistrationSyN.sh'
+if not antsregscript.is_file():
+    raise ValueError('Cannot find ANTs Registration script using ANTSPATH: ', antsregscript)
+ncpu = 12
 project = 'bbc'
 fa2t1_outdir = 'reg_subFA2suborigvbmpaired_run2'
 fadir = 'FA_fsl_wls_tensor_mf_ero_paired_run2'
@@ -43,7 +47,7 @@ with WorkingContext(str(fs / project / 'reg')):
         mov = fs / project / 'reg' / fadir / str(fa+'_eddy_corrected_repol_std2_wls_fsl_tensor_mf_FA_ero.nii.gz')
         ref = orig_vbmdir.resolve() / str('_'.join(t1.split('_')[2:])+'.nii.gz')
         out = fa2t1_outdir+'/'+fa+'_eddy_corrected_repol_std2_wls_fsl_tensor_mf_FA_ero_reg2sorigvbm_'
-        cmd = 'antsRegistrationSyN.sh -d 3 -f '+str(ref)+' -m '+str(mov)+' -o '+str(out)+' -n 12'
+        cmd = str(antsregscript)+' -d 3 -f '+str(ref)+' -m '+str(mov)+' -o '+str(out)+' -n '+str(ncpu)
         regsyn_output += run_subprocess(cmd)
     with open('regsyn_fa2t1.log', mode='r') as logf:
         logf.write(regsyn_output)
