@@ -43,7 +43,7 @@ with WorkingContext(str(fs / project / 'reg')):
         mov = fs / project / 'reg' / fadir / str(fa+'_eddy_corrected_repol_std2_wls_fsl_tensor_mf_FA_ero.nii.gz')
         ref = orig_vbmdir.resolve() / str('_'.join(t1.split('_')[2:])+'.nii.gz')
         out = fa2t1_outdir+'/'+fa+'_eddy_corrected_repol_std2_wls_fsl_tensor_mf_FA_ero_reg2sorigvbm_'
-        cmd = 'antsRegistrationSyN.sh -d 3 -f '+str(ref)+' -m '+str(mov)+' -o '+str(out)+' -n 20'
+        cmd = 'antsRegistrationSyN.sh -d 3 -f '+str(ref)+' -m '+str(mov)+' -o '+str(out)+' -n 12'
         regsyn_output += run_subprocess(cmd)
     with open('regsyn_fa2t1.log', mode='r') as logf:
         logf.write(regsyn_output)
