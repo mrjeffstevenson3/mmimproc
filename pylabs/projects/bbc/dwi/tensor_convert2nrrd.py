@@ -12,7 +12,7 @@ fs = Path(getnetworkdataroot())
 pylabs_basepath = Path(*Path(inspect.getabsfile(pylabs)).parts[:-1])
 project = 'bbc'
 fname_templ = 'sub-bbc{sid}_ses-{snum}_{meth}_{runnum}'
-dwi_fnames = [fname_templ.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r)) for s, ses, m, r in dwi_passed_101]
+dwi_fnames = [fname_templ.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r)) for s, ses, m, r in dwi_passed_qc]
 
 for dwif in dwi_fnames:
     ec_meth = 'cuda_repol_std2_v2'
