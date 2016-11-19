@@ -32,6 +32,8 @@ if not orig_vbmdir.is_symlink():
     orig_vbmdir.symlink_to(Path('../myvbm/ants_vbm_template_pairedLH/orig_vbm'), target_is_directory=True)
 if not fa_regdir.is_dir():
     fa_regdir.mkdir()
+if not (fs / project / 'reg' / fa2t1_outdir).is_dir():
+    (fs / project / 'reg' / fa2t1_outdir).mkdir()
 #1st we erode FA 1 pixel to clean up edges.
 with WorkingContext(str(fa_regdir)):
     for d in dwi_fnames:
