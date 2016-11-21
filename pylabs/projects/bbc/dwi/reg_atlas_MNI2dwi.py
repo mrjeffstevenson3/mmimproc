@@ -1,10 +1,7 @@
 import os, inspect
 from pathlib import *
 import datetime
-from os.path import split
-import numpy as np
-import nibabel as nib
-import niprov, pylabs
+import pylabs
 from pylabs.alignment.ants_reg import subj2templ_applywarp
 from pylabs.projects.bbc.pairing import vbmpairing, dwipairing
 from pylabs.utils.paths import getnetworkdataroot
@@ -32,8 +29,9 @@ tensors = {'RESTORE':['_eddy_corrected_repol_std2_restore_cam2fsl_tensor_medfilt
             'OLS': ['_eddy_corrected_repol_std2_ols_fsl_tensor_medfilt.nhdr', '_eddy_corrected_repol_std2_ols_fsl_tensor.nhdr', '_eddy_corrected_repol_std2_ols_dipy_tensor.nhdr', '_eddy_corrected_repol_std2_ols_dipy_tensor_medfilt.nhdr'],
             'WLS': ['_eddy_corrected_repol_std2_wls_fsl_tensor_medfilt.nhdr', '_eddy_corrected_repol_std2_wls_fsl_tensor.nhdr', '_eddy_corrected_repol_std2_wls_dipy_tensor.nhdr', '_eddy_corrected_repol_std2_wls_dipy_tensor_medfilt.nhdr']
             }
+#set project specific files
 project = 'bbc'
-fa2t1_outdir = 'reg_subFA2suborigvbmpaired'
+fa2t1_outdir = 'reg_subFA2suborigvbmpaired_run2'
 fadir = 'FA_fsl_wls_tensor_mf_ero_paired'
 dwi_templ = 'sub-bbc{sid}_ses-{snum}_{meth}_{runnum}'
 dwi_fnames = [dwi_templ.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r)) for s, ses, m, r in dwipairing]
@@ -42,12 +40,10 @@ vbm_fnames = [vbm_templ.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r))
 templdir = fs / project / 'reg' / 'ants_vbm_pairedLH_in_template_space'
 MNI2templ_invwarp = templdir / 'bbc_pairedLH_template_reg2MNI_1InverseWarp.nii.gz'
 MNI2templ_aff = templdir / 'bbc_pairedLH_template_reg2MNI_0GenericAffine.mat'
-dwi2vbmsubjdir = fs / project / 'reg' / 'reg_subFA2suborigvbmpaired'
+dwi2vbmsubjdir = fs / project / 'reg' / 'reg_subFA2suborigvbmpaired_run2'
 dwi_reg_append = '_eddy_corrected_repol_std2_wls_fsl_tensor_mf_FA_ero_reg2sorigvbm_'
-
-# dwif = dwi_fnames[1]
-# vbmf = vbm_fnames[1]
-for dwif, vbmf in zip(dwi_fnames[:1], vbm_fnames[:1]):
+#apply the warps
+for dwif, vbmf in zip(dwi_fnames, vbm_fnames):
     for k, a in MNI_atlases.iteritems():
         execwdir = fs / project /  dwif.split('_')[0] / dwif.split('_')[1] / 'dwi'
         mov = a
@@ -60,7 +56,7 @@ for dwif, vbmf in zip(dwi_fnames[:1], vbm_fnames[:1]):
         warpfiles = [str(MNI2templ_invwarp), str(iwarp_templ2vbmsubj), str(iwarp_vbmsub2dwi)]
         affine_xform = [str(MNI2templ_aff), str(aff_templ2vbmsubj), str(aff_vbmsub2dwi)]
         subj2templ_applywarp(str(mov), str(ref), str(outf)+'.nii', warpfiles, str(execwdir), affine_xform=affine_xform, inv=True)
-        vtkdir = execwdir / 'vtk_tensor_comp'
+        vtkdir = execwdir / 'vtk_tensor_comp_run2'
         if not vtkdir.is_dir():
             vtkdir.mkdir()
         if not Slicer_cmd[k] == None:
