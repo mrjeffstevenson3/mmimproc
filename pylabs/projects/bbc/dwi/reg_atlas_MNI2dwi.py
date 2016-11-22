@@ -50,9 +50,9 @@ for dwif, vbmf in zip(dwi_fnames, vbm_fnames):
         ref = execwdir / str(dwif+'_S0_brain.nii')
         outf = execwdir / str(dwif+'_'+k)
         iwarp_templ2vbmsubj = templdir / str(vbmf+'InverseWarp.nii.gz')
-        iwarp_vbmsub2dwi = fs / project / 'reg' / 'reg_subFA2suborigvbmpaired' / str(dwif+ dwi_reg_append +'1InverseWarp.nii.gz')
+        iwarp_vbmsub2dwi = dwi2vbmsubjdir / str(dwif+ dwi_reg_append +'1InverseWarp.nii.gz')
         aff_templ2vbmsubj = templdir / str(vbmf+'Affine.txt')
-        aff_vbmsub2dwi = fs / project / 'reg' / 'reg_subFA2suborigvbmpaired' / str(dwif + dwi_reg_append + '0GenericAffine.mat')
+        aff_vbmsub2dwi = dwi2vbmsubjdir / str(dwif + dwi_reg_append + '0GenericAffine.mat')
         warpfiles = [str(MNI2templ_invwarp), str(iwarp_templ2vbmsubj), str(iwarp_vbmsub2dwi)]
         affine_xform = [str(MNI2templ_aff), str(aff_templ2vbmsubj), str(aff_vbmsub2dwi)]
         subj2templ_applywarp(str(mov), str(ref), str(outf)+'.nii', warpfiles, str(execwdir), affine_xform=affine_xform, inv=True)
@@ -78,7 +78,7 @@ for dwif, vbmf in zip(dwi_fnames, vbm_fnames):
                 provenance.log(str(vtkdir / str(dwif+'_'+k+'.vtk')), 'generate model vtk', str(outf)+'.nii', script=__file__, provenance=params)
             else:
                 for m, ts in tensors.iteritems():
-                    if (m == 'WLS' and not dwif == 'sub-bbc101_ses-2_dti_15dir_b1000_1') or m in ['OLS', 'WLS']:
+                    if m in ['OLS', 'WLS']:
                         tenpath = execwdir / 'cuda_repol_std2_v2' / m
                         for t in ts:
                             cmd = ''
