@@ -63,11 +63,13 @@ def subj2templ_applywarp(moving, ref_img, outfile, warpfiles, execwdir, dims=3, 
     return
 
 def subj2T1(moving, ref_img, outfile, inargs=None):
-    if inargs == None or '-n' not in inargs:
-        args = ['-n 10', '-t s']
+    args = []
+    if inargs == None:
+        args += ['-n 10', '-t s']
     else:
-        args = []
-        args = args.append(inargs)
+        if '-n' not in '\t'.join(inargs):
+            args += ['-n 10']
+        args.append(inargs)
     cmd = ''
     cmd += antsRegistrationSyN + ' -d 3 -f '+ref_img+' -m '+moving
     cmd += ' -o '+outfile+' '
