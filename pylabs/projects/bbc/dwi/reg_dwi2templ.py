@@ -4,7 +4,7 @@ import datetime
 from os.path import split
 import numpy as np
 import nibabel as nib
-import niprov, pylabs
+import pylabs
 from pylabs.alignment.ants_reg import subj2templ_applywarp
 from pylabs.projects.bbc.pairing import vbmpairing, dwipairing
 from pylabs.utils.paths import getnetworkdataroot
