@@ -9,29 +9,37 @@ from pylabs.utils import WorkingContext
 provenance = ProvenanceWrapper()
 if not Path(os.environ.get('ANTSPATH'), 'WarpImageMultiTransform').is_file():
     raise ValueError('must have ants installed with WarpImageMultiTransform in $ANTSPATH directory.')
+if not Path(os.environ.get('ANTSPATH'), 'WarpTimeSeriesImageMultiTransform').is_file():
+    raise ValueError('must have ants installed with WarpTimeSeriesImageMultiTransform in $ANTSPATH directory.')
 if not (Path(*Path(os.environ.get('ANTSPATH')).parts[:-2]) / 'ANTs' / 'Scripts' / 'antsRegistrationSyN.sh').is_file():
     raise ValueError('must have ants installed with antsRegistrationSyN.sh in '+str(Path(*Path(os.environ.get('ANTSPATH')).parts[:-2]) / 'ANTs' / 'Scripts')+' directory.')
 else:
     antsRegistrationSyN = Path(*Path(os.environ.get('ANTSPATH')).parts[:-2]) / 'ANTs' / 'Scripts' / 'antsRegistrationSyN.sh'
 
 
-def subj2templ_applywarp(moving, ref_img, outfile, warpfiles, execwdir, affine_xform=None, inv=False, args=['--use-NN']):
+def subj2templ_applywarp(moving, ref_img, outfile, warpfiles, execwdir, dims=3,affine_xform=None, inv=False, args=['--use-NN']):
     if not type(warpfiles) == list:
         raise TypeError('warpfiles must be a list.')
     if not type(affine_xform) == list:
         raise TypeError('affine_xform must be a list.')
     if not type(args) == list:
         raise TypeError('args must be a list.')
-    if inv and (affine_xform == None or not len(warpfiles) == len(affine_xform)):
-        raise ValueError('must have affine list with same number of elements when using inverse xfm.')
+    if not len(warpfiles) == len(affine_xform) and not affine_xform == None:
+        raise ValueError('must have affine list with same number of elements as warpfiles list.')
+    if dims > 4 or dims < 2:
+        raise ValueError('dims must be between 2 and 4. Default: dims=3.')
     cmd = ''
-    cmd += 'WarpImageMultiTransform 3 '+moving+' '+outfile+' -R '+ref_img+' '
+    if dims == 4:
+        cmd += 'WarpTimeSeriesImageMultiTransform 4 '
+    if dims == 3 or dims == 2:
+        cmd += 'WarpImageMultiTransform '+str(dims)+' '
+    cmd += moving+' '+outfile+' -R '+ref_img+' '
     if inv:
-        cmd += ' '.join(['-i ' + a + ' ' + w for a, w, in zip(reversed(affine_xform), reversed(warpfiles))])+' '
+        cmd += ' '.join(['-i ' + a + ' ' + w for a, w in zip(reversed(affine_xform), reversed(warpfiles))])+' '
+    elif not affine_xform == None:
+        cmd += ' '.join([w + ' ' + a for a, w in zip(affine_xform, warpfiles)])+' '
     else:
-        cmd += ' '.join([' ' + w for w in map(str, warpfiles)])+' '
-        if not affine_xform == None:
-            cmd += ' '.join([' '+a for a in map(str, affine_xform)])+' '
+        cmd += ' '.join([w for w in map(str, warpfiles)])+' '
     if not args == None:
         cmd += ' '.join([' '+ar for ar in map(str, args)])
     output = ()
