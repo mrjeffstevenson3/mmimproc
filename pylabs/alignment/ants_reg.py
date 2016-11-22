@@ -17,7 +17,7 @@ else:
     antsRegistrationSyN = Path(*Path(os.environ.get('ANTSPATH')).parts[:-2]) / 'ANTs' / 'Scripts' / 'antsRegistrationSyN.sh'
 
 
-def subj2templ_applywarp(moving, ref_img, outfile, warpfiles, execwdir, dims=3,affine_xform=None, inv=False, args=['--use-NN']):
+def subj2templ_applywarp(moving, ref_img, outfile, warpfiles, execwdir, dims=3, affine_xform=None, inv=False, args=['--use-NN']):
     if not type(warpfiles) == list:
         raise TypeError('warpfiles must be a list.')
     if not type(affine_xform) == list:
