@@ -1,0 +1,21 @@
+list=`ls -d sub*`
+rm /mnt/users/js/bbc/allvtk.txt
+for afolder in ${list}
+do
+echo working on ${afolder}
+cd /mnt/users/js/bbc
+cd ${afolder}/*/*/vtk_tensor_comp
+rm aal_motor.vtk
+cp *aal_motor.vtk aal_motor.vtk
+rm base.vtk
+cp *base*.vtk base.vtk
+list2=`ls *tensor*.vtk`
+for afile in ${list2}
+do
+echo working on ${afile}
+cp ${afile} f.vtk
+/mnt/users/js/bbc/readfiber_binary_bbcb
+echo ${afile} >> /mnt/users/js/bbc/allvtk.txt
+cat dti_results.txt >> /mnt/users/js/bbc/allvtk.txt
+done
+done

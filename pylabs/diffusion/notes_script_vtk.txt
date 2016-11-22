@@ -1,0 +1,12 @@
+These are notes that describe the software script_vtk.txt
+
+This script loops throught the various bbc subjects in order to process their vtk files
+In order to call my fortran the script sets up three files 
+1) f.vtk which is the main fiber bundle that Jeff gave me
+2) base.vtk is the floor model that is used to define the lower floor
+3) aal_motor.vtk is the ceiling model used in readfiber_binaryb.f
+
+So once the script prepares these three files for each subject and for each type of fiber bundle,
+then the software takes the files and quantifies the number of fibers that survive the inclusion which means that need 
+to reach the floor and reach the ceiling.
+
