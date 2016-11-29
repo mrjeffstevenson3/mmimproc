@@ -28,13 +28,10 @@ for i, j in enumerate(list(itertools.product(*(range(3), range(3))))):
     _all_rows[i] = int(j[0])
     _all_cols[i] = int(j[1])
 
-#camino fir method flag translations
-camfl = {'RESTORE': 'restore',
-         'OLS': 'nldt',
-         'WLS': 'ldt_wtd'}
+#camino fit method flag translations
 
-camcmd_p1 = {'RESTORE': ['modelfit -inputfile ../'+str(fdwi)+' -schemefile ../scheme.txt -model ldt_wtd -noisemap noise_map.Bdouble -bgmask ../'+str(mask_fname)+' -outputfile linear_tensor.Bfloat',
-                    'cat noise_map.Bdouble noise_map.Bdouble | voxel2image -inputdatatype double -header ../'+str(mask_fname)+' -outputroot noise_map',
+camcmd_p1 = {'RESTORE': ['modelfit -inputfile '+str(fdwi)+' -schemefile ../scheme.txt -model ldt_wtd -noisemap noise_map.Bdouble -bgmask '+str(mask_fname)+' -outputfile linear_tensor.Bfloat',
+                    'cat noise_map.Bdouble noise_map.Bdouble | voxel2image -inputdatatype double -header '+str(mask_fname)+' -outputroot noise_map',
                       'fslmaths noise_map -sqrt sigma_map', 'fslstats sigma_map -P 50']
             }
 
@@ -61,17 +58,21 @@ for dwif in dwi_fnames:
         mask_img = nib.load(str(mask_fname))
         mask = mask_img.get_data()
         for m in ['WLS', 'OLS', 'RESTORE']:
+        for m in camcmd_p1:
             if not Path(infpath / m).is_dir():
                 Path(infpath / m).mkdir()
             #set up camino for any method in dwi folder
             run_subprocess('fsl2scheme -bvecfile '+str(fbvecs)+' -bvalfile '+str(fbvals)+' > scheme.txt')
+            result = ([run_subprocess(cmd)) for cmd in
+            with WorkingContext(m):
+                result += tuple()
             if m == 'RESTORE':
                 with WorkingContext(m):
-                    cmd = 'modelfit -inputfile ../'+str(fdwi)+' -schemefile ../scheme.txt -model ldt_wtd -noisemap '
-                    cmd += 'noise_map.Bdouble -bgmask ../'+str(mask_fname)+' -outputfile linear_tensor.Bfloat'
+                    cmd = 'modelfit -inputfile '+str(fdwi)+' -schemefile ../scheme.txt -model ldt_wtd -noisemap '
+                    cmd += 'noise_map.Bdouble -bgmask '+str(mask_fname)+' -outputfile linear_tensor.Bfloat'
                     run_subprocess(cmd)
                     ## grab noise map twice b/c of strange camino bug where the noise map is undersized
-                    cmd = 'cat noise_map.Bdouble noise_map.Bdouble | voxel2image -inputdatatype double -header ../'
+                    cmd = 'cat noise_map.Bdouble noise_map.Bdouble | voxel2image -inputdatatype double -header '
                     cmd += str(mask_fname)+' -outputroot noise_map'
                     run_subprocess(cmd)
                     ## square root of the variance of the noise is sigma
@@ -80,15 +81,15 @@ for dwif in dwi_fnames:
                     result = run_subprocess('fslstats sigma_map -P 50')
                     sigma = result[0].strip(' \n')
                     ## do the fitting
-                    cmd = 'modelfit -inputfile ../'+str(fdwi)+' -schemefile ../scheme.txt -model restore -sigma '
-                    cmd += sigma+' -outliermap outlier_map.Bbyte -bgmask ../'+str(mask_fname)+' -outputfile restore_tensor.Bfloat'
+                    cmd = 'modelfit -inputfile '+str(fdwi)+' -schemefile ../scheme.txt -model restore -sigma '
+                    cmd += sigma+' -outliermap outlier_map.Bbyte -bgmask '+str(mask_fname)+' -outputfile restore_tensor.Bfloat'
                     run_subprocess(cmd)
                     ## rename and convert files back to nii
-                    run_subprocess('cat restore_tensor.Bfloat | fa -header ../'+str(fdwi)+' -outputfile '+str(fdwi_basen)+'_'+m.lower()+'_cam_FA.nii.gz')
-                    run_subprocess('cat restore_tensor.Bfloat | md -header ../'+str(fdwi)+' -outputfile '+str(fdwi_basen)+'_'+m.lower()+'_cam_MD.nii.gz')
-                    run_subprocess('cat restore_tensor.Bfloat | voxel2image -components 8 -header ../'+str(fdwi)+' -outputroot '+str(fdwi_basen)+'_'+m.lower()+'_tensor_')
-                    run_subprocess('cat outlier_map.Bbyte | voxel2image -inputdatatype byte -components '+str(num_dirs)+' -header ../'+str(fdwi)+' -outputroot '+str(fdwi_basen+'_'+m.lower()+'_outlier_map_'))
-                    run_subprocess('cat restore_tensor.Bfloat | dteig | voxel2image -components 12 -inputdatatype double -header ../'+str(fdwi)+' -outputroot eigsys_')
+                    run_subprocess('cat restore_tensor.Bfloat | fa -header '+str(fdwi)+' -outputfile '+str(fdwi_basen)+'_'+m.lower()+'_cam_FA.nii.gz')
+                    run_subprocess('cat restore_tensor.Bfloat | md -header '+str(fdwi)+' -outputfile '+str(fdwi_basen)+'_'+m.lower()+'_cam_MD.nii.gz')
+                    run_subprocess('cat restore_tensor.Bfloat | voxel2image -components 8 -header '+str(fdwi)+' -outputroot '+str(fdwi_basen)+'_'+m.lower()+'_tensor_')
+                    run_subprocess('cat outlier_map.Bbyte | voxel2image -inputdatatype byte -components '+str(num_dirs)+' -header '+str(fdwi)+' -outputroot '+str(fdwi_basen+'_'+m.lower()+'_outlier_map_'))
+                    run_subprocess('cat restore_tensor.Bfloat | dteig | voxel2image -components 12 -inputdatatype double -header '+str(fdwi)+' -outputroot eigsys_')
                     run_subprocess('fslmerge -t '+str(fdwi_basen)+'_'+m.lower()+'_cam2fsl_tensor '
                                    +str(fdwi_basen)+'_'+m.lower()+'_tensor_0003.nii.gz '
                                    +str(fdwi_basen)+'_'+m.lower()+'_tensor_0004.nii.gz '
@@ -204,16 +205,16 @@ for dwif in dwi_fnames:
                         fdwi_basen + '_' + m.lower() + '_fsl_tensor_mf'))
                     #run camino fits
                     if m == 'WLS':
-                        cmd = 'modelfit -inputfile ../'+str(fdwi)+' -schemefile ../scheme.txt -model ldt_wtd -noisemap '
-                        cmd += 'noise_map.Bdouble -bgmask ../' + str(mask_fname) + ' -outputfile weighted_linear_tensor.Bfloat'
+                        cmd = 'modelfit -inputfile '+str(fdwi)+' -schemefile ../scheme.txt -model ldt_wtd -noisemap '
+                        cmd += 'noise_map.Bdouble -bgmask ' + str(mask_fname) + ' -outputfile weighted_linear_tensor.Bfloat'
                         run_subprocess(cmd)
-                        run_subprocess('cat weighted_linear_tensor.Bfloat | fa -header ../'+str(fdwi)+' -outputfile '+str(fdwi_basen)+'_'+m.lower()+'_cam_FA.nii.gz')
-                        run_subprocess('cat weighted_linear_tensor.Bfloat | md -header ../'+str(fdwi)+' -outputfile '+str(fdwi_basen)+'_'+m.lower()+'_cam_MD.nii.gz')
+                        run_subprocess('cat weighted_linear_tensor.Bfloat | fa -header '+str(fdwi)+' -outputfile '+str(fdwi_basen)+'_'+m.lower()+'_cam_FA.nii.gz')
+                        run_subprocess('cat weighted_linear_tensor.Bfloat | md -header '+str(fdwi)+' -outputfile '+str(fdwi_basen)+'_'+m.lower()+'_cam_MD.nii.gz')
 
                     elif m == 'OLS':
-                        cmd = 'modelfit -inputfile ../'+str(fdwi)+' -schemefile ../scheme.txt -model ldt -noisemap '
-                        cmd += 'noise_map.Bdouble -bgmask ../' + str(mask_fname) + ' -outputfile linear_tensor.Bfloat'
+                        cmd = 'modelfit -inputfile '+str(fdwi)+' -schemefile ../scheme.txt -model ldt -noisemap '
+                        cmd += 'noise_map.Bdouble -bgmask ' + str(mask_fname) + ' -outputfile linear_tensor.Bfloat'
                         run_subprocess(cmd)
-                        run_subprocess('cat linear_tensor.Bfloat | fa -header ../'+str(fdwi)+' -outputfile '+str(fdwi_basen)+'_'+m.lower()+'_cam_FA.nii.gz')
-                        run_subprocess('cat linear_tensor.Bfloat | md -header ../'+str(fdwi)+' -outputfile '+str(fdwi_basen)+'_'+m.lower()+'_cam_MD.nii.gz')
+                        run_subprocess('cat linear_tensor.Bfloat | fa -header '+str(fdwi)+' -outputfile '+str(fdwi_basen)+'_'+m.lower()+'_cam_FA.nii.gz')
+                        run_subprocess('cat linear_tensor.Bfloat | md -header '+str(fdwi)+' -outputfile '+str(fdwi_basen)+'_'+m.lower()+'_cam_MD.nii.gz')
 
