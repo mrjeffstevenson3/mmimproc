@@ -28,6 +28,16 @@ for i, j in enumerate(list(itertools.product(*(range(3), range(3))))):
     _all_rows[i] = int(j[0])
     _all_cols[i] = int(j[1])
 
+#camino fir method flag translations
+camfl = {'RESTORE': 'restore',
+         'OLS': 'nldt',
+         'WLS': 'ldt_wtd'}
+
+camcmd_p1 = {'RESTORE': ['modelfit -inputfile ../'+str(fdwi)+' -schemefile ../scheme.txt -model ldt_wtd -noisemap noise_map.Bdouble -bgmask ../'+str(mask_fname)+' -outputfile linear_tensor.Bfloat',
+                    'cat noise_map.Bdouble noise_map.Bdouble | voxel2image -inputdatatype double -header ../'+str(mask_fname)+' -outputroot noise_map',
+                      'fslmaths noise_map -sqrt sigma_map', 'fslstats sigma_map -P 50']
+            }
+
 for dwif in dwi_fnames:
     # for ec_meth in ['cuda_repol_std2']:     # death match ['cuda_defaults', 'cuda_repol', 'cuda_repol_std2']:
     ec_meth = 'cuda_repol_std2_v2'
