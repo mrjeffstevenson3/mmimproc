@@ -73,7 +73,7 @@ class CaminoCmds(collections.MutableMapping):
 
     def __repr__(self):
         '''echoes class, id, & reproducible representation in the REPL'''
-        return '{}, D({})'.format(super(D, self).__repr__(),
+        return '{}, CaminoCmds({})'.format(super(CaminoCmds, self).__repr__(),
                                   self.__dict__)
 
 
