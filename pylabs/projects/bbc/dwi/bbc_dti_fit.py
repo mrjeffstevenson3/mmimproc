@@ -28,8 +28,56 @@ for i, j in enumerate(list(itertools.product(*(range(3), range(3))))):
     _all_rows[i] = int(j[0])
     _all_cols[i] = int(j[1])
 
-#camino fit method flag translations
 
+class CaminoCmdsold(object):
+    def __init__(self, fit_method, dwif, maskf):
+        self.fit_method = fit_method
+        self.dwif = dwif
+        self.maskf = maskf
+
+import collections
+
+class CaminoCmds(collections.MutableMapping):
+    '''
+    Mapping that works like both a dict and a mutable object, i.e.
+    d = D(foo='bar')
+    and
+    d.foo returns 'bar'
+    '''
+
+    # ``__init__`` method required to create instance from class.
+    def __init__(self, *args, **kwargs):
+        '''Use the object dict'''
+        self.__dict__.update(*args, **kwargs)
+
+    # The next five methods are requirements of the ABC.
+    def __setitem__(self, key, value):
+        self.__dict__[key] = value
+
+    def __getitem__(self, key):
+        return self.__dict__[key]
+
+    def __delitem__(self, key):
+        del self.__dict__[key]
+
+    def __iter__(self):
+        return iter(self.__dict__)
+
+    def __len__(self):
+        return len(self.__dict__)
+
+    # The final two methods aren't required, but nice for demo purposes:
+    def __str__(self):
+        '''returns simple dict representation of the mapping'''
+        return str(self.__dict__)
+
+    def __repr__(self):
+        '''echoes class, id, & reproducible representation in the REPL'''
+        return '{}, D({})'.format(super(D, self).__repr__(),
+                                  self.__dict__)
+
+
+#camino fit method flag translations
 camcmd_p1 = {'RESTORE': ['modelfit -inputfile '+str(fdwi)+' -schemefile ../scheme.txt -model ldt_wtd -noisemap noise_map.Bdouble -bgmask '+str(mask_fname)+' -outputfile linear_tensor.Bfloat',
                     'cat noise_map.Bdouble noise_map.Bdouble | voxel2image -inputdatatype double -header '+str(mask_fname)+' -outputroot noise_map',
                       'fslmaths noise_map -sqrt sigma_map', 'fslstats sigma_map -P 50']
