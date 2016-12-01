@@ -23,6 +23,8 @@ fname_templ = 'sub-bbc{sid}_ses-{snum}_{meth}_{runnum}'
 dwi_fnames = [fname_templ.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r)) for s, ses, m, r in dwi_passed_qc]
 #eddy corrected method directory. should get from eddy.
 ec_meth = 'cuda_repol_std2_v2'
+#fit methods to loop over
+fitmeth = ['WLS', 'OLS', 'RESTORE']
 _ut_rows = np.array([0, 0, 0, 1, 1, 2])
 _ut_cols = np.array([0, 1, 2, 1, 2, 2])
 _all_cols = np.zeros(9, dtype=np.int)
@@ -31,6 +33,7 @@ for i, j in enumerate(list(itertools.product(*(range(3), range(3))))):
     _all_rows[i] = int(j[0])
     _all_cols[i] = int(j[1])
 
+dwif = dwi_fnames[5]
 for dwif in dwi_fnames[5]:
     infpath = fs / project / dwif.split('_')[0] / dwif.split('_')[1] / 'dwi' / ec_meth
     fdwi_basen = dwif + '_eddy_corrected_repol_std2'
@@ -48,13 +51,19 @@ for dwif in dwi_fnames[5]:
         mask_img = nib.load(str(mask_fname))
         mask = mask_img.get_data()
         # set up camino for any method in dwi folder
-        run_subprocess('fsl2scheme -bvecfile ' + str(fbvecs) + ' -bvalfile ' + str(fbvals) + ' > scheme.txt')
-        for m in ['WLS', 'OLS', 'RESTORE']:
-            if not Path(infpath / m).is_dir():
-                Path(infpath / m).mkdir()
+        result = tuple()
+        result += run_subprocess('fsl2scheme -bvecfile ' + str(fbvecs) + ' -bvalfile ' + str(fbvals) + ' > scheme.txt')
+        (Path(infpath / m).mkdir() for m in fitmeth if not Path(infpath / m).is_dir())
+        cmds = DTIFitCmds(dwif=dwif, mask_fname=mask_fname, sigma=0.0)
+        with WorkingContext(m):
+            result += tuple([[run_subprocess(cmd) for cmd in cmds.__dict__['cam_part1'][m]] for m in fitmeth if
+                             'pass' not in cmds.__dict__['cam_part1'][m]])
+
+        for m in fitmeth:
+
             with WorkingContext(m):
-                result += tuple()
-            result = ([run_subprocess(cmd)) for cmd in
+                cmds = DTIFitCmds(dwif=dwif,mask_fname=mask_fname,sigma=0.0)
+                result += tuple([[run_subprocess(cmd) for cmd in cmds.__dict__['cam_part1'][m]] for m in fitmeth if 'pass' not in cmds.__dict__['cam_part1'][m]])
 
             if m == 'RESTORE':
                 with WorkingContext(m):
