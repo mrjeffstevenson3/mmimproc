@@ -9,6 +9,7 @@ import dipy.reconst.dti as dti
 import dipy.denoise.noise_estimate as ne
 from dipy.reconst.dti import mode
 from scipy.ndimage.filters import median_filter as medianf
+from pylabs.diffusion.dti_fit import DTIFitCmds
 from pylabs.projects.bbc.dwi.passed_qc import dwi_passed_qc, dwi_passed_101
 from pylabs.utils.paths import getnetworkdataroot
 from pylabs.utils import run_subprocess, WorkingContext
@@ -20,6 +21,8 @@ pylabs_basepath = Path(*Path(inspect.getabsfile(pylabs)).parts[:-1])
 project = 'bbc'
 fname_templ = 'sub-bbc{sid}_ses-{snum}_{meth}_{runnum}'
 dwi_fnames = [fname_templ.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r)) for s, ses, m, r in dwi_passed_qc]
+#eddy corrected method directory. should get from eddy.
+ec_meth = 'cuda_repol_std2_v2'
 _ut_rows = np.array([0, 0, 0, 1, 1, 2])
 _ut_cols = np.array([0, 1, 2, 1, 2, 2])
 _all_cols = np.zeros(9, dtype=np.int)
@@ -28,70 +31,9 @@ for i, j in enumerate(list(itertools.product(*(range(3), range(3))))):
     _all_rows[i] = int(j[0])
     _all_cols[i] = int(j[1])
 
-
-class CaminoCmdsold(object):
-    def __init__(self, fit_method, dwif, maskf):
-        self.fit_method = fit_method
-        self.dwif = dwif
-        self.maskf = maskf
-
-import collections
-
-class CaminoCmds(collections.MutableMapping):
-    '''
-    Mapping that works like both a dict and a mutable object, i.e.
-    d = D(foo='bar')
-    and
-    d.foo returns 'bar'
-    '''
-
-    # ``__init__`` method required to create instance from class.
-    def __init__(self, *args, **kwargs):
-        '''Use the object dict'''
-        self.__dict__.update(*args, **kwargs)
-
-    # The next five methods are requirements of the ABC.
-    def __setitem__(self, key, value):
-        self.__dict__[key] = value
-
-    def __getitem__(self, key):
-        return self.__dict__[key]
-
-    def __delitem__(self, key):
-        del self.__dict__[key]
-
-    def __iter__(self):
-        return iter(self.__dict__)
-
-    def __len__(self):
-        return len(self.__dict__)
-
-    # The final two methods aren't required, but nice for demo purposes:
-    def __str__(self):
-        '''returns simple dict representation of the mapping'''
-        return str(self.__dict__)
-
-    def __repr__(self):
-        '''echoes class, id, & reproducible representation in the REPL'''
-        return '{}, CaminoCmds({})'.format(super(CaminoCmds, self).__repr__(),
-                                  self.__dict__)
-
-
-#camino fit method flag translations
-camcmd_p1 = {'RESTORE': ['modelfit -inputfile '+str(fdwi)+' -schemefile ../scheme.txt -model ldt_wtd -noisemap noise_map.Bdouble -bgmask '+str(mask_fname)+' -outputfile linear_tensor.Bfloat',
-                    'cat noise_map.Bdouble noise_map.Bdouble | voxel2image -inputdatatype double -header '+str(mask_fname)+' -outputroot noise_map',
-                      'fslmaths noise_map -sqrt sigma_map', 'fslstats sigma_map -P 50']
-            }
-
-for dwif in dwi_fnames:
-    # for ec_meth in ['cuda_repol_std2']:     # death match ['cuda_defaults', 'cuda_repol', 'cuda_repol_std2']:
-    ec_meth = 'cuda_repol_std2_v2'
+for dwif in dwi_fnames[5]:
     infpath = fs / project / dwif.split('_')[0] / dwif.split('_')[1] / 'dwi' / ec_meth
-    fdwi_basen = dwif + '_eddy_corrected'
-    if ec_meth == 'cuda_repol':
-        fdwi_basen += '_repol'
-    elif ec_meth == 'cuda_repol_std2_v2':
-        fdwi_basen += '_repol_std2'
+    fdwi_basen = dwif + '_eddy_corrected_repol_std2'
     fdwi = infpath / str(fdwi_basen + '_thr1.nii.gz')
     fbvecs = infpath / str(fdwi_basen + '.eddy_rotated_bvecs')
     fbvals = Path(*infpath.parts[:-1]) / str(dwif + '.bvals')
@@ -105,15 +47,15 @@ for dwif in dwi_fnames:
         data = img.get_data()
         mask_img = nib.load(str(mask_fname))
         mask = mask_img.get_data()
+        # set up camino for any method in dwi folder
+        run_subprocess('fsl2scheme -bvecfile ' + str(fbvecs) + ' -bvalfile ' + str(fbvals) + ' > scheme.txt')
         for m in ['WLS', 'OLS', 'RESTORE']:
-        for m in camcmd_p1:
             if not Path(infpath / m).is_dir():
                 Path(infpath / m).mkdir()
-            #set up camino for any method in dwi folder
-            run_subprocess('fsl2scheme -bvecfile '+str(fbvecs)+' -bvalfile '+str(fbvals)+' > scheme.txt')
-            result = ([run_subprocess(cmd)) for cmd in
             with WorkingContext(m):
                 result += tuple()
+            result = ([run_subprocess(cmd)) for cmd in
+
             if m == 'RESTORE':
                 with WorkingContext(m):
                     cmd = 'modelfit -inputfile '+str(fdwi)+' -schemefile ../scheme.txt -model ldt_wtd -noisemap '
@@ -127,8 +69,9 @@ for dwif in dwi_fnames:
                     run_subprocess('fslmaths noise_map -sqrt sigma_map')
                     ## get median of sigma map
                     result = run_subprocess('fslstats sigma_map -P 50')
+                    #end part1
                     sigma = result[0].strip(' \n')
-                    ## do the fitting
+                    ## start part 2, do the fitting
                     cmd = 'modelfit -inputfile '+str(fdwi)+' -schemefile ../scheme.txt -model restore -sigma '
                     cmd += sigma+' -outliermap outlier_map.Bbyte -bgmask '+str(mask_fname)+' -outputfile restore_tensor.Bfloat'
                     run_subprocess(cmd)
