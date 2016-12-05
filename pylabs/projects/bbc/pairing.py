@@ -1,3 +1,5 @@
+#this file specifies pairing for each modality is in the exact same subject order for zip.
+
 vbmpairing = [
     (101, 1, 'mpr', 3),
     (209, 1, 'mpr', 1),

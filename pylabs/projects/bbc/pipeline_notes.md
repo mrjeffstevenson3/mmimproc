@@ -34,3 +34,14 @@ FA-->warp/affine to T1 comroll-->warp/afffine to template T1-->warp/affine to MN
 
 **Reverse path MNI to subject dti used for atlas/ROI:**
 MNI/atlas-->Inverse warp/affine to template T1-->Inverse warp/affine to comroll T1-->Inverse warp/affine to subject FA/dwi
+
+
+**class objects needed:**
+conversion object with defaults for each modality.
+    set up project specific tech info variables
+    saves/stores found/converted objects
+brain extraction and masking with defaults
+    must be able to preserve overrides for -f 0.3 defaults
+    store object on niprov?
+VBM templating as prelim to reg
+Reg class to capture all templating files and pathways to/from all modalities

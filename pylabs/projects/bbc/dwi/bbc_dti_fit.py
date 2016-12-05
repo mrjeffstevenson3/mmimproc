@@ -33,7 +33,32 @@ for i, j in enumerate(list(itertools.product(*(range(3), range(3))))):
     _all_rows[i] = int(j[0])
     _all_cols[i] = int(j[1])
 
-dwif = dwi_fnames[5]
+cmds_d = {'RESTORE':
+                    {'campart1':
+                        ['modelfit -inputfile %(fdwi)s -schemefile ../scheme.txt -model ldt_wtd -noisemap '
+                            'noise_map.Bdouble -bgmask %(mask_fname)s -outputfile linear_tensor.Bfloat',
+                         'cat noise_map.Bdouble noise_map.Bdouble | voxel2image -inputdatatype double -header '
+                            '%(mask_fname)s -outputroot noise_map',
+                         'fslmaths noise_map -sqrt sigma_map',
+                         'fslstats sigma_map -P 50'],
+                    'campart2':
+                        ['modelfit -inputfile %(fdwi)s -schemefile ../scheme.txt -model restore -sigma %(sigma)s '
+                         '-outliermap outlier_map.Bbyte -bgmask %(mask_fname)s -outputfile restore_tensor.Bfloat',
+                         'cat restore_tensor.Bfloat | fa -header %(fdwi)s -outputfile %(fdwi_basen)s_%(m)s_cam_FA.nii.gz',
+                         'cat restore_tensor.Bfloat | md -header %(fdwi)s -outputfile %(fdwi_basen)s_%(m)s_cam_MD.nii.gz',
+                         'cat restore_tensor.Bfloat | voxel2image -components 8 -header %(fdwi)s -outputroot %(fdwi_basen)s_%(m)s_tensor_',
+                         'cat outlier_map.Bbyte | voxel2image -inputdatatype byte -components %(num_dirs)s -header %(fdwi)s -outputroot %(fdwi_basen)s_%(m)s_outlier_map_',
+                         'cat restore_tensor.Bfloat | dteig | voxel2image -components 12 -inputdatatype double -header %(fdwi)s -outputroot eigsys_'
+                         ],}
+
+
+
+            'OLS': {'pass': True},
+            'WLS': {'pass': True}
+    }
+
+
+
 for dwif in dwi_fnames[5]:
     infpath = fs / project / dwif.split('_')[0] / dwif.split('_')[1] / 'dwi' / ec_meth
     fdwi_basen = dwif + '_eddy_corrected_repol_std2'
@@ -41,11 +66,17 @@ for dwif in dwi_fnames[5]:
     fbvecs = infpath / str(fdwi_basen + '.eddy_rotated_bvecs')
     fbvals = Path(*infpath.parts[:-1]) / str(dwif + '.bvals')
     mask_fname = Path(*infpath.parts[:-1]) / str(dwif + '_S0_brain_mask.nii')
+    #sets up variables to combine with cmds_d
+    cmdvars = {'fdwi': str(fdwi), 'mask_fname': str(mask_fname), 'fdwi_basen': fdwi_basen, 'fbvecs': str(fbvecs), 'fbvals': str(fbvals)}
+
+
     with WorkingContext(str(infpath)):
+        #set up for dipy
         bvals, bvecs = read_bvals_bvecs(str(fbvals), str(fbvecs))
         # make dipy gtab and load dwi data
         gtab = gradient_table(bvals, bvecs)
         num_dirs = np.count_nonzero(~gtab.b0s_mask)
+        cmdvars['num_dirs'] = num_dirs
         img = nib.load(str(fdwi))
         data = img.get_data()
         mask_img = nib.load(str(mask_fname))
@@ -54,16 +85,14 @@ for dwif in dwi_fnames[5]:
         result = tuple()
         result += run_subprocess('fsl2scheme -bvecfile ' + str(fbvecs) + ' -bvalfile ' + str(fbvals) + ' > scheme.txt')
         (Path(infpath / m).mkdir() for m in fitmeth if not Path(infpath / m).is_dir())
-        cmds = DTIFitCmds(dwif=dwif, mask_fname=mask_fname, sigma=0.0)
-        with WorkingContext(m):
-            result += tuple([[run_subprocess(cmd) for cmd in cmds.__dict__['cam_part1'][m]] for m in fitmeth if
-                             'pass' not in cmds.__dict__['cam_part1'][m]])
 
         for m in fitmeth:
-
+            cmdvars['m'] = m.lower()
             with WorkingContext(m):
-                cmds = DTIFitCmds(dwif=dwif,mask_fname=mask_fname,sigma=0.0)
-                result += tuple([[run_subprocess(cmd) for cmd in cmds.__dict__['cam_part1'][m]] for m in fitmeth if 'pass' not in cmds.__dict__['cam_part1'][m]])
+                result += [run_subprocess(c % cmdvars) for c in cmds_d[m]['campart1']]
+                sigma = result[0].strip(' \n')
+                cmdvars['sigma'] = sigma
+                result += [run_subprocess(c % cmdvars) for c in cmds_d[m]['campart2']]
 
             if m == 'RESTORE':
                 with WorkingContext(m):

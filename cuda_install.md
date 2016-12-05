@@ -4,22 +4,20 @@ if you need the make/model of your Graphics card do one of either:
 `sudo lshw -C video` or `sudo lspci | grep -i nvidia` then check that you have the appropriate driver installed by going to `http://www.nvidia.com/Download/index.aspx` and filling in info. download run file if on 16.04 until stock cuda7.5 available.
 
 
-recover from bad install: deinstall everything
+#recover from bad install: deinstall everything
 sudo apt-get remove --purge nvidia*
 cd ~/Software
 sudo ./NVIDIA-Linux-x86_64-367.57.run --uninstall
 sudo ./cuda_7.5.18_linux.run --uninstall --silent
 
-then start with drivers 
+#then start with drivers 
 sudo apt-get install nvidia-367 gcc-4.9 gcc-5
 sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 20
 sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-5 10
-use this to configure which version of gcc before pycuda
+#use this to configure which version of gcc before pycuda making gcc 4.9 default
 sudo update-alternatives --config gcc
-
 pip install pycuda
-
-
+#then run test of eddy_cuda7.5
 toddr@uhora:/mnt/users/js/bbc/cuda_test$ eddy_cuda7.5 --acqp=acq_params.txt --bvals=sub-bbc253_ses-1_dti_15dir_b1000_1.bvals --bvecs=sub-bbc253_ses-1_dti_15dir_b1000_1.bvecs --imain=sub-bbc253_ses-1_dti_15dir_b1000_1.nii --index=index.txt --mask=sub-bbc253_ses-1_dti_15dir_b1000_1_S0_mask.nii --out=sub-bbc253_ses-1_dti_15dir_b1000_1_eddy_corrected_repol_std2_test --repol --ol_sqr --slm=linear --ol_nstd=2 --niter=9 --fwhm=20,5,0,0,0,0,0,0,0
 Entering EddyGpuUtils::LoadPredictionMaker
 
