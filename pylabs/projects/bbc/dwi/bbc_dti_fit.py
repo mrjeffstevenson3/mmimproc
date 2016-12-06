@@ -9,7 +9,7 @@ import dipy.reconst.dti as dti
 import dipy.denoise.noise_estimate as ne
 from dipy.reconst.dti import mode
 from scipy.ndimage.filters import median_filter as medianf
-from pylabs.diffusion.dti_fit import DTIFitCmds
+#from pylabs.diffusion.dti_fit import DTIFitCmds
 from pylabs.projects.bbc.dwi.passed_qc import dwi_passed_qc, dwi_passed_101
 from pylabs.utils.paths import getnetworkdataroot
 from pylabs.utils import run_subprocess, WorkingContext
@@ -33,131 +33,73 @@ for i, j in enumerate(list(itertools.product(*(range(3), range(3))))):
     _all_rows[i] = int(j[0])
     _all_cols[i] = int(j[1])
 
+cam_part1b = ['cat noise_map.Bdouble noise_map.Bdouble | voxel2image -inputdatatype double -header %(mask_fname)s -outputroot noise_map',
+             'cat residualmap.Bdouble | voxel2image -inputdatatype double -header %(mask_fname)s -outputroot residualmap',
+            ]
+
+cam_part2b = ['cat tensor.Bfloat | voxel2image -components 8 -header %(fdwi)s -outputroot %(fdwi_basen)s_%(m)s_tensor_',
+                'fslmerge -t %(fdwi_basen)s_%(m)s_cam_tensor '
+                         '%(fdwi_basen)s_%(m)s_tensor_0003.nii.gz '
+                         '%(fdwi_basen)s_%(m)s_tensor_0004.nii.gz '
+                         '%(fdwi_basen)s_%(m)s_tensor_0005.nii.gz '
+                         '%(fdwi_basen)s_%(m)s_tensor_0006.nii.gz '
+                         '%(fdwi_basen)s_%(m)s_tensor_0007.nii.gz '
+                         '%(fdwi_basen)s_%(m)s_tensor_0008.nii.gz',
+                 'fslmaths %(fdwi_basen)s_%(m)s_cam_tensor -fmedian %(fdwi_basen)s_%(m)s_cam_tensor_medfilt',
+                 'nii2dt -inputfile %(fdwi_basen)s_%(m)s_cam_tensor_medfilt.nii.gz -bgmask %(mask_fname)s '
+                        '-uppertriangular > tensor_medfilt.Bfloat',
+                 'cat tensor.Bfloat | fa -header %(fdwi)s -outputfile %(fdwi_basen)s_%(m)s_cam_FA.nii.gz',
+                 'cat tensor_medfilt.Bfloat | fa -header %(fdwi)s -outputfile %(fdwi_basen)s_%(m)s_cam_mf_FA.nii.gz',
+                 'cat tensor.Bfloat | md -header %(fdwi)s -outputfile %(fdwi_basen)s_%(m)s_cam_MD.nii.gz',
+                 'cat tensor_medfilt.Bfloat | md -header %(fdwi)s -outputfile %(fdwi_basen)s_%(m)s_cam_mf_MD.nii.gz',
+                 'cat outlier_map.Bbyte | voxel2image -inputdatatype byte -components %(num_dirs)s -header %(fdwi)s -outputroot %(fdwi_basen)s_%(m)s_outlier_map_',
+                 'cat tensor.Bfloat | dteig | voxel2image -components 12 -inputdatatype double -header %(fdwi)s -outputroot eigsys_',
+                 'cat tensor_medfilt.Bfloat | dteig | voxel2image -components 12 -inputdatatype double -header %(fdwi)s -outputroot eigsys_mf_',
+                 'imcp eigsys_0001.nii.gz %(fdwi_basen)s_%(m)s_cam_L1',
+                 'imcp eigsys_0005.nii.gz %(fdwi_basen)s_%(m)s_cam_L2',
+                 'imcp eigsys_0009.nii.gz %(fdwi_basen)s_%(m)s_cam_L3',
+                 'imcp eigsys_mf_0001.nii.gz %(fdwi_basen)s_%(m)s_cam_mf_L1',
+                 'imcp eigsys_mf_0005.nii.gz %(fdwi_basen)s_%(m)s_cam_mf_L2',
+                 'imcp eigsys_mf_0009.nii.gz %(fdwi_basen)s_%(m)s_cam_mf_L3',
+                 'fslmaths %(fdwi_basen)s_%(m)s_cam_L2 -add %(fdwi_basen)s_%(m)s_cam_L3 -div 2 %(fdwi_basen)s_%(m)s_cam_RD',
+                 'fslmaths %(fdwi_basen)s_%(m)s_cam_mf_L2 -add %(fdwi_basen)s_%(m)s_cam_mf_L3 -div 2 %(fdwi_basen)s_%(m)s_cam_mf_RD',
+                 'fslmerge -t %(fdwi_basen)s_%(m)s_V1 eigsys_0002.nii.gz  eigsys_0003.nii.gz  eigsys_0004.nii.gz',
+                 'fslmerge -t %(fdwi_basen)s_%(m)s_V2 eigsys_0006.nii.gz  eigsys_0007.nii.gz  eigsys_0008.nii.gz',
+                 'fslmerge -t %(fdwi_basen)s_%(m)s_V3 eigsys_0010.nii.gz  eigsys_0011.nii.gz  eigsys_0012.nii.gz',
+                 'fslmerge -t %(fdwi_basen)s_%(m)s_mf_V1 eigsys_mf_0002.nii.gz  eigsys_mf_0003.nii.gz  eigsys_mf_0004.nii.gz',
+                 'fslmerge -t %(fdwi_basen)s_%(m)s_mf_V2 eigsys_mf_0006.nii.gz  eigsys_mf_0007.nii.gz  eigsys_mf_0008.nii.gz',
+                 'fslmerge -t %(fdwi_basen)s_%(m)s_mf_V3 eigsys_mf_0010.nii.gz  eigsys_mf_0011.nii.gz  eigsys_mf_0012.nii.gz',
+            ]
+
 cmds_d = {'RESTORE':
                     {'campart1':
-                        ['modelfit -inputfile %(fdwi)s -schemefile ../scheme.txt -model ldt_wtd -noisemap '
-                                'noise_map.Bdouble -bgmask %(mask_fname)s -outputfile linear_tensor.Bfloat',
-                         'cat noise_map.Bdouble noise_map.Bdouble | voxel2image -inputdatatype double -header '
-                                '%(mask_fname)s -outputroot noise_map',
+                        ['modelfit -inputfile %(fdwi)s -schemefile ../scheme.txt -model ldt_wtd -noisemap noise_map.Bdouble '
+                                '-residualmap residualmap.Bdouble -bgmask %(mask_fname)s -outputfile linear_tensor.Bfloat',
+                         ]+ cam_part1b + [
                          'fslmaths noise_map -sqrt sigma_map',
                          'fslstats sigma_map -P 50'],
                     'campart2':
                         ['modelfit -inputfile %(fdwi)s -schemefile ../scheme.txt -model restore -sigma %(sigmac)s '
-                         '-outliermap outlier_map.Bbyte -bgmask %(mask_fname)s -outputfile restore_tensor.Bfloat',
-                         'cat restore_tensor.Bfloat | voxel2image -components 8 -header %(fdwi)s -outputroot %(fdwi_basen)s_%(m)s_tensor_',
-                         'fslmerge -t %(fdwi_basen)s_%(m)s_cam_tensor '
-                                 '%(fdwi_basen)s_%(m)s_tensor_0003.nii.gz '
-                                 '%(fdwi_basen)s_%(m)s_tensor_0004.nii.gz '
-                                 '%(fdwi_basen)s_%(m)s_tensor_0005.nii.gz '
-                                 '%(fdwi_basen)s_%(m)s_tensor_0006.nii.gz '
-                                 '%(fdwi_basen)s_%(m)s_tensor_0007.nii.gz '
-                                 '%(fdwi_basen)s_%(m)s_tensor_0008.nii.gz',
-                         'fslmaths %(fdwi_basen)s_%(m)s_cam_tensor -fmedian %(fdwi_basen)s_%(m)s_cam_tensor_medfilt',
-                         'nii2dt -inputfile %(fdwi_basen)s_%(m)s_cam_tensor_medfilt.nii.gz -bgmask %(mask_fname)s '
-                                '-uppertriangular > restore_tensor_medfilt.Bfloat',
-                         'cat restore_tensor.Bfloat | fa -header %(fdwi)s -outputfile %(fdwi_basen)s_%(m)s_cam_FA.nii.gz',
-                         'cat restore_tensor_medfilt.Bfloat | fa -header %(fdwi)s -outputfile %(fdwi_basen)s_%(m)s_cam_mf_FA.nii.gz',
-                         'cat restore_tensor.Bfloat | md -header %(fdwi)s -outputfile %(fdwi_basen)s_%(m)s_cam_MD.nii.gz',
-                         'cat restore_tensor_medfilt.Bfloat | md -header %(fdwi)s -outputfile %(fdwi_basen)s_%(m)s_cam_mf_MD.nii.gz',
-                         'cat outlier_map.Bbyte | voxel2image -inputdatatype byte -components %(num_dirs)s -header %(fdwi)s -outputroot %(fdwi_basen)s_%(m)s_outlier_map_',
-                         'cat restore_tensor.Bfloat | dteig | voxel2image -components 12 -inputdatatype double -header %(fdwi)s -outputroot eigsys_',
-                         'cat restore_tensor_medfilt.Bfloat | dteig | voxel2image -components 12 -inputdatatype double -header %(fdwi)s -outputroot eigsys_mf_',
-                         'imcp eigsys_0001.nii.gz %(fdwi_basen)s_%(m)s_cam_L1',
-                         'imcp eigsys_0005.nii.gz %(fdwi_basen)s_%(m)s_cam_L2',
-                         'imcp eigsys_0009.nii.gz %(fdwi_basen)s_%(m)s_cam_L3',
-                         'imcp eigsys_mf_0001.nii.gz %(fdwi_basen)s_%(m)s_cam_mf_L1',
-                         'imcp eigsys_mf_0005.nii.gz %(fdwi_basen)s_%(m)s_cam_mf_L2',
-                         'imcp eigsys_mf_0009.nii.gz %(fdwi_basen)s_%(m)s_cam_mf_L3',
-                         'fslmaths %(fdwi_basen)s_%(m)s_cam_L2 -add %(fdwi_basen)s_%(m)s_cam_L3 -div 2 %(fdwi_basen)s_%(m)s_cam_RD',
-                         'fslmaths %(fdwi_basen)s_%(m)s_cam_mf_L2 -add %(fdwi_basen)s_%(m)s_cam_mf_L3 -div 2 %(fdwi_basen)s_%(m)s_cam_mf_RD',
-                         'fslmerge -t %(fdwi_basen)s_%(m)s_V1 eigsys_0002.nii.gz  eigsys_0003.nii.gz  eigsys_0004.nii.gz',
-                         'fslmerge -t %(fdwi_basen)s_%(m)s_V2 eigsys_0006.nii.gz  eigsys_0007.nii.gz  eigsys_0008.nii.gz',
-                         'fslmerge -t %(fdwi_basen)s_%(m)s_V3 eigsys_0010.nii.gz  eigsys_0011.nii.gz  eigsys_0012.nii.gz',
-                         'fslmerge -t %(fdwi_basen)s_%(m)s_mf_V1 eigsys_mf_0002.nii.gz  eigsys_mf_0003.nii.gz  eigsys_mf_0004.nii.gz',
-                         'fslmerge -t %(fdwi_basen)s_%(m)s_mf_V2 eigsys_mf_0006.nii.gz  eigsys_mf_0007.nii.gz  eigsys_mf_0008.nii.gz',
-                         'fslmerge -t %(fdwi_basen)s_%(m)s_mf_V3 eigsys_mf_0010.nii.gz  eigsys_mf_0011.nii.gz  eigsys_mf_0012.nii.gz',
-                         ]
+                         '-outliermap outlier_map.Bbyte -bgmask %(mask_fname)s -outputfile tensor.Bfloat']
+                        + cam_part2b
+
                      },
             'OLS': {'campart1': ['modelfit -inputfile %(fdwi)s -schemefile ../scheme.txt -model ldt -noisemap noise_map.Bdouble '
-                                        '-residualmap residualmap.Bdouble -bgmask %(mask_fname)s -outputfile linear_tensor.Bfloat',
-                                 'cat noise_map.Bdouble noise_map.Bdouble | voxel2image -inputdatatype double -header %(mask_fname)s -outputroot noise_map',
-                                 'cat residualmap.Bdouble | voxel2image -inputdatatype double -header %(mask_fname)s -outputroot residualmap',
-                                 'cat linear_tensor.Bfloat | voxel2image -components 8 -header %(fdwi)s -outputroot %(fdwi_basen)s_%(m)s_tensor_',
-                                 'fslmerge -t %(fdwi_basen)s_%(m)s_cam_tensor '
-                                         '%(fdwi_basen)s_%(m)s_tensor_0003.nii.gz '
-                                         '%(fdwi_basen)s_%(m)s_tensor_0004.nii.gz '
-                                         '%(fdwi_basen)s_%(m)s_tensor_0005.nii.gz '
-                                         '%(fdwi_basen)s_%(m)s_tensor_0006.nii.gz '
-                                         '%(fdwi_basen)s_%(m)s_tensor_0007.nii.gz '
-                                         '%(fdwi_basen)s_%(m)s_tensor_0008.nii.gz',
-                                 'fslmaths %(fdwi_basen)s_%(m)s_cam_tensor -fmedian %(fdwi_basen)s_%(m)s_cam_tensor_medfilt',
-                                 'nii2dt -inputfile %(fdwi_basen)s_%(m)s_cam_tensor_medfilt.nii.gz -bgmask %(mask_fname)s '
-                                        '-uppertriangular > linear_tensor_medfilt.Bfloat',
-                                 'cat linear_tensor.Bfloat | fa -header %(fdwi)s -outputfile %(fdwi_basen)s_%(m)s_cam_FA.nii.gz',
-                                 'cat linear_tensor_medfilt.Bfloat | fa -header %(fdwi)s -outputfile %(fdwi_basen)s_%(m)s_cam_mf_FA.nii.gz',
-                                 'cat linear_tensor.Bfloat | md -header %(fdwi)s -outputfile %(fdwi_basen)s_%(m)s_cam_MD.nii.gz',
-                                 'cat linear_tensor_medfilt.Bfloat | md -header %(fdwi)s -outputfile %(fdwi_basen)s_%(m)s_cam_mf_MD.nii.gz',
-                                 'cat linear_tensor.Bfloat | dteig | voxel2image -components 12 -inputdatatype double -header %(fdwi)s -outputroot eigsys_',
-                                 'cat linear_tensor_medfilt.Bfloat | dteig | voxel2image -components 12 -inputdatatype double -header %(fdwi)s -outputroot eigsys_mf_',
-                                 'imcp eigsys_0001.nii.gz %(fdwi_basen)s_%(m)s_cam_L1',
-                                 'imcp eigsys_0005.nii.gz %(fdwi_basen)s_%(m)s_cam_L2',
-                                 'imcp eigsys_0009.nii.gz %(fdwi_basen)s_%(m)s_cam_L3',
-                                 'imcp eigsys_mf_0001.nii.gz %(fdwi_basen)s_%(m)s_cam_mf_L1',
-                                 'imcp eigsys_mf_0005.nii.gz %(fdwi_basen)s_%(m)s_cam_mf_L2',
-                                 'imcp eigsys_mf_0009.nii.gz %(fdwi_basen)s_%(m)s_cam_mf_L3',
-                                 'fslmaths %(fdwi_basen)s_%(m)s_cam_L2 -add %(fdwi_basen)s_%(m)s_cam_L3 -div 2 %(fdwi_basen)s_%(m)s_cam_RD',
-                                 'fslmaths %(fdwi_basen)s_%(m)s_cam_mf_L2 -add %(fdwi_basen)s_%(m)s_cam_mf_L3 -div 2 %(fdwi_basen)s_%(m)s_cam_mf_RD',
-                                 'fslmerge -t %(fdwi_basen)s_%(m)s_V1 eigsys_0002.nii.gz  eigsys_0003.nii.gz  eigsys_0004.nii.gz',
-                                 'fslmerge -t %(fdwi_basen)s_%(m)s_V2 eigsys_0006.nii.gz  eigsys_0007.nii.gz  eigsys_0008.nii.gz',
-                                 'fslmerge -t %(fdwi_basen)s_%(m)s_V3 eigsys_0010.nii.gz  eigsys_0011.nii.gz  eigsys_0012.nii.gz',
-                                 'fslmerge -t %(fdwi_basen)s_%(m)s_mf_V1 eigsys_mf_0002.nii.gz  eigsys_mf_0003.nii.gz  eigsys_mf_0004.nii.gz',
-                                 'fslmerge -t %(fdwi_basen)s_%(m)s_mf_V2 eigsys_mf_0006.nii.gz  eigsys_mf_0007.nii.gz  eigsys_mf_0008.nii.gz',
-                                 'fslmerge -t %(fdwi_basen)s_%(m)s_mf_V3 eigsys_mf_0010.nii.gz  eigsys_mf_0011.nii.gz  eigsys_mf_0012.nii.gz',
-                                ],
-                    'fslpart1': ['dtifit --data= %(fdwi)s -m %(mask_fname)s --bvecs=%(fbvecs)s --bvals=%(fbvals)s --sse --save_tensor -o %(fdwi_basen)s_%(m)s_fsl',
+                                        '-residualmap residualmap.Bdouble -bgmask %(mask_fname)s -outputfile tensor.Bfloat']
+                                + cam_part1b + cam_part2b,
+
+                    'fslpart1': ['dtifit --data=%(fdwi)s -m %(mask_fname)s --bvecs=%(fbvecs)s --bvals=%(fbvals)s --sse --save_tensor -o %(fdwi_basen)s_%(m)s_fsl',
                                 'fslmaths %(fdwi_basen)s_%(m)s_fsl_tensor -fmedian %(fdwi_basen)s_%(m)s_fsl_tensor_medfilt',
                                 'fslmaths %(fdwi_basen)s_%(m)s_fsl_tensor_medfilt -tensor_decomp %(fdwi_basen)s_%(m)s_fsl_tensor_mf'
                                 ]
                     },
             'WLS': {'campart1': ['modelfit -inputfile %(fdwi)s -schemefile ../scheme.txt -model ldt_wtd -noisemap noise_map.Bdouble '
-                                        '-residualmap residualmap.Bdouble -bgmask %(mask_fname)s -outputfile wlinear_tensor.Bfloat',
-                                 'cat noise_map.Bdouble noise_map.Bdouble | voxel2image -inputdatatype double -header %(mask_fname)s -outputroot noise_map',
-                                 'cat residualmap.Bdouble | voxel2image -inputdatatype double -header %(mask_fname)s -outputroot residualmap',
-                                 'cat wlinear_tensor.Bfloat | voxel2image -components 8 -header %(fdwi)s -outputroot %(fdwi_basen)s_%(m)s_tensor_',
-                                 'fslmerge -t %(fdwi_basen)s_%(m)s_cam_tensor '
-                                         '%(fdwi_basen)s_%(m)s_tensor_0003.nii.gz '
-                                         '%(fdwi_basen)s_%(m)s_tensor_0004.nii.gz '
-                                         '%(fdwi_basen)s_%(m)s_tensor_0005.nii.gz '
-                                         '%(fdwi_basen)s_%(m)s_tensor_0006.nii.gz '
-                                         '%(fdwi_basen)s_%(m)s_tensor_0007.nii.gz '
-                                         '%(fdwi_basen)s_%(m)s_tensor_0008.nii.gz',
-                                 'fslmaths %(fdwi_basen)s_%(m)s_cam_tensor -fmedian %(fdwi_basen)s_%(m)s_cam_tensor_medfilt',
-                                 'nii2dt -inputfile %(fdwi_basen)s_%(m)s_cam_tensor_medfilt.nii.gz -bgmask %(mask_fname)s '
-                                        '-uppertriangular > wlinear_tensor_medfilt.Bfloat',
-                                 'cat wlinear_tensor.Bfloat | fa -header %(fdwi)s -outputfile %(fdwi_basen)s_%(m)s_cam_FA.nii.gz',
-                                 'cat wlinear_tensor_medfilt.Bfloat | fa -header %(fdwi)s -outputfile %(fdwi_basen)s_%(m)s_cam_mf_FA.nii.gz',
-                                 'cat wlinear_tensor.Bfloat | md -header %(fdwi)s -outputfile %(fdwi_basen)s_%(m)s_cam_MD.nii.gz',
-                                 'cat wlinear_tensor_medfilt.Bfloat | md -header %(fdwi)s -outputfile %(fdwi_basen)s_%(m)s_cam_mf_MD.nii.gz',
-                                 'cat wlinear_tensor.Bfloat | dteig | voxel2image -components 12 -inputdatatype double -header %(fdwi)s -outputroot eigsys_',
-                                 'cat wlinear_tensor_medfilt.Bfloat | dteig | voxel2image -components 12 -inputdatatype double -header %(fdwi)s -outputroot eigsys_mf_',
-                                 'imcp eigsys_0001.nii.gz %(fdwi_basen)s_%(m)s_cam_L1',
-                                 'imcp eigsys_0005.nii.gz %(fdwi_basen)s_%(m)s_cam_L2',
-                                 'imcp eigsys_0009.nii.gz %(fdwi_basen)s_%(m)s_cam_L3',
-                                 'imcp eigsys_mf_0001.nii.gz %(fdwi_basen)s_%(m)s_cam_mf_L1',
-                                 'imcp eigsys_mf_0005.nii.gz %(fdwi_basen)s_%(m)s_cam_mf_L2',
-                                 'imcp eigsys_mf_0009.nii.gz %(fdwi_basen)s_%(m)s_cam_mf_L3',
-                                 'fslmaths %(fdwi_basen)s_%(m)s_cam_L2 -add %(fdwi_basen)s_%(m)s_cam_L3 -div 2 %(fdwi_basen)s_%(m)s_cam_RD',
-                                 'fslmaths %(fdwi_basen)s_%(m)s_cam_mf_L2 -add %(fdwi_basen)s_%(m)s_cam_mf_L3 -div 2 %(fdwi_basen)s_%(m)s_cam_mf_RD',
-                                 'fslmerge -t %(fdwi_basen)s_%(m)s_V1 eigsys_0002.nii.gz  eigsys_0003.nii.gz  eigsys_0004.nii.gz',
-                                 'fslmerge -t %(fdwi_basen)s_%(m)s_V2 eigsys_0006.nii.gz  eigsys_0007.nii.gz  eigsys_0008.nii.gz',
-                                 'fslmerge -t %(fdwi_basen)s_%(m)s_V3 eigsys_0010.nii.gz  eigsys_0011.nii.gz  eigsys_0012.nii.gz',
-                                 'fslmerge -t %(fdwi_basen)s_%(m)s_mf_V1 eigsys_mf_0002.nii.gz  eigsys_mf_0003.nii.gz  eigsys_mf_0004.nii.gz',
-                                 'fslmerge -t %(fdwi_basen)s_%(m)s_mf_V2 eigsys_mf_0006.nii.gz  eigsys_mf_0007.nii.gz  eigsys_mf_0008.nii.gz',
-                                 'fslmerge -t %(fdwi_basen)s_%(m)s_mf_V3 eigsys_mf_0010.nii.gz  eigsys_mf_0011.nii.gz  eigsys_mf_0012.nii.gz',
-                                ],
-                    'fslpart1': ['dtifit --data= %(fdwi)s -m %(mask_fname)s --bvecs=%(fbvecs)s --bvals=%(fbvals)s --sse --save_tensor -wls -o %(fdwi_basen)s_%(m)s_fsl',
-                        'fslmaths %(fdwi_basen)s_%(m)s_fsl_tensor -fmedian %(fdwi_basen)s_%(m)s_fsl_tensor_medfilt',
-                        'fslmaths %(fdwi_basen)s_%(m)s_fsl_tensor_medfilt -tensor_decomp %(fdwi_basen)s_%(m)s_fsl_tensor_mf'
+                                        '-residualmap residualmap.Bdouble -bgmask %(mask_fname)s -outputfile tensor.Bfloat']
+                                 + cam_part1b + cam_part2b,
+
+                    'fslpart1': ['dtifit --data=%(fdwi)s -m %(mask_fname)s --bvecs=%(fbvecs)s --bvals=%(fbvals)s --sse --save_tensor -wls -o %(fdwi_basen)s_%(m)s_fsl',
+                                'fslmaths %(fdwi_basen)s_%(m)s_fsl_tensor -fmedian %(fdwi_basen)s_%(m)s_fsl_tensor_medfilt',
+                                'fslmaths %(fdwi_basen)s_%(m)s_fsl_tensor_medfilt -tensor_decomp %(fdwi_basen)s_%(m)s_fsl_tensor_mf'
                         ]
             }
     }
@@ -173,15 +115,12 @@ for dwif in dwi_fnames[5]:
     mask_fname = Path(*infpath.parts[:-1]) / str(dwif + '_S0_brain_mask.nii')
     #sets up variables to combine with cmds_d
     cmdvars = {'fdwi': str(fdwi), 'mask_fname': str(mask_fname), 'fdwi_basen': fdwi_basen, 'fbvecs': str(fbvecs), 'fbvals': str(fbvals)}
-
-
     with WorkingContext(str(infpath)):
         #set up for dipy
         bvals, bvecs = read_bvals_bvecs(str(fbvals), str(fbvecs))
         # make dipy gtab and load dwi data
         gtab = gradient_table(bvals, bvecs)
-        num_dirs = np.count_nonzero(~gtab.b0s_mask)
-        cmdvars['num_dirs'] = num_dirs
+        cmdvars['num_dirs'] = np.count_nonzero(~gtab.b0s_mask)
         img = nib.load(str(fdwi))
         data = img.get_data()
         mask_img = nib.load(str(mask_fname))
@@ -191,7 +130,7 @@ for dwif in dwi_fnames[5]:
         result += run_subprocess('fsl2scheme -bvecfile ' + str(fbvecs) + ' -bvalfile ' + str(fbvals) + ' > scheme.txt')
         (Path(infpath / m).mkdir() for m in fitmeth if not Path(infpath / m).is_dir())
 
-        for m in fitmeth:
+        for m in fitmeth[2]:
             cmdvars['m'] = m.lower()
             with WorkingContext(m):
                 #1st do camino fits
