@@ -41,7 +41,7 @@ class DTIFitCmds(collections.MutableMapping):
 
         if len(args) == len(kwargs) == 0:
             #set up dti fit methods to loop over
-            self.__dict__ = {'cam_part1': {'RESTORE': ['modelfit -inputfile '+str(self.dwif)+'.nii -schemefile ../scheme.txt -model ldt_wtd -noisemap noise_map.Bdouble -bgmask '+
+            self.__dict__ = {'cam_part1': {'RESTORE': ['modelfit -inputfile '+str(self.dwif)+' -schemefile ../scheme.txt -model ldt_wtd -noisemap noise_map.Bdouble -bgmask '+
                                                         str(self.mask_fname)+' -outputfile linear_tensor.Bfloat',   'cat noise_map.Bdouble noise_map.Bdouble | voxel2image -inputdatatype double -header '+
                                                         str(self.mask_fname)+' -outputroot noise_map', 'fslmaths noise_map -sqrt sigma_map', 'fslstats sigma_map -P 50'],
                                            'OLS': ['pass'],
