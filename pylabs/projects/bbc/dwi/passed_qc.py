@@ -1,6 +1,10 @@
+#this file specifies which session and run has passes dti qc and should be used in the diffusion pipeline.
+#note that pairing contains the combinations of viable pairs.
 
+#this is for test purposes (and because it was the most problematic).
 dwi_passed_101 = [(101, 2, 'dti_15dir_b1000', 1)]
 
+#this is the full list of subjects with usable dwi.
 dwi_passed_qc = [
 (101, 2, 'dti_15dir_b1000', 1),
 (105, 1, 'dti_15dir_b1000', 1),

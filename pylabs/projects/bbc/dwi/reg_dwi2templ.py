@@ -37,9 +37,7 @@ MNI2templ_aff = templdir / 'bbc_pairedLH_template_reg2MNI_0GenericAffine.mat'
 dwi2vbmsubjdir = fs / project / 'reg' / 'reg_subFA2suborigvbmpaired'
 dwi_reg_append = '_eddy_corrected_repol_std2_wls_fsl_tensor_mf_FA_ero_reg2sorigvbm_'
 
-# dwif = dwi_fnames[1]
-# vbmf = vbm_fnames[1]
-for dwif, vbmf in zip(dwi_fnames, vbm_fnames):
+for dwif, vbmf in zip(dwi_fnames[1], vbm_fnames[1]):
     for k, m in meths.iteritems():
         execwdir = fs / project /  dwif.split('_')[0] / dwif.split('_')[1] / 'dwi' / 'cuda_repol_std2_v2'
         mov = a         # always dwi modality
