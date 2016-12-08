@@ -21,20 +21,22 @@ for dwif in dwi_fnames:
     mask_fname = dwipath / str(dwif + '_S0_brain_mask.nii')
     for m in ['WLS', 'OLS', 'RESTORE']:
         tenpath = dwipath / ec_meth / m
-        if m == 'RESTORE':
-            ten_fname =  str(tenpath / str(fdwi_basen + '_' + m.lower() + '_cam2fsl_tensor_medfilt'))
+        try:
+            ten_fname =  str(tenpath / str(fdwi_basen + '_' + m.lower() + '_cam_tensor_medfilt'))
             nii2nrrd(ten_fname+'.nii.gz', ten_fname+'.nhdr', istensor=True)
-            ten_fname = str(tenpath / str(fdwi_basen + '_' + m.lower() + '_cam2fsl_tensor'))
-            nii2nrrd(ten_fname + '.nii.gz', ten_fname + '.nhdr', istensor=True)
-        else:
-            ten_fname =  str(tenpath / str(fdwi_basen + '_' + m.lower() + '_fsl_tensor_medfilt'))
-            nii2nrrd(ten_fname+'.nii.gz', ten_fname+'.nhdr', istensor=True)
-            ten_fname = str(tenpath / str(fdwi_basen + '_' + m.lower() + '_fsl_tensor'))
+            ten_fname = str(tenpath / str(fdwi_basen + '_' + m.lower() + '_cam_tensor'))
             nii2nrrd(ten_fname + '.nii.gz', ten_fname + '.nhdr', istensor=True)
             ten_fname =  str(tenpath / str(fdwi_basen + '_' + m.lower() + '_dipy_tensor'))
             nii2nrrd(ten_fname+'.nii', ten_fname+'.nhdr', istensor=True)
             ten_fname = str(tenpath / str(fdwi_basen + '_' + m.lower() + '_dipy_tensor_medfilt'))
             nii2nrrd(ten_fname + '.nii', ten_fname + '.nhdr', istensor=True)
+        except (IOError):
+            print "could not find tensor file "+ten_fname
+        if not m == 'RESTORE':
+            ten_fname = str(tenpath / str(fdwi_basen + '_' + m.lower() + '_fsl_tensor_medfilt'))
+            nii2nrrd(ten_fname + '.nii.gz', ten_fname + '.nhdr', istensor=True)
+            ten_fname = str(tenpath / str(fdwi_basen + '_' + m.lower() + '_fsl_tensor'))
+            nii2nrrd(ten_fname + '.nii.gz', ten_fname + '.nhdr', istensor=True)
 
 
 

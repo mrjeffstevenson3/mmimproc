@@ -19,7 +19,7 @@ vbmpairing = [
     (231, 1, 'mpr', 1),
     (120, 1, 'mpr', 1),
     (253, 1, 'mpr', 1)]
-
+#here dwi pairing bbc101 ses-2 is a hybrid of ses-1 & 3 due to bad motion on both. eddy does re-alignment with vectors intact
 dwipairing = [
     (101, 2, 'dti_15dir_b1000', 1),
     (209, 1, 'dti_15dir_b1000', 1),
