@@ -31,18 +31,31 @@ mm_diff_com = {}
 diff_offcenter2com = {}
 com_affine = {}
 subj2com = {}
-for f in dwi_fnames:
+for f in dwi_fnames[1:]:
     for m in fitmeth:
         infpath = fs / project / f.split('_')[0] / f.split('_')[1] / 'dwi' / ec_meth / m[0:3].upper()
-        fdwi_basen = f + '_eddy_corrected_repol_std2_thr1_'
+        fdwi_basen = f + '_eddy_corrected_repol_std2_'
         nfname = infpath / str(fdwi_basen + m)
         img = nib.load(str(nfname))
         hdr = img.header
         img_data = img.get_data()
         affine = img.affine
         zooms = hdr.get_zooms()
-        com_vox[f] = np.round(com(img_data)).astype(int)
-        diff_com[f] = np.asarray([s / 2. - c for s, c in zip(img_data.shape, com_vox[f])])
+        try:
+            com_vox[f] = np.round(com(img_data)).astype(int)
+            diff_com[f] = np.asarray([s / 2. - c for s, c in zip(img_data.shape, com_vox[f])])
+            for i, r in enumerate(diff_com[f]):
+                img_data = np.roll(img_data, int(r), axis=i)
+        except (TypeError):
+            exp_data = np.zeros(tuple(map(sum, zip(img_data.shape), (12, 12, 12))))
+            exp_data[6:img_data.shape[0] + 6, 6:img_data.shape[1] + 6, 6:img_data.shape[2] + 6] = img_data
+            com_edata = com(exp_data)
+            diff_com_edata = np.asarray([s / 2. - c for s, c in zip(exp_data.shape, com_edata)])
+            for i, r in enumerate(diff_com_edata):
+                exp_data = np.roll(exp_data, int(r), axis=i)
+            com_vox[f] = np.round(tuple(map(sum, zip(com_edata, (-6, -6, -6))))).astype(int)
+            diff_com[f] = np.asarray([s / 2. - c for s, c in zip(img_data.shape, com_vox[f])])
+            img_data = exp_data[6:img_data.shape[0] + 6, 6:img_data.shape[1] + 6, 6:img_data.shape[2] + 6]
         mm_diff_com[f] = np.asarray([d * z for d, z in zip(diff_com[f], zooms)])
         subj2comxfm = np.eye(4)
         for i, t in enumerate(mm_diff_com[f]):
@@ -50,9 +63,9 @@ for f in dwi_fnames:
             subj2comxfm[i][3] = t
         com_affine[f] = affine
         subj2com[f] = subj2comxfm
-        for i, r in enumerate(diff_com[f]):
-            img_data = np.roll(img_data, int(r), axis=i)
-        outdir = fs / project / 'reg' / str('FA_'+m.split('.')[0][0:-3]+'_template') / str(str(nfname.name).split('.')[0] + '_com.nii')
+        outdir = fs / project / 'reg' / str('ants_FA_pairedLH_'+m.split('.')[0][0:-3]+'_template') / str(str(nfname.name).split('.')[0] + '_com.nii')
+        if not outdir.parent.is_dir():
+            outdir.parent.mkdir(parents=True)
         savenii(img_data, np.array(com_affine[f]), outdir, header=hdr,  minmax=(0, 1))
         #add save matfile class call and save
         savematf = FslAffineMat()

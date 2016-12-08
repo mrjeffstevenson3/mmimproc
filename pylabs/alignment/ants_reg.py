@@ -100,7 +100,7 @@ def fsl2ants_affine(execwdir, ref, src, fslmatfilename):
     params = {}
     params['cmd'] = cmd
     params['output'] = output
-    params['ref_img'] = ref_img
+    params['ref_img'] = ref
     with WorkingContext(execwdir):
         output += run_subprocess(cmd)
     provenance.log(join(execwdir, fslmatfilename.replace('.mat', '.txt')),
