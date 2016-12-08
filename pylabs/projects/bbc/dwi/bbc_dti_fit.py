@@ -103,7 +103,7 @@ cmds_d = {'RESTORE':
             }
     }
 #primary loop over subjects dwi
-for dwif in [dwi_fnames[0]]:
+for dwif in dwi_fnames:
     infpath = fs / project / dwif.split('_')[0] / dwif.split('_')[1] / 'dwi' / ec_meth
     fdwi_basen = dwif + '_eddy_corrected_repol_std2'
     fdwi = infpath / str(fdwi_basen + '_thr1.nii.gz')
