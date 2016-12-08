@@ -18,8 +18,8 @@ pylabs_basepath = Path(*Path(inspect.getabsfile(pylabs)).parts[:-1])
 project = 'bbc'
 #eddy corrected method directory. should get from eddy.
 ec_meth = 'cuda_repol_std2_v2'
-#fit methods to loop over
-fitmeth = ['wls_dipy_mf_FA.nii', 'ols_dipy_mf_FA.nii', 'ols_fsl_tensor_mf_FA.nii.gz', 'wls_fsl_tensor_mf_FA.nii.gz']
+#fit methods to loop over: excl: 'wls_dipy_mf_FA.nii', 'ols_dipy_mf_FA.nii',
+fitmeth = ['ols_fsl_tensor_mf_FA.nii.gz', 'wls_fsl_tensor_mf_FA.nii.gz']
 
 fname_templ = 'sub-bbc{sid}_ses-{snum}_{meth}_{runnum}'
 dwi_fnames = [fname_templ.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r)) for s, ses, m, r in dwipairing]
@@ -31,7 +31,7 @@ mm_diff_com = {}
 diff_offcenter2com = {}
 com_affine = {}
 subj2com = {}
-for f in dwi_fnames[1:]:
+for f in [dwi_fnames[0]]:
     for m in fitmeth:
         infpath = fs / project / f.split('_')[0] / f.split('_')[1] / 'dwi' / ec_meth / m[0:3].upper()
         fdwi_basen = f + '_eddy_corrected_repol_std2_'
@@ -41,21 +41,22 @@ for f in dwi_fnames[1:]:
         img_data = img.get_data()
         affine = img.affine
         zooms = hdr.get_zooms()
-        try:
-            com_vox[f] = np.round(com(img_data)).astype(int)
-            diff_com[f] = np.asarray([s / 2. - c for s, c in zip(img_data.shape, com_vox[f])])
-            for i, r in enumerate(diff_com[f]):
-                img_data = np.roll(img_data, int(r), axis=i)
-        except (TypeError):
-            exp_data = np.zeros(tuple(map(sum, zip(img_data.shape), (12, 12, 12))))
-            exp_data[6:img_data.shape[0] + 6, 6:img_data.shape[1] + 6, 6:img_data.shape[2] + 6] = img_data
-            com_edata = com(exp_data)
-            diff_com_edata = np.asarray([s / 2. - c for s, c in zip(exp_data.shape, com_edata)])
-            for i, r in enumerate(diff_com_edata):
-                exp_data = np.roll(exp_data, int(r), axis=i)
-            com_vox[f] = np.round(tuple(map(sum, zip(com_edata, (-6, -6, -6))))).astype(int)
-            diff_com[f] = np.asarray([s / 2. - c for s, c in zip(img_data.shape, com_vox[f])])
-            img_data = exp_data[6:img_data.shape[0] + 6, 6:img_data.shape[1] + 6, 6:img_data.shape[2] + 6]
+        # try:
+        #     com_vox[f] = np.round(com(img_data)).astype(int)
+        #     diff_com[f] = np.asarray([s / 2. - c for s, c in zip(img_data.shape, com_vox[f])])
+        #     for i, r in enumerate(diff_com[f]):
+        #         img_data = np.roll(img_data, int(r), axis=i)
+        # except (TypeError):
+        exp_data = np.zeros(tuple(map(sum, zip(img_data.shape), (12, 12, 12))))
+        exp_data[6:img_data.shape[0] + 6, 6:img_data.shape[1] + 6, 6:img_data.shape[2] + 6] = img_data
+        com_edata = com(exp_data)
+        diff_com_edata = np.asarray([s / 2. - c for s, c in zip(exp_data.shape, com_edata)])
+        for i, r in enumerate(diff_com_edata):
+            exp_data = np.roll(exp_data, int(r), axis=i)
+        com_vox[f] = np.round(tuple(map(sum, zip(com_edata, (-6, -6, -6))))).astype(int)
+        diff_com[f] = np.asarray([s / 2. - c for s, c in zip(img_data.shape, com_vox[f])])
+        img_data_com = exp_data[6:img_data.shape[0] + 6, 6:img_data.shape[1] + 6, 6:img_data.shape[2] + 6]
+        #end old except
         mm_diff_com[f] = np.asarray([d * z for d, z in zip(diff_com[f], zooms)])
         subj2comxfm = np.eye(4)
         for i, t in enumerate(mm_diff_com[f]):
@@ -66,7 +67,7 @@ for f in dwi_fnames[1:]:
         outdir = fs / project / 'reg' / str('ants_FA_pairedLH_'+m.split('.')[0][0:-3]+'_template') / str(str(nfname.name).split('.')[0] + '_com.nii')
         if not outdir.parent.is_dir():
             outdir.parent.mkdir(parents=True)
-        savenii(img_data, np.array(com_affine[f]), outdir, header=hdr,  minmax=(0, 1))
+        savenii(img_data_com, np.array(com_affine[f]), outdir, header=hdr,  minmax=(0, 1))
         #add save matfile class call and save
         savematf = FslAffineMat()
         savematf.data = subj2comxfm

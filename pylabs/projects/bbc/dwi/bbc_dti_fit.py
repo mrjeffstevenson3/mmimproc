@@ -62,12 +62,12 @@ cam_part2b = ['cat tensor.Bfloat | voxel2image -components 8 -header %(fdwi)s -o
                  'imcp eigsys_mf_0009.nii.gz %(fdwi_basen)s_%(m)s_cam_mf_L3',
                  'fslmaths %(fdwi_basen)s_%(m)s_cam_L2 -add %(fdwi_basen)s_%(m)s_cam_L3 -div 2 %(fdwi_basen)s_%(m)s_cam_RD',
                  'fslmaths %(fdwi_basen)s_%(m)s_cam_mf_L2 -add %(fdwi_basen)s_%(m)s_cam_mf_L3 -div 2 %(fdwi_basen)s_%(m)s_cam_mf_RD',
-                 'fslmerge -t %(fdwi_basen)s_%(m)s_V1 eigsys_0002.nii.gz  eigsys_0003.nii.gz  eigsys_0004.nii.gz',
-                 'fslmerge -t %(fdwi_basen)s_%(m)s_V2 eigsys_0006.nii.gz  eigsys_0007.nii.gz  eigsys_0008.nii.gz',
-                 'fslmerge -t %(fdwi_basen)s_%(m)s_V3 eigsys_0010.nii.gz  eigsys_0011.nii.gz  eigsys_0012.nii.gz',
-                 'fslmerge -t %(fdwi_basen)s_%(m)s_mf_V1 eigsys_mf_0002.nii.gz  eigsys_mf_0003.nii.gz  eigsys_mf_0004.nii.gz',
-                 'fslmerge -t %(fdwi_basen)s_%(m)s_mf_V2 eigsys_mf_0006.nii.gz  eigsys_mf_0007.nii.gz  eigsys_mf_0008.nii.gz',
-                 'fslmerge -t %(fdwi_basen)s_%(m)s_mf_V3 eigsys_mf_0010.nii.gz  eigsys_mf_0011.nii.gz  eigsys_mf_0012.nii.gz',
+                 'fslmerge -t %(fdwi_basen)s_%(m)s_cam_V1 eigsys_0002.nii.gz  eigsys_0003.nii.gz  eigsys_0004.nii.gz',
+                 'fslmerge -t %(fdwi_basen)s_%(m)s_cam_V2 eigsys_0006.nii.gz  eigsys_0007.nii.gz  eigsys_0008.nii.gz',
+                 'fslmerge -t %(fdwi_basen)s_%(m)s_cam_V3 eigsys_0010.nii.gz  eigsys_0011.nii.gz  eigsys_0012.nii.gz',
+                 'fslmerge -t %(fdwi_basen)s_%(m)s_cam_mf_V1 eigsys_mf_0002.nii.gz  eigsys_mf_0003.nii.gz  eigsys_mf_0004.nii.gz',
+                 'fslmerge -t %(fdwi_basen)s_%(m)s_cam_mf_V2 eigsys_mf_0006.nii.gz  eigsys_mf_0007.nii.gz  eigsys_mf_0008.nii.gz',
+                 'fslmerge -t %(fdwi_basen)s_%(m)s_cam_mf_V3 eigsys_mf_0010.nii.gz  eigsys_mf_0011.nii.gz  eigsys_mf_0012.nii.gz',
             ]
 #main comand template dictionary for each fit method with %variables to be substituted later by cmdvars
 cmds_d = {'RESTORE':
@@ -103,7 +103,7 @@ cmds_d = {'RESTORE':
             }
     }
 #primary loop over subjects dwi
-for dwif in dwi_fnames:
+for dwif in [dwi_fnames[0]]:
     infpath = fs / project / dwif.split('_')[0] / dwif.split('_')[1] / 'dwi' / ec_meth
     fdwi_basen = dwif + '_eddy_corrected_repol_std2'
     fdwi = infpath / str(fdwi_basen + '_thr1.nii.gz')
