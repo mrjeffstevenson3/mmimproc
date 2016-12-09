@@ -15,7 +15,7 @@ provenance = ProvenanceWrapper()
 #setup paths and file names to process
 fs = Path(getnetworkdataroot())
 
-meths = {'RESTORE':['_eddy_corrected_repol_std2_restore_cam2fsl_tensor_mf', '_eddy_corrected_repol_std2_restore'],
+meths = {'RESTORE':['_eddy_corrected_repol_std2_restore_cam_tensor_mf', '_eddy_corrected_repol_std2_restore'],
             'OLS': ['_eddy_corrected_repol_std2_ols_fsl_tensor_medfilt.nhdr', '_eddy_corrected_repol_std2_ols_fsl_tensor.nhdr', '_eddy_corrected_repol_std2_ols_dipy_tensor.nhdr', '_eddy_corrected_repol_std2_ols_dipy_tensor_medfilt.nhdr'],
             'WLS': ['_eddy_corrected_repol_std2_wls_fsl_tensor_medfilt.nhdr', '_eddy_corrected_repol_std2_wls_fsl_tensor.nhdr', '_eddy_corrected_repol_std2_wls_dipy_tensor.nhdr', '_eddy_corrected_repol_std2_wls_dipy_tensor_medfilt.nhdr']
             }
@@ -24,7 +24,7 @@ mods = {'RESTORE':[['_FA', '_L1', '_MD', '_MO'],['_fa', '_L1', '_md']]
             'WLS': ['
         }
 project = 'bbc'
-fa2t1_outdir = 'reg_subFA2suborigvbmpaired'
+fa2t1_outdir = 'reg_subFA2suborigvbmpaired_run2'
 fadir = 'FA_fsl_wls_tensor_mf_ero_paired'
 dwi_templ = 'sub-bbc{sid}_ses-{snum}_{meth}_{runnum}'
 dwi_fnames = [dwi_templ.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r)) for s, ses, m, r in dwipairing]

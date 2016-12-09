@@ -29,12 +29,26 @@ todo - rethink items 5 and 6:
 5. need to build function to update niftiDict and google spreadsheet to add field 'QC': True
 6. build query niftiDict function to get status of any variable and return values
 
-**Forward path subj dti to template to MNI:**
+**Forward path subj dti thru template to MNI:**
+path in space:
 FA-->warp/affine to T1 comroll-->warp/afffine to template T1-->warp/affine to MNI/atlas
+ref=MNI 1mm or 2mm
+Warp matrix execution order is:
+T1 template->MNI Warp, T1 template->MNI Affine, T1com->T1 template Warp, T1com->T1 template affine, FA->T1com Warp, FA->T1com affine
 
 **Reverse path MNI to subject dti used for atlas/ROI:**
+path in space:
 MNI/atlas-->Inverse warp/affine to template T1-->Inverse warp/affine to comroll T1-->Inverse warp/affine to subject FA/dwi
+ref=FA
+Warp matrix execution order is:
+-i FA->T1com affine, FA->T1com Warp, -i T1com->T1 template affine, T1com->T1 template Warp, -i T1 template->MNI Affine, T1 template->MNI Warp
 
+**Forward path subj dti to template**
+path in space:
+FA-->warp/affine to T1 comroll-->warp/afffine to template T1
+ref=template
+Warp matrix execution order is:
+T1com->T1 template Warp, T1com->T1 template affine, FA->T1com Warp, FA->T1com affine
 
 **class objects needed:**
 conversion object with defaults for each modality.
