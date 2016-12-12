@@ -8,13 +8,10 @@ provenance = ProvenanceWrapper()
 #setup paths and file names to process
 fs = Path(getnetworkdataroot())
 
-#loop over modality then fit method FA then dipy_wls
-
 mods = ['FA', 'MD']
 # winners of fit death match
 fitmethsd = {'OLS': ['ols_dipy_mf', 'ols_fsl_tensor_mf'],
-            'WLS': ['wls_dipy_mf', 'wls_fsl_tensor_mf'],
-            }
+            'WLS': ['wls_dipy_mf', 'wls_fsl_tensor_mf']}
 
 fext = {'ols_dipy_mf': '.nii', 'ols_fsl_tensor_mf': '.nii.gz','wls_dipy_mf': '.nii', 'wls_fsl_tensor_mf': '.nii.gz'}
 
