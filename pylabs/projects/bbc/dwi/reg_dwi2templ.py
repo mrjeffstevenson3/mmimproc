@@ -11,18 +11,12 @@ fs = Path(getnetworkdataroot())
 #loop over modality then fit method FA then dipy_wls
 
 mods = ['FA', 'MD']
-
+# winners of fit death match
 fitmethsd = {'OLS': ['ols_dipy_mf', 'ols_fsl_tensor_mf'],
             'WLS': ['wls_dipy_mf', 'wls_fsl_tensor_mf'],
             }
-#             'RESTORE': ['%(m)s_dipy', '%(m)s_cam'],
-
-allfitmeths = ['wls_dipy', 'wls_fsl', 'wls_cam', 'wls_dipy_mf', 'wls_fsl_mf', 'wls_cam_mf',
-                'ols_dipy', 'ols_fsl', 'ols_cam', 'ols_dipy_mf', 'ols_fsl_mf', 'ols_cam_mf',
-                'restore_cam', 'restore_dipy', 'restore_cam_mf', 'restore_dipy_mf']
 
 fext = {'ols_dipy_mf': '.nii', 'ols_fsl_tensor_mf': '.nii.gz','wls_dipy_mf': '.nii', 'wls_fsl_tensor_mf': '.nii.gz'}
-
 
 project = 'bbc'
 ref = fs / project / 'reg' / 'ants_vbm_pairedLH_in_template_space' / 'bbc_pairedLH_template_resampled2dwi.nii'
