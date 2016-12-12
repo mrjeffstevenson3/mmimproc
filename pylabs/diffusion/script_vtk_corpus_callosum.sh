@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 cd ${DATADIR}/bbc
-list=`ls -d sub-bbc105*`
+list=`ls -d sub-bbc*`
 rm ${DATADIR}/bbc/allvtk_cc.txt
 for afolder in ${list}
 do
