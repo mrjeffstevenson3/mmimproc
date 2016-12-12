@@ -42,7 +42,7 @@ for dwif, vbmf in zip(dwi_fnames, vbm_fnames):
                 params = {}
                 params['warpfiles'] = warpfiles
                 params['affine_xform'] = affine_xform
-                params['execwdir'] = execwdir
-                params['ref'] = ref
+                params['execwdir'] = str(execwdir)
+                params['ref'] = str(ref)
                 provenance.log(str(mov), 'apply ants T1 template warps and affines to bring FA into template space', str(outf),
                                script=__file__, provenance=params)
