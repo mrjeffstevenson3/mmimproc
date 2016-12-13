@@ -39,17 +39,21 @@ for dwif, vbmf in zip(dwi_fnames, vbm_fnames):
                 execwdir = fs / project / 'reg' / 'dwi_warps_in_template_space' / m / f
                 if not execwdir.is_dir():
                     execwdir.mkdir(parents=True)
-                subj2templ_applywarp(str(mov), str(ref), str(outf), warpfiles, str(execwdir), affine_xform=affine_xform)
+                subj2templ_applywarp(str(mov), str(ref), str(outf), warpfiles, str(execwdir), affine_xform=affine_xform, args=['--use-BSpline'])
 
 for m in mods:
     for k, fm in fitmethsd.iteritems():
         for f in fm:
-            regdir = fs / 'reg' / 'dwi_warps_in_template_space' / m / f
+            regdir = fs / project / 'reg' / 'dwi_warps_in_template_space' / m / f
+            print str(regdir)
+            results = ()
             with WorkingContext(str(regdir)):
                 cmd = ''
                 cmd += 'fslmerge -t ' + '_'.join(['all', m, f+'.nii.gz']) + ' '
-                cmd += ' '.join([a + b for a, b in zip(dwi_fnames, ['_eddy_corrected_repol_std2_'+f+'_'+m+'_reg2vbmtempl.nii'] * 18)])
-                #run_subprocess(cmd)
+                mergelist = ' '.join([a + b for a, b in zip(dwi_fnames, ['_eddy_corrected_repol_std2_'+f+'_'+m+'_reg2vbmtempl.nii'] * len(dwi_fnames))])
+                cmd += mergelist
+                results += run_subprocess(cmd)
+                #provenance.log(str(regdir / '_'.join(['all', m, f+'.nii.gz'])), 'generate merged all file from '+m+' '+f, mergelist)
                 print cmd
 
 
