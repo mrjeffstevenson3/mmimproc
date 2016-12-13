@@ -49,7 +49,8 @@ for m in mods:
                 cmd = ''
                 cmd += 'fslmerge -t ' + '_'.join(['all', m, f+'.nii.gz']) + ' '
                 cmd += ' '.join([a + b for a, b in zip(dwi_fnames, ['_eddy_corrected_repol_std2_'+f+'_'+m+'_reg2vbmtempl.nii'] * 18)])
-                run_subprocess(cmd)
+                #run_subprocess(cmd)
+                print cmd
 
 
 
