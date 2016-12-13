@@ -1,6 +1,7 @@
 from pathlib import *
 from pylabs.alignment.ants_reg import subj2templ_applywarp
 from pylabs.projects.bbc.pairing import vbmpairing, dwipairing
+from pylabs.utils import run_subprocess, WorkingContext
 from pylabs.utils.paths import getnetworkdataroot
 #set up provenance
 from pylabs.utils.provenance import ProvenanceWrapper
@@ -39,3 +40,18 @@ for dwif, vbmf in zip(dwi_fnames, vbm_fnames):
                 if not execwdir.is_dir():
                     execwdir.mkdir(parents=True)
                 subj2templ_applywarp(str(mov), str(ref), str(outf), warpfiles, str(execwdir), affine_xform=affine_xform)
+
+for m in mods:
+    for k, fm in fitmethsd.iteritems():
+        for f in fm:
+            regdir = fs / 'reg' / 'dwi_warps_in_template_space' / m / f
+            with WorkingContext(str(regdir)):
+                cmd = ''
+                cmd += 'fslmerge -t ' + '_'.join(['all', m, f+'.nii.gz']) + ' '
+                cmd += ' '.join([a + b for a, b in zip(dwi_fnames, ['_eddy_corrected_repol_std2_'+f+'_'+m+'_reg2vbmtempl.nii'] * 18)])
+                run_subprocess(cmd)
+
+
+
+
+

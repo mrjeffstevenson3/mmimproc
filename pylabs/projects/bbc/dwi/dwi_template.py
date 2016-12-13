@@ -41,7 +41,7 @@ for f in dwi_fnames:
         img_data = img.get_data()
         affine = img.affine
         zooms = hdr.get_zooms()
-        exp_data = np.zeros(tuple(map(sum, zip(img_data.shape), (12, 12, 12))))
+        exp_data = np.zeros(tuple(map(sum, zip(img_data.shape, (12, 12, 12)))))
         exp_data[6:img_data.shape[0] + 6, 6:img_data.shape[1] + 6, 6:img_data.shape[2] + 6] = img_data
         com_edata = com(exp_data)
         diff_com_edata = np.asarray([s / 2. - c for s, c in zip(exp_data.shape, com_edata)])
