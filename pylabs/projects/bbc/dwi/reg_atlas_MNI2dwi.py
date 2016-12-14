@@ -18,14 +18,26 @@ MNI_atlases = {'mori': pylabs_atlasdir / 'JHU_MNI_SS_WMPM_Type_I_matched.nii.gz'
                 'mori_LeftPostIntCap-35': pylabs_atlasdir / 'mori_LeftPostIntCap-35.nii',
                 'mori_RightPostIntCap-123': pylabs_atlasdir / 'mori_RightPostIntCap-123.nii',
                 'mori_base_mask52only': pylabs_atlasdir / 'mori_base_mask52only.nii',
-                'mori_CC': pylabs_atlasdir / 'mori_bilatCC-52to54-140to142.nii'
+                'mori_CC': pylabs_atlasdir / 'mori_bilatCC-52to54-140to142.nii',
+                'mori_Left_IFOF-70': pylabs_atlasdir / 'mori_Left_IFOF-70.nii',
+                'mori_Right_IFOF-158': pylabs_atlasdir / 'mori_Right_IFOF-158.nii',
+                'mori_Left_frontal-3-5': pylabs_atlasdir / 'mori_Left_frontal-3-5.nii',
+                'mori_Left_occip-10-16-20': pylabs_atlasdir / 'mori_Left_occip-10-16-20.nii',
+                'mori_Right_frontal-91-93': pylabs_atlasdir / 'mori_Right_frontal-91-93.nii',
+                'mori_Right_occip-98-99-102-104': pylabs_atlasdir / 'mori_Right_occip-98-99-102-104.nii',
                 }
 Slicer_cmd = { 'mori': None,
         'aal_motor': 'ModelMaker -l 1 -n ',
         'mori_LeftPostIntCap-35': 'TractographyLabelMapSeeding -m 2000 -l 2 -x -v 0.1 -a ',
         'mori_RightPostIntCap-123': 'TractographyLabelMapSeeding -m 2000 -l 2 -x -v 0.1 -a ',
         'mori_base_mask52only': 'ModelMaker -l 1 -n ',
-        'mori_CC': 'TractographyLabelMapSeeding -m 2000 -l 2 -x -v 0.1 -a '
+        'mori_Left_frontal-3-5': 'ModelMaker -l 1 -n ',
+        'mori_Left_occip-10-16-20': 'ModelMaker -l 1 -n ',
+        'mori_Right_frontal-91-93': 'ModelMaker -l 1 -n ',
+        'mori_Right_occip-98-99-102-104': 'ModelMaker -l 1 -n ',
+        'mori_CC': 'TractographyLabelMapSeeding -m 2000 -l 2 -x -v 0.1 -a ',
+        'mori_Left_IFOF-70': 'TractographyLabelMapSeeding -m 2000 -l 2 -x -v 0.1 -a ',
+        'mori_Right_IFOF-158': 'TractographyLabelMapSeeding -m 2000 -l 2 -x -v 0.1 -a ',
         }
 tensors = {'RESTORE':['_eddy_corrected_repol_std2_restore_cam_tensor_medfilt.nhdr', '_eddy_corrected_repol_std2_restore_cam_tensor.nhdr', '_eddy_corrected_repol_std2_restore_dipy_tensor.nhdr', '_eddy_corrected_repol_std2_restore_dipy_tensor_medfilt.nhdr'],
             'OLS': ['_eddy_corrected_repol_std2_ols_fsl_tensor_medfilt.nhdr', '_eddy_corrected_repol_std2_ols_fsl_tensor.nhdr', '_eddy_corrected_repol_std2_ols_dipy_tensor.nhdr', '_eddy_corrected_repol_std2_ols_dipy_tensor_medfilt.nhdr', '_eddy_corrected_repol_std2_ols_cam_tensor.nhdr', '_eddy_corrected_repol_std2_ols_cam_tensor_medfilt.nhdr'],
@@ -58,7 +70,7 @@ for dwif, vbmf in zip(dwi_fnames, vbm_fnames):
         warpfiles = [str(MNI2templ_invwarp), str(iwarp_templ2vbmsubj), str(iwarp_vbmsub2dwi)]
         affine_xform = [str(MNI2templ_aff), str(aff_templ2vbmsubj), str(aff_vbmsub2dwi)]
         subj2templ_applywarp(str(mov), str(ref), str(outf)+'.nii', warpfiles, str(execwdir), affine_xform=affine_xform, inv=True)
-        vtkdir = execwdir / 'vtk_tensor_comp_run2'
+        vtkdir = execwdir / 'vtk_tensor_comp_run3'
         if not vtkdir.is_dir():
             vtkdir.mkdir()
         try:
