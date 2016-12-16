@@ -20,7 +20,7 @@ echo working on ${afile}
 cp ${afile} f.vtk
 ${PYLABS}/pylabs/diffusion/readfiber_corpus_callosum_with_ceiling
 echo ${afile}
-echo ${afile} >> ${DATADIR}/bbc/allvtk_cc.txt
+echo -n "${afile} " >> ${DATADIR}/bbc/allvtk_cc.txt
 cat dti_results.txt >> ${DATADIR}/bbc/allvtk_cc.txt
 done
 done
