@@ -32,7 +32,7 @@ def getnetworkdataroot():
         return '/mnt/users/js/'
     elif hostname == 'uhora.ilabs.uw.edu':
         return '/mnt/users/js/'
-    elif hostname in ['Jeffs-MacBook-Pro-3.local', 'Jeffs-MBP-3']:
+    elif any(x in hostname for x in ['Jeffs-MacBook-Pro-3.local', 'Jeffs-MBP-3', '.dhcp4.washington.edu']):
         return '/Users/mrjeffs/Documents/Research/data'
     else:
         raise ValueError('Don''t know where network data root is on this computer.')
