@@ -22,6 +22,9 @@ sub158=IFOF-158
 subcc=mori_CC
 sub35=PostIntCap-35
 sub123=PostIntCap-123
+sub43=SLF-43
+sub131=SLF-131
+
 rm base.vtk
 rm aal_motor.vtk
 if [[ "$afile" == *"$sub70"* ]]; then
@@ -44,7 +47,14 @@ if [[ "$afile" == *"$sub123"* ]]; then
 cp *base*.vtk base.vtk
 cp *aal_motor*.vtk aal_motor.vtk
 fi
-
+if [[ "$afile" == *"$sub43"* ]]; then
+cp *Left_STG-MTG-18-20*.vtk base.vtk
+cp *Left_pre-postCentGyr-6-7*.vtk aal_motor.vtk
+fi
+if [[ "$afile" == *"$sub131"* ]]; then
+cp *Right_STG-MTG-106-108*.vtk base.vtk
+cp *Right_pre-postCentGyr-94-95*.vtk aal_motor.vtk
+fi
 cp ${afile} f.vtk
 ${PYLABS}/pylabs/diffusion/readfiber_corpus_callosum_with_ceiling
 echo ${afile}
