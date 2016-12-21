@@ -58,7 +58,7 @@ fi
 cp ${afile} f.vtk
 ${PYLABS}/pylabs/diffusion/readfiber_corpus_callosum_with_ceiling
 echo ${afile}
-echo ${afile} >> ${DATADIR}/bbc/allvtk_run3.txt
+echo -n "${afile} " >> ${DATADIR}/bbc/allvtk_run3.txt
 cat dti_results.txt >> ${DATADIR}/bbc/allvtk_run3.txt
 done
 done
