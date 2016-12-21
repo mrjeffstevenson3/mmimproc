@@ -43,6 +43,8 @@ MNI_atlases = {'mori': pylabs_atlasdir / 'JHU_MNI_SS_WMPM_Type_I_matched.nii.gz'
                 'mori_Right_pre-postCentGyr-94-95': pylabs_atlasdir / 'mori_Right_pre-postCentGyr-94-95.nii',
                 'mori_Left_STG-MTG-18-20':  pylabs_atlasdir / 'mori_Left_STG-MTG-18-20.nii',
                 'mori_Right_STG-MTG-106-108': pylabs_atlasdir / 'mori_Right_STG-MTG-106-108.nii',
+
+                'JHU_tracts_thr10_Right_IFOF-12':  pylabs_atlasdir / 'JHU_tracts_thr10_Right_IFOF-12.nii',
                 }
 Slicer_cmd = { 'mori': None,
         'aal_motor': 'ModelMaker -l 1 -n ',
@@ -62,6 +64,8 @@ Slicer_cmd = { 'mori': None,
         'mori_Right_IFOF-158': 'TractographyLabelMapSeeding -m 2000 -l 2 -x -v 0.1 -a ',
         'mori_Left_SLF-43': 'TractographyLabelMapSeeding -m 2000 -l 2 -x -v 0.1 -a ',
         'mori_Right_SLF-131': 'TractographyLabelMapSeeding -m 2000 -l 2 -x -v 0.1 -a ',
+
+        'JHU_tracts_thr10_Right_IFOF-12': 'ModelMaker -l 1 -n ',
         }
 tensors = {'RESTORE':['_eddy_corrected_repol_std2_restore_cam_tensor_medfilt.nhdr', '_eddy_corrected_repol_std2_restore_cam_tensor.nhdr', '_eddy_corrected_repol_std2_restore_dipy_tensor.nhdr', '_eddy_corrected_repol_std2_restore_dipy_tensor_medfilt.nhdr'],
             'OLS': ['_eddy_corrected_repol_std2_ols_fsl_tensor_medfilt.nhdr', '_eddy_corrected_repol_std2_ols_fsl_tensor.nhdr', '_eddy_corrected_repol_std2_ols_dipy_tensor.nhdr', '_eddy_corrected_repol_std2_ols_dipy_tensor_medfilt.nhdr', '_eddy_corrected_repol_std2_ols_cam_tensor.nhdr', '_eddy_corrected_repol_std2_ols_cam_tensor_medfilt.nhdr'],
