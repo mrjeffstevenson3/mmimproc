@@ -2,6 +2,7 @@ import os, inspect
 from pathlib import *
 import datetime
 import pylabs
+from pylabs.correlation.atlas import make_mask_fm_atlas_parts
 from pylabs.alignment.ants_reg import subj2templ_applywarp
 from pylabs.projects.bbc.pairing import vbmpairing, dwipairing
 from pylabs.utils.paths import getnetworkdataroot
@@ -13,6 +14,17 @@ provenance = ProvenanceWrapper()
 fs = Path(getnetworkdataroot())
 pylabs_atlasdir = Path(*Path(inspect.getabsfile(pylabs)).parts[:-2]) / 'data' / 'atlases'
 slicer_path = Path(*Path(inspect.getabsfile(pylabs)).parts[:-3]) / 'Slicer-4.5.0-2016-05-02-linux-amd64' / 'Slicer --launch '
+
+#setup masks and templates:
+atlas = pylabs_atlasdir / 'JHU_MNI_SS_WMPM_Type_I_matched.nii.gz'
+roi_lists = [[70], [158], [3,4,5], [91,92,93], [10,16,20], [104,99,98,102], [43], [131], [6,7], [94,95], [20,18], [106,108]]
+mask_fnames = ['mori_Left_IFOF-70', 'mori_Right_IFOF-158', 'mori_Left_frontal-3-5', 'mori_Right_frontal-91-93',
+               'mori_Left_occip-10-16-20', 'mori_Right_occip-98-99-102-104', 'mori_Left_SLF-43', 'mori_Right_SLF-131',
+               'mori_Left_pre-postCentGyr-6-7', 'mori_Right_pre-postCentGyr-94-95', 'mori_Left_STG-MTG-18-20',
+                'mori_Right_STG-MTG-106-108', ]
+[make_mask_fm_atlas_parts(atlas=str(atlas), roi_list=r, mask_fname=str(pylabs_atlasdir / m) for r, m in zip(roi_lists, mask_fnames)]
+
+
 MNI_atlases = {'mori': pylabs_atlasdir / 'JHU_MNI_SS_WMPM_Type_I_matched.nii.gz',
                 'aal_motor': pylabs_atlasdir / 'aal_1mm_motorcortex.nii',
                 'mori_LeftPostIntCap-35': pylabs_atlasdir / 'mori_LeftPostIntCap-35.nii',
@@ -68,6 +80,7 @@ MNI2templ_invwarp = templdir / 'bbc_pairedLH_template_reg2MNI_1InverseWarp.nii.g
 MNI2templ_aff = templdir / 'bbc_pairedLH_template_reg2MNI_0GenericAffine.mat'
 dwi2vbmsubjdir = fs / project / 'reg' / 'reg_subFA2suborigvbmpaired_run2'
 dwi_reg_append = '_eddy_corrected_repol_std2_wls_fsl_tensor_mf_FA_ero_reg2sorigvbm_'
+
 #apply the warps
 for dwif, vbmf in zip(dwi_fnames, vbm_fnames):
     for k, a in MNI_atlases.iteritems():
