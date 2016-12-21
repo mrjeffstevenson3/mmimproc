@@ -33,7 +33,7 @@ cp *Left_occip*.vtk aal_motor.vtk
 fi
 if [[ "$afile" == *"$sub158"* ]]; then
 cp *Right_frontal*.vtk base.vtk
-cp *Rigth_occip*.vtk aal_motor.vtk
+cp *Right_occip*.vtk aal_motor.vtk
 fi
 if [[ "$afile" == *"$subcc"* ]]; then
 cp *aal_motor*.vtk base.vtk
