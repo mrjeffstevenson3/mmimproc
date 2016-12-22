@@ -84,11 +84,11 @@ def make_mask_fm_tracts(atlas, volidx, thresh, mask_fname):
     if len(img_data.shape) != 4:
         raise IOError(atlas + " atlas file File Doesn't have 4 Dims. must be a 4D tract probability Vol.")
     mask = numpy.zeros(img_data.shape[:3])
-    mask[atlas_img_data[..., volidx - 1] > thresh] = 1
+    mask[atlas_img_data[..., volidx - 1] > thresh['thr']] = 1
     mask_img = nibabel.Nifti1Image(mask, img.affine, img.header)
     mask_img.set_qform(img.affine, code=1)
     mask_img.header['cal_max'] = 1
     nibabel.save(mask_img, mask_fname)
     provenance.log(mask_fname, 'extract roi_list regions from atlas into mask', atlas, script=__file__,
-                   provenance={'vol indx': volidx, 'thresh': thresh})
+                   provenance={'vol indx': volidx, 'thresh': thresh['thr']})
     return

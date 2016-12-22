@@ -2,7 +2,7 @@ import os, inspect
 from pathlib import *
 import datetime
 import pylabs
-from pylabs.correlation.atlas import make_mask_fm_atlas_parts
+from pylabs.correlation.atlas import make_mask_fm_atlas_parts, make_mask_fm_tracts
 from pylabs.alignment.ants_reg import subj2templ_applywarp
 from pylabs.projects.bbc.pairing import vbmpairing, dwipairing
 from pylabs.utils.paths import getnetworkdataroot
@@ -14,59 +14,48 @@ provenance = ProvenanceWrapper()
 fs = Path(getnetworkdataroot())
 pylabs_atlasdir = Path(*Path(inspect.getabsfile(pylabs)).parts[:-2]) / 'data' / 'atlases'
 slicer_path = Path(*Path(inspect.getabsfile(pylabs)).parts[:-3]) / 'Slicer-4.5.0-2016-05-02-linux-amd64' / 'Slicer --launch '
-
 #setup masks and templates:
-atlas = pylabs_atlasdir / 'JHU_MNI_SS_WMPM_Type_I_matched.nii.gz'
-roi_lists = [[70], [158], [3,4,5], [91,92,93], [10,16,20], [104,99,98,102], [43], [131], [6,7], [94,95], [20,18], [106,108]]
-mask_fnames = ['mori_Left_IFOF-70', 'mori_Right_IFOF-158', 'mori_Left_frontal-3-5', 'mori_Right_frontal-91-93',
-               'mori_Left_occip-10-16-20', 'mori_Right_occip-98-99-102-104', 'mori_Left_SLF-43', 'mori_Right_SLF-131',
-               'mori_Left_pre-postCentGyr-6-7', 'mori_Right_pre-postCentGyr-94-95', 'mori_Left_STG-MTG-18-20',
-                'mori_Right_STG-MTG-106-108', ]
-[make_mask_fm_atlas_parts(atlas=str(atlas), roi_list=r, mask_fname=str(pylabs_atlasdir / m) for r, m in zip(roi_lists, mask_fnames)]
+anat_atlas = pylabs_atlasdir / 'JHU_MNI_SS_WMPM_Type_I_matched.nii.gz'
+tract_atlas = pylabs_atlasdir / 'JHU-ICBM-tracts-prob-1mm.nii.gz'
+thr = {'thr': 10}    #global threshold for tract atlas to narrow fiber bundle channel
 
+MNI_atlases = {'mori': {'atlas_fname': pylabs_atlasdir / 'JHU_MNI_SS_WMPM_Type_I_matched.nii.gz', 'roi_list': None, 'Sl_cmd': None},
+                'aal_motor': {'atlas_fname': pylabs_atlasdir / 'aal_1mm_motorcortex.nii', 'roi_list': [1, 2, 3, 4, 7, 8, 19, 20, 23, 24, 57, 58, 59, 60, 61, 62, 63, 64, 69, 70], 'Sl_cmd': 'ModelMaker -l 1 -n '},
+                'mori_LeftPostIntCap-35': {'atlas_fname': pylabs_atlasdir / 'mori_LeftPostIntCap-35.nii', 'roi_list': [35], 'Sl_cmd': 'TractographyLabelMapSeeding -m 2000 -l 2 -x -v 0.1 -a '},
+                'mori_RightPostIntCap-123': {'atlas_fname': pylabs_atlasdir / 'mori_RightPostIntCap-123.nii', 'roi_list': [123], 'Sl_cmd': 'TractographyLabelMapSeeding -m 2000 -l 2 -x -v 0.1 -a '},
+                'mori_base_mask52only': {'atlas_fname': pylabs_atlasdir / 'mori_base_mask52only.nii', 'roi_list': None, 'Sl_cmd': 'ModelMaker -l 1 -n '},
+                'mori_CC': {'atlas_fname': pylabs_atlasdir / 'mori_bilatCC-52to54-140to142.nii', 'roi_list': [52, 53, 54, 140, 141, 142], 'Sl_cmd': 'TractographyLabelMapSeeding -m 2000 -l 2 -x -v 0.1 -a '},
+                'mori_Left_IFOF-70': {'atlas_fname': pylabs_atlasdir / 'mori_Left_IFOF-70.nii', 'roi_list': [70], 'Sl_cmd': 'TractographyLabelMapSeeding -m 2000 -l 2 -x -v 0.1 -a '},
+                'mori_Right_IFOF-158': {'atlas_fname': pylabs_atlasdir / 'mori_Right_IFOF-158.nii', 'roi_list': [158],  'Sl_cmd': 'TractographyLabelMapSeeding -m 2000 -l 2 -x -v 0.1 -a '},
+                'mori_Left_frontal-3-5': {'atlas_fname': pylabs_atlasdir / 'mori_Left_frontal-3-5.nii', 'roi_list': [3,4,5], 'Sl_cmd': 'ModelMaker -l 1 -n '},
+                'mori_Left_occip-10-16-20': {'atlas_fname': pylabs_atlasdir / 'mori_Left_occip-10-16-20.nii', 'roi_list': [10,16,20], 'Sl_cmd': 'ModelMaker -l 1 -n '},
+                'mori_Right_frontal-91-93': {'atlas_fname': pylabs_atlasdir / 'mori_Right_frontal-91-93.nii', 'roi_list': [91,92,93], 'Sl_cmd': 'ModelMaker -l 1 -n '},
+                'mori_Right_occip-98-99-102-104': {'atlas_fname': pylabs_atlasdir / 'mori_Right_occip-98-99-102-104.nii', 'roi_list': [104,99,98,102], 'Sl_cmd': 'ModelMaker -l 1 -n '},
+                'mori_Left_SLF-43':  {'atlas_fname': pylabs_atlasdir / 'mori_Left_SLF-43.nii', 'roi_list': [43], 'Sl_cmd': 'TractographyLabelMapSeeding -m 2000 -l 2 -x -v 0.1 -a '},
+                'mori_Right_SLF-131': {'atlas_fname': pylabs_atlasdir / 'mori_Right_SLF-131.nii', 'roi_list': [131], 'Sl_cmd': 'TractographyLabelMapSeeding -m 2000 -l 2 -x -v 0.1 -a '},
+                'mori_Left_pre-postCentGyr-6-7': {'atlas_fname': pylabs_atlasdir / 'mori_Left_pre-postCentGyr-6-7.nii', 'roi_list': [6, 7], 'Sl_cmd': 'ModelMaker -l 1 -n '},
+                'mori_Right_pre-postCentGyr-94-95': {'atlas_fname': pylabs_atlasdir / 'mori_Right_pre-postCentGyr-94-95.nii', 'roi_list': [94,95], 'Sl_cmd': 'ModelMaker -l 1 -n '},
+                'mori_Left_STG-MTG-18-20':  {'atlas_fname': pylabs_atlasdir / 'mori_Left_STG-MTG-18-20.nii', 'roi_list': [20,18], 'Sl_cmd': 'ModelMaker -l 1 -n '},
+                'mori_Right_STG-MTG-106-108': {'atlas_fname': pylabs_atlasdir / 'mori_Right_STG-MTG-106-108.nii', 'roi_list': [106,108], 'Sl_cmd': 'ModelMaker -l 1 -n '},
 
-MNI_atlases = {'mori': pylabs_atlasdir / 'JHU_MNI_SS_WMPM_Type_I_matched.nii.gz',
-                'aal_motor': pylabs_atlasdir / 'aal_1mm_motorcortex.nii',
-                'mori_LeftPostIntCap-35': pylabs_atlasdir / 'mori_LeftPostIntCap-35.nii',
-                'mori_RightPostIntCap-123': pylabs_atlasdir / 'mori_RightPostIntCap-123.nii',
-                'mori_base_mask52only': pylabs_atlasdir / 'mori_base_mask52only.nii',
-                'mori_CC': pylabs_atlasdir / 'mori_bilatCC-52to54-140to142.nii',
-                'mori_Left_IFOF-70': pylabs_atlasdir / 'mori_Left_IFOF-70.nii',
-                'mori_Right_IFOF-158': pylabs_atlasdir / 'mori_Right_IFOF-158.nii',
-                'mori_Left_frontal-3-5': pylabs_atlasdir / 'mori_Left_frontal-3-5.nii',
-                'mori_Left_occip-10-16-20': pylabs_atlasdir / 'mori_Left_occip-10-16-20.nii',
-                'mori_Right_frontal-91-93': pylabs_atlasdir / 'mori_Right_frontal-91-93.nii',
-                'mori_Right_occip-98-99-102-104': pylabs_atlasdir / 'mori_Right_occip-98-99-102-104.nii',
-                'mori_Left_SLF-43':  pylabs_atlasdir / 'mori_Left_SLF-43.nii',
-                'mori_Right_SLF-131': pylabs_atlasdir / 'mori_Right_SLF-131.nii',
-                'mori_Left_pre-postCentGyr-6-7': pylabs_atlasdir / 'mori_Left_pre-postCentGyr-6-7.nii',
-                'mori_Right_pre-postCentGyr-94-95': pylabs_atlasdir / 'mori_Right_pre-postCentGyr-94-95.nii',
-                'mori_Left_STG-MTG-18-20':  pylabs_atlasdir / 'mori_Left_STG-MTG-18-20.nii',
-                'mori_Right_STG-MTG-106-108': pylabs_atlasdir / 'mori_Right_STG-MTG-106-108.nii',
-
-                'JHU_tracts_thr10_Right_IFOF-12':  pylabs_atlasdir / 'JHU_tracts_thr10_Right_IFOF-12.nii',
+                'JHU_tracts_Left_ATR-1': {'atlas_fname': pylabs_atlasdir / 'JHU_tracts_thr%(thr)s_Left_ATR-1.nii', 'roi_list': 1, 'Sl_cmd': 'ModelMaker -l 1 -n '},
+                'JHU_tracts_Right_ATR-2': {'atlas_fname': pylabs_atlasdir / 'JHU_tracts_thr%(thr)s_Right_ATR-2.nii', 'roi_list': 2, 'Sl_cmd': 'ModelMaker -l 1 -n '},
+                'JHU_tracts_Left_CSP-3': {'atlas_fname': pylabs_atlasdir / 'JHU_tracts_thr%(thr)s_Left_CSP-3.nii', 'roi_list': 3, 'Sl_cmd': 'ModelMaker -l 1 -n '},
+                'JHU_tracts_Right_CSP-4': {'atlas_fname': pylabs_atlasdir / 'JHU_tracts_thr%(thr)s_Right_CSP-4.nii', 'roi_list': 4, 'Sl_cmd': 'ModelMaker -l 1 -n '},
+                'JHU_tracts_Left_Cing-5': {'atlas_fname': pylabs_atlasdir / 'JHU_tracts_thr%(thr)s_Left_Cing-5.nii', 'roi_list': 5, 'Sl_cmd': 'ModelMaker -l 1 -n '},
+                'JHU_tracts_Right_Cing-6': {'atlas_fname': pylabs_atlasdir / 'JHU_tracts_thr%(thr)s_Right_Cing-6.nii', 'roi_list': 6, 'Sl_cmd': 'ModelMaker -l 1 -n '},
+                'JHU_tracts_Forceps_Major-9': {'atlas_fname': pylabs_atlasdir / 'JHU_tracts_thr%(thr)s_Forceps_Major-9.nii', 'roi_list': 9, 'Sl_cmd': 'ModelMaker -l 1 -n '},
+                'JHU_tracts_Forceps_Minor-10': {'atlas_fname': pylabs_atlasdir / 'JHU_tracts_thr%(thr)s_Forceps_Minor-10.nii', 'roi_list': 10, 'Sl_cmd': 'ModelMaker -l 1 -n '},
+                'JHU_tracts_Left_IFOF-11': {'atlas_fname': pylabs_atlasdir / 'JHU_tracts_thr%(thr)s_Left_IFOF-11.nii', 'roi_list': 11, 'Sl_cmd': 'ModelMaker -l 1 -n '},
+                'JHU_tracts_Right_IFOF-12':  {'atlas_fname': pylabs_atlasdir / 'JHU_tracts_thr%(thr)s_Right_IFOF-12.nii', 'roi_list': 12, 'Sl_cmd': 'ModelMaker -l 1 -n '},
+                'JHU_tracts_Left_ILF-13': {'atlas_fname': pylabs_atlasdir / 'JHU_tracts_thr%(thr)s_Left_ILF-13.nii', 'roi_list': 13, 'Sl_cmd': 'ModelMaker -l 1 -n '},
+                'JHU_tracts_Right_ILF-14': {'atlas_fname': pylabs_atlasdir / 'JHU_tracts_thr%(thr)s_Right_ILF-14.nii', 'roi_list': 14, 'Sl_cmd': 'ModelMaker -l 1 -n '},
+                'JHU_tracts_Left_SLF-15': {'atlas_fname': pylabs_atlasdir / 'JHU_tracts_thr%(thr)s_Left_SLF-15.nii', 'roi_list': 15, 'Sl_cmd': 'ModelMaker -l 1 -n '},
+                'JHU_tracts_Right_SLF-16': {'atlas_fname': pylabs_atlasdir / 'JHU_tracts_thr%(thr)s_Right_SLF-16.nii', 'roi_list': 16, 'Sl_cmd': 'ModelMaker -l 1 -n '},
+                'JHU_tracts_Left_Unc-17': {'atlas_fname': pylabs_atlasdir / 'JHU_tracts_thr%(thr)s_Left_Unc-17.nii', 'roi_list': 17, 'Sl_cmd': 'ModelMaker -l 1 -n '},
+                'JHU_tracts_Right_Unc-18': {'atlas_fname': pylabs_atlasdir / 'JHU_tracts_thr%(thr)s_Right_Unc-18.nii', 'roi_list': 18, 'Sl_cmd': 'ModelMaker -l 1 -n '},
                 }
-Slicer_cmd = { 'mori': None,
-        'aal_motor': 'ModelMaker -l 1 -n ',
-        'mori_LeftPostIntCap-35': 'TractographyLabelMapSeeding -m 2000 -l 2 -x -v 0.1 -a ',
-        'mori_RightPostIntCap-123': 'TractographyLabelMapSeeding -m 2000 -l 2 -x -v 0.1 -a ',
-        'mori_base_mask52only': 'ModelMaker -l 1 -n ',
-        'mori_Left_frontal-3-5': 'ModelMaker -l 1 -n ',
-        'mori_Left_occip-10-16-20': 'ModelMaker -l 1 -n ',
-        'mori_Right_frontal-91-93': 'ModelMaker -l 1 -n ',
-        'mori_Right_occip-98-99-102-104': 'ModelMaker -l 1 -n ',
-        'mori_Left_pre-postCentGyr-6-7': 'ModelMaker -l 1 -n ',
-        'mori_Right_pre-postCentGyr-94-95': 'ModelMaker -l 1 -n ',
-        'mori_Left_STG-MTG-18-20': 'ModelMaker -l 1 -n ',
-        'mori_Right_STG-MTG-106-108': 'ModelMaker -l 1 -n ',
-        'mori_CC': 'TractographyLabelMapSeeding -m 2000 -l 2 -x -v 0.1 -a ',
-        'mori_Left_IFOF-70': 'TractographyLabelMapSeeding -m 2000 -l 2 -x -v 0.1 -a ',
-        'mori_Right_IFOF-158': 'TractographyLabelMapSeeding -m 2000 -l 2 -x -v 0.1 -a ',
-        'mori_Left_SLF-43': 'TractographyLabelMapSeeding -m 2000 -l 2 -x -v 0.1 -a ',
-        'mori_Right_SLF-131': 'TractographyLabelMapSeeding -m 2000 -l 2 -x -v 0.1 -a ',
 
-        'JHU_tracts_thr10_Right_IFOF-12': 'ModelMaker -l 1 -n ',
-        }
 tensors = {'RESTORE':['_eddy_corrected_repol_std2_restore_cam_tensor_medfilt.nhdr', '_eddy_corrected_repol_std2_restore_cam_tensor.nhdr', '_eddy_corrected_repol_std2_restore_dipy_tensor.nhdr', '_eddy_corrected_repol_std2_restore_dipy_tensor_medfilt.nhdr'],
             'OLS': ['_eddy_corrected_repol_std2_ols_fsl_tensor_medfilt.nhdr', '_eddy_corrected_repol_std2_ols_fsl_tensor.nhdr', '_eddy_corrected_repol_std2_ols_dipy_tensor.nhdr', '_eddy_corrected_repol_std2_ols_dipy_tensor_medfilt.nhdr', '_eddy_corrected_repol_std2_ols_cam_tensor.nhdr', '_eddy_corrected_repol_std2_ols_cam_tensor_medfilt.nhdr'],
             'WLS': ['_eddy_corrected_repol_std2_wls_fsl_tensor_medfilt.nhdr', '_eddy_corrected_repol_std2_wls_fsl_tensor.nhdr', '_eddy_corrected_repol_std2_wls_dipy_tensor.nhdr', '_eddy_corrected_repol_std2_wls_dipy_tensor_medfilt.nhdr', '_eddy_corrected_repol_std2_wls_cam_tensor.nhdr', '_eddy_corrected_repol_std2_wls_cam_tensor_medfilt.nhdr']
@@ -85,23 +74,38 @@ MNI2templ_aff = templdir / 'bbc_pairedLH_template_reg2MNI_0GenericAffine.mat'
 dwi2vbmsubjdir = fs / project / 'reg' / 'reg_subFA2suborigvbmpaired_run2'
 dwi_reg_append = '_eddy_corrected_repol_std2_wls_fsl_tensor_mf_FA_ero_reg2sorigvbm_'
 
+#create atlas masks from rois
+#[make_mask_fm_atlas_parts(atlas=str(anat_atlas), roi_list=r, mask_fname=str(pylabs_atlasdir / m) for r, m in zip(roi_lists, mask_fnames)]
+
 #apply the warps
 for dwif, vbmf in zip(dwi_fnames, vbm_fnames):
     for k, a in MNI_atlases.iteritems():
-        execwdir = fs / project /  dwif.split('_')[0] / dwif.split('_')[1] / 'dwi'
-        mov = a
+        # extract rois from atlases and make masks
+        if 'mori' in k:
+            make_mask_fm_atlas_parts(atlas=str(anat_atlas), roi_list=a['roi_list'], mask_fname=str(a['atlas_fname']))
+        elif 'JHU_' in k:
+            make_mask_fm_tracts(atlas=str(tract_atlas), volidx=a['roi_list'], thresh=thr, mask_fname=a[('atlas_fname' % thr)])
+        elif 'aal_motor' in k:
+            make_mask_fm_atlas_parts(atlas=str(pylabs_atlasdir / aal_1mm_reg2MNI_masked.nii.gz), roi_list=a['roi_list'], mask_fname=str(a['atlas_fname']))
+        execwdir = fs / project / dwif.split('_')[0] / dwif.split('_')[1] / 'dwi'
         ref = execwdir / str(dwif+'_S0_brain.nii')
-        outf = execwdir / str(dwif+'_'+k)
+        if 'mori' in k or 'aal_motor' in k:
+            mov = a['atlas_fname']
+            outf = execwdir / str(dwif+'_'+k+'.nii')
+        if 'JHU_' in k:
+            mov = (a['atlas_fname'].name % thr)
+            outf = execwdir / str(dwif+'_'+(a['atlas_fname'].name % thr))
         iwarp_templ2vbmsubj = templdir / str(vbmf+'InverseWarp.nii.gz')
         iwarp_vbmsub2dwi = dwi2vbmsubjdir / str(dwif+ dwi_reg_append +'1InverseWarp.nii.gz')
         aff_templ2vbmsubj = templdir / str(vbmf+'Affine.txt')
         aff_vbmsub2dwi = dwi2vbmsubjdir / str(dwif + dwi_reg_append + '0GenericAffine.mat')
         warpfiles = [str(MNI2templ_invwarp), str(iwarp_templ2vbmsubj), str(iwarp_vbmsub2dwi)]
         affine_xform = [str(MNI2templ_aff), str(aff_templ2vbmsubj), str(aff_vbmsub2dwi)]
-        subj2templ_applywarp(str(mov), str(ref), str(outf)+'.nii', warpfiles, str(execwdir), affine_xform=affine_xform, inv=True)
+        subj2templ_applywarp(str(mov), str(ref), str(outf), warpfiles, str(execwdir), affine_xform=affine_xform, inv=True)
         vtkdir = execwdir / 'vtk_tensor_comp_run3'
         if not vtkdir.is_dir():
             vtkdir.mkdir()
+        #recoded till here
         try:
             if not Slicer_cmd[k] == None:
                 if Slicer_cmd[k] == 'ModelMaker -l 1 -n ':
