@@ -84,7 +84,7 @@ for dwif, vbmf in zip(dwi_fnames, vbm_fnames):
         if 'mori' in k:
             make_mask_fm_atlas_parts(atlas=str(anat_atlas), roi_list=a['roi_list'], mask_fname=str(a['atlas_fname']))
         elif 'JHU_' in k:
-            make_mask_fm_tracts(atlas=str(tract_atlas), volidx=a['roi_list'], thresh=thr, mask_fname=a[('atlas_fname' % thr)])
+            make_mask_fm_tracts(atlas=str(tract_atlas), volidx=a['roi_list'], thresh=thr, mask_fname=(str(a['atlas_fname']) % thr))
         elif 'aal_motor' in k:
             make_mask_fm_atlas_parts(atlas=str(pylabs_atlasdir / 'aal_1mm_reg2MNI_masked.nii.gz'), roi_list=a['roi_list'], mask_fname=str(a['atlas_fname']))
         execwdir = fs / project / dwif.split('_')[0] / dwif.split('_')[1] / 'dwi'
@@ -93,7 +93,7 @@ for dwif, vbmf in zip(dwi_fnames, vbm_fnames):
             mov = a['atlas_fname']
             outf = execwdir / str(dwif+'_'+k+'.nii')
         if 'JHU_' in k:
-            mov = (a['atlas_fname'].name % thr)
+            mov = (str(a['atlas_fname']) % thr)
             outf = execwdir / str(dwif+'_'+(a['atlas_fname'].name % thr))
         iwarp_templ2vbmsubj = templdir / str(vbmf+'InverseWarp.nii.gz')
         iwarp_vbmsub2dwi = dwi2vbmsubjdir / str(dwif+ dwi_reg_append +'1InverseWarp.nii.gz')
@@ -114,7 +114,7 @@ for dwif, vbmf in zip(dwi_fnames, vbm_fnames):
                     if 'mori' in k or 'aal_motor' in k:
                         cmd += str(vtkdir / str(dwif + '_' + k))
                     if 'JHU_' in k:
-                        cmd += str(vtkdir / str(dwif + '_' + (a['atlas_fname'].name % thr).split('.')[0]))
+                        cmd += str(vtkdir / str(dwif + '_' + (str(a['atlas_fname'].name) % thr).split('.')[0]))
                     cmd += ' '+ str(outf)
                     output = ()
                     dt = datetime.datetime.now()
@@ -127,7 +127,10 @@ for dwif, vbmf in zip(dwi_fnames, vbm_fnames):
                     params = {}
                     params['cmd'] = cmd
                     params['output'] = output
-                    provenance.log(str(vtkdir / str(dwif+'_'+k+'.vtk')), 'generate model vtk', str(outf), script=__file__, provenance=params)
+                    if 'mori' in k or 'aal_motor' in k:
+                        provenance.log(str(vtkdir / str(dwif+'_'+k+'.vtk')), 'generate model vtk', str(outf), script=__file__, provenance=params)
+                    elif 'JHU_' in k:
+                        provenance.log(str(vtkdir / str(dwif + '_' + str(str(a['atlas_fname'].name) % thr).split('.')[0]) + '.vtk'), 'generate model vtk', str(outf), script=__file__, provenance=params)
                 else:
                     for m, ts in tensors.iteritems():
                         if m in ['RESTORE', 'OLS', 'WLS']:
@@ -149,4 +152,4 @@ for dwif, vbmf in zip(dwi_fnames, vbm_fnames):
                                 params['output'] = output
                                 provenance.log(str(vtkdir / str(dwif+t.split('.')[0]+'_'+k))+'.vtk', 'generate fiberbundle vtk from tensors', [str(outf), str(tenpath / str(dwif+t))] , script=__file__, provenance=params)
         except:
-            print "Missing "+k+"for"+m
+            print "exception caught. Missing "+k+" for "+' '.join(list(a))+" or "+m
