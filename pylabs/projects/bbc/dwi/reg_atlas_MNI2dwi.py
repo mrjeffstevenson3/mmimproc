@@ -86,7 +86,7 @@ for dwif, vbmf in zip(dwi_fnames, vbm_fnames):
         elif 'JHU_' in k:
             make_mask_fm_tracts(atlas=str(tract_atlas), volidx=a['roi_list'], thresh=thr, mask_fname=a[('atlas_fname' % thr)])
         elif 'aal_motor' in k:
-            make_mask_fm_atlas_parts(atlas=str(pylabs_atlasdir / aal_1mm_reg2MNI_masked.nii.gz), roi_list=a['roi_list'], mask_fname=str(a['atlas_fname']))
+            make_mask_fm_atlas_parts(atlas=str(pylabs_atlasdir / 'aal_1mm_reg2MNI_masked.nii.gz'), roi_list=a['roi_list'], mask_fname=str(a['atlas_fname']))
         execwdir = fs / project / dwif.split('_')[0] / dwif.split('_')[1] / 'dwi'
         ref = execwdir / str(dwif+'_S0_brain.nii')
         if 'mori' in k or 'aal_motor' in k:
