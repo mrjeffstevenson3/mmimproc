@@ -102,16 +102,20 @@ for dwif, vbmf in zip(dwi_fnames, vbm_fnames):
         warpfiles = [str(MNI2templ_invwarp), str(iwarp_templ2vbmsubj), str(iwarp_vbmsub2dwi)]
         affine_xform = [str(MNI2templ_aff), str(aff_templ2vbmsubj), str(aff_vbmsub2dwi)]
         subj2templ_applywarp(str(mov), str(ref), str(outf), warpfiles, str(execwdir), affine_xform=affine_xform, inv=True)
-        vtkdir = execwdir / 'vtk_tensor_comp_run3'
+        vtkdir = execwdir / 'vtk_tensor_comp_run4'
         if not vtkdir.is_dir():
             vtkdir.mkdir()
         #recoded till here
         try:
-            if not Slicer_cmd[k] == None:
-                if Slicer_cmd[k] == 'ModelMaker -l 1 -n ':
+            if not a['Sl_cmd'] == None:
+                if a['Sl_cmd'] == 'ModelMaker -l 1 -n ':
                     cmd = ''
-                    cmd += str(slicer_path) + Slicer_cmd[k]
-                    cmd += str(vtkdir / str(dwif + '_' + k)) + ' '+ str(outf)+'.nii'
+                    cmd += str(slicer_path) + a['Sl_cmd']
+                    if 'mori' in k or 'aal_motor' in k:
+                        cmd += str(vtkdir / str(dwif + '_' + k))
+                    if 'JHU_' in k:
+                        cmd += str(vtkdir / str(dwif + '_' + (a['atlas_fname'].name % thr).split('.')[0]))
+                    cmd += ' '+ str(outf)
                     output = ()
                     dt = datetime.datetime.now()
                     output += (str(dt),)
@@ -123,15 +127,15 @@ for dwif, vbmf in zip(dwi_fnames, vbm_fnames):
                     params = {}
                     params['cmd'] = cmd
                     params['output'] = output
-                    provenance.log(str(vtkdir / str(dwif+'_'+k+'.vtk')), 'generate model vtk', str(outf)+'.nii', script=__file__, provenance=params)
+                    provenance.log(str(vtkdir / str(dwif+'_'+k+'.vtk')), 'generate model vtk', str(outf), script=__file__, provenance=params)
                 else:
                     for m, ts in tensors.iteritems():
                         if m in ['RESTORE', 'OLS', 'WLS']:
                             tenpath = execwdir / 'cuda_repol_std2_v2' / m
                             for t in ts:
                                 cmd = ''
-                                cmd += str(slicer_path) + Slicer_cmd[k]
-                                cmd += str(outf)+'.nii '+str(tenpath / str(dwif+t))+' '+str(vtkdir / str(dwif+t.split('.')[0]+'_'+k))+'.vtk'
+                                cmd += str(slicer_path) + a['Sl_cmd']
+                                cmd += str(outf)+str(tenpath / str(dwif+t))+' '+str(vtkdir / str(dwif+t.split('.')[0]+'_'+k))+'.vtk'
                                 output = ()
                                 dt = datetime.datetime.now()
                                 output += (str(dt),)
@@ -143,6 +147,6 @@ for dwif, vbmf in zip(dwi_fnames, vbm_fnames):
                                 params = {}
                                 params['cmd'] = cmd
                                 params['output'] = output
-                                provenance.log(str(vtkdir / str(dwif+t.split('.')[0]+'_'+k))+'.vtk', 'generate fiberbundle vtk from tensors', [str(outf)+'.nii', str(tenpath / str(dwif+t))] , script=__file__, provenance=params)
+                                provenance.log(str(vtkdir / str(dwif+t.split('.')[0]+'_'+k))+'.vtk', 'generate fiberbundle vtk from tensors', [str(outf), str(tenpath / str(dwif+t))] , script=__file__, provenance=params)
         except:
-            print "Missing "+Slicer_cmd[k]+"for"+m
+            print "Missing "+k+"for"+m
