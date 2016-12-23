@@ -74,14 +74,11 @@ MNI2templ_aff = templdir / 'bbc_pairedLH_template_reg2MNI_0GenericAffine.mat'
 dwi2vbmsubjdir = fs / project / 'reg' / 'reg_subFA2suborigvbmpaired_run2'
 dwi_reg_append = '_eddy_corrected_repol_std2_wls_fsl_tensor_mf_FA_ero_reg2sorigvbm_'
 
-#create atlas masks from rois
-#[make_mask_fm_atlas_parts(atlas=str(anat_atlas), roi_list=r, mask_fname=str(pylabs_atlasdir / m) for r, m in zip(roi_lists, mask_fnames)]
-
 #apply the warps
 for dwif, vbmf in zip(dwi_fnames, vbm_fnames):
     for k, a in MNI_atlases.iteritems():
         # extract rois from atlases and make masks
-        if 'mori' in k:
+        if 'mori' in k and not a['roi_list'] == None:
             make_mask_fm_atlas_parts(atlas=str(anat_atlas), roi_list=a['roi_list'], mask_fname=str(a['atlas_fname']))
         elif 'JHU_' in k:
             make_mask_fm_tracts(atlas=str(tract_atlas), volidx=a['roi_list'], thresh=thr, mask_fname=(str(a['atlas_fname']) % thr))
@@ -133,23 +130,22 @@ for dwif, vbmf in zip(dwi_fnames, vbm_fnames):
                         provenance.log(str(vtkdir / str(dwif + '_' + str(str(a['atlas_fname'].name) % thr).split('.')[0]) + '.vtk'), 'generate model vtk', str(outf), script=__file__, provenance=params)
                 else:
                     for m, ts in tensors.iteritems():
-                        if m in ['RESTORE', 'OLS', 'WLS']:
-                            tenpath = execwdir / 'cuda_repol_std2_v2' / m
-                            for t in ts:
-                                cmd = ''
-                                cmd += str(slicer_path) + a['Sl_cmd']
-                                cmd += str(outf)+str(tenpath / str(dwif+t))+' '+str(vtkdir / str(dwif+t.split('.')[0]+'_'+k))+'.vtk'
-                                output = ()
-                                dt = datetime.datetime.now()
-                                output += (str(dt),)
-                                cmdt = (cmd,)
-                                output += cmdt
-                                with WorkingContext(str(execwdir)):
-                                    print(cmd)
-                                    output += run_subprocess(cmd)
-                                params = {}
-                                params['cmd'] = cmd
-                                params['output'] = output
-                                provenance.log(str(vtkdir / str(dwif+t.split('.')[0]+'_'+k))+'.vtk', 'generate fiberbundle vtk from tensors', [str(outf), str(tenpath / str(dwif+t))] , script=__file__, provenance=params)
+                        tenpath = execwdir / 'cuda_repol_std2_v2' / m
+                        for t in ts:
+                            cmd = ''
+                            cmd += str(slicer_path) + a['Sl_cmd']
+                            cmd += str(outf)+' '+str(tenpath / str(dwif+t))+' '+str(vtkdir / str(dwif+t.split('.')[0]+'_'+k))+'.vtk'
+                            output = ()
+                            dt = datetime.datetime.now()
+                            output += (str(dt),)
+                            cmdt = (cmd,)
+                            output += cmdt
+                            with WorkingContext(str(execwdir)):
+                                print(cmd)
+                                output += run_subprocess(cmd)
+                            params = {}
+                            params['cmd'] = cmd
+                            params['output'] = output
+                            provenance.log(str(vtkdir / str(dwif+t.split('.')[0]+'_'+k))+'.vtk', 'generate fiberbundle vtk from tensors', [str(outf), str(tenpath / str(dwif+t))] , script=__file__, provenance=params)
         except:
-            print "exception caught. Missing "+k+" for "+' '.join(list(a))+" or "+m
+            print "exception caught for "+dwif+". Missing "+k+" for "+' '.join(list(a))+" or "+m
