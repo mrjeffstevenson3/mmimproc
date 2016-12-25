@@ -16,7 +16,7 @@ for afolder in ${list}
 do
 echo working on ${afolder}
 #get vtk files to process
-cd ${DATADIR}/bbc/${afolder}/*/*/vtk_tensor_comp_run4
+cd ${DATADIR}/bbc/${afolder}/*/*/vtk_tensor_comp_run5
 list2=`ls *tensor*.vtk`
 #loop over vtk files
 for afile in ${list2}
@@ -54,7 +54,7 @@ fi
 cp ${afile} f.vtk
 ${PYLABS}/pylabs/diffusion/readfiber_corpus_callosum_with_ceiling
 echo ${afile}
-echo -n "${afile} " >> ${DATADIR}/bbc/allvtk_run4.txt
-cat dti_results.txt >> ${DATADIR}/bbc/allvtk_run4.txt
+echo -n "${afile} " >> ${DATADIR}/bbc/allvtk_run5.txt
+cat dti_results.txt >> ${DATADIR}/bbc/allvtk_run5.txt
 done
 done

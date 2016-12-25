@@ -25,8 +25,8 @@ MNI_atlases = {'mori': {'atlas_fname': pylabs_atlasdir / 'JHU_MNI_SS_WMPM_Type_I
                 'mori_RightPostIntCap-123': {'atlas_fname': pylabs_atlasdir / 'mori_RightPostIntCap-123.nii', 'roi_list': [123], 'Sl_cmd': 'TractographyLabelMapSeeding -m 2000 -l 2 -x -v 0.1 -a '},
                 'mori_base_mask52only': {'atlas_fname': pylabs_atlasdir / 'mori_base_mask52only.nii', 'roi_list': None, 'Sl_cmd': 'ModelMaker -l 1 -n '},
                 'mori_CC': {'atlas_fname': pylabs_atlasdir / 'mori_bilatCC-52to54-140to142.nii', 'roi_list': [52, 53, 54, 140, 141, 142], 'Sl_cmd': 'TractographyLabelMapSeeding -m 2000 -l 2 -x -v 0.1 -a '},
-                'mori_Left_IFOF-70': {'atlas_fname': pylabs_atlasdir / 'mori_Left_IFOF-70.nii', 'roi_list': [70], 'Sl_cmd': 'TractographyLabelMapSeeding -m 2000 -l 2 -x -v 0.1 -a '},
-                'mori_Right_IFOF-158': {'atlas_fname': pylabs_atlasdir / 'mori_Right_IFOF-158.nii', 'roi_list': [158],  'Sl_cmd': 'TractographyLabelMapSeeding -m 2000 -l 2 -x -v 0.1 -a '},
+                'mori_Left_IFOF-45-47': {'atlas_fname': pylabs_atlasdir / 'mori_Left_IFOF-45-47.nii', 'roi_list': [45,47], 'Sl_cmd': 'TractographyLabelMapSeeding -m 2000 -l 2 -x -v 0.1 -a '},
+                'mori_Right_IFOF-133-135': {'atlas_fname': pylabs_atlasdir / 'mori_Right_IFOF-133-135.nii', 'roi_list': [133, 135],  'Sl_cmd': 'TractographyLabelMapSeeding -m 2000 -l 2 -x -v 0.1 -a '},
                 'mori_Left_frontal-3-5': {'atlas_fname': pylabs_atlasdir / 'mori_Left_frontal-3-5.nii', 'roi_list': [3,4,5], 'Sl_cmd': 'ModelMaker -l 1 -n '},
                 'mori_Left_occip-10-16-20': {'atlas_fname': pylabs_atlasdir / 'mori_Left_occip-10-16-20.nii', 'roi_list': [10,16,20], 'Sl_cmd': 'ModelMaker -l 1 -n '},
                 'mori_Right_frontal-91-93': {'atlas_fname': pylabs_atlasdir / 'mori_Right_frontal-91-93.nii', 'roi_list': [91,92,93], 'Sl_cmd': 'ModelMaker -l 1 -n '},
@@ -99,7 +99,7 @@ for dwif, vbmf in zip(dwi_fnames, vbm_fnames):
         warpfiles = [str(MNI2templ_invwarp), str(iwarp_templ2vbmsubj), str(iwarp_vbmsub2dwi)]
         affine_xform = [str(MNI2templ_aff), str(aff_templ2vbmsubj), str(aff_vbmsub2dwi)]
         subj2templ_applywarp(str(mov), str(ref), str(outf), warpfiles, str(execwdir), affine_xform=affine_xform, inv=True)
-        vtkdir = execwdir / 'vtk_tensor_comp_run4'
+        vtkdir = execwdir / 'vtk_tensor_comp_run5'
         if not vtkdir.is_dir():
             vtkdir.mkdir()
         #recoded till here
