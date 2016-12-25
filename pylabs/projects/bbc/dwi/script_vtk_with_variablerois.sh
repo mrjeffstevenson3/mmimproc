@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #set search sub-strings to identify files
-sub70=IFOF-70
-sub158=IFOF-158
+sub70=IFOF-45
+sub158=IFOF-133
 subcc=mori_CC
 sub35=PostIntCap-35
 sub123=PostIntCap-123
@@ -10,7 +10,7 @@ sub131=SLF-131
 #get bbc subject directories
 cd ${DATADIR}/bbc
 list=`ls -d sub-bbc*`
-rm -f ${DATADIR}/bbc/allvtk_run4.txt
+rm -f ${DATADIR}/bbc/allvtk_run5.txt
 #loop over subject dirs
 for afolder in ${list}
 do
