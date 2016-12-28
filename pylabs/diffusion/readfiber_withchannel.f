@@ -34,12 +34,13 @@ c
 	open(11,file = 'f.vtk')
 	open(21,file = 'aal_motor.vtk')
 	open(22,file = 'base.vtk')
-	 open(23,file = 'base.vtk')
+	 open(23,file = 'channel.vtk')
 
 	do i=1,4
 	read(11,*)cfn
 	read(21,*)cfn
 	read(22,*)cfn
+	read(23,*)cfn
 c	write(6,*)cfn,i
 	enddo
 	read(11,*)c6, numpointsa
@@ -255,6 +256,7 @@ c	do i=280,280
 	do ifil=2,4
 	if(ifil.eq.2)numpoints = numpointsb
 	if(ifil.eq.3)numpoints = numpointsc
+	if(ifil.eq.4)numpoints = numpointsd
 
 	sum = 0
 	if(ifil.eq.2)ipsize = 0
@@ -262,6 +264,12 @@ c	write(6,*)'line ',line(i,1)+1,numpoints/3
 	rmaxz = -10000.0
 	rminz = 10000.0
 	rmindistance(ifil) = 100000.0
+	icountone = 0
+	do ii=2,line(i,1)+1,3
+	icountone = icountone+1
+	enddo
+
+	if(ifil.eq.4)write(26,*)icountone
 	do ii=2,line(i,1)+1,3
 c	write(6,*)'inside line ',line(i,ii),ii
 
@@ -286,7 +294,7 @@ c	write(6,*)'polysav(ip,4) ',polysav(ip,4),ip
 c	if(ii.le.600)write(6,*)'distance ',distance,line(i,ii)+1,i,ii
 	sum = sum+distance
 	if(ifil.eq.4)rmindistance(ifil) = 100000.0
-	if(ifil.eq.4)write(26,*)numpoints
+
 	do icst=1,numpoints
 	dxcst = polysav(line(i,ii)+1,1,1)- polysav(icst,1,ifil)
 	dycst = polysav(line(i,ii)+1,2,1)- polysav(icst,2,ifil)
@@ -301,13 +309,15 @@ c	if(ii.le.600)write(6,*)'distance ',distance,line(i,ii)+1,i,ii
 	imindistance2(ifil) = ii
 	endif
 	enddo  !icst points in the either the floor or the ceiling 
-	enddo  !ifil
 	if(ifil.eq.4)distancesav(ii) = rmindistance(ifil)
 	if(ifil.eq.4)write(26,*)distancesav(ii)
 
+	enddo  !ifil
+
 
 	enddo  !ii within lines within the fiber tract
-	close(26)
+
+
 c  write model line to disk
 c
 	do ifil=2,4
@@ -344,6 +354,8 @@ c	write(6,*)'polyfinal ',polyfinal(ifinalinc,1),ifinalinc,ii,i
 c	write(6,*)'distance ',dnmr(i),i,ipsize
 	write(14,*)ipsize
 	enddo  !between lines with index i
+	close(26)
+	pause
 
 	ifinalcount = ifinalinc-1
 	write(6,*)'this is the number of fibers that reached the cloud ',igood
