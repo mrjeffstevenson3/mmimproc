@@ -23,4 +23,10 @@ with the other numerical output quantifications.  When the script first outputs 
 row for the identifier and one row for the quantification numbers.  This new output file can then
 be converted to an excel file for viewing.
 
+script script_vtk_withchannels_dec21_2016.sh is a script to test dti fiber vtk files to see if
+they pass through the entrance door and pass through the exit door and also pass through the channel which doors and channels are all slicer
+compatible models.   This script calls fortran readfiber_withchannels.f to process the vtk file.
+The fortran program test to see how close the fiber vtk files comes to each of the doors and channel and there is a threshold
+set which can be easily changed for how close the fiber needs to come in mm to the door or channel in to called it a pass through.
+
 
