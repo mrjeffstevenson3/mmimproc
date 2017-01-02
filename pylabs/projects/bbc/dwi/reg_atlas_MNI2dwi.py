@@ -25,8 +25,8 @@ MNI_atlases = {'mori': {'atlas_fname': 'JHU_MNI_SS_WMPM_Type_I_matched.nii.gz', 
                 'mori_RightPostIntCap-123': {'atlas_fname': 'mori_RightPostIntCap-123.nii', 'roi_list': [123], 'Sl_cmd': 'TractographyLabelMapSeeding -m 2000 -l 2 -x -v 0.1 -a '},
                 'mori_base_mask52only': {'atlas_fname': 'mori_base_mask52only.nii', 'roi_list': None, 'Sl_cmd': 'ModelMaker -l 1 -n '},
                 'mori_CC': {'atlas_fname': 'mori_bilatCC-52to54-140to142.nii', 'roi_list': [52, 53, 54, 140, 141, 142], 'Sl_cmd': 'TractographyLabelMapSeeding -m 2000 -l 2 -x -v 0.1 -a '},
-                'mori_Left_IFOF-45-47': {'atlas_fname': 'mori_Left_IFOF-45-47.nii', 'roi_list': [45,47], 'Sl_cmd': 'TractographyLabelMapSeeding -m 2000 -l 2 -x -v 0.1 -a '},
-                'mori_Right_IFOF-133-135': {'atlas_fname': 'mori_Right_IFOF-133-135.nii', 'roi_list': [133, 135],  'Sl_cmd': 'TractographyLabelMapSeeding -m 2000 -l 2 -x -v 0.1 -a '},
+                'mori_Left_IFOF-45-47': {'atlas_fname': 'mori_Left_IFOF-45-47.nii', 'roi_list': [45,47,36], 'Sl_cmd': 'TractographyLabelMapSeeding -m 2000 -l 2 -x -v 0.1 -a '},
+                'mori_Right_IFOF-133-135': {'atlas_fname': 'mori_Right_IFOF-133-135.nii', 'roi_list': [133, 135, 124],  'Sl_cmd': 'TractographyLabelMapSeeding -m 2000 -l 2 -x -v 0.1 -a '},
                 'mori_Left_frontal-3-5': {'atlas_fname': 'mori_Left_frontal-3-5.nii', 'roi_list': [3,4,5], 'Sl_cmd': 'ModelMaker -l 1 -n '},
                 'mori_Left_occip-10-16-20': {'atlas_fname': 'mori_Left_occip-10-16-20.nii', 'roi_list': [10,16,20], 'Sl_cmd': 'ModelMaker -l 1 -n '},
                 'mori_Right_frontal-91-93': {'atlas_fname': 'mori_Right_frontal-91-93.nii', 'roi_list': [91,92,93], 'Sl_cmd': 'ModelMaker -l 1 -n '},
@@ -81,7 +81,7 @@ for dwif, vbmf in zip(dwi_fnames, vbm_fnames):
         if 'mori' in k and not a['roi_list'] == None:
             make_mask_fm_atlas_parts(atlas=str(anat_atlas), roi_list=a['roi_list'], mask_fname=str(pylabs_atlasdir / a['atlas_fname']))
         elif 'JHU_' in k:
-            make_mask_fm_tracts(atlas=str(tract_atlas), volidx=a['roi_list'], thresh=thr, mask_fname=(str(pylabs_atlasdir / str(a['atlas_fname']) % thr)))
+            make_mask_fm_tracts(atlas=str(tract_atlas), volidx=a['roi_list'], thresh=thr, mask_fname=str(pylabs_atlasdir / (a['atlas_fname'] % thr)))
         elif 'aal_motor' in k:
             make_mask_fm_atlas_parts(atlas=str(pylabs_atlasdir / 'aal_1mm_reg2MNI_masked.nii.gz'), roi_list=a['roi_list'], mask_fname=str(pylabs_atlasdir / a['atlas_fname']))
         execwdir = fs / project / dwif.split('_')[0] / dwif.split('_')[1] / 'dwi'
@@ -90,8 +90,8 @@ for dwif, vbmf in zip(dwi_fnames, vbm_fnames):
             mov = pylabs_atlasdir / a['atlas_fname']
             outf = execwdir / str(dwif+'_'+k+'.nii')
         if 'JHU_' in k:
-            mov = str(pylabs_atlasdir / (str(a['atlas_fname']) % thr))
-            outf = execwdir / str(dwif+'_'+str(pylabs_atlasdir / (a['atlas_fname'].name % thr)))
+            mov = pylabs_atlasdir / (a['atlas_fname'] % thr)
+            outf = execwdir / str(dwif+'_'+ (a['atlas_fname'] % thr))
         iwarp_templ2vbmsubj = templdir / str(vbmf+'InverseWarp.nii.gz')
         iwarp_vbmsub2dwi = dwi2vbmsubjdir / str(dwif+ dwi_reg_append +'1InverseWarp.nii.gz')
         aff_templ2vbmsubj = templdir / str(vbmf+'Affine.txt')
@@ -99,7 +99,7 @@ for dwif, vbmf in zip(dwi_fnames, vbm_fnames):
         warpfiles = [str(MNI2templ_invwarp), str(iwarp_templ2vbmsubj), str(iwarp_vbmsub2dwi)]
         affine_xform = [str(MNI2templ_aff), str(aff_templ2vbmsubj), str(aff_vbmsub2dwi)]
         subj2templ_applywarp(str(mov), str(ref), str(outf), warpfiles, str(execwdir), affine_xform=affine_xform, inv=True)
-        vtkdir = execwdir / 'vtk_tensor_comp_run5'
+        vtkdir = execwdir / 'vtk_tensor_comp_run6'
         if not vtkdir.is_dir():
             vtkdir.mkdir()
         #recoded till here
@@ -111,7 +111,7 @@ for dwif, vbmf in zip(dwi_fnames, vbm_fnames):
                     if 'mori' in k or 'aal_motor' in k:
                         cmd += str(vtkdir / str(dwif + '_' + k))
                     if 'JHU_' in k:
-                        cmd += str(vtkdir / str(dwif + '_' + (str(a['atlas_fname']) % thr).split('.')[0]))
+                        cmd += str(vtkdir / str(dwif + '_' + (a['atlas_fname'] % thr).split('.')[0]))
                     cmd += ' '+ str(outf)
                     output = ()
                     dt = datetime.datetime.now()
@@ -127,7 +127,7 @@ for dwif, vbmf in zip(dwi_fnames, vbm_fnames):
                     if 'mori' in k or 'aal_motor' in k:
                         provenance.log(str(vtkdir / str(dwif+'_'+k+'.vtk')), 'generate model vtk', str(outf), script=__file__, provenance=params)
                     elif 'JHU_' in k:
-                        provenance.log(str(vtkdir / str(dwif + '_' + str(a['atlas_fname'] % thr).split('.')[0]) + '.vtk'), 'generate model vtk', str(outf), script=__file__, provenance=params)
+                        provenance.log(str(vtkdir / str(dwif + '_' + (a['atlas_fname'] % thr).split('.')[0]) + '.vtk'), 'generate model vtk', str(outf), script=__file__, provenance=params)
                 else:
                     for m, ts in tensors.iteritems():
                         tenpath = execwdir / 'cuda_repol_std2_v2' / m
