@@ -56,6 +56,7 @@ def subj2templ_applywarp(moving, ref_img, outfile, warpfiles, execwdir, dims=3, 
     params = {}
     params['warpfiles'] = warpfiles
     params['affine_xform'] = affine_xform
+    params['inverse'] = inv
     params['args'] = args
     params['cmd'] = cmd
     params['output'] = output
