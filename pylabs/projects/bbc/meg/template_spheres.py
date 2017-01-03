@@ -2,7 +2,9 @@ from pathlib import *
 import nibabel
 import numpy as np
 from scipy.ndimage.measurements import center_of_mass as com
+from pylabs.utils.provenance import ProvenanceWrapper
 from pylabs.utils.paths import getnetworkdataroot
+provenance = ProvenanceWrapper()
 #setup paths and files
 fs = Path(getnetworkdataroot())
 project = 'bbc'
@@ -18,8 +20,8 @@ sphere_xrow = tf_data[:,tf_data_com[1], tf_data_com[2]]
 for x, xval in enumerate(sphere_xrow[tf_data_com[0]:]):
     if xval < 0.1:
         break
-#add 3 vox for missing scalp and convert to mm
-rx = int((x + 3) * tf_img.header.get_zooms()[0])
+#add 5 vox for missing scalp and convert to mm
+rx = int((x + 5) * tf_img.header.get_zooms()[0])
 #build sphere
 spheredata = np.zeros(tf_data.shape)
 for x in range(spheredata.shape[0]):
@@ -40,3 +42,8 @@ sphere_img.set_qform(sphere_affine, code=2)
 sphere_img.set_sform(sphere_affine, code=2)
 sphere_img.header['cal_max'] = 1.0
 nibabel.save(sphere_img, str(outf))
+params = {}
+params['radius in mm'] = rx
+params['affine'] = sphere_affine
+params['com'] = tf_data_com
+#provenance.log(str(outf), 'make sphere for xfit MEG dipole localization', str(tf), script=__file__, provenance=params)
