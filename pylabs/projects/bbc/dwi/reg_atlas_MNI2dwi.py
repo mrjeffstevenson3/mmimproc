@@ -17,7 +17,7 @@ slicer_path = Path(*Path(inspect.getabsfile(pylabs)).parts[:-3]) / 'Slicer-4.5.0
 #setup masks and templates:
 anat_atlas = pylabs_atlasdir / 'JHU_MNI_SS_WMPM_Type_I_matched.nii.gz'
 tract_atlas = pylabs_atlasdir / 'JHU-ICBM-tracts-prob-1mm.nii.gz'
-thr = {'thr': 10}    #global threshold for tract atlas to narrow fiber bundle channel
+thr = {'thr': 5}    #global threshold for tract atlas to narrow fiber bundle channel
 
 MNI_atlases = {'mori': {'atlas_fname': 'JHU_MNI_SS_WMPM_Type_I_matched.nii.gz', 'roi_list': None, 'Sl_cmd': None},
                 'aal_motor': {'atlas_fname': 'aal_1mm_motorcortex.nii', 'roi_list': [1, 2, 3, 4, 7, 8, 19, 20, 23, 24, 57, 58, 59, 60, 61, 62, 63, 64, 69, 70], 'Sl_cmd': 'ModelMaker -l 1 -n '},
@@ -28,9 +28,9 @@ MNI_atlases = {'mori': {'atlas_fname': 'JHU_MNI_SS_WMPM_Type_I_matched.nii.gz', 
                 'mori_Left_IFOF-45-47': {'atlas_fname': 'mori_Left_IFOF-45-47.nii', 'roi_list': [45,47,36], 'Sl_cmd': 'TractographyLabelMapSeeding -m 2000 -l 2 -x -v 0.1 -a '},
                 'mori_Right_IFOF-133-135': {'atlas_fname': 'mori_Right_IFOF-133-135.nii', 'roi_list': [133, 135, 124],  'Sl_cmd': 'TractographyLabelMapSeeding -m 2000 -l 2 -x -v 0.1 -a '},
                 'mori_Left_frontal-3-5': {'atlas_fname': 'mori_Left_frontal-3-5.nii', 'roi_list': [3,4,5], 'Sl_cmd': 'ModelMaker -l 1 -n '},
-                'mori_Left_occip-10-16-20': {'atlas_fname': 'mori_Left_occip-10-16-20.nii', 'roi_list': [10,16,20], 'Sl_cmd': 'ModelMaker -l 1 -n '},
+                'mori_Left_occip-10-14-16': {'atlas_fname': 'mori_Left_occip-10-16-20.nii', 'roi_list': [10,14,15,16], 'Sl_cmd': 'ModelMaker -l 1 -n '},
                 'mori_Right_frontal-91-93': {'atlas_fname': 'mori_Right_frontal-91-93.nii', 'roi_list': [91,92,93], 'Sl_cmd': 'ModelMaker -l 1 -n '},
-                'mori_Right_occip-98-99-102-104': {'atlas_fname': 'mori_Right_occip-98-99-102-104.nii', 'roi_list': [104,99,98,102], 'Sl_cmd': 'ModelMaker -l 1 -n '},
+                'mori_Right_occip-98-102-103-104': {'atlas_fname': 'mori_Right_occip-98-99-102-104.nii', 'roi_list': [104,103,98,102], 'Sl_cmd': 'ModelMaker -l 1 -n '},
                 'mori_Left_SLF-43':  {'atlas_fname': 'mori_Left_SLF-43.nii', 'roi_list': [43], 'Sl_cmd': 'TractographyLabelMapSeeding -m 2000 -l 2 -x -v 0.1 -a '},
                 'mori_Right_SLF-131': {'atlas_fname': 'mori_Right_SLF-131.nii', 'roi_list': [131], 'Sl_cmd': 'TractographyLabelMapSeeding -m 2000 -l 2 -x -v 0.1 -a '},
                 'mori_Left_pre-postCentGyr-6-7': {'atlas_fname': 'mori_Left_pre-postCentGyr-6-7.nii', 'roi_list': [6, 7], 'Sl_cmd': 'ModelMaker -l 1 -n '},
@@ -99,7 +99,7 @@ for dwif, vbmf in zip(dwi_fnames, vbm_fnames):
         warpfiles = [str(MNI2templ_invwarp), str(iwarp_templ2vbmsubj), str(iwarp_vbmsub2dwi)]
         affine_xform = [str(MNI2templ_aff), str(aff_templ2vbmsubj), str(aff_vbmsub2dwi)]
         subj2templ_applywarp(str(mov), str(ref), str(outf), warpfiles, str(execwdir), affine_xform=affine_xform, inv=True)
-        vtkdir = execwdir / 'vtk_tensor_comp_run6'
+        vtkdir = execwdir / 'vtk_tensor_comp_run7'
         if not vtkdir.is_dir():
             vtkdir.mkdir()
         #recoded till here
