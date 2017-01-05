@@ -19,7 +19,7 @@ echo working on subject ${afolder}
 cd ${DATADIR}/bbc/${afolder}/*/*/vtk_tensor_comp_run7
 
 
-list2=`ls *sub-bbc253_ses-1_dti_15dir_b1000_1_eddy_corrected_repol_std2_wls_fsl_tensor_medfilt_mori_LeftPostIntCap-35.vtk`
+list2=`ls *_LeftPostIntCap-35.vtk`
 #loop over vtk files
 for afile in ${list2}
 do
@@ -36,6 +36,7 @@ cp *JHU*Left_CSP-3.vtk channel.vtk
 cp ${afile} f.vtk
 ${PYLABS}/pylabs/diffusion/readfiber_withchannel_test
 echo ${afile}
+cp fnew.vtk ${afile/.vtk/_channel.vtk}
 echo -n "${afile} " >> ${DATADIR}/allvtk_channel.txt
 cat dti_results.txt >> ${DATADIR}/allvtk_channel.txt
 fi
