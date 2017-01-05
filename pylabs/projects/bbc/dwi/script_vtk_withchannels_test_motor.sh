@@ -37,8 +37,8 @@ cp ${afile} f.vtk
 ${PYLABS}/pylabs/diffusion/readfiber_withchannel_test
 echo ${afile}
 cp fnew.vtk ${afile/.vtk/_channel.vtk}
-echo -n "${afile} " >> ${DATADIR}/allvtk_channel.txt
-cat dti_results.txt >> ${DATADIR}/allvtk_channel.txt
+echo -n "${afile} " >> ${DATADIR}/bbc/allvtk_channel.txt
+cat dti_results.txt >> ${DATADIR}/bbc/allvtk_channel.txt
 fi
 
 
