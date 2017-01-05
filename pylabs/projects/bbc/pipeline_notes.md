@@ -29,6 +29,10 @@ todo - rethink items 5 and 6:
 5. need to build function to update niftiDict and google spreadsheet to add field 'QC': True
 6. build query niftiDict function to get status of any variable and return values
 
+**for MEG**
+1. make affine xform path from vbm whole head subj to template space
+2. Manual rotate/allign to polhemus using freeview saving xfm file (and test)
+
 **Forward path subj dti thru template to MNI:**
 path in space:
 FA-->warp/affine to T1 comroll-->warp/afffine to template T1-->warp/affine to MNI/atlas
