@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 #set search sub-strings to identify files
+run=7
 sub70=IFOF-45
 sub158=IFOF-133
 subcc=mori_CC
@@ -10,51 +11,64 @@ sub131=SLF-131
 #get bbc subject directories
 cd ${DATADIR}/bbc
 list=`ls -d sub-bbc*`
-rm -f ${DATADIR}/bbc/allvtk_run5.txt
+rm -f ${DATADIR}/bbc/allvtk_channel_run${run}.txt
 #loop over subject dirs
 for afolder in ${list}
 do
 echo working on ${afolder}
 #get vtk files to process
-cd ${DATADIR}/bbc/${afolder}/*/*/vtk_tensor_comp_run5
+cd ${DATADIR}/bbc/${afolder}/*/*/vtk_tensor_comp_run${run}
+
 list2=`ls *tensor*.vtk`
 #loop over vtk files
 for afile in ${list2}
 do
 echo working on ${afile}
-rm -f base.vtk aal_motor.vtk
+rm -f base.vtk aal_motor.vtk channel.vtk
 if [[ "$afile" == *"$sub70"* ]]; then
 cp *Left_frontal*.vtk base.vtk
 cp *Left_occip*.vtk aal_motor.vtk
+cp *JHU*Left_IFOF-11.vtk channel.vtk
 fi
 if [[ "$afile" == *"$sub158"* ]]; then
 cp *Right_frontal*.vtk base.vtk
 cp *Right_occip*.vtk aal_motor.vtk
+cp *JHU*Right_IFOF-12.vtk channel.vtk
 fi
 if [[ "$afile" == *"$subcc"* ]]; then
 cp *aal_motor*.vtk base.vtk
 cp *aal_motor*.vtk aal_motor.vtk
+
 fi
 if [[ "$afile" == *"$sub35"* ]]; then
 cp *base*.vtk base.vtk
 cp *aal_motor*.vtk aal_motor.vtk
+cp *JHU*Left_CSP-3.vtk channel.vtk
 fi
 if [[ "$afile" == *"$sub123"* ]]; then
 cp *base*.vtk base.vtk
 cp *aal_motor*.vtk aal_motor.vtk
+cp *JHU*Right_CSP-4.vtk channel.vtk
 fi
 if [[ "$afile" == *"$sub43"* ]]; then
 cp *Left_STG-MTG-18-20*.vtk base.vtk
 cp *Left_pre-postCentGyr-6-7*.vtk aal_motor.vtk
+cp *JHU*Left_SLF-15.vtk channel.vtk
 fi
 if [[ "$afile" == *"$sub131"* ]]; then
 cp *Right_STG-MTG-106-108*.vtk base.vtk
 cp *Right_pre-postCentGyr-94-95*.vtk aal_motor.vtk
+cp *JHU*Right_SLF-16.vtk channel.vtk
 fi
 cp ${afile} f.vtk
+if [[ "$afile" == *"$subcc"* ]]; then
 ${PYLABS}/pylabs/diffusion/readfiber_corpus_callosum_with_ceiling
+else
+${PYLABS}/pylabs/diffusion/readfiber_withchannel_test
+fi
 echo ${afile}
-echo -n "${afile} " >> ${DATADIR}/bbc/allvtk_run5.txt
-cat dti_results.txt >> ${DATADIR}/bbc/allvtk_run5.txt
+cp fnew.vtk ${afile/.vtk/_channel.vtk}
+echo -n "${afile} " >> ${DATADIR}/bbc/allvtk_channel_run${run}.txt
+cat dti_results.txt >> ${DATADIR}/bbc/allvtk_channel_run${run}.txt
 done
 done
