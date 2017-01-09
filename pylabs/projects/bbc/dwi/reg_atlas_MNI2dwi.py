@@ -54,6 +54,8 @@ MNI_atlases = {'mori': {'atlas_fname': 'JHU_MNI_SS_WMPM_Type_I_matched.nii.gz', 
                 'JHU_tracts_Right_SLF-16': {'atlas_fname': 'JHU_tracts_thr%(thr)s_Right_SLF-16.nii', 'roi_list': 16, 'Sl_cmd': 'ModelMaker -l 1 -n '},
                 'JHU_tracts_Left_Unc-17': {'atlas_fname': 'JHU_tracts_thr%(thr)s_Left_Unc-17.nii', 'roi_list': 17, 'Sl_cmd': 'ModelMaker -l 1 -n '},
                 'JHU_tracts_Right_Unc-18': {'atlas_fname': 'JHU_tracts_thr%(thr)s_Right_Unc-18.nii', 'roi_list': 18, 'Sl_cmd': 'ModelMaker -l 1 -n '},
+
+                'stats_vbm_WM_s2'  : {'atlas_fname': 'all_WM_mod_s2_n10000_exchbl_tfce_corrp_tstat2.nii.gz', 'roi_list': 1, 'Sl_cmd': 'TractographyLabelMapSeeding -m 2000 -l 2 -x -v 0.1 -a '},
                 }
 
 tensors = {'RESTORE':['_eddy_corrected_repol_std2_restore_cam_tensor_medfilt.nhdr', '_eddy_corrected_repol_std2_restore_cam_tensor.nhdr', '_eddy_corrected_repol_std2_restore_dipy_tensor.nhdr', '_eddy_corrected_repol_std2_restore_dipy_tensor_medfilt.nhdr'],
@@ -64,11 +66,13 @@ tensors = {'RESTORE':['_eddy_corrected_repol_std2_restore_cam_tensor_medfilt.nhd
 project = 'bbc'
 fa2t1_outdir = 'reg_subFA2suborigvbmpaired_run2'
 fadir = 'FA_fsl_wls_tensor_mf_ero_paired'
+statdir = fs / project / 'reg' /
 dwi_templ = 'sub-bbc{sid}_ses-{snum}_{meth}_{runnum}'
 dwi_fnames = [dwi_templ.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r)) for s, ses, m, r in dwipairing]
 vbm_templ = 'bbc_pairedLH_sub-bbc{sid}_ses-{snum}_{meth}_{runnum}_brain_susan_nl_comroll'
 vbm_fnames = [vbm_templ.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r)) for s, ses, m, r in vbmpairing]
 templdir = fs / project / 'reg' / 'ants_vbm_pairedLH_in_template_space'
+vbm_statsdir = templdir / 'stats' / 'exchblks'
 MNI2templ_invwarp = templdir / 'bbc_pairedLH_template_reg2MNI_1InverseWarp.nii.gz'
 MNI2templ_aff = templdir / 'bbc_pairedLH_template_reg2MNI_0GenericAffine.mat'
 dwi2vbmsubjdir = fs / project / 'reg' / 'reg_subFA2suborigvbmpaired_run2'
@@ -84,6 +88,8 @@ for dwif, vbmf in zip(dwi_fnames, vbm_fnames):
             make_mask_fm_tracts(atlas=str(tract_atlas), volidx=a['roi_list'], thresh=thr, mask_fname=str(pylabs_atlasdir / (a['atlas_fname'] % thr)))
         elif 'aal_motor' in k:
             make_mask_fm_atlas_parts(atlas=str(pylabs_atlasdir / 'aal_1mm_reg2MNI_masked.nii.gz'), roi_list=a['roi_list'], mask_fname=str(pylabs_atlasdir / a['atlas_fname']))
+        elif 'stats_vbm' in k:
+            make_mask_fm_tracts(atlas=str(vbm_statsdir / a['atlas_fname']), volidx=a['roi_list'], thresh={'thr': 0.95}, mask_fname=str(pylabs_atlasdir / (a['atlas_fname'] % {'thr': 0.95})))
         execwdir = fs / project / dwif.split('_')[0] / dwif.split('_')[1] / 'dwi'
         ref = execwdir / str(dwif+'_S0_brain.nii')
         if 'mori' in k or 'aal_motor' in k:
