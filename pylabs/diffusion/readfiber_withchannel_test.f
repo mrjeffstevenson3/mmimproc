@@ -624,7 +624,7 @@ c
 	imarktensor = i
 	endif
 	enddo
-	pause
+
 
 c
 c write to new file everything up to the point of the tensor part
