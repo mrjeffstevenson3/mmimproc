@@ -69,8 +69,8 @@ c	write(6,*)cfn,i
 	close(22)
 	close(23)
 
-	open(11,file = 'input1.vtk',form='unformatted')
-	open(21,file = 'input2.vtk',form='unformatted')
+	open(11,file = 'f.vtk',form='unformatted')
+	open(21,file = 'fnew.vtk',form='unformatted')
 
 
 c
