@@ -314,7 +314,7 @@ c	write(6,*)c6
 c
 c now read in the s0 file 
 c
-	open(11,file = 'S0.hdr',form='unformatted')
+	open(41,file = 'S0.hdr',form='unformatted')
 	do i=1,348
 	call fgetc(41,chead(i),istate)
 	enddo
