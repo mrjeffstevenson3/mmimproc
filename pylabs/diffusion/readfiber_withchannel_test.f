@@ -3,7 +3,9 @@ c read DTI fiber track vtk and quantify the FA and several other parameters
 c read vtk binary file
 c
 	character*40 cfn,cfnin,cfnin2
-	character*1 vtk(200000000),c10(10),cspace(1)
+	character*1 vtk(200000000),c10(10),cspace(1),chead(348)
+	integer*1 ivtk(200000000)
+	equivalence (vtk,ivtk)
 	character*5 c6
 	character*37 c37
 	character*11 c11
@@ -29,6 +31,7 @@ c
 	  DOUBLE PRECISION W(3)
 	real psavx(4),psavy(4),psavz(4),rmindistance(4),imindistance1(4),imindistance2(4)
 	real distancesav(200000)
+
 	open(11,file = 'filesize.txt')
 	read(11,*)ivtksize
 	close(11)
@@ -349,7 +352,7 @@ c	write(6,*)'the minumum z and index for line ',i,rminz,iminz
 c  for the rmaxz find the closest cortex model point
 c
 
-	if(rmindistance(2).lt.5.0.and.rmindistance(3).le.5.0.and.rfraction_subline.ge.0.75)then
+	if(rmindistance(2).lt.5.0.and.rmindistance(3).le.5.0.and.rfraction_subline.ge.0.50)then
 	igood = igood+1
 	dnmr(igood) = sum   ! sum distance for one line
 c save the indices for later tensors selection
@@ -438,12 +441,15 @@ c	write(6,*)'tensor ',cnmr(i),inmr(i),i
 	open(12,file='temp.txt')
 	do ii=1,17
 	call fputc(12,cnmr(ii),istate)
+	write(6,*)'tensor place ',cnmr(ii),inmr(ii),ii
 	enddo
+
 	close(12)
 	open(12,file='temp.txt')
 	read(12,*)c6,itensors
 	close(12)
 	write(6,*)'number of tensors ',c6,itensors
+	
 c	read(11,*)c6,itensors
 c	write(6,*)'number of tensors ',c6,itensors
 c	read(11,*)c6
@@ -452,9 +458,11 @@ c	write(6,*)c6
 c
 c now read in the tensors
 c
+	icountbytes = 0
 	do i=1,itensors
 	do ii=1,9*4
 	call fgetc(11,cnmr(ii),istate)
+	icountbytes = icountbytes+1
 	enddo
 	incs = 1
 	do ii=1,9
@@ -477,6 +485,7 @@ c	write(6,*)'tensor ',nmr(ii),ii
 	diff = abs(tensors(i,1)-0.00018878)
 c	if(i.eq.16)write(6,*)'found evil tensor ',i
 	enddo  !ilines
+	write(6,*)'icountbytes ',icountbytes
 	do ii=1,9
 c	write(6,*)'tensor ',tensors(16,ii),i
 	enddo
@@ -507,7 +516,8 @@ c
 	a(3,1) = abs(tensors(i,7))
 	a(3,2) = abs(tensors(i,8))
 	a(3,3) = abs(tensors(i,9))
-c	if(i.eq.4533)write(6,*)'a ',a
+c	write(6,*)'a ',a
+c	pause
 	call DSYEVJ3(A, Q, W)
 	r1 = w(2)
 	r2 = w(1)
@@ -592,6 +602,7 @@ c		write(6,*)'dnmr(inc2) ',dnmr(inc2),inc2,i,ii
 c
 c  this is the part to write out the new vtk file 
 c
+
 	isize = ivtksize
 	open(11,file = 'f.vtk')
 	open(31,file = 'fnew.vtk',form='unformatted')
@@ -599,15 +610,29 @@ c
 	call fgetc(11,vtk(i),istate)
 	enddo
 	do i=1,isize
-	if(vtk(i).eq.'T'.and.vtk(i+1).eq.'E'.and.vtk(i+2).eq.'N')then
+	if(vtk(i).eq.'P'.and.vtk(i+1).eq.'O'.and.vtk(i+2).eq.'I')then
 	iset = i
+	write(6,*)'find POI ',iset
 	endif
 	enddo
+	do i=iset,iset+22
+	write(6,*)'vtk ivtk ',vtk(i),ivtk(i),i
+	enddo
+	do i=iset+5,iset+50
+	if(ivtk(i).eq.10)then
+	write(6,*)'found endmarker for tensor for fnew ',i
+	imarktensor = i
+	endif
+	enddo
+	pause
+
 c
 c write to new file everything up to the point of the tensor part
 c
-	do i=1,iset+22
+	icountbytes = 0
+	do i=1,imarktensor
 	call fputc(31,vtk(i),istate)
+	icountbytes = icountbytes+1
 	enddo
 
 	write(6,*)'iset ',iset
@@ -615,10 +640,34 @@ c
 	write(6,*)'vtk ',vtk(i),i
 	enddo
 	close(11)
+
+	do ii=1,9*4
+	cnmr(ii) = vtk(imarktensor+ii)
+	enddo
+	incs = 1
+	do ii=1,9
+c	inmr2(incs) = inmr(incs+3)
+c	inmr2(incs+1) = inmr(incs+2)
+c	inmr2(incs+2) = inmr(incs+1)
+c	inmr2(incs+3) = inmr(incs)
+	inmr2(incs+3) = inmr(incs)
+	inmr2(incs+2) = inmr(incs+1)
+	inmr2(incs+1) = inmr(incs+2)
+	inmr2(incs) = inmr(incs+3)
+
+	incs = incs+4
+	enddo
+	
+	do ii=1,9
+
+	write(6,*)'tensor 2nd time ',nmr(ii),ii
+	enddo
+
 c
 c
 c now write out the tensors to new vtk file with conditional colors based on channel pass through
 c
+	write(6,*)'itensors 2nd time ',itensors
 	do i=1,itensors   !between tensors
 c
 c this part below will repaint the tensor a different color if the fiber 
@@ -628,6 +677,7 @@ c with its normal tensor color
 c
 		do ii=1,ifinalcount
 		ipoly = polyfinal(ii,1)
+
 		if(i.eq.ipoly.and.dnmrsav(i,1).ne.0)then
 		poly(1) = 0.5
 		poly(2) = 0
@@ -641,7 +691,7 @@ c
 		do it=1,9
 		tensors(i,it) = poly(it)
 		enddo
-	endif
+		endif
 		enddo   !ii
 
 	do ii=1,9         !within tensor
@@ -658,9 +708,11 @@ c
 
 	do ii=1,9*4
 	call fputc(31,cnmr(ii),istate)
+	icountbytes = icountbytes+1
 	enddo  !within tensor
 
 	enddo  !between tensor
+	write(6,*)'icountbytes after fput31',icountbytes
 
 	close(31)
 

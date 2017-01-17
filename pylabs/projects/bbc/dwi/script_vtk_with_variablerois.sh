@@ -10,7 +10,8 @@ sub43=SLF-43
 sub131=SLF-131
 #get bbc subject directories
 cd ${DATADIR}/bbc
-list=`ls -d sub-bbc*`
+#list=`ls -d sub-bbc*`
+list=sub-bbc253
 rm -f ${DATADIR}/bbc/allvtk_channel_run${run}.txt
 #loop over subject dirs
 for afolder in ${list}
@@ -19,11 +20,14 @@ echo working on ${afolder}
 #get vtk files to process
 cd ${DATADIR}/bbc/${afolder}/*/*/vtk_tensor_comp_run${run}
 
-list2=`ls *tensor*.vtk`
+#list2=`ls *tensor*.vtk`
+list2=`ls sub-bbc253_ses-1_dti_15dir_b1000_1_eddy_corrected_repol_std2_wls_fsl_tensor_mori_LeftPostIntCap-35.vtk`
 #loop over vtk files
 for afile in ${list2}
 do
 echo working on ${afile}
+FILESIZE=$(stat -c%s "$afile")
+echo $FILESIZE > filesize.txt
 rm -f base.vtk aal_motor.vtk channel.vtk
 if [[ "$afile" == *"$sub70"* ]]; then
 cp *Left_frontal*.vtk base.vtk
@@ -65,9 +69,9 @@ if [[ "$afile" == *"$subcc"* ]]; then
 ${PYLABS}/pylabs/diffusion/readfiber_corpus_callosum_with_ceiling
 else
 ${PYLABS}/pylabs/diffusion/readfiber_withchannel_test
-fi
 echo ${afile}
 cp fnew.vtk ${afile/.vtk/_channel.vtk}
+fi
 echo -n "${afile} " >> ${DATADIR}/bbc/allvtk_channel_run${run}.txt
 cat dti_results.txt >> ${DATADIR}/bbc/allvtk_channel_run${run}.txt
 done

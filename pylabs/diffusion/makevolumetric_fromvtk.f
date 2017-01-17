@@ -4,6 +4,7 @@ c read vtk binary file
 c
 	character*40 cfn,cfnin,cfnin2
 	character*1 vtk(200000000),c10(10),cspace(1)
+	character*1 chead(348)
 	character*5 c6
 	character*37 c37
 	character*11 c11
@@ -17,7 +18,10 @@ c
 	equivalence (cint,icint)
 	equivalence (nmr,inmr2)
 	equivalence (inmr,cnmr)
-	real poly(9),dnmrsav(200000,10), polysav(2000000,5,4),tensors(200000,9)
+	real out(200)
+	character*1 cout(800)
+	equivalence (out,cout)
+	real poly(9),dnmrsav(200000,10), polysav(2000000,5,2),tensors(200000,9,2)
 	real polyfinal(2000000,5)
 	real final(10),rotation(18)
 	common /rot/rotation
@@ -28,15 +32,20 @@ c
 	  DOUBLE PRECISION Q(3,3)
 	  DOUBLE PRECISION W(3)
 	real psavx(4),psavy(4),psavz(4),rmindistance(4),imindistance1(4),imindistance2(4)
-	real distancesav(200000)
+	real distancesav(200000),imagef(200,200,200,4)
+	equivalence (chead,ihead)
+	equivalence (chead,rhead)
+	integer*2 ihead(174)
+	real rhead(87),thresh(10)
+
 	open(11,file = 'filesize.txt')
 	read(11,*)ivtksize
 	close(11)
 c
 
 	idiff = 1
-	open(11,file = 'input1.vtk')
-	open(21,file = 'input2.vtk')
+	open(11,file = 'f.vtk')
+	open(21,file = 'fnew.vtk')
 
 
 	do i=1,4
@@ -139,10 +148,7 @@ c	write(6,*)'after numpoints1',inmr(ii),cnmr(ii),ii
  199	continue
 
 	enddo  !ifil for each vtk file
-	close(21)
-	close(22)
-	close(23)
- 
+
 	open(12,file='templines.txt')
 	do ii=2,14
 	call fputc(12,cnmr11(ii),istate)
@@ -190,6 +196,8 @@ c
 	line(i,1) = isublines
 	do ii=1,(isublines)*4
 	call fgetc(11,cint(ii),istate)
+	call fgetc(21,cint(ii),istate)
+
 	enddo
 
 	inc = 1
@@ -235,84 +243,10 @@ c
 	open(24,file = 'polysubnum.txt')
 	open(25,file = 'polytot.txt')
 	open(26,file = 'testchannel.txt')
-	open(27,file = 'survivinglines.txt')
-	open(28,file = 'survivingcount.txt')
 	write(25,*)ilines
 c	write(25,*)'1'
 	close(25)
 
-	ibad = 0
-	igood = 0
-	ifinalinc = 1
-	write(6,*)'ilines numpointsb numpointc ', ilines, numpointsb, numpointsc
-	write(26,*)ilines
-	do i=1,ilines
-c	do i=280,280
-	do ifil=2,4
-	if(ifil.eq.2)numpoints = numpointsb
-	if(ifil.eq.3)numpoints = numpointsc
-	if(ifil.eq.4)numpoints = numpointsd
-
-	sum = 0
-	if(ifil.eq.2)ipsize = 0
-c	write(6,*)'line ',line(i,1)+1,numpoints/3
-	rmaxz = -10000.0
-	rminz = 10000.0
-	rmindistance(ifil) = 100000.0
-	icountone = 0
-	countsubline = 0
-	do ii=2,line(i,1)+1
-	icountone = icountone+1
-	enddo
-
-	if(ifil.eq.4)write(26,*)icountone
-	do ii=2,line(i,1)+1
-c	write(6,*)'inside line ',line(i,ii),ii
-
-c	write(6,*)'polysav(ip,4) ',polysav(ip,4),ip
-	dx = polysav(line(i,ii+4)+1,1,1)- polysav(line(i,ii)+1,1,1)
-	dy = polysav(line(i,ii+4)+1,2,1)- polysav(line(i,ii)+1,2,1)
-	dz = polysav(line(i,ii+4)+1,3,1)- polysav(line(i,ii)+1,3,1)
-	rmaxz = max(polysav(line(i,ii)+1,3,1),rmaxz)
-	rminz = min(polysav(line(i,ii)+1,3,1),rminz)
-	if(rmaxz.eq.polysav(line(i,ii)+1,3,1))imaxz=ii
-	if(rminz.eq.polysav(line(i,ii)+1,3,1))iminz=ii
-	if(ifil.eq.2)then
-	write(12,*)polysav(line(i,ii)+1,1,1)
-	write(13,*)polysav(line(i,ii)+1,2,1)
-	write(33,*)polysav(line(i,ii)+1,3,1)
-	ipsize = ipsize+1
-	endif
-
-
-	distance = sqrt((dx**2)+(dy**2)+(dz**2))
-	polysav(line(i,ii)+1,5,1)= distance
-c	if(ii.le.600)write(6,*)'distance ',distance,line(i,ii)+1,i,ii
-	sum = sum+distance
-	countsubline = countsubline+1
-	endif
-
-	enddo  !ifil
-
-
-	enddo  !ii within lines within the fiber tract
-	rcountone = icountone
-	rfraction_subline = countsubline/rcountone   !this is the fraction of points within the line that stay within channel
-
-c  write model line to disk
-c
-c  for the rmaxz find the closest cortex model point
-c
-
-
-c	write(6,*)'distance ',dnmr(i),i,ipsize
-	write(14,*)ipsize
-
-	enddo  !between lines with index i
-	close(26)
-	close(27)
-	write(28,*)igood
-	close(28)
 
 
 	ifinalcount = ifinalinc-1
@@ -340,6 +274,7 @@ c	write(6,*)'update 40-3 '
 	if(numpointsa.gt.10000)then
 	do i=1,42
 	call fgetc(11,cnmr(i),istate)
+	call fgetc(21,cnmr(i),istate)
 	if(inmr(i).eq.10.and.i.gt.30)then
 	write(6,*)'found endmarker for tensor ',i
 	go to 299
@@ -352,6 +287,7 @@ c
 	if(numpointsa.lt.10000)then
 	do i=1,40
 	call fgetc(11,cnmr(i),istate)
+	call fgetc(21,cnmr(i),istate)
 	if(inmr(i).eq.10.and.i.gt.30)then
 	write(6,*)'found endmarker for tensor ',i
 	go to 2999
@@ -375,9 +311,32 @@ c	read(11,*)c6,itensors
 c	write(6,*)'number of tensors ',c6,itensors
 c	read(11,*)c6
 c	write(6,*)c6
+c
+c now read in the s0 file 
+c
+	open(11,file = 'S0.hdr',form='unformatted')
+	do i=1,348
+	call fgetc(41,chead(i),istate)
+	enddo
+
+	close(41)
+
+
+	ixsize = ihead(22)
+	iysize = ihead(23)
+	izsize = ihead(24)
+	itsize = ihead(25)
+		
+	write(6,*) 'ixsize ',ixsize,iysize,izsize,itsize
+	do i=1,30
+	write(6,*)rhead(i),i
+	enddo
+	rxdim = rhead(21)
+	rydim = rhead(22)
+	rzdim = rhead(23)
 
 c
-c now read in the tensors
+c now read in the tensors from input1
 c
 	do i=1,itensors
 	do ii=1,9*4
@@ -398,49 +357,104 @@ c	inmr2(incs+3) = inmr(incs)
 	enddo
 
 	do ii=1,9
-	tensors(i,ii) = nmr(ii)
+	tensors(i,ii,1) = nmr(ii)
 c	write(6,*)'tensor ',nmr(ii),ii
 	enddo
-	diff = abs(tensors(i,1)-0.00018878)
+	diff = abs(tensors(i,1,1)-0.00018878)
 c	if(i.eq.16)write(6,*)'found evil tensor ',i
-	enddo  !ilines
-	do ii=1,9
-c	write(6,*)'tensor ',tensors(16,ii),i
+	enddo  !tensors end read of tensor set 1
+c
+c now read in the tensors from input2
+c
+	do i=1,itensors
+	do ii=1,9*4
+	call fgetc(21,cnmr(ii),istate)
 	enddo
+	incs = 1
+	do ii=1,9
+c	inmr2(incs) = inmr(incs+3)
+c	inmr2(incs+1) = inmr(incs+2)
+c	inmr2(incs+2) = inmr(incs+1)
+c	inmr2(incs+3) = inmr(incs)
+	inmr2(incs+3) = inmr(incs)
+	inmr2(incs+2) = inmr(incs+1)
+	inmr2(incs+1) = inmr(incs+2)
+	inmr2(incs) = inmr(incs+3)
+
+	incs = incs+4
+	enddo
+
+	do ii=1,9
+	tensors(i,ii,2) = nmr(ii)
+c	write(6,*)'tensor ',nmr(ii),ii
+	enddo
+	enddo  !tensors end read of tensor set 2
+
 c
 c test output 
 	do ii=1,9
 c	write(6,*)'tensors 1 ',tensors(1,ii),ii
 	enddo
-	do ii=1,9
-c	write(6,*)'tensors end ',tensors(itensors,ii),ii
-	enddo
 
 c
-c now loop through ONLY the fibers that passed through the box
+c now loop through ONLY the fibers that passed through the channel
 c
 	inc = 1
-	rmaxr1 = 0
-	rmaxr2 = 0
-	rmaxr3 = 0
+	rmaxx = 0
+	rmaxy = 0
+	rmaxz = 0
+	rminx = 1e10
+	rminy = 1e10
+	rminz = 1e10
+c
+c find the min and max x, y, z so I can make sure to offset properly
+c  I cannot tolerate any negative numbers here once I have done the offset
+c
+	do it=1,4
+	do iz=1,izsize
+	do iy=1,iysize
+	do ix=1,ixsize
+	imagef(ix,iy,iz,it) = 0
+	enddo
+	enddo
+	enddo
+	enddo
+
+	do i=1,itensors
+		rminx = min(rminx,polysav(i,1,1))
+		rminy = min(rminy,polysav(i,2,1))
+	rminz = min(rminz,polysav(i,3,1))
+	rmaxx = max(rmaxx,polysav(i,1,1))
+	rmaxy = max(rmaxy,polysav(i,2,1))
+	rmaxz = max(rmaxz,polysav(i,3,1))
+    	enddo
+	write(6,*)'rmin rmax ', rminx,rminy,rminz,rmaxx,rmaxy,rmaxz
+
 	do i=1,itensors
 	
-	a(1,1) = abs(tensors(i,1))
-	a(1,2) = abs(tensors(i,2))
-	a(1,3) = abs(tensors(i,3))
-	a(2,1) = abs(tensors(i,4))
-	a(2,2) = abs(tensors(i,5))
-	a(2,3) = abs(tensors(i,6))
-	a(3,1) = abs(tensors(i,7))
-	a(3,2) = abs(tensors(i,8))
-	a(3,3) = abs(tensors(i,9))
-c	if(i.eq.4533)write(6,*)'a ',a
+	a(1,1) = abs(tensors(i,1,1))
+	a(1,2) = abs(tensors(i,2,1))
+	a(1,3) = abs(tensors(i,3,1))
+	a(2,1) = abs(tensors(i,4,1))
+	a(2,2) = abs(tensors(i,5,1))
+	a(2,3) = abs(tensors(i,6,1))
+	a(3,1) = abs(tensors(i,7,1))
+	a(3,2) = abs(tensors(i,8,1))
+	a(3,3) = abs(tensors(i,9,1))
+	testchannel1 = tensors(i,1,2)
+	testchannel2 = tensors(i,5,2)
+
+
+c	write(6,*)'a ',a,testchannel1,testchannel2
+c	pause
 	call DSYEVJ3(A, Q, W)
 	r1 = w(2)
 	r2 = w(1)
 	r3 = w(3)
-	if(a(1,1).eq.0.1.and.a(2,2).eq.0.1)then
+	if(testchannel1.eq.0.5.and.testchannel2.eq.0.5)then
 	call fa_calc(r1,r2,r3,rfa1,axial,radial,rmd,volumeratio)
+c	write(6,*)'rfa1 axial radial rmd volumeratio ',r1,r2,r3,rfa1,axial,radial,rmd,volumeratio,i
+c	pause
 	else
 	r1 = 0
 	r2 =0
@@ -455,144 +469,57 @@ c	if(i.eq.4533)write(6,*)'a ',a
 c
 c for each set of tensors calculate FA
 c
-	dnmrsav(inc,1) = rfa1
-	dnmrsav(inc,2) = axial
-	dnmrsav(inc,3) = radial
-	dnmrsav(inc,4) = rmd
-	dnmrsav(inc,5) = volumeratio
+
+	rxsize = ixsize
+	rysize = iysize
+	rzsize = izsize
+	rx = (rxsize/(2.0))+(polysav(i,1,1)/rxdim)+1
+	ry = (rysize/2.0)+(polysav(i,2,1)/rydim)+1
+	rz = (rzsize/2.0)+(polysav(i,3,1)/rzdim)+1
+	ix = nint(rx)
+	iy = nint(ry)
+	iz = nint(rz)
+
+c	write(6,*)'ix iy iz ',ix,iy,iz
+c	pause
+
+c
+c here is where I feed in to the new volumeric array
+c
+  	imagef(ix,iy,iz,1) = rfa1
+    	imagef(ix,iy,iz,2) = axial
+    	imagef(ix,iy,iz,3) = radial
+    	imagef(ix,iy,iz,4) = rmd
+
 
 	inc = inc+1
-c	write(6,*)'rfa1 axial radial rmd volumeratio ',r1,r2,r3,rfa1,axial,radial,rmd,volumeratio,i
+
 c	if(rfa1.lt.0.15)write(6,*)'fa ',rfa1,inc
-	rmaxr1 = max(rmaxr1,abs(r1))
-	rmaxr2 = max(rmaxr2,abs(r2))
-	rmaxr3 = max(rmaxr3,abs(r3))
 	enddo  !tensors
-	isizeb = inc-1
-	write(6,*)'did you make it this far isizeb rmaxr1',isizeb,rmaxr1,rmaxr2,rmaxr3
-
-	do ifil=1,5
-	inc2 = 1
-		do i=1,isizeb
-		do ii=1,ifinalcount
-		ipoly = polyfinal(ii,1)
-		if(i.eq.ipoly.and.dnmrsav(i,1).ne.0)then
-		dnmr(inc2) = dnmrsav(i,ifil)
-c		write(6,*)'dnmr(inc2) ',dnmr(inc2),inc2,i,ii
-
-		inc2 = inc2+1
-		endif
-		enddo   !ii
-		enddo  !i
-
-	isize = inc2-1
-	if(isize.gt.0)then
-	call average(aver,stdev,ste)
-	final(ifil) = aver
-	else
-	aver = 0
-	stdev = 0
-	final(ifil)=0
-	endif
-	write(6,*)'average stdev ',aver,stdev,ifil,final(ifil),isize
-	enddo
-	final(6) = averlength
-	final(7) = igood
-	final(8) = igood+ibad
-	open(20,file = 'dti_header.txt')
-	open(19,file = 'dti_results.txt')
-	write(20,*)'fa ','ax ','ra ','md ','vo ','len ','fnum '
-	write(19,*)(final(ii),ii=1,8)
-	close(19)
-	close(20)
-	write(6,*)'fa = DTI fractional anisotropy '
-	write(6,*)'ax = DTI axial diffusivity '
-	write(6,*)'ra = DTI radial diffusivity '
-	write(6,*)'md = DTI mean diffusivity '
-	write(6,*)'vo = DTI volume ratio '
-	write(6,*)'len = average DTI fiber length '
-	write(6,*)'fnum = number of DTI fiber '
 
 	close(11)
 	close(12)
 	close(13)
 c
-c  this is the part to write out the new vtk file 
-c
-	isize = ivtksize
-	open(11,file = 'f.vtk')
-	open(31,file = 'fnew.vtk',form='unformatted')
-	do i=1,isize
-	call fgetc(11,vtk(i),istate)
-	enddo
-	do i=1,isize
-	if(vtk(i).eq.'T'.and.vtk(i+1).eq.'E'.and.vtk(i+2).eq.'N')then
-	iset = i
-	endif
-	enddo
-c
-c write to new file everything up to the point of the tensor part
-c
-	do i=1,iset+22
-	call fputc(31,vtk(i),istate)
-	enddo
 
-	write(6,*)'iset ',iset
-	do i=iset,iset+40
-	write(6,*)'vtk ',vtk(i),i
-	enddo
+	open(11,file= 'newvolume.img',form='unformatted')
+	do it=1,4
+	do iz=1,izsize
+	do iy=1,iysize
+	do ix=1,ixsize
+	out(ix) = imagef(ix,iy,iz,it)
+	enddo  !i
+	do ix=1,200*4
+	call fputc(11,cout(ix),istate)
+	enddo  !i
+	enddo  !j
+	enddo  !k
+	enddo  !it
 	close(11)
-c
-c
-c now write out the tensors to new vtk file with conditional colors based on channel pass through
-c
-	do i=1,itensors   !between tensors
-c
-c this part below will repaint the tensor a different color if the fiber 
-c went through the channel
-c  if the fiber does not pass through the channel it will remain
-c with its normal tensor color
-c
-		do ii=1,ifinalcount
-		ipoly = polyfinal(ii,1)
-		if(i.eq.ipoly.and.dnmrsav(i,1).ne.0)then
-		poly(1) = 0.5
-		poly(2) = 0
-		poly(3) = 0
-		poly(4) = 0
-		poly(5) = 0.5
-		poly(6) = 0
-		poly(7) = 0
-		poly(8) = 0
-		poly(9) = 0.5
-		do it=1,9
-		tensors(i,it) = poly(it)
-		enddo
-	endif
-		enddo   !ii
-
-	do ii=1,9         !within tensor
-	nmr(ii)= tensors(i,ii)
-	enddo
-	incs = 1
-	do ii=1,9        !within tensor
-	inmr(incs+3)= inmr2(incs)
-	inmr(incs+2)= inmr2(incs+1) 
-	inmr(incs+1)= inmr2(incs+2)
-	inmr(incs)  = inmr2(incs+3)
-	incs = incs+4
-	enddo  !within tensor
-
-	do ii=1,9*4
-	call fputc(31,cnmr(ii),istate)
-	enddo  !within tensor
-
-	enddo  !between tensor
-
-	close(31)
 
 	stop
 	end
+
 c
 c  calculate the fractional anisotropy
 c
