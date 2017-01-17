@@ -18,7 +18,9 @@ do
 echo working on ${afolder}
 #get vtk files to process
 cd ${DATADIR}/bbc/${afolder}/*/*/vtk_tensor_comp_run${run}
-
+S0_fname=`basename ../${afolder}*_S0_brain.nii`
+fslchfiletype ANALYZE ../${S0_fname} S0.hdr
+fslhd -x ../${S0_fname} > S0_hdr.txt
 list2=`ls *tensor*.vtk`
 #loop over vtk files
 for afile in ${list2}
@@ -65,10 +67,14 @@ if [[ "$afile" == *"$subcc"* ]]; then
 ${PYLABS}/pylabs/diffusion/readfiber_corpus_callosum_with_ceiling
 else
 ${PYLABS}/pylabs/diffusion/readfiber_withchannel_test
+${PYLABS}/pylabs/diffusion/makevolumetric_fromvtk
+cp fnew.vtk ${afile/.vtk/_channel.vtk}
+fslchfiletype NIFTI_GZ newvolume.hdr ${afile/.vtk/.nii.gz}
+fslcreatehd S0_hdr.txt ${afile/.vtk/.nii.gz}
 fi
 echo ${afile}
-cp fnew.vtk ${afile/.vtk/_channel.vtk}
 echo -n "${afile} " >> ${DATADIR}/bbc/allvtk_channel_run${run}.txt
 cat dti_results.txt >> ${DATADIR}/bbc/allvtk_channel_run${run}.txt
+
 done
 done
