@@ -22,6 +22,10 @@ cd ${DATADIR}/bbc/${afolder}/*/*/vtk_tensor_comp_run${run}
 
 #list2=`ls *tensor*.vtk`
 list2=`ls sub-bbc253_ses-1_dti_15dir_b1000_1_eddy_corrected_repol_std2_wls_fsl_tensor_mori_LeftPostIntCap-35.vtk`
+S0_fname=`basename ../${afolder}*_S0_brain.nii`
+fslchfiletype ANALYZE ../${S0_fname} S0.hdr
+fslhd -x ../${S0_fname} > S0_hdr.txt
+
 #loop over vtk files
 for afile in ${list2}
 do
@@ -69,9 +73,12 @@ if [[ "$afile" == *"$subcc"* ]]; then
 ${PYLABS}/pylabs/diffusion/readfiber_corpus_callosum_with_ceiling
 else
 ${PYLABS}/pylabs/diffusion/readfiber_withchannel_test
-echo ${afile}
+${PYLABS}/pylabs/diffusion/makevolumetric_fromvtk
 cp fnew.vtk ${afile/.vtk/_channel.vtk}
+fslchfiletype NIFTI_GZ newvolume.hdr ${afile/.vtk/.nii.gz}
+fslcreatehd S0_hdr.txt ${afile/.vtk/.nii.gz}
 fi
+echo ${afile}
 echo -n "${afile} " >> ${DATADIR}/bbc/allvtk_channel_run${run}.txt
 cat dti_results.txt >> ${DATADIR}/bbc/allvtk_channel_run${run}.txt
 done
