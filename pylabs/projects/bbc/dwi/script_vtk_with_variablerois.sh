@@ -24,6 +24,7 @@ cd ${DATADIR}/bbc/${afolder}/*/*/vtk_tensor_comp_run${run}
 list2=`ls sub-bbc253_ses-1_dti_15dir_b1000_1_eddy_corrected_repol_std2_wls_fsl_tensor_mori_LeftPostIntCap-35.vtk`
 S0_fname=`basename ../${afolder}*_S0_brain.nii`
 fslchfiletype ANALYZE ../${S0_fname} S0.hdr
+cp S0.hdr newvolume.hdr
 fslhd -x ../${S0_fname} > S0_hdr.txt
 
 #loop over vtk files
