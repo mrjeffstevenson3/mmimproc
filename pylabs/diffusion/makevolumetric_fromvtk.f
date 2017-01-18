@@ -329,8 +329,8 @@ c
 		
 	write(6,*) 'ixsize ',ixsize,iysize,izsize,itsize
 	write(6,*)'ihead(21) ',ihead(21)
-	do i=1,40
-c	write(6,*)rhead(i),ihead(i),i
+	do i=1,30
+	write(6,*)rhead(i),ihead(i),i
 	enddo
 	rxdim = rhead(21)
 	rydim = rhead(22)
@@ -487,7 +487,7 @@ c
 	rzsize = izsize
 	rx = (rxsize/(2.0))+(polysav(i,1,1)/rxdim)+1
 	ry = (rysize/2.0)+(polysav(i,2,1)/rydim)+1
-	rz = (rzsize/2.0)+(polysav(i,3,1)/rzdim)+1
+	rz = (rzsize/2.0)-(polysav(i,3,1)/rzdim)+1
 	ix = nint(rx)
 	iy = nint(ry)
 	iz = nint(rz)
