@@ -10,7 +10,8 @@ sub43=SLF-43
 sub131=SLF-131
 #get bbc subject directories
 cd ${DATADIR}/bbc
-list=`ls -d sub-bbc*`
+list=`python -c "from pylabs.projects.bbc.pairing import dwipairing; \
+    print(' '.join(['sub-bbc{sid}'.format(sid=str(s)) for s, ses, m, r in dwipairing]))"`
 #list=sub-bbc253
 rm -f ${DATADIR}/bbc/allvtk_channel_run${run}.txt
 #loop over subject dirs
@@ -23,7 +24,7 @@ cd ${DATADIR}/bbc/${afolder}/*/*/vtk_tensor_comp_run${run}
 list2=`ls *tensor*.vtk`
 #list2=`ls sub-bbc253_ses-1_dti_15dir_b1000_1_eddy_corrected_repol_std2_wls_fsl_tensor_mori_LeftPostIntCap-35.vtk`
 S0_fname=`basename ../${afolder}*_S0_brain.nii`
-fslchfiletype ANALYZE ../${S0_fname} S0.hdr
+fslchfiletype ANALYZE ../${S0_fname}.nii S0.hdr
 cp S0.hdr newvolume.hdr
 fslhd -x ../${S0_fname} > S0_hdr.txt
 
