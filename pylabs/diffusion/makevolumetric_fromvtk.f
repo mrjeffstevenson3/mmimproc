@@ -487,13 +487,13 @@ c
 	rzsize = izsize
 	rx = (rxsize/(2.0))+(polysav(i,1,1)/rxdim)+1
 	ry = (rysize/2.0)+(polysav(i,2,1)/rydim)+1
-	rz = (rzsize/2.0)-(polysav(i,3,1)/rzdim)+1
+	rz = (rzsize/2.0)+(polysav(i,3,1)/rzdim)+1
 	ix = nint(rx)
 	iy = nint(ry)
 	iz = nint(rz)
 
-c	write(6,*)'ix iy iz ',ix,iy,iz
-c	pause
+	if(i.lt.10)write(6,*)'ix iy iz ',ix,iy,iz,polysav(i,1,1),polysav(i,2,1),polysav(i,3,1),i
+
 
 c
 c here is where I feed in to the new volumeric array
