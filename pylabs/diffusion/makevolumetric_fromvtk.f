@@ -328,12 +328,24 @@ c
 	itsize = ihead(25)
 		
 	write(6,*) 'ixsize ',ixsize,iysize,izsize,itsize
-	do i=1,30
-	write(6,*)rhead(i),i
+	write(6,*)'ihead(21) ',ihead(21)
+	do i=1,40
+c	write(6,*)rhead(i),ihead(i),i
 	enddo
 	rxdim = rhead(21)
 	rydim = rhead(22)
 	rzdim = rhead(23)
+	ihead(21) = 4
+	ihead(25) = 4
+	ihead(36) = 16
+	ihead(37) = 32
+	open(41,file = 'newvolume.hdr',form='unformatted')
+	do i=1,348
+	call fputc(41,chead(i),istate)
+	enddo
+
+	close(41)
+
 
 c
 c now read in the tensors from input1
@@ -509,7 +521,7 @@ c
 	do ix=1,ixsize
 	out(ix) = imagef(ix,iy,iz,it)
 	enddo  !i
-	do ix=1,200*4
+	do ix=1,ixsize*4
 	call fputc(11,cout(ix),istate)
 	enddo  !i
 	enddo  !j

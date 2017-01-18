@@ -610,13 +610,13 @@ c
 	call fgetc(11,vtk(i),istate)
 	enddo
 	do i=1,isize
-	if(vtk(i).eq.'P'.and.vtk(i+1).eq.'O'.and.vtk(i+2).eq.'I')then
+	if(vtk(i).eq.'P'.and.vtk(i+1).eq.'O'.and.vtk(i+2).eq.'I'.and.vtk(i+3).eq.'N')then
 	iset = i
 	write(6,*)'find POI ',iset
 	endif
 	enddo
 	do i=iset,iset+22
-	write(6,*)'vtk ivtk ',vtk(i),ivtk(i),i
+c	write(6,*)'vtk ivtk ',vtk(i),ivtk(i),i
 	enddo
 	do i=iset+5,iset+50
 	if(ivtk(i).eq.10)then
@@ -637,7 +637,7 @@ c
 
 	write(6,*)'iset ',iset
 	do i=iset,iset+40
-	write(6,*)'vtk ',vtk(i),i
+c	write(6,*)'vtk ',vtk(i),i
 	enddo
 	close(11)
 
