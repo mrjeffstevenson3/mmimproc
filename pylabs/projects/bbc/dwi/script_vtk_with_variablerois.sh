@@ -79,7 +79,7 @@ cp fnew.vtk ${afile/.vtk/_channel.vtk}
 fslchfiletype NIFTI_GZ newvolume.hdr ${afile/.vtk/.nii.gz}
 fslcreatehd S0_hdr.txt ${afile/.vtk/.nii.gz}
 fi
-echo ${afile}
+echo "finished with ${afile}"
 echo -n "${afile} " >> ${DATADIR}/bbc/allvtk_channel_run${run}.txt
 cat dti_results.txt >> ${DATADIR}/bbc/allvtk_channel_run${run}.txt
 done
