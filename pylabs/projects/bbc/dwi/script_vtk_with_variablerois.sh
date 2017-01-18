@@ -33,7 +33,7 @@ do
 echo working on ${afile}
 FILESIZE=$(stat -c%s "$afile")
 echo $FILESIZE > filesize.txt
-rm -f base.vtk aal_motor.vtk channel.vtk fnew.vtk
+rm -f base.vtk aal_motor.vtk channel.vtk fnew.vtk f.vtk
 if [[ "$afile" == *"$sub70"* ]]; then
 cp *Left_frontal*.vtk base.vtk
 cp *Left_occip*.vtk aal_motor.vtk
