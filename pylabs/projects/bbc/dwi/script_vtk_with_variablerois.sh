@@ -26,7 +26,7 @@ list2=`ls sub-bbc253_ses-1_dti_15dir_b1000_1_eddy_corrected_repol_std2_wls_fsl_t
 S0_fname=`basename ../${afolder}*_S0_brain.nii`
 fslhd -x ../${S0_fname} > S0_hdr.txt
 fslchfiletype ANALYZE ../${S0_fname}.nii S0.hdr
-
+qform=`fslorient -getqform ../${S0_fname}`
 
 
 #loop over vtk files
@@ -79,7 +79,9 @@ ${PYLABS}/pylabs/diffusion/readfiber_withchannel_test
 ${PYLABS}/pylabs/diffusion/makevolumetric_fromvtk
 cp fnew.vtk ${afile/.vtk/_channel.vtk}
 fslchfiletype NIFTI_GZ newvolume.hdr ${afile/.vtk/_channel.nii.gz}
-fslcreatehd S0_hdr.txt ${afile/.vtk/_channel.nii.gz}
+#fslcreatehd S0_hdr.txt ${afile/.vtk/_channel.nii.gz}
+fslorient -setqform $qform ${afile/.vtk/_channel.nii.gz}
+fslorient -copyqform2sform ${afile/.vtk/_channel.nii.gz}
 fi
 echo "finished with ${afile}"
 echo -n "${afile} " >> ${DATADIR}/bbc/allvtk_channel_run${run}.txt
