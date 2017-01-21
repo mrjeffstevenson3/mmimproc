@@ -89,7 +89,7 @@ for dwif, vbmf in zip(dwi_fnames, vbm_fnames):
         elif 'aal_motor' in k:
             make_mask_fm_atlas_parts(atlas=str(pylabs_atlasdir / 'aal_1mm_reg2MNI_masked.nii.gz'), roi_list=a['roi_list'], mask_fname=str(pylabs_atlasdir / a['atlas_fname']))
         elif 'stats_vbm' in k:
-            make_mask_fm_tracts(atlas=str(vbm_statsdir / a['atlas_fname']), volidx=a['roi_list'], thresh=stat_thr, mask_fname=str(pylabs_atlasdir / (a['atlas_fname'] % {'thr': 0.95})))
+            make_mask_fm_tracts(atlas=str(vbm_statsdir / a['atlas_fname']), volidx=a['roi_list'], thresh=stat_thr, mask_fname=str(pylabs_atlasdir / (a['atlas_fname'].split('.')[0]+'_thr%(fn_thr)s_bin.nii.gz' % stat_thr)))
         execwdir = fs / project / dwif.split('_')[0] / dwif.split('_')[1] / 'dwi'
         ref = execwdir / str(dwif+'_S0_brain.nii')
         if 'mori' in k or 'aal_motor' in k:
@@ -98,6 +98,9 @@ for dwif, vbmf in zip(dwi_fnames, vbm_fnames):
         if 'JHU_' in k:
             mov = pylabs_atlasdir / (a['atlas_fname'] % JHU_thr)
             outf = execwdir / str(dwif+'_'+ (a['atlas_fname'] % JHU_thr))
+        if 'stats_vbm' in k:
+            mov = pylabs_atlasdir / (a['atlas_fname'].split('.')[0]+'_thr%(fn_thr)s_bin.nii.gz' % stat_thr)
+            outf = execwdir / str(dwif+'_'+ (a['atlas_fname'].split('.')[0]+'_thr%(fn_thr)s_bin.nii.gz' % stat_thr))
         iwarp_templ2vbmsubj = templdir / str(vbmf+'InverseWarp.nii.gz')
         iwarp_vbmsub2dwi = dwi2vbmsubjdir / str(dwif+ dwi_reg_append +'1InverseWarp.nii.gz')
         aff_templ2vbmsubj = templdir / str(vbmf+'Affine.txt')
