@@ -22,12 +22,12 @@ echo working on ${afolder}
 cd ${DATADIR}/bbc/${afolder}/*/*/vtk_tensor_comp_run${run}
 rm -f *_channel*
 #list2=`ls *tensor_medfilt*.vtk`
-list2=`ls sub-bbc253_ses-1_dti_15dir_b1000_1_eddy_corrected_repol_std2_wls_fsl_tensor_mori_LeftPostIntCap-35.vtk`
+#list2=`ls sub-bbc253_ses-1_dti_15dir_b1000_1_eddy_corrected_repol_std2_wls_fsl_tensor_mori_LeftPostIntCap-35.vtk`
+list2=sub-bbc253_ses-1_dti_15dir_b1000_1_eddy_corrected_repol_std2_wls_fsl_tensor_medfilt_mori_CC.vtk
 S0_fname=`basename ../${afolder}*_S0_brain.nii`
 fslhd -x ../${S0_fname} > S0_hdr.txt
 fslchfiletype ANALYZE ../${S0_fname}.nii S0.hdr
 qform=`fslorient -getqform ../${S0_fname}`
-
 
 #loop over vtk files
 for afile in ${list2}
@@ -35,7 +35,9 @@ do
 echo working on ${afile}
 FILESIZE=$(stat -c%s "$afile")
 echo $FILESIZE > filesize.txt
-rm -f base.vtk aal_motor.vtk channel.vtk fnew.vtk f.vtk
+rm -f base.vtk aal_motor.vtk channel.vtk fnew.vtk f.vtk usechannel.txt
+echo "1" > usechannel.txt
+cp ${afile} f.vtk
 if [[ "$afile" == *"$sub70"* ]]; then
 cp *Left_frontal*.vtk base.vtk
 cp *Left_occip*.vtk aal_motor.vtk
@@ -49,7 +51,9 @@ fi
 if [[ "$afile" == *"$subcc"* ]]; then
 cp *aal_motor*.vtk base.vtk
 cp *aal_motor*.vtk aal_motor.vtk
-
+echo "0" > usechannel.txt
+${PYLABS}/pylabs/diffusion/readfiber_corpus_callosum_with_ceiling
+cp f.vtk fnew.vtk
 fi
 if [[ "$afile" == *"$sub35"* ]]; then
 cp *base*.vtk base.vtk
@@ -71,18 +75,17 @@ cp *Right_STG-MTG-106-108*.vtk base.vtk
 cp *Right_pre-postCentGyr-94-95*.vtk aal_motor.vtk
 cp *JHU*Right_SLF-16.vtk channel.vtk
 fi
-cp ${afile} f.vtk
-if [[ "$afile" == *"$subcc"* ]]; then
-${PYLABS}/pylabs/diffusion/readfiber_corpus_callosum_with_ceiling
-else
+
+if [[ "$afile" != *"$subcc"* ]]; then
 ${PYLABS}/pylabs/diffusion/readfiber_withchannel_test
+fi
 ${PYLABS}/pylabs/diffusion/makevolumetric_fromvtk
 cp fnew.vtk ${afile/.vtk/_channel.vtk}
 fslchfiletype NIFTI_GZ newvolume.hdr ${afile/.vtk/_channel.nii.gz}
 #fslcreatehd S0_hdr.txt ${afile/.vtk/_channel.nii.gz}
 fslorient -setqform $qform ${afile/.vtk/_channel.nii.gz}
 fslorient -copyqform2sform ${afile/.vtk/_channel.nii.gz}
-fi
+fslmaths ${afile/.vtk/_channel.nii.gz} -bin ${afile/.vtk/_channel_bin.nii.gz}
 echo "finished with ${afile}"
 echo -n "${afile} " >> ${DATADIR}/bbc/allvtk_channel_run${run}.txt
 cat dti_results.txt >> ${DATADIR}/bbc/allvtk_channel_run${run}.txt

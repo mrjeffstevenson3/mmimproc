@@ -494,15 +494,18 @@ c
 	rxsize = ixsize
 	rysize = iysize
 	rzsize = izsize
-	rx = (rxsize/(2.0))+(polysav(i,1,1)/rxdim)+1
-	ry = (rysize/2.0)+(polysav(i,2,1)/rydim)+1
-	rz = (((rzsize/2.0)*rzdim)+polysav(i,3,1))/rzdim
+	rx = (rxsize/(2.0))+(((polysav(i,1,1)/rxdim))+1)
+	ry = ((rysize/(2.0))+((polysav(i,2,1)/rydim))+1)
+	rz = ((polysav(i,3,1)/abs(rxdim))+27)
+c	rz = ((rzsize/2.0)+(polysav(i,3,1)/rzdim)+1)
+c	rz = rzsize-((rzsize/2.0)+(polysav(i,3,1)/rzdim)-((rxsize*abs(rxdim))-(rzsize*rzdim))/(2.0)+1)
+c	rz = (((rxsize/2.0)*rzdim)+polysav(i,3,1))/rzdim
 c	rz = (rzsize/2.0)+(polysav(i,3,1)/rzdim)+1
 	ix = nint(rx)
 	iy = nint(ry)
 	iz = nint(rz)
 
-	if(i.lt.10)write(6,*)'ix iy iz ',ix,iy,iz,polysav(i,1,1),polysav(i,2,1),polysav(i,3,1),i
+	if(i.lt.25)write(6,*)'ix iy iz ',ix,iy,iz,polysav(i,1,1),polysav(i,2,1),polysav(i,3,1),i,rzsize-((polysav(i,3,1)/abs(rzdim))+1)
 
 
 c
