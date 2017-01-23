@@ -3,7 +3,6 @@
 
 #this is for test purposes (and because it was the most problematic).
 dwi_passed_101 = [(101, 2, 'dti_15dir_b1000', 1)]
-
 #this is the full list of subjects with usable dwi.
 dwi_passed_qc = [
 (101, 2, 'dti_15dir_b1000', 1),

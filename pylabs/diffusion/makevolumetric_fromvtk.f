@@ -41,6 +41,10 @@ c
 	open(11,file = 'filesize.txt')
 	read(11,*)ivtksize
 	close(11)
+
+	open(11,file = 'usechannel.txt')
+	read(11,*)iusechannel
+	close(11)
 c
 
 	idiff = 1
@@ -463,20 +467,25 @@ c	pause
 	r1 = w(2)
 	r2 = w(1)
 	r3 = w(3)
+	if(iusechannel.eq.1)then  ! when iusechannel eq 1
 	if(testchannel1.eq.0.5.and.testchannel2.eq.0.5)then
 	call fa_calc(r1,r2,r3,rfa1,axial,radial,rmd,volumeratio)
 c	write(6,*)'rfa1 axial radial rmd volumeratio ',r1,r2,r3,rfa1,axial,radial,rmd,volumeratio,i
 c	pause
-	else
-	r1 = 0
-	r2 =0
-	r3 = 0
-	rfa1=0
-	axial =0
-	radial = 0
-	rmd = 0
-	volumeratio=0
-	endif
+        	else
+		r1 = 0
+		r2 =0
+		r3 = 0
+		rfa1=0
+		axial =0
+		radial = 0
+		rmd = 0
+		volumeratio=0
+		endif
+	else  !for iusechannel for case of iusechannel eq 0
+		call fa_calc(r1,r2,r3,rfa1,axial,radial,rmd,volumeratio)
+	endif !for iusechannel
+
 
 c
 c for each set of tensors calculate FA
@@ -795,4 +804,3 @@ c
 
 	return
 	end
-
