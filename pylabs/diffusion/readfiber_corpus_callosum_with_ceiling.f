@@ -16,12 +16,12 @@ c
 	equivalence (cint,icint)
 	equivalence (nmr,inmr2)
 	equivalence (inmr,cnmr)
-	real poly(9),dnmrsav(200000,10), polysav(2000000,5,3),tensors(200000,9)
+	real poly(9),dnmrsav(2000000,10), polysav(2000000,5,3),tensors(2000000,9)
 	real polyfinal(2000000,5)
 	real final(10),rotation(18)
 	common /rot/rotation
 	integer line(6000,50000),linesav(50000)
-	common /dat1/ dnmr(200000),dnmr2(1000),dnmr3(1000)
+	common /dat1/ dnmr(2000000),dnmr2(1000),dnmr3(1000)
 	common /size/isize,isize2
       DOUBLE PRECISION A(3,3)
       DOUBLE PRECISION Q(3,3)
@@ -354,9 +354,10 @@ c	write(6,*)'distance ',dnmr(i),i,ipsize
 	close(23)
 	write(6,*)'the number of fibers is ', ilines
 c	write(6,*)'update 40-3 '
-	if(numpointsa.gt.10000)then
+	if(numpointsa.gt.10000.and.numpointsa.lt.100000)then
 	do i=1,42
 	call fgetc(11,cnmr(i),istate)
+	call fgetc(21,cnmr(i),istate)
 	if(inmr(i).eq.10.and.i.gt.30)then
 	write(6,*)'found endmarker for tensor ',i
 	go to 299
@@ -364,22 +365,7 @@ c	write(6,*)'update 40-3 '
 c	write(6,*)'tensor ',cnmr(i),inmr(i),i
 	enddo
  299 	continue
-	endif
-c
-	if(numpointsa.lt.10000)then
-	do i=1,40
-	call fgetc(11,cnmr(i),istate)
-	if(inmr(i).eq.10.and.i.gt.30)then
-	write(6,*)'found endmarker for tensor ',i
-	go to 2999
-	endif
-c	write(6,*)'tensor ',cnmr(i),inmr(i),i
-	enddo
- 2999 	continue
-	endif
-
-
-	open(12,file='temp.txt')
+ 	open(12,file='temp.txt')
 	do ii=1,17
 	call fputc(12,cnmr(ii),istate)
 	enddo
@@ -387,6 +373,51 @@ c	write(6,*)'tensor ',cnmr(i),inmr(i),i
 	open(12,file='temp.txt')
 	read(12,*)c6,itensors
 	close(12)
+	endif
+c
+	if(numpointsa.gt.100000)then
+	do i=1,43
+	call fgetc(11,cnmr(i),istate)
+	call fgetc(21,cnmr(i),istate)
+	if(inmr(i).eq.10.and.i.gt.30)then
+	write(6,*)'found endmarker for tensor ',i
+	go to 29
+	endif
+c	write(6,*)'tensor ',cnmr(i),inmr(i),i
+	enddo
+ 29	continue
+ 	open(12,file='temp.txt')
+	do ii=1,18
+	call fputc(12,cnmr(ii),istate)
+	enddo
+	close(12)
+	open(12,file='temp.txt')
+	read(12,*)c6,itensors
+	close(12)
+	endif
+
+c
+	if(numpointsa.lt.10000)then
+	do i=1,40
+	call fgetc(11,cnmr(i),istate)
+	call fgetc(21,cnmr(i),istate)
+	if(inmr(i).eq.10.and.i.gt.30)then
+	write(6,*)'found endmarker for tensor ',i
+	go to 2999
+	endif
+c	write(6,*)'tensor ',cnmr(i),inmr(i),i
+	enddo
+ 2999 	continue
+ 	open(12,file='temp.txt')
+	do ii=1,16
+	call fputc(12,cnmr(ii),istate)
+	enddo
+	close(12)
+	open(12,file='temp.txt')
+	read(12,*)c6,itensors
+	close(12)
+	endif
+
 	write(6,*)'number of tensors ',c6,itensors
 c	read(11,*)c6,itensors
 c	write(6,*)'number of tensors ',c6,itensors
@@ -561,7 +592,7 @@ c	write(6,*)(r1*r2*r3),trace**3
 	end
 
 	subroutine average(aver,stdev,stem)
-	common /dat1/ dnmr(200000),dnmr2(1000),dnmr3(1000)
+	common /dat1/ dnmr(2000000),dnmr2(1000),dnmr3(1000)
 	common /size/isize,isize2
 c
 c
