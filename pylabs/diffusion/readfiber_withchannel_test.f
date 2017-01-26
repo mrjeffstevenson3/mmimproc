@@ -36,7 +36,9 @@ c
 	read(11,*)ivtksize
 	close(11)
 c
-
+	open(11,file='procmethod.txt')
+	read(11,*)iprocmethod
+	close(11)
 	idiff = 1
 	open(11,file = 'f.vtk')
 	open(21,file = 'aal_motor.vtk')
@@ -351,8 +353,8 @@ c	write(6,*)'the minumum z and index for line ',i,rminz,iminz
 	
 c  for the rmaxz find the closest cortex model point
 c
-
-	if(rmindistance(2).lt.5.0.and.rmindistance(3).le.5.0.and.rfraction_subline.ge.0.50)then
+	if(iprocmethod.eq.1)then  !channel only
+	if(rmindistance(2).lt.1000.0.and.rmindistance(3).le.1000.0.and.rfraction_subline.ge.0.50)then
 	igood = igood+1
 	dnmr(igood) = sum   ! sum distance for one line
 c save the indices for later tensors selection
@@ -369,6 +371,68 @@ c	write(6,*)'polyfinal ',polyfinal(ifinalinc,1),ifinalinc,ii,i
 	else
 	ibad = ibad+1
 	endif
+	endif
+
+	if(iprocmethod.eq.2)then  !base only
+	if(rmindistance(2).lt.5.0.and.rmindistance(3).le.1000.0.and.rfraction_subline.ge.0)then
+	igood = igood+1
+	dnmr(igood) = sum   ! sum distance for one line
+c save the indices for later tensors selection
+		write(27,*)icountone,icountone,icountone
+		do ii=2,line(i,1)+1
+		write(27,*)polysav(line(i,ii)+1,1,1),polysav(line(i,ii)+1,2,1),polysav(line(i,ii)+1,3,1)
+		enddo
+
+		do ii=2,line(i,1)+1
+		polyfinal(ifinalinc,1) = line(i,ii)+1
+c	write(6,*)'polyfinal ',polyfinal(ifinalinc,1),ifinalinc,ii,i
+		ifinalinc=ifinalinc+1
+		enddo
+	else
+	ibad = ibad+1
+	endif
+	endif
+c
+	if(iprocmethod.eq.3)then  !target only
+	if(rmindistance(2).lt.1000.0.and.rmindistance(3).le.5.0.and.rfraction_subline.ge.0)then
+	igood = igood+1
+	dnmr(igood) = sum   ! sum distance for one line
+c save the indices for later tensors selection
+		write(27,*)icountone,icountone,icountone
+		do ii=2,line(i,1)+1
+		write(27,*)polysav(line(i,ii)+1,1,1),polysav(line(i,ii)+1,2,1),polysav(line(i,ii)+1,3,1)
+		enddo
+
+		do ii=2,line(i,1)+1
+		polyfinal(ifinalinc,1) = line(i,ii)+1
+c	write(6,*)'polyfinal ',polyfinal(ifinalinc,1),ifinalinc,ii,i
+		ifinalinc=ifinalinc+1
+		enddo
+	else
+	ibad = ibad+1
+	endif
+	endif
+
+	if(iprocmethod.eq.4)then  !base, target, channel
+	if(rmindistance(2).lt.5.0.and.rmindistance(3).le.5.0.and.rfraction_subline.ge.0.5)then
+	igood = igood+1
+	dnmr(igood) = sum   ! sum distance for one line
+c save the indices for later tensors selection
+		write(27,*)icountone,icountone,icountone
+		do ii=2,line(i,1)+1
+		write(27,*)polysav(line(i,ii)+1,1,1),polysav(line(i,ii)+1,2,1),polysav(line(i,ii)+1,3,1)
+		enddo
+
+		do ii=2,line(i,1)+1
+		polyfinal(ifinalinc,1) = line(i,ii)+1
+c	write(6,*)'polyfinal ',polyfinal(ifinalinc,1),ifinalinc,ii,i
+		ifinalinc=ifinalinc+1
+		enddo
+	else
+	ibad = ibad+1
+	endif
+	endif
+
 
 c	write(6,*)'distance ',dnmr(i),i,ipsize
 	write(14,*)ipsize
@@ -414,24 +478,39 @@ c	write(6,*)'distance ',dnmr(i),i,ipsize
 	write(6,*)'the number of fibers is ', ilines
 c	write(6,*)'update 40-3 '
 	if(numpointsa.gt.10000.and.numpointsa.lt.100000)then
-	do i=1,42
-	call fgetc(11,cnmr(i),istate)
-	call fgetc(21,cnmr(i),istate)
-	if(inmr(i).eq.10.and.i.gt.30)then
-	write(6,*)'found endmarker for tensor ',i
-	go to 299
-	endif
+		do i=1,42
+		call fgetc(11,cnmr(i),istate)
+		call fgetc(21,cnmr(i),istate)
+
+		if(inmr(i).eq.10.and.i.gt.15)then
+		write(6,*)'found endmarker for tensor ',i
+		go to 299
+		endif
 c	write(6,*)'tensor ',cnmr(i),inmr(i),i
-	enddo
+		enddo
  299 	continue
- 	open(12,file='temp.txt')
+ 	open(12,file='temp2.txt')
 	do ii=1,17
+	write(6,*)'cnmr ',cnmr(ii),ii,inmr(ii)
 	call fputc(12,cnmr(ii),istate)
 	enddo
 	close(12)
-	open(12,file='temp.txt')
+	open(12,file='temp2.txt')
 	read(12,*)c6,itensors
+	write(6,*)'c6,tensor ',c6,itensors
 	close(12)
+	do i=1,30
+		call fgetc(11,cnmr(i),istate)
+		call fgetc(21,cnmr(i),istate)
+
+		if(inmr(i).eq.10.and.i.gt.15)then
+		write(6,*)'found endmarker for tensor2 ',i
+		go to 699
+		endif
+c	write(6,*)'tensor ',cnmr(i),inmr(i),i
+		enddo
+ 699 	continue
+
 	endif
 c
 	if(numpointsa.gt.100000)then
