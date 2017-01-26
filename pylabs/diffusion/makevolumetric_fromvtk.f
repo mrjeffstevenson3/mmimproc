@@ -527,7 +527,7 @@ c
 	rzsize = izsize
 	rx = (rxsize/(2.0))+(((polysav(i,1,1)/rxdim))+1)
 	ry = ((rysize/(2.0))+((polysav(i,2,1)/rydim))+1)
-	rz = ((polysav(i,3,1)/abs(rxdim))+27)
+	rz = ((polysav(i,3,1)/abs(rzdim))+1+20)
 c	rz = ((rzsize/2.0)+(polysav(i,3,1)/rzdim)+1)
 c	rz = rzsize-((rzsize/2.0)+(polysav(i,3,1)/rzdim)-((rxsize*abs(rxdim))-(rzsize*rzdim))/(2.0)+1)
 c	rz = (((rxsize/2.0)*rzdim)+polysav(i,3,1))/rzdim
