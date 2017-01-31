@@ -13,7 +13,8 @@ cd ${DATADIR}/bbc
 #list=`python -c "from pylabs.projects.bbc.pairing import dwipairing; \
 #    print(' '.join(['sub-bbc{sid}'.format(sid=str(s)) for s, ses, m, r in dwipairing]))"`
 #list=sub-bbc253
-list=sub-bbc243
+#list=sub-bbc243
+list=`ls -d sub-bbc*`
 rm -f ${DATADIR}/bbc/allvtk_channel_run${run}.txt
 #loop over subject dirs
 for afolder in ${list}
@@ -22,13 +23,13 @@ echo working on ${afolder}
 #get vtk files to process
 cd ${DATADIR}/bbc/${afolder}/*/*/vtk_tensor_comp_run${run}
 rm -f *_channel*
-#list2=`ls *tensor_medfilt*.vtk`
+list2=`ls *tensor_medfilt*.vtk`
 #list2=`ls sub-bbc253_ses-1_dti_15dir_b1000_1_eddy_corrected_repol_std2_wls_fsl_tensor_mori_LeftPostIntCap-35.vtk`
 
 #list2=sub-bbc253_ses-1_dti_15dir_b1000_1_eddy_corrected_repol_std2_wls_fsl_tensor_mori_RightPostIntCap-123.vtk
 #list2=sub-bbc253_ses-1_dti_15dir_b1000_1_eddy_corrected_repol_std2_wls_fsl_tensor_medfilt_mori_CC.vtk
 #list2=sub-bbc243_ses-1_dti_15dir_b1000_1_eddy_corrected_repol_std2_wls_fsl_tensor_medfilt_mori_RightPostIntCap-123.vtk
-list2=sub-bbc243_ses-1_dti_15dir_b1000_1_eddy_corrected_repol_std2_wls_fsl_tensor_medfilt_mori_LeftPostIntCap-35.vtk
+#list2=sub-bbc243_ses-1_dti_15dir_b1000_1_eddy_corrected_repol_std2_wls_fsl_tensor_medfilt_mori_LeftPostIntCap-35.vtk
 
 S0_fname=`basename ../${afolder}*_S0_brain.nii`
 fslhd -x ../${S0_fname} > S0_hdr.txt
