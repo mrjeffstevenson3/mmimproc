@@ -41,6 +41,10 @@ c
 	open(11,file = 'filesize.txt')
 	read(11,*)ivtksize
 	close(11)
+	open(11,file = 'offsets.txt')
+	read(11,*)xoffset,yoffset,zoffset
+	close(11)
+		write(6,*)'offsets ',xoffset,yoffset,zoffset
 
 	open(11,file = 'usechannel.txt')
 	read(11,*)iusechannel
@@ -525,9 +529,13 @@ c
 	rxsize = ixsize
 	rysize = iysize
 	rzsize = izsize
-	rx = (rxsize/(2.0))+(((polysav(i,1,1)/rxdim))+1)
-	ry = ((rysize/(2.0))+((polysav(i,2,1)/rydim))+1)-3
-	rz = ((polysav(i,3,1)/abs(rzdim))+1+15)
+c	rx = (rxsize/(2.0))+(((polysav(i,1,1)/rxdim))+1)
+	rx = ((polysav(i,1,1)/rxdim))+(xoffset)
+
+c	ry = ((rysize/(2.0))+((polysav(i,2,1)/rydim))+1)-3
+	ry = ((polysav(i,2,1)/rydim))+(yoffset)
+
+	rz = ((polysav(i,3,1)/abs(rzdim))+zoffset)
 c	rz = ((rzsize/2.0)+(polysav(i,3,1)/rzdim)+1)
 c	rz = rzsize-((rzsize/2.0)+(polysav(i,3,1)/rzdim)-((rxsize*abs(rxdim))-(rzsize*rzdim))/(2.0)+1)
 c	rz = (((rxsize/2.0)*rzdim)+polysav(i,3,1))/rzdim

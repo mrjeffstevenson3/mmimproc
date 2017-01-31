@@ -323,7 +323,7 @@ c	if(ii.le.600)write(6,*)'distance ',distance,line(i,ii)+1,i,ii
 	enddo  !icst points in the either the floor or the ceiling 
 	if(ifil.eq.4)distancesav(ii) = rmindistance(ifil)
 	if(ifil.eq.4)write(26,*)distancesav(ii)
-	if(ifil.eq.4.and.distancesav(ii).lt.5.0)then
+	if(ifil.eq.4.and.distancesav(ii).lt.3.0)then
 	countsubline = countsubline+1
 	endif
 
@@ -354,7 +354,7 @@ c	write(6,*)'the minumum z and index for line ',i,rminz,iminz
 c  for the rmaxz find the closest cortex model point
 c
 	if(iprocmethod.eq.1)then  !channel only
-	if(rmindistance(2).lt.1000.0.and.rmindistance(3).le.1000.0.and.rfraction_subline.ge.0.50)then
+	if(rmindistance(2).lt.1000.0.and.rmindistance(3).le.1000.0.and.rfraction_subline.ge.0.70)then
 	igood = igood+1
 	dnmr(igood) = sum   ! sum distance for one line
 c save the indices for later tensors selection
