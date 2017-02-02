@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
-#set search sub-strings to identify files
+
+#processing flag: 0=no channel, floor, or target, just vtk stats for whole fiber bundle;
+#   1=channel only; 2=base only ; 3= vtk target only; 4=base and target together; 5=all - channel, base, target
+proc_method=1
 run=7
+#set search sub-strings to identify vtk files
 sub70=IFOF-45
 sub158=IFOF-133
 subcc=mori_CC
@@ -54,7 +58,7 @@ do
 echo working on ${afile}
 FILESIZE=$(stat -c%s "$afile")
 echo $FILESIZE > filesize.txt
-rm -f base.vtk aal_motor.vtk channel.vtk fnew.vtk f.vtk usechannel.txt
+rm -f base.vtk aal_motor.vtk channel.vtk fnew.vtk f.vtk usechannel.txt proc_method.txt
 echo "1" > usechannel.txt
 echo "1" > procmethod.txt
 
