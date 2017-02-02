@@ -12,9 +12,9 @@ sub131=SLF-131
 cd ${DATADIR}/bbc
 #list=`python -c "from pylabs.projects.bbc.pairing import dwipairing; \
 #    print(' '.join(['sub-bbc{sid}'.format(sid=str(s)) for s, ses, m, r in dwipairing]))"`
-#list=sub-bbc253
+list='sub-bbc108 sub-bbc211 sub-bbc231 sub-bbc241 sub-bbc243 sub-bbc249 sub-bbc253'
 #list=sub-bbc243
-list=`ls -d sub-bbc*`
+#list=`ls -d sub-bbc*`
 rm -f ${DATADIR}/bbc/allvtk_channel_run${run}.txt
 #loop over subject dirs
 for afolder in ${list}
@@ -31,8 +31,12 @@ list2=`ls *tensor_medfilt*.vtk`
 #list2=sub-bbc243_ses-1_dti_15dir_b1000_1_eddy_corrected_repol_std2_wls_fsl_tensor_medfilt_mori_RightPostIntCap-123.vtk
 #list2=sub-bbc243_ses-1_dti_15dir_b1000_1_eddy_corrected_repol_std2_wls_fsl_tensor_medfilt_mori_LeftPostIntCap-35.vtk
 
+#S0_fname=`basename ../${afolder}*_S0_brain.nii`
 S0_fname=`basename ../${afolder}*_S0_brain.nii`
-fslhd -x ../${S0_fname} > S0_hdr.txt
+
+#fslhd -x ../${S0_fname} > S0_hdr.txt
+fslhd -x ../*_S0_brain.nii > S0_hdr.txt
+
 grep sto_ijk S0_hdr.txt > z.txt
 xoffset=`cat z.txt | awk '{ print $7 }'`
 yoffset=`cat z.txt | awk '{ print $11 }'`
