@@ -3,13 +3,16 @@ rm LeftPostIntCap.txt
 for afile in $list
 do
 echo $afile
-echo $afile >> LeftPostIntCap.txt
 rm afile.*
 cp $afile afile.nii.gz
 fslchfiletype ANALYZE afile
 ./channel_coreg
+echo -n "$afile fa " >> LeftPostIntCap.txt
 cat fa.txt >> LeftPostIntCap.txt
+echo -n "$afile ad " >> LeftPostIntCap.txt
 cat ad.txt >> LeftPostIntCap.txt
+echo -n "$afile rd " >> LeftPostIntCap.txt
 cat rd.txt >> LeftPostIntCap.txt
+echo -n "$afile md " >> LeftPostIntCap.txt
 cat md.txt >> LeftPostIntCap.txt
 done
