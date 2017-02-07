@@ -1,3 +1,4 @@
+cd ${DATADIR}/bbc/reg/
 list=`ls -d *LeftPost*`
 rm LeftPostIntCap.txt
 for afile in $list
@@ -6,7 +7,7 @@ echo $afile
 rm afile.*
 cp $afile afile.nii.gz
 fslchfiletype ANALYZE afile
-./channel_coreg
+${PYLABS}/pylabs/diffusion/channel_coreg
 echo -n "$afile fa " >> LeftPostIntCap.txt
 cat fa.txt >> LeftPostIntCap.txt
 echo -n "$afile ad " >> LeftPostIntCap.txt
