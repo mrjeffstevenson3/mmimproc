@@ -49,8 +49,6 @@ echo $xoffset $yoffset $zoffset > offsets.txt
 
 fslchfiletype ANALYZE ../${S0_fname}.nii S0.hdr
 qform=`fslorient -getqform ../${S0_fname}`
-#could also use qform var to get offsets as in
-#echo $qform | cut -d' ' -f 4,8,12 > offsets.txt
 
 #loop over vtk files
 for afile in ${list2}
