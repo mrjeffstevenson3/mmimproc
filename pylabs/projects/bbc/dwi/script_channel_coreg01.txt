@@ -1,16 +1,24 @@
 cd ${DATADIR}/bbc/reg/dwi_warps_in_template_space/comb_FA_AD_RD_MD_4vol
-echo ${PWD}
-rm -f LeftPostIntCap.*
-list=`ls -d *LeftPost*`
-for afile in $list
-do
-echo $afile
-rm afile.*
-cp $afile afile.nii.gz
-fslchfiletype ANALYZE afile
-${PYLABS}/pylabs/diffusion/channel_coreg
-for m in fa ad rd md; do
-    data=`cat ${m}.txt | tr -s " "`
-    echo "${afile},${m}${data// /,}" >> LeftPostIntCap.csv
+tracts="LeftPost RightPost Left_SLF Right_SLF"
+for f in $tracts; do
+    rm -f ${f}.csv
+done
+for t in $tracts; do
+    list=`ls -d *${t}*`
+    for afile in $list
+    do
+    echo $afile
+    rm afile.*
+    cp $afile afile.nii.gz
+    fslchfiletype ANALYZE afile
+    if [[ $t == "LeftPost" || $t == "RightPost" ]]; then
+        ${PYLABS}/pylabs/diffusion/channel_coreg_PostInt
+    elif [[ $t == "Left_SLF" || $t == "Right_SLF" ]]; then
+        ${PYLABS}/pylabs/diffusion/channel_coreg_SLF
+    fi
+    for m in fa ad rd md; do
+        data=`cat ${m}.txt | tr -s " "`
+        echo "${afile},${m}${data// /,}" >> ${t}.csv
+    done
 done
 done
