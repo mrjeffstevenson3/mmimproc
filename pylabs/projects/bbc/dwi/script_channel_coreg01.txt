@@ -1,6 +1,7 @@
 cd ${DATADIR}/bbc/reg/dwi_warps_in_template_space/comb_FA_AD_RD_MD_4vol
+echo ${PWD}
+rm -f LeftPostIntCap.*
 list=`ls -d *LeftPost*`
-rm LeftPostIntCap.txt
 for afile in $list
 do
 echo $afile
@@ -8,12 +9,9 @@ rm afile.*
 cp $afile afile.nii.gz
 fslchfiletype ANALYZE afile
 ${PYLABS}/pylabs/diffusion/channel_coreg
-echo -n "$afile fa " >> LeftPostIntCap.txt
-cat fa.txt >> LeftPostIntCap.txt
-echo -n "$afile ad " >> LeftPostIntCap.txt
-cat ad.txt >> LeftPostIntCap.txt
-echo -n "$afile rd " >> LeftPostIntCap.txt
-cat rd.txt >> LeftPostIntCap.txt
-echo -n "$afile md " >> LeftPostIntCap.txt
-cat md.txt >> LeftPostIntCap.txt
+for m in fa ad rd md; do
+    data=`cat ${m}.txt`
+    datac=`echo ${data// /,} | tr -s ","`
+    echo "${afile},${m}${datac}" >> LeftPostIntCap.csv
+done
 done
