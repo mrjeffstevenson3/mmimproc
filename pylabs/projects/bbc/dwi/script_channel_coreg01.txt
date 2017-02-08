@@ -10,8 +10,7 @@ cp $afile afile.nii.gz
 fslchfiletype ANALYZE afile
 ${PYLABS}/pylabs/diffusion/channel_coreg
 for m in fa ad rd md; do
-    data=`cat ${m}.txt`
-    datac=`echo ${data// /,} | tr -s ","`
-    echo "${afile},${m}${datac}" >> LeftPostIntCap.csv
+    data=`cat ${m}.txt | tr -s " "`
+    echo "${afile},${m}${data// /,}" >> LeftPostIntCap.csv
 done
 done
