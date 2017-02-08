@@ -31,7 +31,7 @@ ref = fs / project / 'reg' / 'ants_vbm_pairedLH_in_template_space' / 'bbc_paired
 dwi_templ = 'sub-bbc{sid}_ses-{snum}_{meth}_{runnum}'
 dwi_fnames = [dwi_templ.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r)) for s, ses, m, r in dwipairing]
 vbm_templ = 'bbc_pairedLH_sub-bbc{sid}_ses-{snum}_{meth}_{runnum}_brain_susan_nl_comroll'
-vbm_fnames = [vbm_templ.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r)) for s, ses, m, r in vbmpairing]
+vbm_fnames = [vbm_temp  l.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r)) for s, ses, m, r in vbmpairing]
 outf_fmat = '{dwif}_eddy_corrected_repol_std2_{f}_{a}_channel_reg2vbmtempl_FA_AD_RD_MD.nii'
 
 for dwif, vbmf in zip(dwi_fnames, vbm_fnames):

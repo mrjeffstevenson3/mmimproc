@@ -1,4 +1,4 @@
-cd ${DATADIR}/bbc/reg/
+cd ${DATADIR}/bbc/reg/dwi_warps_in_template_space/comb_FA_AD_RD_MD_4vol
 list=`ls -d *LeftPost*`
 rm LeftPostIntCap.txt
 for afile in $list
