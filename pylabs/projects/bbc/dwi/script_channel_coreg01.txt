@@ -1,3 +1,4 @@
+#this script takes output from bbc/dwi/reg_dwichannel2templ.py and extracts 10 regions from each tract named
 cd ${DATADIR}/bbc/reg/dwi_warps_in_template_space/comb_FA_AD_RD_MD_4vol
 tracts="LeftPost RightPost Left_SLF Right_SLF"
 for f in $tracts; do
