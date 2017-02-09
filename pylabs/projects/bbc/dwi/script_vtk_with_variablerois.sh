@@ -96,7 +96,7 @@ if [[ "$afile" == *"$subcc"* ]]; then
     fslchfiletype NIFTI_GZ newvolume.hdr ${afile/.vtk/_Forceps_Major_channel.nii.gz}
     fslorient -setqform $qform ${afile/.vtk/_Forceps_Major_channel.nii.gz}
     fslorient -copyqform2sform ${afile/.vtk/_Forceps_Major_channel.nii.gz}
-    fslmaths ${afile/.vtk/_channel.nii.gz} -bin ${afile/.vtk/_Forceps_Major_channel_bin.nii.gz}
+    fslmaths ${afile/.vtk/_Forceps_Major_channel.nii.gz} -bin ${afile/.vtk/_Forceps_Major_channel_bin.nii.gz}
     echo -n "${afile/.vtk/_Forceps_Major_channel.vtk} " >> ${DATADIR}/bbc/allvtk_channel_run${run}.txt
     cat dti_results.txt >> ${DATADIR}/bbc/allvtk_channel_run${run}.txt
     rm -f fnew.vtk
