@@ -21,6 +21,8 @@ channel_atlases = {'mori_LeftPostIntCap-35': {'atlas_fname': 'mori_LeftPostIntCa
                 'mori_Right_IFOF-133-135': {'atlas_fname': 'mori_Right_IFOF-133-135_channel.nii.gz', 'roi_list': [133, 135, 124]},
                 'mori_Left_SLF-43':  {'atlas_fname': 'mori_Left_SLF-43_channel.nii.gz', 'roi_list': [43]},
                 'mori_Right_SLF-131': {'atlas_fname': 'mori_Right_SLF-131_channel.nii.gz', 'roi_list': [131]},
+                #'mori_CC_Forceps_Major-9': {'atlas_fname':'mori_CC_Forceps_Major_channel.nii.gz', 'roi_list': [9]},
+                #'mori_CC_Forceps_Minor-10': {'atlas_fname':'mori_CC_Forceps_Minor_channel.nii.gz', 'roi_list': [10]},
                    }
 
 
