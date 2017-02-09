@@ -5,10 +5,10 @@ for f in $tracts; do
     rm -f ${f}.csv
 done
 for t in $tracts; do
-    list=`ls -d *${t}*`
+    list=`ls -d *${t}*.nii`
     for afile in $list
     do
-    echo $afile
+    echo working on $afile
     rm afile.*
     cp $afile afile.nii.gz
     fslchfiletype ANALYZE afile
