@@ -30,7 +30,7 @@ c
 	  DOUBLE PRECISION Q(3,3)
 	  DOUBLE PRECISION W(3)
 	real psavx(4),psavy(4),psavz(4),rmindistance(4),imindistance1(4),imindistance2(4)
-	real distancesav(200000)
+	real distancesav(200000),xwall(100),ywall(100),zwall(100)
 
 	open(11,file = 'filesize.txt')
 	read(11,*)ivtksize
@@ -79,8 +79,8 @@ c f.vtk
 	do ifil =1,4
 	do i=1,89-6
 	if(ifil.eq.1)call fgetc(11,cnmr(i),istate)
-	if(ifil.eq.2)call fgetc(21,cnmr(i),istate)
-	if(ifil.eq.3)call fgetc(22,cnmr(i),istate)
+	if(ifil.eq.2.and.iprocmethod.ne.1)call fgetc(21,cnmr(i),istate)
+	if(ifil.eq.3.and.iprocmethod.ne.1)call fgetc(22,cnmr(i),istate)
 	if(ifil.eq.4)call fgetc(23,cnmr(i),istate)
 
 	if(inmr(i).eq.10.and.i.gt.70)then
@@ -102,8 +102,8 @@ c	do i=1,10
 
 	do ii=1,3*4
 	if(ifil.eq.1)call fgetc(11,cnmr(ii),istate)
-	if(ifil.eq.2)call fgetc(21,cnmr(ii),istate)
-	if(ifil.eq.3)call fgetc(22,cnmr(ii),istate)
+	if(ifil.eq.2.and.iprocmethod.ne.1)call fgetc(21,cnmr(ii),istate)
+	if(ifil.eq.3.and.iprocmethod.ne.1)call fgetc(22,cnmr(ii),istate)
 	if(ifil.eq.4)call fgetc(23,cnmr(ii),istate)
 
 	enddo
@@ -144,8 +144,8 @@ c	read(5,*)ioffset
 		call fgetc(11,cnmr(ii),istate)
 		cnmr11(ii) = cnmr(ii)
 	endif
-	if(ifil.eq.2)call fgetc(21,cnmr(ii),istate)
-	if(ifil.eq.3)call fgetc(22,cnmr(ii),istate)
+	if(ifil.eq.2.and.iprocmethod.ne.1)call fgetc(21,cnmr(ii),istate)
+	if(ifil.eq.3.and.iprocmethod.ne.1)call fgetc(22,cnmr(ii),istate)
 	if(ifil.eq.4)call fgetc(23,cnmr(ii),istate)
 
 	if(inmr(ii).eq.10.and.ii.gt.10)then
@@ -268,6 +268,9 @@ c	do i=280,280
 	if(ifil.eq.2)numpoints = numpointsb
 	if(ifil.eq.3)numpoints = numpointsc
 	if(ifil.eq.4)numpoints = numpointsd
+	if(ifil.eq.2.and.iprocmethod.eq.1)numpoints = 1
+	if(ifil.eq.3.and.iprocmethod.eq.1)numpoints = 1
+
 
 	sum = 0
 	if(ifil.eq.2)ipsize = 0
@@ -320,12 +323,133 @@ c	if(ii.le.600)write(6,*)'distance ',distance,line(i,ii)+1,i,ii
 	psavz(ifil) = polysav(icst,3,ifil)
 	imindistance2(ifil) = ii
 	endif
-	enddo  !icst points in the either the floor or the ceiling 
-	if(ifil.eq.4)distancesav(ii) = rmindistance(ifil)
-	if(ifil.eq.4)write(26,*)distancesav(ii)
-	if(ifil.eq.4.and.distancesav(ii).lt.3.0)then
+	enddo  !icst points in the either the floor or the ceiling or the channel
+c
+c only do this part for ifil.eq.4
+c	
+	if(ifil.eq.4)then
+c
+c test for the fiber being inside the channel not just near the channel wall
+c
+c	x direction 
+	xstart = polysav(line(i,ii)+1,1,1)-30
+	xend =  polysav(line(i,ii)+1,1,1)+30
+	incx = 1
+	iflagx = 0
+	do ix =1,60
+	rmindistance(ifil) = 100000.0
+	xtest = xstart+ix
+	do icst=1,numpoints
+	dxcst = xtest - polysav(icst,1,ifil)
+	dycst = polysav(line(i,ii)+1,2,1)- polysav(icst,2,ifil)
+	dzcst = polysav(line(i,ii)+1,3,1)- polysav(icst,3,ifil)
+	distancecst = sqrt((dxcst**2)+(dycst**2)+(dzcst**2))
+	rmindistance(ifil) = min(rmindistance(ifil),distancecst)
+	if(rmindistance(ifil).eq.distancecst)then
+	imindistance1(ifil) = icst
+	psavx(ifil) = polysav(icst,1,ifil)
+	psavy(ifil) = polysav(icst,2,ifil)
+	psavz(ifil) = polysav(icst,3,ifil)
+	imindistance2(ifil) = ii
+	endif
+	enddo  !icst points in the either the floor or the ceiling or the channel
+	if(rmindistance(ifil).lt.2.0)then
+c	write(6,*)'here is the fiber point ',xtest,polysav(line(i,ii)+1,2,1),polysav(line(i,ii)+1,3,1)
+c	write(6,*)'here is the wall point ',psavx(ifil),psavy(ifil),psavz(ifil)
+	xwall(incx) = xtest
+	incx = incx+1
+	endif
+	enddo  !xtest
+	if(incx.gt.1)then
+c	write(6,*)'xwall ',polysav(line(i,ii)+1,1,1),incx-1,(xwall(ix),ix=1,incx-1)
+	if(polysav(line(i,ii)+1,1,1).le.xwall(inc-1).and.polysav(line(i,ii)+1,1,1).ge.xwall(1))iflagx =1
+c	write(6,*)'iflagx ',iflagx
+	endif
+c	y direction 
+	ystart = polysav(line(i,ii)+1,2,1)-30
+	yend =  polysav(line(i,ii)+1,2,1)+30
+	incy = 1
+	iflagy = 0
+	do iy =1,60
+	rmindistance(ifil) = 100000.0
+	ytest = ystart+iy
+	do icst=1,numpoints
+	dxcst = polysav(line(i,ii)+1,1,1) - polysav(icst,1,ifil)
+	dycst = ytest- polysav(icst,2,ifil)
+	dzcst = polysav(line(i,ii)+1,3,1)- polysav(icst,3,ifil)
+	distancecst = sqrt((dxcst**2)+(dycst**2)+(dzcst**2))
+	rmindistance(ifil) = min(rmindistance(ifil),distancecst)
+	if(rmindistance(ifil).eq.distancecst)then
+	imindistance1(ifil) = icst
+	psavx(ifil) = polysav(icst,1,ifil)
+	psavy(ifil) = polysav(icst,2,ifil)
+	psavz(ifil) = polysav(icst,3,ifil)
+	imindistance2(ifil) = ii
+	endif
+	enddo  !icst points in the either the floor or the ceiling or the channel
+	if(rmindistance(ifil).lt.2.0)then
+	ywall(incy) = ytest
+	incy = incy+1
+	endif
+	enddo  !ytest
+	if(incy.gt.1)then
+c	  write(6,*)'ywall ',polysav(line(i,ii)+1,2,1),incy-1,(ywall(iy),iy=1,incy-1)
+	  if(polysav(line(i,ii)+1,2,1).le.ywall(incy-1).and.polysav(line(i,ii)+1,2,1).ge.ywall(1))iflagy =1
+c	  write(6,*)'iflagy ',iflagy
+	endif
+c	z direction 
+	zstart = polysav(line(i,ii)+1,3,1)-30
+	zend =  polysav(line(i,ii)+1,3,1)+30
+	incz = 1
+	iflagz = 0
+	do iz =1,60
+	rmindistance(ifil) = 100000.0
+	ztest = zstart+iz
+	do icst=1,numpoints
+	dxcst = polysav(line(i,ii)+1,1,1) - polysav(icst,1,ifil)
+	dycst = polysav(line(i,ii)+1,2,1)- polysav(icst,2,ifil)
+	dzcst = ztest- polysav(icst,3,ifil)
+	distancecst = sqrt((dxcst**2)+(dycst**2)+(dzcst**2))
+	rmindistance(ifil) = min(rmindistance(ifil),distancecst)
+	if(rmindistance(ifil).eq.distancecst)then
+	imindistance1(ifil) = icst
+	psavx(ifil) = polysav(icst,1,ifil)
+	psavy(ifil) = polysav(icst,2,ifil)
+	psavz(ifil) = polysav(icst,3,ifil)
+	imindistance2(ifil) = ii
+	endif
+	enddo  !icst points in the either the floor or the ceiling or the channel
+	if(rmindistance(ifil).lt.2.0)then
+	zwall(incz) = ztest
+	incz = incz+1
+	endif
+	enddo  !xtest
+	if(incz.gt.1)then
+c	  write(6,*)'zwall ',polysav(line(i,ii)+1,3,1),incz-1,(zwall(iz),iz=1,incz-1)
+	  if(polysav(line(i,ii)+1,3,1).le.zwall(incz-1).and.polysav(line(i,ii)+1,3,1).ge.zwall(1))iflagz =1
+c	  write(6,*)'iflagz ',iflagz
+	endif
+c
+c here is where we find out how many of the orgonal axes had a hit where
+c the fiber landed in between the two walls
+c
+	iflag = 0
+	if(iflagx.eq.1.and.iflagy.eq.1)then
+	iflag = 1
+	endif
+	if(iflagx.eq.1.and.iflagz.eq.1)then
+	iflag = 1
+	endif
+	if(iflagy.eq.1.and.iflagz.eq.1)then
+	iflag = 1
+	endif
+	if(iflag.eq.1)then
 	countsubline = countsubline+1
 	endif
+	
+	endif  !ifil.eq.4
+	if(ifil.eq.4)distancesav(ii) = rmindistance(ifil)
+	if(ifil.eq.4)write(26,*)distancesav(ii)
 
 	enddo  !ifil
 
