@@ -11773,9 +11773,9 @@ div#notebook {
 <span class="kn">from</span> <span class="nn">pylabs.utils.paths</span> <span class="kn">import</span> <span class="n">getnetworkdataroot</span>
 <span class="n">fs</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">getnetworkdataroot</span><span class="p">())</span>
 <span class="c1">#get data from test file</span>
-<span class="n">LCSP_fname</span> <span class="o">=</span> <span class="n">fs</span> <span class="o">/</span> <span class="s1">&#39;bbc&#39;</span> <span class="o">/</span> <span class="s1">&#39;LeftPostIntCap.csv&#39;</span>
-<span class="n">lcsp_data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">LCSP_fname</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
-<span class="n">lcsp_data</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">LCSP_fname</span> <span class="o">=</span> <span class="n">fs</span> <span class="o">/</span> <span class="s1">&#39;bbc&#39;</span> <span class="o">/</span> <span class="s1">&#39;reg&#39;</span> <span class="o">/</span> <span class="s1">&#39;dwi_warps_in_template_space&#39;</span> <span class="o">/</span> <span class="s1">&#39;comb_FA_AD_RD_MD_4vol&#39;</span> <span class="o">/</span> <span class="s1">&#39;LeftPostIntCap.csv&#39;</span>
+<span class="n">lcsp_data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">LCSP_fname</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+<span class="c1">#lcsp_data.reset_index(level=0, inplace=True)</span>
 </pre></div>
 
 </div>
@@ -12023,16 +12023,16 @@ div#notebook {
     <tr>
       <th rowspan="3" valign="top">sub-bbc105</th>
       <th>fa</th>
-      <td>0.055000</td>
+      <td>0.055031</td>
       <td>0.143661</td>
       <td>0.133353</td>
-      <td>0.091900</td>
+      <td>0.091898</td>
       <td>0.212808</td>
       <td>0.312858</td>
       <td>0.230360</td>
       <td>0.185330</td>
       <td>0.179046</td>
-      <td>0.089200</td>
+      <td>0.089164</td>
     </tr>
     <tr>
       <th>ad</th>
@@ -12177,26 +12177,26 @@ div#notebook {
     <tr>
       <th>fa</th>
       <td>NaN</td>
-      <td>0.055000</td>
-      <td>0.091100</td>
-      <td>0.066700</td>
+      <td>0.055031</td>
+      <td>0.091115</td>
+      <td>0.066713</td>
       <td>NaN</td>
-      <td>0.060300</td>
-      <td>0.033200</td>
+      <td>0.060289</td>
+      <td>0.033151</td>
       <td>0.103622</td>
-      <td>0.046200</td>
-      <td>0.036400</td>
+      <td>0.046172</td>
+      <td>0.036390</td>
       <td>...</td>
-      <td>0.052800</td>
-      <td>0.053500</td>
-      <td>0.066100</td>
-      <td>0.072900</td>
-      <td>0.039100</td>
-      <td>0.053000</td>
-      <td>0.056900</td>
-      <td>0.046700</td>
-      <td>0.090100</td>
-      <td>0.073700</td>
+      <td>0.052759</td>
+      <td>0.053474</td>
+      <td>0.066135</td>
+      <td>0.072898</td>
+      <td>0.039135</td>
+      <td>0.052960</td>
+      <td>0.056855</td>
+      <td>0.046690</td>
+      <td>0.090091</td>
+      <td>0.073738</td>
     </tr>
     <tr>
       <th>md</th>
@@ -12254,6 +12254,795 @@ div#notebook {
 
 </div>
 
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[6]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">lcsp_fa</span> <span class="o">=</span> <span class="n">lcsp_data</span><span class="o">.</span><span class="n">loc</span><span class="p">[[</span><span class="s1">&#39;fa&#39;</span><span class="p">]]</span>
+<span class="n">lcsp_fa</span> <span class="o">=</span> <span class="n">lcsp_fa</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">lcsp_ad</span> <span class="o">=</span> <span class="n">lcsp_data</span><span class="o">.</span><span class="n">loc</span><span class="p">[[</span><span class="s1">&#39;ad&#39;</span><span class="p">]]</span>
+<span class="n">lcsp_ad</span> <span class="o">=</span> <span class="n">lcsp_ad</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">lcsp_rd</span> <span class="o">=</span> <span class="n">lcsp_data</span><span class="o">.</span><span class="n">loc</span><span class="p">[[</span><span class="s1">&#39;rd&#39;</span><span class="p">]]</span>
+<span class="n">lcsp_rd</span> <span class="o">=</span> <span class="n">lcsp_rd</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">lcsp_md</span> <span class="o">=</span> <span class="n">lcsp_data</span><span class="o">.</span><span class="n">loc</span><span class="p">[[</span><span class="s1">&#39;md&#39;</span><span class="p">]]</span>
+<span class="n">lcsp_md</span> <span class="o">=</span> <span class="n">lcsp_md</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">lcsp_fa</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">10</span><span class="p">),</span> <span class="n">lcsp_ad</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">10</span><span class="p">),</span><span class="n">lcsp_rd</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">10</span><span class="p">),</span><span class="n">lcsp_md</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt output_prompt">Out[6]:</div>
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>(Subjid          sub-bbc101  sub-bbc105  sub-bbc106  sub-bbc108  sub-bbc113  sub-bbc116  sub-bbc118  sub-bbc119  sub-bbc120  sub-bbc202  sub-bbc208  sub-bbc209  sub-bbc211  sub-bbc231  sub-bbc241  sub-bbc243  sub-bbc249  sub-bbc253
+ modality                                                                                                                                                                                                                              
+ fa       seg1          NaN    0.055031    0.091115    0.066713         NaN    0.060289    0.033151    0.103622    0.046172    0.036390    0.045028    0.055632    0.028764    0.042528    0.050942    0.042212    0.061753    0.065299
+          seg2          NaN    0.143661    0.141154    0.140151         NaN    0.062181    0.098647    0.101313    0.074323    0.112643    0.099007    0.109043    0.080356    0.105664    0.073896    0.053652    0.080578    0.120251
+          seg3          NaN    0.133353    0.161847    0.165547         NaN    0.124429    0.229681    0.149606    0.095179    0.169248    0.100210    0.098571    0.128222    0.129164    0.137246    0.116970    0.118551    0.087821
+          seg4          NaN    0.091898    0.268484    0.249063         NaN    0.199361    0.320648    0.290663    0.150389    0.269743    0.157388    0.139424    0.203312    0.182450    0.259637    0.190226    0.092408    0.169118
+          seg5          NaN    0.212808    0.326231    0.361090         NaN    0.188079    0.312438    0.406664    0.282354    0.282688    0.241163    0.194816    0.169208    0.231137    0.249981    0.282606    0.134617    0.228059
+          seg6          NaN    0.312858    0.299917    0.326035         NaN    0.188121    0.233381    0.307479    0.331353    0.263504    0.317123    0.280166    0.145370    0.259971    0.236300    0.271380    0.260352    0.338427
+          seg7          NaN    0.230360    0.182723    0.227222         NaN    0.189694    0.218291    0.212435    0.225238    0.187214    0.224473    0.200923    0.070274    0.170979    0.201871    0.206926    0.241166    0.240394
+          seg8          NaN    0.185330    0.166965    0.192643         NaN    0.148010    0.198019    0.191548    0.163615    0.170489    0.158906    0.175613    0.087639    0.193525    0.177184    0.185793    0.214399    0.211872
+          seg9          NaN    0.179046    0.098949    0.108702         NaN    0.088163    0.126415    0.130203    0.102724    0.099844    0.140934    0.143198    0.059190    0.113307    0.132384    0.116924    0.199903    0.160783
+          seg10         NaN    0.089164    0.059841    0.059028         NaN    0.062101    0.057823    0.063705    0.052759    0.053474    0.066135    0.072898    0.039135    0.052960    0.056855    0.046690    0.090091    0.073738,
+ Subjid          sub-bbc101  sub-bbc105  sub-bbc106  sub-bbc108  sub-bbc113  sub-bbc116  sub-bbc118  sub-bbc119  sub-bbc120  sub-bbc202  sub-bbc208  sub-bbc209  sub-bbc211  sub-bbc231  sub-bbc241  sub-bbc243  sub-bbc249  sub-bbc253
+ modality                                                                                                                                                                                                                              
+ ad       seg1          NaN    0.000293    0.000299    0.000361         NaN    0.000317    0.000330    0.000209    0.000160    0.000219    0.000241    0.000195    0.000178    0.000362    0.000263    0.000158    0.000228    0.000126
+          seg2          NaN    0.000411    0.000255    0.000429         NaN    0.000240    0.000327    0.000322    0.000228    0.000366    0.000300    0.000296    0.000304    0.000519    0.000383    0.000298    0.000270    0.000173
+          seg3          NaN    0.000416    0.000397    0.000278         NaN    0.000380    0.000374    0.000338    0.000447    0.000310    0.000271    0.000301    0.000194    0.000343    0.000383    0.000503    0.000222    0.000299
+          seg4          NaN    0.000441    0.000232    0.000274         NaN    0.000335    0.000297    0.000279    0.000310    0.000240    0.000441    0.000409    0.000132    0.000298    0.000261    0.000290    0.000352    0.000323
+          seg5          NaN    0.000329    0.000208    0.000269         NaN    0.000211    0.000202    0.000225    0.000262    0.000218    0.000322    0.000290    0.000110    0.000296    0.000221    0.000273    0.000295    0.000267
+          seg6          NaN    0.000230    0.000195    0.000181         NaN    0.000198    0.000264    0.000203    0.000223    0.000229    0.000244    0.000222    0.000142    0.000223    0.000213    0.000212    0.000255    0.000221
+          seg7          NaN    0.000284    0.000275    0.000287         NaN    0.000194    0.000412    0.000278    0.000269    0.000306    0.000273    0.000232    0.000188    0.000316    0.000267    0.000270    0.000258    0.000325
+          seg8          NaN    0.000297    0.000353    0.000345         NaN    0.000261    0.000353    0.000328    0.000366    0.000310    0.000323    0.000281    0.000196    0.000288    0.000321    0.000352    0.000394    0.000404
+          seg9          NaN    0.000310    0.000308    0.000364         NaN    0.000288    0.000347    0.000350    0.000292    0.000320    0.000327    0.000298    0.000201    0.000381    0.000332    0.000370    0.000331    0.000344
+          seg10         NaN    0.000343    0.000301    0.000324         NaN    0.000254    0.000336    0.000350    0.000338    0.000275    0.000371    0.000330    0.000212    0.000317    0.000337    0.000275    0.000377    0.000352,
+ Subjid          sub-bbc101  sub-bbc105  sub-bbc106  sub-bbc108  sub-bbc113  sub-bbc116  sub-bbc118  sub-bbc119  sub-bbc120  sub-bbc202  sub-bbc208  sub-bbc209  sub-bbc211  sub-bbc231  sub-bbc241  sub-bbc243  sub-bbc249  sub-bbc253
+ modality                                                                                                                                                                                                                              
+ rd       seg1          NaN    0.000283    0.000206    0.000409         NaN    0.000327    0.000345    0.000287    0.000139    0.000250    0.000225    0.000167    0.000187    0.000366    0.000281    0.000131    0.000221    0.000187
+          seg2          NaN    0.000251    0.000369    0.000540         NaN    0.000234    0.000343    0.000384    0.000252    0.000419    0.000241    0.000182    0.000308    0.000580    0.000362    0.000284    0.000282    0.000280
+          seg3          NaN    0.000325    0.000529    0.000394         NaN    0.000310    0.000445    0.000440    0.000502    0.000376    0.000283    0.000263    0.000272    0.000403    0.000439    0.000514    0.000297    0.000372
+          seg4          NaN    0.000482    0.000443    0.000417         NaN    0.000312    0.000478    0.000466    0.000379    0.000403    0.000423    0.000424    0.000293    0.000368    0.000370    0.000374    0.000412    0.000464
+          seg5          NaN    0.000437    0.000438    0.000493         NaN    0.000338    0.000483    0.000528    0.000409    0.000371    0.000425    0.000415    0.000226    0.000382    0.000389    0.000370    0.000335    0.000393
+          seg6          NaN    0.000444    0.000456    0.000464         NaN    0.000313    0.000488    0.000488    0.000473    0.000473    0.000454    0.000429    0.000236    0.000408    0.000404    0.000407    0.000391    0.000475
+          seg7          NaN    0.000478    0.000428    0.000413         NaN    0.000352    0.000363    0.000449    0.000443    0.000379    0.000492    0.000424    0.000190    0.000310    0.000357    0.000414    0.000456    0.000495
+          seg8          NaN    0.000382    0.000431    0.000341         NaN    0.000313    0.000436    0.000387    0.000349    0.000334    0.000362    0.000371    0.000223    0.000328    0.000382    0.000322    0.000362    0.000455
+          seg9          NaN    0.000383    0.000376    0.000431         NaN    0.000301    0.000428    0.000441    0.000392    0.000402    0.000400    0.000395    0.000239    0.000425    0.000433    0.000379    0.000417    0.000454
+          seg10         NaN    0.000436    0.000356    0.000369         NaN    0.000260    0.000383    0.000398    0.000354    0.000330    0.000396    0.000395    0.000258    0.000336    0.000401    0.000299    0.000398    0.000406,
+ Subjid          sub-bbc101  sub-bbc105  sub-bbc106  sub-bbc108  sub-bbc113  sub-bbc116  sub-bbc118  sub-bbc119  sub-bbc120  sub-bbc202  sub-bbc208  sub-bbc209  sub-bbc211  sub-bbc231  sub-bbc241  sub-bbc243  sub-bbc249  sub-bbc253
+ modality                                                                                                                                                                                                                              
+ md       seg1          NaN    0.000286    0.000237    0.000393         NaN    0.000324    0.000340    0.000261    0.000146    0.000240    0.000231    0.000176    0.000184    0.000365    0.000275    0.000140    0.000224    0.000167
+          seg2          NaN    0.000304    0.000331    0.000503         NaN    0.000236    0.000338    0.000363    0.000244    0.000401    0.000261    0.000220    0.000307    0.000559    0.000369    0.000289    0.000278    0.000244
+          seg3          NaN    0.000355    0.000485    0.000355         NaN    0.000333    0.000421    0.000406    0.000483    0.000354    0.000279    0.000275    0.000246    0.000383    0.000420    0.000511    0.000272    0.000348
+          seg4          NaN    0.000469    0.000373    0.000369         NaN    0.000320    0.000418    0.000404    0.000356    0.000349    0.000429    0.000419    0.000239    0.000345    0.000333    0.000346    0.000392    0.000417
+          seg5          NaN    0.000401    0.000362    0.000418         NaN    0.000296    0.000389    0.000427    0.000360    0.000320    0.000391    0.000373    0.000187    0.000353    0.000333    0.000337    0.000322    0.000351
+          seg6          NaN    0.000372    0.000369    0.000370         NaN    0.000275    0.000413    0.000393    0.000390    0.000392    0.000384    0.000360    0.000204    0.000347    0.000340    0.000342    0.000346    0.000391
+          seg7          NaN    0.000413    0.000377    0.000371         NaN    0.000299    0.000379    0.000392    0.000385    0.000355    0.000419    0.000360    0.000189    0.000312    0.000327    0.000366    0.000390    0.000438
+          seg8          NaN    0.000353    0.000405    0.000343         NaN    0.000296    0.000408    0.000367    0.000355    0.000326    0.000349    0.000341    0.000214    0.000314    0.000362    0.000332    0.000372    0.000438
+          seg9          NaN    0.000358    0.000354    0.000408         NaN    0.000297    0.000401    0.000410    0.000359    0.000375    0.000376    0.000363    0.000226    0.000410    0.000399    0.000376    0.000388    0.000417
+          seg10         NaN    0.000405    0.000338    0.000354         NaN    0.000258    0.000367    0.000382    0.000349    0.000312    0.000388    0.000373    0.000243    0.000330    0.000380    0.000291    0.000391    0.000388)</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[7]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">lcsp_fa</span><span class="p">[</span><span class="s1">&#39;209-101&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">lcsp_fa</span><span class="p">[</span><span class="s1">&#39;sub-bbc209&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">lcsp_fa</span><span class="p">[</span><span class="s1">&#39;sub-bbc108&#39;</span><span class="p">]</span>
+<span class="n">lcsp_fa</span><span class="p">[</span><span class="s1">&#39;211-105&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">lcsp_fa</span><span class="p">[</span><span class="s1">&#39;sub-bbc211&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">lcsp_fa</span><span class="p">[</span><span class="s1">&#39;sub-bbc105&#39;</span><span class="p">]</span>
+<span class="n">lcsp_fa</span><span class="p">[</span><span class="s1">&#39;208-106&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">lcsp_fa</span><span class="p">[</span><span class="s1">&#39;sub-bbc208&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">lcsp_fa</span><span class="p">[</span><span class="s1">&#39;sub-bbc106&#39;</span><span class="p">]</span>
+<span class="n">lcsp_fa</span><span class="p">[</span><span class="s1">&#39;202-108&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">lcsp_fa</span><span class="p">[</span><span class="s1">&#39;sub-bbc202&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">lcsp_fa</span><span class="p">[</span><span class="s1">&#39;sub-bbc108&#39;</span><span class="p">]</span>
+<span class="n">lcsp_fa</span><span class="p">[</span><span class="s1">&#39;249-113&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">lcsp_fa</span><span class="p">[</span><span class="s1">&#39;sub-bbc249&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">lcsp_fa</span><span class="p">[</span><span class="s1">&#39;sub-bbc113&#39;</span><span class="p">]</span>
+<span class="n">lcsp_fa</span><span class="p">[</span><span class="s1">&#39;241-116&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">lcsp_fa</span><span class="p">[</span><span class="s1">&#39;sub-bbc241&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">lcsp_fa</span><span class="p">[</span><span class="s1">&#39;sub-bbc116&#39;</span><span class="p">]</span>
+<span class="n">lcsp_fa</span><span class="p">[</span><span class="s1">&#39;243-118&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">lcsp_fa</span><span class="p">[</span><span class="s1">&#39;sub-bbc243&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">lcsp_fa</span><span class="p">[</span><span class="s1">&#39;sub-bbc118&#39;</span><span class="p">]</span>
+<span class="n">lcsp_fa</span><span class="p">[</span><span class="s1">&#39;231-119&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">lcsp_fa</span><span class="p">[</span><span class="s1">&#39;sub-bbc231&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">lcsp_fa</span><span class="p">[</span><span class="s1">&#39;sub-bbc119&#39;</span><span class="p">]</span>
+<span class="n">lcsp_fa</span><span class="p">[</span><span class="s1">&#39;253-120&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">lcsp_fa</span><span class="p">[</span><span class="s1">&#39;sub-bbc253&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">lcsp_fa</span><span class="p">[</span><span class="s1">&#39;sub-bbc120&#39;</span><span class="p">]</span>
+<span class="n">lcsp_fa</span><span class="p">[[</span><span class="s1">&#39;209-101&#39;</span><span class="p">,</span> <span class="s1">&#39;211-105&#39;</span><span class="p">,</span> <span class="s1">&#39;208-106&#39;</span><span class="p">,</span> <span class="s1">&#39;202-108&#39;</span><span class="p">,</span> <span class="s1">&#39;249-113&#39;</span><span class="p">,</span> <span class="s1">&#39;241-116&#39;</span><span class="p">,</span> <span class="s1">&#39;243-118&#39;</span><span class="p">,</span> <span class="s1">&#39;231-119&#39;</span><span class="p">,</span> <span class="s1">&#39;253-120&#39;</span><span class="p">]]</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt output_prompt">Out[7]:</div>
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Subjid</th>
+      <th>209-101</th>
+      <th>211-105</th>
+      <th>208-106</th>
+      <th>202-108</th>
+      <th>249-113</th>
+      <th>241-116</th>
+      <th>243-118</th>
+      <th>231-119</th>
+      <th>253-120</th>
+    </tr>
+    <tr>
+      <th>modality</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th rowspan="10" valign="top">fa</th>
+      <th>seg1</th>
+      <td>-0.011081</td>
+      <td>-0.026267</td>
+      <td>-0.046087</td>
+      <td>-0.030323</td>
+      <td>NaN</td>
+      <td>-0.009347</td>
+      <td>0.009061</td>
+      <td>-0.061093</td>
+      <td>0.019127</td>
+    </tr>
+    <tr>
+      <th>seg2</th>
+      <td>-0.031108</td>
+      <td>-0.063305</td>
+      <td>-0.042147</td>
+      <td>-0.027508</td>
+      <td>NaN</td>
+      <td>0.011715</td>
+      <td>-0.044995</td>
+      <td>0.004351</td>
+      <td>0.045927</td>
+    </tr>
+    <tr>
+      <th>seg3</th>
+      <td>-0.066975</td>
+      <td>-0.005131</td>
+      <td>-0.061637</td>
+      <td>0.003701</td>
+      <td>NaN</td>
+      <td>0.012817</td>
+      <td>-0.112711</td>
+      <td>-0.020441</td>
+      <td>-0.007358</td>
+    </tr>
+    <tr>
+      <th>seg4</th>
+      <td>-0.109639</td>
+      <td>0.111414</td>
+      <td>-0.111097</td>
+      <td>0.020680</td>
+      <td>NaN</td>
+      <td>0.060277</td>
+      <td>-0.130422</td>
+      <td>-0.108213</td>
+      <td>0.018729</td>
+    </tr>
+    <tr>
+      <th>seg5</th>
+      <td>-0.166274</td>
+      <td>-0.043599</td>
+      <td>-0.085068</td>
+      <td>-0.078402</td>
+      <td>NaN</td>
+      <td>0.061902</td>
+      <td>-0.029831</td>
+      <td>-0.175527</td>
+      <td>-0.054295</td>
+    </tr>
+    <tr>
+      <th>seg6</th>
+      <td>-0.045869</td>
+      <td>-0.167487</td>
+      <td>0.017206</td>
+      <td>-0.062531</td>
+      <td>NaN</td>
+      <td>0.048179</td>
+      <td>0.037999</td>
+      <td>-0.047509</td>
+      <td>0.007074</td>
+    </tr>
+    <tr>
+      <th>seg7</th>
+      <td>-0.026299</td>
+      <td>-0.160086</td>
+      <td>0.041750</td>
+      <td>-0.040008</td>
+      <td>NaN</td>
+      <td>0.012176</td>
+      <td>-0.011365</td>
+      <td>-0.041456</td>
+      <td>0.015155</td>
+    </tr>
+    <tr>
+      <th>seg8</th>
+      <td>-0.017030</td>
+      <td>-0.097691</td>
+      <td>-0.008059</td>
+      <td>-0.022154</td>
+      <td>NaN</td>
+      <td>0.029174</td>
+      <td>-0.012226</td>
+      <td>0.001977</td>
+      <td>0.048257</td>
+    </tr>
+    <tr>
+      <th>seg9</th>
+      <td>0.034496</td>
+      <td>-0.119856</td>
+      <td>0.041985</td>
+      <td>-0.008858</td>
+      <td>NaN</td>
+      <td>0.044221</td>
+      <td>-0.009491</td>
+      <td>-0.016896</td>
+      <td>0.058059</td>
+    </tr>
+    <tr>
+      <th>seg10</th>
+      <td>0.013870</td>
+      <td>-0.050029</td>
+      <td>0.006294</td>
+      <td>-0.005553</td>
+      <td>NaN</td>
+      <td>-0.005246</td>
+      <td>-0.011133</td>
+      <td>-0.010745</td>
+      <td>0.020979</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[8]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="c1">#lcsp_fa.drop(&#39;fa&#39;, axis=0, inplace=True)</span>
+<span class="n">lcsp_fa_sub</span> <span class="o">=</span> <span class="n">lcsp_fa</span><span class="p">[[</span><span class="s1">&#39;209-101&#39;</span><span class="p">,</span> <span class="s1">&#39;211-105&#39;</span><span class="p">,</span> <span class="s1">&#39;208-106&#39;</span><span class="p">,</span> <span class="s1">&#39;202-108&#39;</span><span class="p">,</span> <span class="s1">&#39;249-113&#39;</span><span class="p">,</span> <span class="s1">&#39;241-116&#39;</span><span class="p">,</span> <span class="s1">&#39;243-118&#39;</span><span class="p">,</span> <span class="s1">&#39;231-119&#39;</span><span class="p">,</span> <span class="s1">&#39;253-120&#39;</span><span class="p">]]</span>
+<span class="n">lcsp_fa_sub</span> <span class="o">=</span> <span class="n">lcsp_fa_sub</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
+<span class="n">lcsp_fa_sub</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt output_prompt">Out[8]:</div>
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<table border="1" class="dataframe">
+  <thead>
+    <tr>
+      <th>modality</th>
+      <th colspan="10" halign="left">fa</th>
+    </tr>
+    <tr>
+      <th></th>
+      <th>seg1</th>
+      <th>seg2</th>
+      <th>seg3</th>
+      <th>seg4</th>
+      <th>seg5</th>
+      <th>seg6</th>
+      <th>seg7</th>
+      <th>seg8</th>
+      <th>seg9</th>
+      <th>seg10</th>
+    </tr>
+    <tr>
+      <th>Subjid</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>209-101</th>
+      <td>-0.011081</td>
+      <td>-0.031108</td>
+      <td>-0.066975</td>
+      <td>-0.109639</td>
+      <td>-0.166274</td>
+      <td>-0.045869</td>
+      <td>-0.026299</td>
+      <td>-0.017030</td>
+      <td>0.034496</td>
+      <td>0.013870</td>
+    </tr>
+    <tr>
+      <th>211-105</th>
+      <td>-0.026267</td>
+      <td>-0.063305</td>
+      <td>-0.005131</td>
+      <td>0.111414</td>
+      <td>-0.043599</td>
+      <td>-0.167487</td>
+      <td>-0.160086</td>
+      <td>-0.097691</td>
+      <td>-0.119856</td>
+      <td>-0.050029</td>
+    </tr>
+    <tr>
+      <th>208-106</th>
+      <td>-0.046087</td>
+      <td>-0.042147</td>
+      <td>-0.061637</td>
+      <td>-0.111097</td>
+      <td>-0.085068</td>
+      <td>0.017206</td>
+      <td>0.041750</td>
+      <td>-0.008059</td>
+      <td>0.041985</td>
+      <td>0.006294</td>
+    </tr>
+    <tr>
+      <th>202-108</th>
+      <td>-0.030323</td>
+      <td>-0.027508</td>
+      <td>0.003701</td>
+      <td>0.020680</td>
+      <td>-0.078402</td>
+      <td>-0.062531</td>
+      <td>-0.040008</td>
+      <td>-0.022154</td>
+      <td>-0.008858</td>
+      <td>-0.005553</td>
+    </tr>
+    <tr>
+      <th>249-113</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>241-116</th>
+      <td>-0.009347</td>
+      <td>0.011715</td>
+      <td>0.012817</td>
+      <td>0.060277</td>
+      <td>0.061902</td>
+      <td>0.048179</td>
+      <td>0.012176</td>
+      <td>0.029174</td>
+      <td>0.044221</td>
+      <td>-0.005246</td>
+    </tr>
+    <tr>
+      <th>243-118</th>
+      <td>0.009061</td>
+      <td>-0.044995</td>
+      <td>-0.112711</td>
+      <td>-0.130422</td>
+      <td>-0.029831</td>
+      <td>0.037999</td>
+      <td>-0.011365</td>
+      <td>-0.012226</td>
+      <td>-0.009491</td>
+      <td>-0.011133</td>
+    </tr>
+    <tr>
+      <th>231-119</th>
+      <td>-0.061093</td>
+      <td>0.004351</td>
+      <td>-0.020441</td>
+      <td>-0.108213</td>
+      <td>-0.175527</td>
+      <td>-0.047509</td>
+      <td>-0.041456</td>
+      <td>0.001977</td>
+      <td>-0.016896</td>
+      <td>-0.010745</td>
+    </tr>
+    <tr>
+      <th>253-120</th>
+      <td>0.019127</td>
+      <td>0.045927</td>
+      <td>-0.007358</td>
+      <td>0.018729</td>
+      <td>-0.054295</td>
+      <td>0.007074</td>
+      <td>0.015155</td>
+      <td>0.048257</td>
+      <td>0.058059</td>
+      <td>0.020979</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[13]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span> 
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[14]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">lcsp_fa_sub</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt output_prompt">Out[14]:</div>
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<table border="1" class="dataframe">
+  <thead>
+    <tr>
+      <th>modality</th>
+      <th colspan="10" halign="left">fa</th>
+    </tr>
+    <tr>
+      <th></th>
+      <th>seg1</th>
+      <th>seg2</th>
+      <th>seg3</th>
+      <th>seg4</th>
+      <th>seg5</th>
+      <th>seg6</th>
+      <th>seg7</th>
+      <th>seg8</th>
+      <th>seg9</th>
+      <th>seg10</th>
+    </tr>
+    <tr>
+      <th>Subjid</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>209-101</th>
+      <td>-0.011081</td>
+      <td>-0.031108</td>
+      <td>-0.066975</td>
+      <td>-0.109639</td>
+      <td>-0.166274</td>
+      <td>-0.045869</td>
+      <td>-0.026299</td>
+      <td>-0.017030</td>
+      <td>0.034496</td>
+      <td>0.013870</td>
+    </tr>
+    <tr>
+      <th>211-105</th>
+      <td>-0.026267</td>
+      <td>-0.063305</td>
+      <td>-0.005131</td>
+      <td>0.111414</td>
+      <td>-0.043599</td>
+      <td>-0.167487</td>
+      <td>-0.160086</td>
+      <td>-0.097691</td>
+      <td>-0.119856</td>
+      <td>-0.050029</td>
+    </tr>
+    <tr>
+      <th>208-106</th>
+      <td>-0.046087</td>
+      <td>-0.042147</td>
+      <td>-0.061637</td>
+      <td>-0.111097</td>
+      <td>-0.085068</td>
+      <td>0.017206</td>
+      <td>0.041750</td>
+      <td>-0.008059</td>
+      <td>0.041985</td>
+      <td>0.006294</td>
+    </tr>
+    <tr>
+      <th>202-108</th>
+      <td>-0.030323</td>
+      <td>-0.027508</td>
+      <td>0.003701</td>
+      <td>0.020680</td>
+      <td>-0.078402</td>
+      <td>-0.062531</td>
+      <td>-0.040008</td>
+      <td>-0.022154</td>
+      <td>-0.008858</td>
+      <td>-0.005553</td>
+    </tr>
+    <tr>
+      <th>249-113</th>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>241-116</th>
+      <td>-0.009347</td>
+      <td>0.011715</td>
+      <td>0.012817</td>
+      <td>0.060277</td>
+      <td>0.061902</td>
+      <td>0.048179</td>
+      <td>0.012176</td>
+      <td>0.029174</td>
+      <td>0.044221</td>
+      <td>-0.005246</td>
+    </tr>
+    <tr>
+      <th>243-118</th>
+      <td>0.009061</td>
+      <td>-0.044995</td>
+      <td>-0.112711</td>
+      <td>-0.130422</td>
+      <td>-0.029831</td>
+      <td>0.037999</td>
+      <td>-0.011365</td>
+      <td>-0.012226</td>
+      <td>-0.009491</td>
+      <td>-0.011133</td>
+    </tr>
+    <tr>
+      <th>231-119</th>
+      <td>-0.061093</td>
+      <td>0.004351</td>
+      <td>-0.020441</td>
+      <td>-0.108213</td>
+      <td>-0.175527</td>
+      <td>-0.047509</td>
+      <td>-0.041456</td>
+      <td>0.001977</td>
+      <td>-0.016896</td>
+      <td>-0.010745</td>
+    </tr>
+    <tr>
+      <th>253-120</th>
+      <td>0.019127</td>
+      <td>0.045927</td>
+      <td>-0.007358</td>
+      <td>0.018729</td>
+      <td>-0.054295</td>
+      <td>0.007074</td>
+      <td>0.015155</td>
+      <td>0.048257</td>
+      <td>0.058059</td>
+      <td>0.020979</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[16]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="p">(</span><span class="mf">0.0</span><span class="p">,)</span><span class="o">*</span><span class="mi">10</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt output_prompt">Out[16]:</div>
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[24]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">lcsp_fa_sub_stats</span> <span class="o">=</span> <span class="n">lcsp_fa_sub</span><span class="p">[</span><span class="s1">&#39;fa&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">ss</span><span class="o">.</span><span class="n">ttest_1samp</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,))</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">)</span>
+<span class="n">lcsp_fa_sub_stats</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;fa-tstat&#39;</span><span class="p">,</span> <span class="s1">&#39;fa-p-value&#39;</span><span class="p">]</span>
+<span class="n">lcsp_fa_sub_stats</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt output_prompt">Out[24]:</div>
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>fa-tstat</th>
+      <th>fa-p-value</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>seg1</th>
+      <td>-1.997985</td>
+      <td>0.080768</td>
+    </tr>
+    <tr>
+      <th>seg2</th>
+      <td>-1.430528</td>
+      <td>0.190441</td>
+    </tr>
+    <tr>
+      <th>seg3</th>
+      <td>-2.033172</td>
+      <td>0.076480</td>
+    </tr>
+    <tr>
+      <th>seg4</th>
+      <td>-0.932132</td>
+      <td>0.378541</td>
+    </tr>
+    <tr>
+      <th>seg5</th>
+      <td>-2.533359</td>
+      <td>0.035072</td>
+    </tr>
+    <tr>
+      <th>seg6</th>
+      <td>-1.067092</td>
+      <td>0.317071</td>
+    </tr>
+    <tr>
+      <th>seg7</th>
+      <td>-1.206081</td>
+      <td>0.262242</td>
+    </tr>
+    <tr>
+      <th>seg8</th>
+      <td>-0.641680</td>
+      <td>0.539027</td>
+    </tr>
+    <tr>
+      <th>seg9</th>
+      <td>0.146967</td>
+      <td>0.886795</td>
+    </tr>
+    <tr>
+      <th>seg10</th>
+      <td>-0.684128</td>
+      <td>0.513220</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span> 
+</pre></div>
+
+</div>
 </div>
 </div>
 
@@ -12492,7 +13281,7 @@ div#notebook {
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="n">lcsp_data</span> <span class="o">=</span> <span class="n">lcsp_data</span><span class="o">.</span><span class="n">unstack</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-<span class="n">lcsp_data</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">7</span><span class="p">)</span>
+<span class="n">lcsp_data</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
 </pre></div>
 
 </div>
@@ -12552,20 +13341,20 @@ div#notebook {
       <td>NaN</td>
       <td>NaN</td>
       <td>0.000293</td>
-      <td>0.055000</td>
+      <td>0.055031</td>
       <td>0.000286</td>
       <td>0.000283</td>
       <td>0.000299</td>
-      <td>0.091100</td>
+      <td>0.091115</td>
       <td>...</td>
       <td>0.000140</td>
       <td>0.000131</td>
       <td>0.000228</td>
-      <td>0.061800</td>
+      <td>0.061753</td>
       <td>0.000224</td>
       <td>0.000221</td>
       <td>0.000126</td>
-      <td>0.065300</td>
+      <td>0.065299</td>
       <td>0.000167</td>
       <td>0.000187</td>
     </tr>
@@ -12585,7 +13374,7 @@ div#notebook {
       <td>0.000289</td>
       <td>0.000284</td>
       <td>0.000270</td>
-      <td>0.080600</td>
+      <td>0.080578</td>
       <td>0.000278</td>
       <td>0.000282</td>
       <td>0.000173</td>
@@ -12613,7 +13402,7 @@ div#notebook {
       <td>0.000272</td>
       <td>0.000297</td>
       <td>0.000299</td>
-      <td>0.087800</td>
+      <td>0.087821</td>
       <td>0.000348</td>
       <td>0.000372</td>
     </tr>
@@ -12624,7 +13413,7 @@ div#notebook {
       <td>NaN</td>
       <td>NaN</td>
       <td>0.000441</td>
-      <td>0.091900</td>
+      <td>0.091898</td>
       <td>0.000469</td>
       <td>0.000482</td>
       <td>0.000232</td>
@@ -12633,7 +13422,7 @@ div#notebook {
       <td>0.000346</td>
       <td>0.000374</td>
       <td>0.000352</td>
-      <td>0.092400</td>
+      <td>0.092408</td>
       <td>0.000392</td>
       <td>0.000412</td>
       <td>0.000323</td>
@@ -12727,7 +13516,20 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[16]:</div>
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span> 
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[8]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="n">lcsp_data</span><span class="p">[</span><span class="s1">&#39;211-105&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">lcsp_data</span><span class="p">[</span><span class="s1">&#39;sub-bbc211&#39;</span><span class="p">][</span><span class="s1">&#39;fa&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">lcsp_data</span><span class="p">[</span><span class="s1">&#39;sub-bbc105&#39;</span><span class="p">][</span><span class="s1">&#39;fa&#39;</span><span class="p">]</span>
@@ -12742,20 +13544,20 @@ div#notebook {
 <div class="output">
 
 
-<div class="output_area"><div class="prompt output_prompt">Out[16]:</div>
+<div class="output_area"><div class="prompt output_prompt">Out[8]:</div>
 
 
 <div class="output_text output_subarea output_execute_result">
-<pre>seg1    -0.026200
-seg2    -0.063261
+<pre>seg1    -0.026267
+seg2    -0.063305
 seg3    -0.005131
-seg4     0.111412
+seg4     0.111414
 seg5    -0.043599
 seg6    -0.167487
-seg7    -0.160060
-seg8    -0.097730
-seg9    -0.119846
-seg10   -0.050100
+seg7    -0.160086
+seg8    -0.097691
+seg9    -0.119856
+seg10   -0.050029
 Name: 211-105, dtype: float64</pre>
 </div>
 
