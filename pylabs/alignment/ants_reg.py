@@ -3,6 +3,7 @@ from pathlib import *
 from os.path import join
 import json
 import datetime
+from nibabel.filename_parser import parse_filename
 from pylabs.utils.provenance import ProvenanceWrapper
 from pylabs.utils import run_subprocess
 from pylabs.utils import WorkingContext
@@ -12,7 +13,9 @@ if not Path(os.environ.get('ANTSPATH'), 'WarpImageMultiTransform').is_file():
 if not Path(os.environ.get('ANTSPATH'), 'WarpTimeSeriesImageMultiTransform').is_file():
     raise ValueError('must have ants installed with WarpTimeSeriesImageMultiTransform in $ANTSPATH directory.')
 if not (Path(*Path(os.environ.get('ANTSPATH')).parts[:-2]) / 'ANTs' / 'Scripts' / 'antsRegistrationSyN.sh').is_file():
-    raise ValueError('must have ants installed with antsRegistrationSyN.sh in '+str(Path(*Path(os.environ.get('ANTSPATH')).parts[:-2]) / 'ANTs' / 'Scripts')+' directory.')
+    raise ValueError('must have ants installed with antsRegistrationSyN.sh in '+str(Path(*Path(os.environ.get('ANTSPATH')).parts[:-2]) / 'ANTs' / 'Scripts')+'or $ANTSPATH directory.')
+elif not (Path(os.environ.get('ANTSPATH')) / 'antsRegistrationSyN.sh').is_file():
+    raise ValueError('must have ants installed with antsRegistrationSyN.sh in $ANTSPATH directory.')
 else:
     antsRegistrationSyN = Path(*Path(os.environ.get('ANTSPATH')).parts[:-2]) / 'ANTs' / 'Scripts' / 'antsRegistrationSyN.sh'
 
@@ -101,11 +104,128 @@ def fsl2ants_affine(execwdir, ref, src, fslmatfilename):
     output += cmdt
     params = {}
     params['cmd'] = cmd
-    params['output'] = output
     params['ref_img'] = ref
     with WorkingContext(execwdir):
         output += run_subprocess(cmd)
+    params['output'] = output
     provenance.log(join(execwdir, fslmatfilename.replace('.mat', '.txt')),
                    'used c3d_affine_tool to convert fsl .mat file to itk affine',
                    join(execwdir, fslmatfilename), script=__file__, provenance=params)
+    return
+
+def fs_lta2fsl_mat(execwdir, mov, ref, fs_lta_fname):
+    if not Path(fs_lta_fname).is_file():
+        raise ValueError('fslta_fname file must exist or cannot be found. ' + fs_lta_fname)
+    if not Path(mov).is_file():
+        raise ValueError('mov file must exist or cannot be found. ' + mov)
+    if not Path(ref).is_file():
+        raise ValueError('ref file must exist or cannot be found. ' + ref)
+    if not Path(execwdir).is_dir():
+        raise ValueError('execwdir directory must exist. ' + execwdir)
+    #set up command
+    cmd = 'lta_convert --inlta '+ fs_lta_fname
+    cmd += ' --outfsl '+fs_lta_fname.replace('.lta', '.mat')
+    cmd += ' --src '+mov+' --trg '+ref
+    #set up
+    output = ()
+    t = datetime.datetime.now()
+    output += (str(t),)
+    cmdt = (cmd,)
+    output += cmdt
+    params = {}
+    params['cmd'] = cmd
+    params['ref_img'] = ref
+    with WorkingContext(execwdir):
+        output += run_subprocess(cmd)
+    params['output'] = output
+    provenance.log(fs_lta_fname.replace('.lta', '.mat'),
+                   'used freesurfer lta_convert to convert .lta xform to fsl .mat affine file',
+                   fs_lta_fname, script=__file__, provenance=params)
+    return
+
+def fsl_mat2fs_lta(execwdir, mov, ref, fslmat_fname):
+    if not Path(fslmat_fname).is_file():
+        raise ValueError('fslta_fname file must exist or cannot be found. ' + fslmat_fname)
+    if not Path(mov).is_file():
+        raise ValueError('mov file must exist or cannot be found. ' + mov)
+    if not Path(ref).is_file():
+        raise ValueError('ref file must exist or cannot be found. ' + ref)
+    if not Path(execwdir).is_dir():
+        raise ValueError('execwdir directory must exist. ' + execwdir)
+    #set up command
+    cmd = 'lta_convert --infsl '+ fslmat_fname
+    cmd += ' --outlta '+fslmat_fname.replace('.mat', '.lta')
+    cmd += ' --src '+mov+' --trg '+ref
+    #set up
+    output = ()
+    t = datetime.datetime.now()
+    output += (str(t),)
+    cmdt = (cmd,)
+    output += cmdt
+    params = {}
+    params['cmd'] = cmd
+    params['ref_img'] = ref
+    with WorkingContext(execwdir):
+        output += run_subprocess(cmd)
+    params['output'] = output
+    provenance.log(fslmat_fname.replace('.mat', '.lta'),
+                   'used freesurfer lta_convert to convert .lta xform to fsl .mat affine file',
+                   fslmat_fname, script=__file__, provenance=params)
+    return
+
+
+
+def fsvol2subj(moving, ref_img, outfile, subj_path, xform={'regheader': True}, convert2nii=True, args=[]):
+    """
+    mri_vol2vol - -mov brain.mgz - -targ rawavg.mgz - -regheader - -o
+    brain - in -rawavg.mgz - -no-save-reg
+    """
+    cmd = ''
+    #ref vol
+    #if Path(ref_img).is_file():
+        #applyreg.inputs.target_file = ref_img
+    #else:
+        #raise ValueError('ref_img file must exist or cannot be found. ' + ref_img)
+    #test which transform to use via xform dict parameter
+    if 'regheader' in xform and xform['regheader'] == True:
+        cmd += ' --regheader '
+    if 'reg_file' in xform and Path(xform['reg_file']).is_file():
+        cmd += ' --reg '+ xform['reg_file']
+    if 'fsl_reg_file' in xform and Path(xform['fsl_reg_file']).is_file():
+        cmd += ' --fsl '+xform['fsl_reg_file']
+    if not Path(moving).is_file():
+        raise ValueError('moving file must exist or cannot be found. '+moving)
+
+    output = ()
+    t = datetime.datetime.now()
+    output += (str(t),)
+    cmdt = (cmd,)
+    output += cmdt
+    params = {}
+    params['cmd'] = cmd
+    params['output'] = output
+    params['ref_img'] = ref_img
+
+
+    provenance.log(outfile, 'apply WarpImageMultiTransform', moving, script=__file__, provenance=params)
+    if convert2nii:
+        output += run_subprocess('mri_convert '+outfile+' '+ outfile.replace('.mgz', '.nii'))
+        params['output'] = output
+        provenance.log(outfile.replace('.mgz', '.nii'), 'convert aligned freesurfer vol in subject space to nifti', moving, script=__file__, provenance=params)
+
+
+
+def fslabel2subj(moving, ref_img, outfile, subj_path, xform={'regheader': True}, convert2nii=True, args=[]):
+    """
+    mri_label2vol - -seg aseg.mgz - -temp rawavg.mgz - -o
+    aseg - in -rawavg.mgz - -regheader aseg.mgz
+    """
+    cmd = 'mri_label2vol --seg '
+
+    return
+
+
+
+
+def fssurf2subj():
     return
