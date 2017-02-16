@@ -178,14 +178,14 @@ def fsl_mat2fs_lta(execwdir, mov, ref, fslmat_fname):
 def fsvol2subj(moving, ref_img, outfile, subj_path, xform={'regheader': True}, convert2nii=True, args=[]):
     """
     mri_vol2vol - -mov brain.mgz - -targ rawavg.mgz - -regheader - -o
-    brain - in -rawavg.mgz - -no - save - reg
+    brain - in -rawavg.mgz - -no-save-reg
     """
     cmd = ''
     #ref vol
-    if Path(ref_img).is_file():
-        applyreg.inputs.target_file = ref_img
-    else:
-        raise ValueError('ref_img file must exist or cannot be found. ' + ref_img)
+    #if Path(ref_img).is_file():
+        #applyreg.inputs.target_file = ref_img
+    #else:
+        #raise ValueError('ref_img file must exist or cannot be found. ' + ref_img)
     #test which transform to use via xform dict parameter
     if 'regheader' in xform and xform['regheader'] == True:
         cmd += ' --regheader '
@@ -223,12 +223,6 @@ def fslabel2subj(moving, ref_img, outfile, subj_path, xform={'regheader': True},
     cmd = 'mri_label2vol --seg '
 
     return
-
-
-
-
-
-
 
 
 

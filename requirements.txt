@@ -12,3 +12,6 @@ nipype
 petname
 cloud
 pathlib
+nrrd
+pandas
+sh
