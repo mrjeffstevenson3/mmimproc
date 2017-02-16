@@ -79,8 +79,11 @@ c f.vtk
 	do ifil =1,4
 	do i=1,89-6
 	if(ifil.eq.1)call fgetc(11,cnmr(i),istate)
-	if(ifil.eq.2.and.iprocmethod.ne.1)call fgetc(21,cnmr(i),istate)
-	if(ifil.eq.3.and.iprocmethod.ne.1)call fgetc(22,cnmr(i),istate)
+c	if(ifil.eq.2.and.iprocmethod.ne.1)call fgetc(21,cnmr(i),istate)
+c	if(ifil.eq.3.and.iprocmethod.ne.1)call fgetc(22,cnmr(i),istate)
+	if(ifil.eq.2)call fgetc(21,cnmr(i),istate)
+	if(ifil.eq.3)call fgetc(22,cnmr(i),istate)
+
 	if(ifil.eq.4)call fgetc(23,cnmr(i),istate)
 
 	if(inmr(i).eq.10.and.i.gt.70)then
@@ -102,8 +105,11 @@ c	do i=1,10
 
 	do ii=1,3*4
 	if(ifil.eq.1)call fgetc(11,cnmr(ii),istate)
-	if(ifil.eq.2.and.iprocmethod.ne.1)call fgetc(21,cnmr(ii),istate)
-	if(ifil.eq.3.and.iprocmethod.ne.1)call fgetc(22,cnmr(ii),istate)
+c	if(ifil.eq.2.and.iprocmethod.ne.1)call fgetc(21,cnmr(ii),istate)
+c	if(ifil.eq.3.and.iprocmethod.ne.1)call fgetc(22,cnmr(ii),istate)
+	if(ifil.eq.2)call fgetc(21,cnmr(ii),istate)
+	if(ifil.eq.3)call fgetc(22,cnmr(ii),istate)
+
 	if(ifil.eq.4)call fgetc(23,cnmr(ii),istate)
 
 	enddo
@@ -144,8 +150,11 @@ c	read(5,*)ioffset
 		call fgetc(11,cnmr(ii),istate)
 		cnmr11(ii) = cnmr(ii)
 	endif
-	if(ifil.eq.2.and.iprocmethod.ne.1)call fgetc(21,cnmr(ii),istate)
-	if(ifil.eq.3.and.iprocmethod.ne.1)call fgetc(22,cnmr(ii),istate)
+c	if(ifil.eq.2.and.iprocmethod.ne.1)call fgetc(21,cnmr(ii),istate)
+c	if(ifil.eq.3.and.iprocmethod.ne.1)call fgetc(22,cnmr(ii),istate)
+	if(ifil.eq.2)call fgetc(21,cnmr(ii),istate)
+	if(ifil.eq.3)call fgetc(22,cnmr(ii),istate)
+
 	if(ifil.eq.4)call fgetc(23,cnmr(ii),istate)
 
 	if(inmr(ii).eq.10.and.ii.gt.10)then
@@ -268,8 +277,8 @@ c	do i=280,280
 	if(ifil.eq.2)numpoints = numpointsb
 	if(ifil.eq.3)numpoints = numpointsc
 	if(ifil.eq.4)numpoints = numpointsd
-	if(ifil.eq.2.and.iprocmethod.eq.1)numpoints = 1
-	if(ifil.eq.3.and.iprocmethod.eq.1)numpoints = 1
+c	if(ifil.eq.2.and.iprocmethod.eq.1)numpoints = 1
+c	if(ifil.eq.3.and.iprocmethod.eq.1)numpoints = 1
 
 
 	sum = 0
