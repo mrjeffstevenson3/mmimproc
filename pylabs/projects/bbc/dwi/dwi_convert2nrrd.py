@@ -21,6 +21,6 @@ for dwif in dwi_fnames:
     fbvecs = infpath / str(fdwi_basen + '.eddy_rotated_bvecs')
     fbvals = dwipath / str(dwif + '.bvals')
     mask_fname = dwipath / str(dwif + '_S0_brain_mask.nii')
-    nii2nrrd(fdwi, dwipath / str(fdwi_basen + '_thr1.nhdr'), bvalsf=fbvals, bvecsf=fbvecs)
+    nii2nrrd(str(fdwi), str(dwipath / str(fdwi_basen + '_thr1.nhdr')), bvalsf=fbvals, bvecsf=fbvecs)
 
 
