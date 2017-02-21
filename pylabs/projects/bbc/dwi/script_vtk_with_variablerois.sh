@@ -17,7 +17,7 @@ cd ${DATADIR}/bbc
 #list=`python -c "from pylabs.projects.bbc.pairing import dwipairing; \
 #    print(' '.join(['sub-bbc{sid}'.format(sid=str(s)) for s, ses, m, r in dwipairing]))"`
 #list='sub-bbc108 sub-bbc211 sub-bbc231 sub-bbc241 sub-bbc243 sub-bbc249 sub-bbc253'
-list=sub-bbc253
+list=sub-bbc101
 #list=`ls -d sub-bbc*`
 #rm -f ${DATADIR}/bbc/allvtk_channel_run${run}.txt
 #loop over subject dirs
