@@ -12,6 +12,6 @@ nipype
 petname
 cloud
 pathlib
-nrrd
+pynrrd
 pandas
 sh
