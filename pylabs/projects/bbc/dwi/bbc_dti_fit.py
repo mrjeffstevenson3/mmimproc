@@ -1,4 +1,4 @@
-import os, inspect, itertools
+import os, inspect, itertools, platform
 from pathlib import *
 import numpy as np
 import nibabel as nib
@@ -18,6 +18,11 @@ from pylabs.utils.provenance import ProvenanceWrapper
 provenance = ProvenanceWrapper()
 fs = Path(getnetworkdataroot())
 pylabs_basepath = Path(*Path(inspect.getabsfile(pylabs)).parts[:-1])
+if platform.system() == 'Darwin':
+    slicer_path = Path('/Applications/Slicer_dev4p7_2-21-2017.app/Contents/MacOS/Slicer --launch ')
+elif platform.system() == 'Linux':
+    slicer_path = Path(
+        *Path(inspect.getabsfile(pylabs)).parts[:-3]) / 'Slicer-4.7.0-2017-02-01-linux-amd64' / 'Slicer --launch '
 project = 'bbc'
 fname_templ = 'sub-bbc{sid}_ses-{snum}_{meth}_{runnum}'
 dwi_fnames = [fname_templ.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r)) for s, ses, m, r in dwi_passed_qc]
@@ -83,7 +88,7 @@ cmds_d = {'RESTORE':
                          'cat outlier_map.Bbyte | voxel2image -inputdatatype byte -components %(num_dirs)s -header %(fdwi)s -outputroot %(fdwi_basen)s_%(m)s_outlier_map_'
                          ] + cam_part2b
 
-                     },
+                    },
             'OLS': {'campart1': ['modelfit -inputfile %(fdwi)s -schemefile ../scheme.txt -model ldt -bgmask %(mask_fname)s -outputfile tensor.Bfloat']
                                 + cam_part2b,
 
@@ -100,7 +105,10 @@ cmds_d = {'RESTORE':
                                 'fslmaths %(fdwi_basen)s_%(m)s_fsl_tensor -fmedian %(fdwi_basen)s_%(m)s_fsl_tensor_medfilt',
                                 'fslmaths %(fdwi_basen)s_%(m)s_fsl_tensor_medfilt -tensor_decomp %(fdwi_basen)s_%(m)s_fsl_tensor_mf'
                         ]
-            }
+                    },
+            'UKF':  {
+
+                    }
     }
 #primary loop over subjects dwi
 for dwif in dwi_fnames:
@@ -110,6 +118,7 @@ for dwif in dwi_fnames:
     fbvecs = infpath / str(fdwi_basen + '.eddy_rotated_bvecs')
     fbvals = Path(*infpath.parts[:-1]) / str(dwif + '.bvals')
     mask_fname = Path(*infpath.parts[:-1]) / str(dwif + '_S0_brain_mask.nii')
+    nii2nrrd(str(fdwi), str(infpath / str(fdwi_basen + '_thr1.nhdr')), bvalsf=fbvals, bvecsf=fbvecs)
     #sets up variables to combine with cmds_d
     cmdvars = {'fdwi': str(fdwi), 'mask_fname': str(mask_fname), 'fdwi_basen': fdwi_basen, 'fbvecs': str(fbvecs), 'fbvals': str(fbvals)}
     with WorkingContext(str(infpath)):
