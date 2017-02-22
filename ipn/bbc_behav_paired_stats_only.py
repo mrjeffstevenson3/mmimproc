@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[2]:
+# In[1]:
 
 from pathlib import *
 import numpy as np
@@ -15,10 +15,10 @@ from pylabs.utils.paths import getnetworkdataroot
 fs = Path(getnetworkdataroot())
 
 
-# In[4]:
+# In[2]:
 
 sublist = ['209-101', '211-105', '208-106', '202-108', '249-113', '241-116', '243-118', '231-119', '253-120']
-bfile = fs / 'bbc' / 'Behavior_for_MRI_2_22_17_jsedits.csv'
+bfile = fs / 'bbc' / 'behavior' / 'Behavior_for_MRI_2_22_17_jsedits.csv'
 bdata = pd.read_csv(str(bfile), header=1 ,index_col=1, usecols=[0, 1]+range(20, 29))
 bdata = bdata.transpose()
 for s in sublist:
