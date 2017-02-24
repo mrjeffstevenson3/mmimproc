@@ -7,6 +7,7 @@ import numpy as np
 import nibabel as nib
 import pylabs
 from scipy.ndimage.measurements import center_of_mass as com
+from scipy.ndimage.filters import median_filter as medianf
 from nipype.interfaces import fsl
 flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo', output_type='NIFTI')
 applyxfm = fsl.ApplyXfm(interp='nearestneighbour', output_type='NIFTI')
@@ -44,6 +45,7 @@ for dwif in dwi_fnames:
         data = img.get_data()
         # make S0 and bet to get mask
         S0 = data[:, :, :, gtab.b0s_mask]
+        S0 = medianf(S0, size=3)
         nS0_img = nib.Nifti1Image(S0, img.affine)
         nS0_img.set_qform(img.affine, code=1)
         nib.save(nS0_img, str(S0_fname))
