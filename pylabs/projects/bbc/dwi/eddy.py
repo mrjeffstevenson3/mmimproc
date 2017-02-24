@@ -120,7 +120,7 @@ for dwif in dwi_fnames:
 
         # execute eddy command in subprocess in local working directory using repol and lower stddev and linear 2nd level model
         # winner of DWI preproc deathmatch Oct-2016
-        outpath = str(infpath / 'cuda_repol_std2_v3')
+        outpath = str(infpath / 'cuda_repol_std2_S0mf3_v4')
         if not isdir(outpath):
             os.makedirs(outpath)
         cmd = ''
