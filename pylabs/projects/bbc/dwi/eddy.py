@@ -18,6 +18,7 @@ from dipy.segment.mask import applymask
 from pylabs.io.images import savenii
 from pylabs.projects.bbc.dwi.passed_qc import dwi_passed_qc, dwi_passed_101
 from pylabs.utils.provenance import ProvenanceWrapper
+from pylabs.io.images import savenii
 provenance = ProvenanceWrapper()
 from pylabs.utils import run_subprocess, WorkingContext
 from pylabs.utils.paths import getnetworkdataroot
@@ -36,8 +37,8 @@ for dwif in dwi_fnames:
     fbvecs = infpath / str(dwif + '.bvecs')
     fbvals = infpath / str(dwif + '.bvals')
     fdwell = infpath / str(dwif + '.dwell_time')
-    S0_fname = infpath / str(dwif + '_S0.nii')
-    with WorkingContext(infpath):
+    S0_fname = infpath / str(dwif + '_S0_mf3.nii')
+    with WorkingContext(str(infpath)):
         bvals, bvecs = read_bvals_bvecs(str(fbvals), str(fbvecs))
         # make dipy gtab and load dwi data
         gtab = gradient_table(bvals, bvecs)
@@ -46,9 +47,10 @@ for dwif in dwi_fnames:
         # make S0 and bet to get mask
         S0 = data[:, :, :, gtab.b0s_mask]
         S0 = medianf(S0, size=3)
-        nS0_img = nib.Nifti1Image(S0, img.affine)
-        nS0_img.set_qform(img.affine, code=1)
-        nib.save(nS0_img, str(S0_fname))
+        data[:, :, :, gtab.b0s_mask] = S0
+        fdwi = infpath / str(dwif + '_S0mf3.nii')
+        savenii(data, img.affine, str(fdwi), header=img.header)
+        savenii(S0, img.affine, str(S0_fname))
         provenance.log(str(S0_fname), 'S0 dwi from '+str(fdwi), str(fdwi), code=__file__)
         #setup result object capture
         fslresult = ()
@@ -112,17 +114,17 @@ for dwif in dwi_fnames:
         with open(str(infpath / 'index.txt'), 'w') as f:
             f.write('1 ' * len(gtab.bvals))
 
-        with open(fdwell, 'r') as f:
+        with open(str(fdwell), 'r') as f:
             dwell = f.read().replace('\n', '')
 
-        with open(join(infpath, 'acq_params.txt'), 'w') as f:
+        with open(str(infpath / 'acq_params.txt'), 'w') as f:
             f.write('0 1 0 ' + dwell)
 
         # execute eddy command in subprocess in local working directory using repol and lower stddev and linear 2nd level model
         # winner of DWI preproc deathmatch Oct-2016
-        outpath = str(infpath / 'cuda_repol_std2_S0mf3_v4')
-        if not isdir(outpath):
-            os.makedirs(outpath)
+        outpath = infpath / 'cuda_repol_std2_S0mf3_v4'
+        if not outpath.is_dir():
+            outpath.mkdir(parents=True)
         cmd = ''
         output = ()
         dt = datetime.datetime.now()
@@ -142,11 +144,11 @@ for dwif in dwi_fnames:
         output = ()
         dt = datetime.datetime.now()
         output += (str(dt),)
-        cmd += 'fslmaths '+ join(outpath, dwif + '_eddy_corrected_repol_std2') + ' -thr 1 ' + join(outpath, dwif + '_eddy_corrected_repol_std2_thr1')
+        cmd += 'fslmaths '+ str(outpath / str(dwif + '_eddy_corrected_repol_std2')) + ' -thr 1 ' + str(outpath / str(dwif + '_eddy_corrected_repol_std2_thr1'))
         cmdt = (cmd,)
         output += cmdt
         output += run_subprocess(cmd)
         params['fslmaths clamping cmd'] = cmd
         params['fslmaths output'] = output
-        provenance.log(join(outpath, dwif + '_eddy_corrected_repol_std2_thr1.nii.gz'), 'eddy using --repol --ol_sqr --slm=linear --ol_nstd=2 --niter=9 --fwhm=20,5,0,0,0,0,0,0,0',
+        provenance.log(str(outpath / str(dwif + '_eddy_corrected_repol_std2_thr1.nii.gz')), 'eddy using --repol --ol_sqr --slm=linear --ol_nstd=2 --niter=9 --fwhm=20,5,0,0,0,0,0,0,0',
                  fdwi, code=__file__, provenance=params)
