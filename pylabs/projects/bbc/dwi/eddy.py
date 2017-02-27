@@ -9,9 +9,6 @@ import pylabs
 from scipy.ndimage.measurements import center_of_mass as com
 from scipy.ndimage.filters import median_filter as medianf
 from nipype.interfaces import fsl
-flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo', output_type='NIFTI')
-applyxfm = fsl.ApplyXfm(interp='nearestneighbour', output_type='NIFTI')
-bet = fsl.BET(output_type='NIFTI')
 from dipy.io import read_bvals_bvecs
 from dipy.core.gradients import gradient_table
 from dipy.segment.mask import applymask
@@ -20,20 +17,29 @@ from pylabs.projects.bbc.dwi.passed_qc import dwi_passed_qc, dwi_passed_101
 from pylabs.utils.provenance import ProvenanceWrapper
 from pylabs.io.images import savenii
 from pylabs.conversion.nifti2nrrd import nii2nrrd
-provenance = ProvenanceWrapper()
 from pylabs.utils import run_subprocess, WorkingContext
 from pylabs.utils.paths import getnetworkdataroot
+#set up instances
+provenance = ProvenanceWrapper()
 fs = Path(getnetworkdataroot())
+flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo', output_type='NIFTI')
+applyxfm = fsl.ApplyXfm(interp='nearestneighbour', output_type='NIFTI')
+bet = fsl.BET(output_type='NIFTI')
 pylabs_basepath = Path(*Path(inspect.getabsfile(pylabs)).parts[:-2])
+#set paths for BET atlases
 MNI_bet_zcut = pylabs_basepath / 'data' / 'atlases' / 'MNI152_T1_1mm_bet_zcut.nii.gz'
 MNI_bet_zcut_mask = pylabs_basepath / 'data' / 'atlases' / 'MNI152_T1_1mm_bet_zcut_mask.nii.gz'
 MNI_bet_com = pylabs_basepath / 'data' / 'atlases' / 'MNI152_T1_1mm-com-mask8k.nii.gz'
+#set up project variables
 project = 'bbc'
+filterS0_string = ''
 filterS0 = True
+if filterS0:
+    filterS0_string = '_withmf3S0'
 fname_templ = 'sub-bbc{sid}_ses-{snum}_{meth}_{runnum}'
 dwi_fnames = [fname_templ.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r)) for s, ses, m, r in dwi_passed_qc]
 override_mask = {'sub-bbc101_ses-2_dti_15dir_b1000_1': '/media/DiskArray/shared_data/js/bbc/sub-bbc101/ses-2/dwi/sub-bbc101_ses-2_dti_15dir_b1000_1_S0_brain_mask_jsedits.nii'}
-
+#loop over pairs
 for dwif in dwi_fnames:
     infpath = fs / project / dwif.split('_')[0] / dwif.split('_')[1] / 'dwi'
     fdwi = infpath / str(dwif + '.nii')
@@ -50,10 +56,10 @@ for dwif in dwi_fnames:
         # make S0 and bet to get mask
         S0 = data[:, :, :, gtab.b0s_mask]
         if filterS0:
-            S0_fname = infpath / str(dwif + '_withmf3S0_S0.nii')
+            S0_fname = infpath / str(dwif + filterS0_string +'_S0.nii')
             S0 = medianf(S0, size=3)
             data[:, :, :, gtab.b0s_mask] = S0
-            fdwi = infpath / str(dwif + '_withmf3S0.nii')
+            fdwi = infpath / str(dwif + filterS0_string + '.nii')
             savenii(data, img.affine, str(fdwi), header=img.header)
         savenii(S0, img.affine, str(S0_fname))
         provenance.log(str(S0_fname), 'S0 dwi from '+str(fdwi), str(fdwi), code=__file__)
