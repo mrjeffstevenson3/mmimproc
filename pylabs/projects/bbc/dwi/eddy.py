@@ -19,6 +19,7 @@ from pylabs.io.images import savenii
 from pylabs.projects.bbc.dwi.passed_qc import dwi_passed_qc, dwi_passed_101
 from pylabs.utils.provenance import ProvenanceWrapper
 from pylabs.io.images import savenii
+from pylabs.conversion.nifti2nrrd import nii2nrrd
 provenance = ProvenanceWrapper()
 from pylabs.utils import run_subprocess, WorkingContext
 from pylabs.utils.paths import getnetworkdataroot
@@ -28,8 +29,10 @@ MNI_bet_zcut = pylabs_basepath / 'data' / 'atlases' / 'MNI152_T1_1mm_bet_zcut.ni
 MNI_bet_zcut_mask = pylabs_basepath / 'data' / 'atlases' / 'MNI152_T1_1mm_bet_zcut_mask.nii.gz'
 MNI_bet_com = pylabs_basepath / 'data' / 'atlases' / 'MNI152_T1_1mm-com-mask8k.nii.gz'
 project = 'bbc'
+filterS0 = True
 fname_templ = 'sub-bbc{sid}_ses-{snum}_{meth}_{runnum}'
-dwi_fnames = [fname_templ.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r)) for s, ses, m, r in dwi_passed_101]
+dwi_fnames = [fname_templ.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r)) for s, ses, m, r in dwi_passed_qc]
+override_mask = {'sub-bbc101_ses-2_dti_15dir_b1000_1': '/media/DiskArray/shared_data/js/bbc/sub-bbc101/ses-2/dwi/sub-bbc101_ses-2_dti_15dir_b1000_1_S0_brain_mask_jsedits.nii'}
 
 for dwif in dwi_fnames:
     infpath = fs / project / dwif.split('_')[0] / dwif.split('_')[1] / 'dwi'
@@ -37,7 +40,7 @@ for dwif in dwi_fnames:
     fbvecs = infpath / str(dwif + '.bvecs')
     fbvals = infpath / str(dwif + '.bvals')
     fdwell = infpath / str(dwif + '.dwell_time')
-    S0_fname = infpath / str(dwif + '_S0_mf3.nii')
+    S0_fname = infpath / str(dwif + '_S0.nii')
     with WorkingContext(str(infpath)):
         bvals, bvecs = read_bvals_bvecs(str(fbvals), str(fbvecs))
         # make dipy gtab and load dwi data
@@ -46,10 +49,12 @@ for dwif in dwi_fnames:
         data = img.get_data()
         # make S0 and bet to get mask
         S0 = data[:, :, :, gtab.b0s_mask]
-        S0 = medianf(S0, size=3)
-        data[:, :, :, gtab.b0s_mask] = S0
-        fdwi = infpath / str(dwif + '_S0mf3.nii')
-        savenii(data, img.affine, str(fdwi), header=img.header)
+        if filterS0:
+            S0_fname = infpath / str(dwif + '_withmf3S0_S0.nii')
+            S0 = medianf(S0, size=3)
+            data[:, :, :, gtab.b0s_mask] = S0
+            fdwi = infpath / str(dwif + '_withmf3S0.nii')
+            savenii(data, img.affine, str(fdwi), header=img.header)
         savenii(S0, img.affine, str(S0_fname))
         provenance.log(str(S0_fname), 'S0 dwi from '+str(fdwi), str(fdwi), code=__file__)
         #setup result object capture
@@ -130,8 +135,12 @@ for dwif in dwi_fnames:
         dt = datetime.datetime.now()
         output += (str(dt), 'eddy cuda start time for '+str(fdwi))
         cmd += 'eddy_cuda7.5 --acqp=acq_params.txt --bvals=' + str(fbvals) + ' --bvecs=' + str(fbvecs)
-        cmd += ' --imain=' + str(fdwi) + ' --index=index.txt --mask=' + brain_outfname + '_mask.nii '
-        cmd += '--out=' + str(outpath / str(dwif + '_eddy_corrected_repol_std2')) + ' --repol --ol_sqr --slm=linear --ol_nstd=2 --niter=9 --fwhm=20,5,0,0,0,0,0,0,0'
+        cmd += ' --imain=' + str(fdwi) + ' --index=index.txt --mask='
+        if dwif in override_mask:
+            cmd += override_mask[dwif]
+        else:
+            cmd += brain_outfname + '_mask.nii'
+        cmd += ' --out=' + str(outpath / str(dwif + '_eddy_corrected_repol_std2')) + ' --repol --ol_sqr --slm=linear --ol_nstd=2 --niter=9 --fwhm=20,5,0,0,0,0,0,0,0'
         cmdt = (cmd,)
         output += cmdt
         output += run_subprocess(cmd)
@@ -151,4 +160,5 @@ for dwif in dwi_fnames:
         params['fslmaths clamping cmd'] = cmd
         params['fslmaths output'] = output
         provenance.log(str(outpath / str(dwif + '_eddy_corrected_repol_std2_thr1.nii.gz')), 'eddy using --repol --ol_sqr --slm=linear --ol_nstd=2 --niter=9 --fwhm=20,5,0,0,0,0,0,0,0',
-                 fdwi, code=__file__, provenance=params)
+                 str(fdwi), code=__file__, provenance=params)
+        nii2nrrd(str(outpath / str(dwif + '_eddy_corrected_repol_std2_thr1.nii.gz')), str(outpath / str(dwif + '_eddy_corrected_repol_std2_thr1.nhdr')), bvalsf=str(fbvals), bvecsf=str(outpath / fbvecs))
