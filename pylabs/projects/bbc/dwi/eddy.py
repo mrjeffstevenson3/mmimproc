@@ -31,13 +31,15 @@ MNI_bet_zcut_mask = pylabs_basepath / 'data' / 'atlases' / 'MNI152_T1_1mm_bet_zc
 MNI_bet_com = pylabs_basepath / 'data' / 'atlases' / 'MNI152_T1_1mm-com-mask8k.nii.gz'
 #set up project variables
 project = 'bbc'
+#directory where eddy current corrected data is stored
+outdir = 'cuda_repol_std2_S0mf3_v5'
 filterS0_string = ''
 filterS0 = True
 if filterS0:
     filterS0_string = '_withmf3S0'
 fname_templ = 'sub-bbc{sid}_ses-{snum}_{meth}_{runnum}'
 dwi_fnames = [fname_templ.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r)) for s, ses, m, r in dwi_passed_qc]
-override_mask = {'sub-bbc101_ses-2_dti_15dir_b1000_1': '/media/DiskArray/shared_data/js/bbc/sub-bbc101/ses-2/dwi/sub-bbc101_ses-2_dti_15dir_b1000_1_S0_brain_mask_jsedits.nii'}
+override_mask = {'sub-bbc101_ses-2_dti_15dir_b1000_1': fs / project / 'sub-bbc101/ses-2/dwi/sub-bbc101_ses-2_dti_15dir_b1000_1_S0_brain_mask_jsedits.nii'}
 #loop over pairs
 for dwif in dwi_fnames:
     infpath = fs / project / dwif.split('_')[0] / dwif.split('_')[1] / 'dwi'
@@ -132,7 +134,7 @@ for dwif in dwi_fnames:
 
         # execute eddy command in subprocess in local working directory using repol and lower stddev and linear 2nd level model
         # winner of DWI preproc deathmatch Oct-2016
-        outpath = infpath / 'cuda_repol_std2_S0mf3_v4'
+        outpath = infpath / outdir
         if not outpath.is_dir():
             outpath.mkdir(parents=True)
         cmd = ''
@@ -142,10 +144,11 @@ for dwif in dwi_fnames:
         cmd += 'eddy_cuda7.5 --acqp=acq_params.txt --bvals=' + str(fbvals) + ' --bvecs=' + str(fbvecs)
         cmd += ' --imain=' + str(fdwi) + ' --index=index.txt --mask='
         if dwif in override_mask:
-            cmd += override_mask[dwif]
+            cmd += str(override_mask[dwif])
         else:
             cmd += brain_outfname + '_mask.nii'
-        cmd += ' --out=' + str(outpath / str(dwif + '_eddy_corrected_repol_std2')) + ' --repol --ol_sqr --slm=linear --ol_nstd=2 --niter=9 --fwhm=20,5,0,0,0,0,0,0,0'
+        cmd += ' --out=' + str(outpath / str(dwif + filterS0_string + '_ec'))
+        cmd += ' --repol --ol_sqr --slm=linear --ol_nstd=2 --niter=9 --fwhm=20,5,0,0,0,0,0,0,0'
         cmdt = (cmd,)
         output += cmdt
         output += run_subprocess(cmd)
@@ -158,12 +161,16 @@ for dwif in dwi_fnames:
         output = ()
         dt = datetime.datetime.now()
         output += (str(dt),)
-        cmd += 'fslmaths '+ str(outpath / str(dwif + '_eddy_corrected_repol_std2')) + ' -thr 1 ' + str(outpath / str(dwif + '_eddy_corrected_repol_std2_thr1'))
+        cmd += 'fslmaths '+ str(outpath / str(dwif + filterS0_string + '_ec'))
+        cmd += ' -thr 1 ' + str(outpath / str(dwif + filterS0_string + '_ec_thr1'))
         cmdt = (cmd,)
         output += cmdt
         output += run_subprocess(cmd)
         params['fslmaths clamping cmd'] = cmd
         params['fslmaths output'] = output
-        provenance.log(str(outpath / str(dwif + '_eddy_corrected_repol_std2_thr1.nii.gz')), 'eddy using --repol --ol_sqr --slm=linear --ol_nstd=2 --niter=9 --fwhm=20,5,0,0,0,0,0,0,0',
-                 str(fdwi), code=__file__, provenance=params)
-        nii2nrrd(str(outpath / str(dwif + '_eddy_corrected_repol_std2_thr1.nii.gz')), str(outpath / str(dwif + '_eddy_corrected_repol_std2_thr1.nhdr')), bvalsf=str(fbvals), bvecsf=str(outpath / fbvecs))
+        provenance.log(str(outpath / str(dwif + filterS0_string + '_ec_thr1.nii.gz')),
+                       'eddy using --repol --ol_sqr --slm=linear --ol_nstd=2 --niter=9 --fwhm=20,5,0,0,0,0,0,0,0',
+                        str(fdwi), code=__file__, provenance=params)
+        nii2nrrd(str(outpath / str(dwif + filterS0_string + '_ec_thr1.nii.gz')),
+                 str(outpath / str(dwif + filterS0_string + '_ec_thr1.nhdr')),
+                 bvalsf=str(fbvals), bvecsf=str(outpath / fbvecs))
