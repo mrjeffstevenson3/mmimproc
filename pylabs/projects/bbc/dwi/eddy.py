@@ -171,6 +171,3 @@ for dwif in dwi_fnames:
         provenance.log(str(outpath / str(dwif + filterS0_string + '_ec_thr1.nii.gz')),
                        'eddy using --repol --ol_sqr --slm=linear --ol_nstd=2 --niter=9 --fwhm=20,5,0,0,0,0,0,0,0',
                         str(fdwi), code=__file__, provenance=params)
-        nii2nrrd(str(outpath / str(dwif + filterS0_string + '_ec_thr1.nii.gz')),
-                 str(outpath / str(dwif + filterS0_string + '_ec_thr1.nhdr')),
-                 bvalsf=str(fbvals), bvecsf=str(outpath / fbvecs))

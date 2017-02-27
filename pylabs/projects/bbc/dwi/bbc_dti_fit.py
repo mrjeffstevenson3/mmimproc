@@ -14,6 +14,7 @@ from pylabs.projects.bbc.dwi.passed_qc import dwi_passed_qc, dwi_passed_101
 from pylabs.utils.paths import getnetworkdataroot
 from pylabs.utils import run_subprocess, WorkingContext
 from pylabs.io.images import savenii
+from pylabs.conversion.nifti2nrrd import nii2nrrd
 from pylabs.utils.provenance import ProvenanceWrapper
 provenance = ProvenanceWrapper()
 fs = Path(getnetworkdataroot())
@@ -23,13 +24,16 @@ if platform.system() == 'Darwin':
 elif platform.system() == 'Linux':
     slicer_path = Path(*Path(inspect.getabsfile(pylabs)).parts[:-3]) / 'Slicer-4.7.0-2017-02-01-linux-amd64' / 'Slicer --launch '
 project = 'bbc'
+#directory where eddy current corrected data is stored (from eddy.py)
+ec_meth = 'cuda_repol_std2_S0mf3_v5'
+filterS0_string = ''
 filterS0 = True
+if filterS0:
+    filterS0_string = '_withmf3S0'
 fname_templ = 'sub-bbc{sid}_ses-{snum}_{meth}_{runnum}'
 dwi_fnames = [fname_templ.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r)) for s, ses, m, r in dwi_passed_qc]
-#eddy corrected method directory. should get from eddy.
-ec_meth = 'cuda_repol_std2_v2'
 #fit methods to loop over
-fitmeth = ['WLS', 'OLS', 'RESTORE']
+fitmeth = ['WLS', 'OLS', 'RESTORE', 'UKF']
 _ut_rows = np.array([0, 0, 0, 1, 1, 2])
 _ut_cols = np.array([0, 1, 2, 1, 2, 2])
 _all_cols = np.zeros(9, dtype=np.int)
@@ -173,6 +177,8 @@ for dwif in dwi_fnames:
                     tensor_ut_mf = fit_quad_form_mf[..., _ut_rows, _ut_cols]
                     savenii(tensor_ut, img.affine, infpath / m / str(fdwi_basen + '_' + m.lower() + '_dipy_tensor.nii'))
                     savenii(tensor_ut_mf, img.affine, infpath / m / str(fdwi_basen + '_' + m.lower() + '_dipy_tensor_medfilt.nii'))
+
+
                     savenii(fit.fa, img.affine, infpath / m / str(fdwi_basen + '_' + m.lower() + '_dipy_FA.nii'), minmax=(0, 1))
                     savenii(fit.md, img.affine, infpath / m / str(fdwi_basen + '_' + m.lower() + '_dipy_MD.nii'))
                     savenii(fit.rd, img.affine, infpath / m / str(fdwi_basen + '_' + m.lower() + '_dipy_RD.nii'))
