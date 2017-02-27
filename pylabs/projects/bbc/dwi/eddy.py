@@ -2,7 +2,6 @@
 #--repol replace outliers
 import os, inspect, datetime
 from pathlib import *
-from os.path import join, basename, dirname, isfile, isdir, split
 import numpy as np
 import nibabel as nib
 import pylabs
