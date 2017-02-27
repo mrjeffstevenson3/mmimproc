@@ -32,6 +32,7 @@ if filterS0:
     filterS0_string = '_withmf3S0'
 fname_templ = 'sub-bbc{sid}_ses-{snum}_{meth}_{runnum}'
 dwi_fnames = [fname_templ.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r)) for s, ses, m, r in dwi_passed_qc]
+override_mask = {'sub-bbc101_ses-2_dti_15dir_b1000_1': fs / project / 'sub-bbc101/ses-2/dwi/sub-bbc101_ses-2_dti_15dir_b1000_1_S0_brain_mask_jsedits.nii'}
 #fit methods to loop over
 fitmeth = ['WLS', 'OLS', 'RESTORE', 'UKF']
 _ut_rows = np.array([0, 0, 0, 1, 1, 2])
@@ -117,12 +118,15 @@ cmds_d = {'RESTORE':
 #primary loop over subjects dwi
 for dwif in dwi_fnames:
     infpath = fs / project / dwif.split('_')[0] / dwif.split('_')[1] / 'dwi' / ec_meth
-    fdwi_basen = dwif + '_eddy_corrected_repol_std2'
-    fdwi = infpath / str(fdwi_basen + '_thr1.nii.gz')
-    fbvecs = infpath / str(fdwi_basen + '.eddy_rotated_bvecs')
+    fdwi_basen = dwif + filterS0_string + '_ec'
+    fdwi = infpath / str(fdwi_basen + filterS0_string + '_thr1.nii.gz')
+    fbvecs = infpath / str(fdwi_basen + filterS0_string + '.eddy_rotated_bvecs')
     fbvals = Path(*infpath.parts[:-1]) / str(dwif + '.bvals')
-    mask_fname = Path(*infpath.parts[:-1]) / str(dwif + '_S0_brain_mask.nii')
-    nii2nrrd(str(fdwi), str(infpath / str(fdwi_basen + '_thr1.nhdr')), bvalsf=fbvals, bvecsf=fbvecs)
+    if dwif in override_mask:
+        mask_fname = str(override_mask[dwif])
+    else:
+        mask_fname = Path(*infpath.parts[:-1]) / str(dwif + '_S0_brain_mask.nii')
+    nii2nrrd(str(fdwi), str(infpath / str(fdwi_basen + filterS0_string + '_thr1.nhdr')), bvalsf=fbvals, bvecsf=fbvecs)
     #sets up variables to combine with cmds_d
     cmdvars = {'fdwi': str(fdwi), 'mask_fname': str(mask_fname), 'fdwi_basen': fdwi_basen, 'fbvecs': str(fbvecs), 'fbvals': str(fbvals)}
     with WorkingContext(str(infpath)):
