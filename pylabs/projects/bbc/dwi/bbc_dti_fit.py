@@ -30,9 +30,9 @@ filterS0_string = ''
 filterS0 = True
 if filterS0:
     filterS0_string = '_withmf3S0'
-fname_templ = 'sub-bbc{sid}_ses-{snum}_{meth}_{runnum}'+filterS0_string+'_thr1'
-dwi_fnames = [fname_templ.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r)) for s, ses, m, r in dwi_passed_qc]
-override_mask = {'sub-bbc101_ses-2_dti_15dir_b1000_1': fs / project / 'sub-bbc101/ses-2/dwi/sub-bbc101_ses-2_dti_15dir_b1000_1_S0_brain_mask_jsedits.nii'}
+fname_templ = 'sub-bbc{sid}_ses-{snum}_{meth}_{runnum}'+filterS0_string+'_ec_thr1'
+dwi_fnames = [fname_templ.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r)) for s, ses, m, r in dwi_passed_101]
+override_mask = {'sub-bbc101_ses-2_dti_15dir_b1000_1_withmf3S0_ec_thr1': fs / project / 'sub-bbc101/ses-2/dwi/sub-bbc101_ses-2_dti_15dir_b1000_1_S0_brain_mask_jsedits.nii'}
 #fit methods to loop over
 fitmeth = ['WLS', 'OLS', 'RESTORE', 'UKF']
 _ut_rows = np.array([0, 0, 0, 1, 1, 2])
@@ -121,8 +121,8 @@ cmds_d = {'RESTORE':
 for dwif in dwi_fnames:
     infpath = fs / project / dwif.split('_')[0] / dwif.split('_')[1] / 'dwi' / ec_meth
     fdwi = infpath / str(dwif + '.nii.gz')
-    fbvecs = infpath / str(dwif + '.eddy_rotated_bvecs')
-    fbvals = Path(*infpath.parts[:-1]) / str(dwif.replace(filterS0_string+'_thr1', '') + '.bvals')
+    fbvecs = infpath / str(dwif.replace('_thr1', '') + '.eddy_rotated_bvecs')
+    fbvals = Path(*infpath.parts[:-1]) / str(dwif.replace(filterS0_string+'_ec_thr1', '') + '.bvals')
     if dwif in override_mask:
         mask_fname = str(override_mask[dwif])
     else:
