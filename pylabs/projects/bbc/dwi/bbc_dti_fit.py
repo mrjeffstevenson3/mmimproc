@@ -111,8 +111,8 @@ cmds_d = {'RESTORE':
                                 'fslmaths %(dwif)s_%(m)s_fsl_tensor_medfilt -tensor_decomp %(dwif)s_%(m)s_fsl_tensor_mf'
                         ]
                     },
-            'UKF':  {'slicerpart1': ['UKFTractography --dwiFile %(fdwinrrd)s --seedsFile %(mask_fname)s --labels 1 --maskFile %(mask_fname)s --tracts %(dwif)s_UKF_whbr.vtk'
-                                     '--seedsPerVoxel 1 --seedFALimit 0.18 --minFA 0.15 --minGA 0.2 --numThreads -1 --numTensor 2 --stepLength 0.3 --Qm 0 --recordLength 0.9 --maxHalfFiberLength 250 --recordNMSE --freeWater'
+            'UKF':  {'slicerpart1': [str(slicer_path) + 'UKFTractography --dwiFile %(fdwinrrd)s --seedsFile %(mask_fnamenrrd)s --labels 1 --maskFile %(mask_fnamenrrd)s --tracts %(dwif)s_UKF_whbr.vtk '
+                                     '--seedsPerVoxel 1 --seedFALimit 0.18 --minFA 0.15 --minGA 0.2 --numThreads -1 --numTensor 2 --stepLength 0.3 --Qm 0 --recordLength 0.9 --maxHalfFiberLength 250 --recordNMSE --freeWater '
                                      '--recordFA --recordTrace --recordFreeWater --recordTensors --Ql 0 --Qw 0 --Qkappa 0.01 --Qvic 0.004 --Rs 0 --sigmaSignal 0 --maxBranchingAngle 0 --minBranchingAngle 0']
 
                     }
@@ -128,9 +128,10 @@ for dwif in dwi_fnames:
     else:
         mask_fname = Path(*infpath.parts[:-1]) / str(dwif + '_S0_brain_mask.nii')
     nii2nrrd(str(fdwi), str(fdwi).replace('.nii.gz','.nhdr'), bvalsf=fbvals, bvecsf=fbvecs)
+    nii2nrrd(str(mask_fname), str(mask_fname).replace('.nii','.nhdr'), ismask=True)
     #sets up variables to combine with cmds_d
     cmdvars = {'fdwi': str(fdwi), 'mask_fname': str(mask_fname), 'fbvecs': str(fbvecs), 'fbvals': str(fbvals),
-               'fdwinrrd': str(fdwi).replace('.nii.gz', '.nhdr')}
+               'fdwinrrd': str(fdwi).replace('.nii.gz', '.nhdr'), 'mask_fnamenrrd': str(mask_fname).replace('.nii','.nhdr')}
     with WorkingContext(str(infpath)):
         #set up for dipy
         bvals, bvecs = read_bvals_bvecs(str(fbvals), str(fbvecs))

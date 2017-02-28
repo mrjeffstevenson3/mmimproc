@@ -6,7 +6,9 @@ import nrrd
 from pylabs.utils.provenance import ProvenanceWrapper
 provenance = ProvenanceWrapper()
 
-def nii2nrrd(niftifile, nrrd_fname, bvalsf=None, bvecsf=None, istensor=False):
+def nii2nrrd(niftifile, nrrd_fname, bvalsf=None, bvecsf=None, istensor=False, ismask=False):
+    if istensor + ismask > 1:
+        raise ValueError("Only one can be True. istensor= "+istensor+", ismask= "+ismask)
     options = {}
     if bvalsf != None: bvalsf = Path(bvalsf)
     if bvecsf !=None: bvecsf = Path(bvecsf)
@@ -43,7 +45,10 @@ def nii2nrrd(niftifile, nrrd_fname, bvalsf=None, bvecsf=None, istensor=False):
         t_aff = inv_ornt_aff(ornt, img.shape)
         affine = np.dot(img.affine, t_aff)
         img_data = apply_orientation(img_data, ornt)
-    img_data = np.float32(img_data)
+    if ismask:
+        img_data = np.int16(img_data)
+    else:
+        img_data = np.float32(img_data)
     options[u'dimension'] = unicode(len(img_data.shape))
     options[u'measurement frame'] = [['-1', '0', '0'], ['0', '1', '0'], ['0', '0', '1']]
     options[u'sizes'] = list(img_data.shape)

@@ -1,3 +1,4 @@
+# this script's functionality has been superseded by bbc_dti_fit.py for filtered tensors only
 import os, inspect
 from pathlib import *
 import numpy as np
