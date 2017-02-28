@@ -111,7 +111,7 @@ cmds_d = {'RESTORE':
                                 'fslmaths %(dwif)s_%(m)s_fsl_tensor_medfilt -tensor_decomp %(dwif)s_%(m)s_fsl_tensor_mf'
                         ]
                     },
-            'UKF':  {'slicerpart1': ['UKFTractography --dwiFile %(dwif)s.nhdr --seedsFile %(mask_fname)s --labels 1 --maskFile %(mask_fname)s --tracts %(dwif)s_UKF_whbr.vtk'
+            'UKF':  {'slicerpart1': ['UKFTractography --dwiFile %(fdwinrrd)s --seedsFile %(mask_fname)s --labels 1 --maskFile %(mask_fname)s --tracts %(dwif)s_UKF_whbr.vtk'
                                      '--seedsPerVoxel 1 --seedFALimit 0.18 --minFA 0.15 --minGA 0.2 --numThreads -1 --numTensor 2 --stepLength 0.3 --Qm 0 --recordLength 0.9 --maxHalfFiberLength 250 --recordNMSE --freeWater'
                                      '--recordFA --recordTrace --recordFreeWater --recordTensors --Ql 0 --Qw 0 --Qkappa 0.01 --Qvic 0.004 --Rs 0 --sigmaSignal 0 --maxBranchingAngle 0 --minBranchingAngle 0']
 
@@ -129,7 +129,8 @@ for dwif in dwi_fnames:
         mask_fname = Path(*infpath.parts[:-1]) / str(dwif + '_S0_brain_mask.nii')
     nii2nrrd(str(fdwi), str(fdwi).replace('.nii.gz','.nhdr'), bvalsf=fbvals, bvecsf=fbvecs)
     #sets up variables to combine with cmds_d
-    cmdvars = {'fdwi': str(fdwi), 'mask_fname': str(mask_fname), 'fbvecs': str(fbvecs), 'fbvals': str(fbvals)}
+    cmdvars = {'fdwi': str(fdwi), 'mask_fname': str(mask_fname), 'fbvecs': str(fbvecs), 'fbvals': str(fbvals),
+               'fdwinrrd': str(fdwi).replace('.nii.gz', '.nhdr')}
     with WorkingContext(str(infpath)):
         #set up for dipy
         bvals, bvecs = read_bvals_bvecs(str(fbvals), str(fbvecs))
@@ -143,11 +144,12 @@ for dwif in dwi_fnames:
         # set up camino for any method in dwi folder
         result = tuple()
         result += run_subprocess('fsl2scheme -bvecfile %(fbvecs)s -bvalfile %(fbvals)s > scheme.txt' % cmdvars)
-        # make sure fit method directories exist
-        (Path(infpath / m).mkdir() for m in fitmeth if not Path(infpath / m).is_dir())
         # loop over fit methods and used as keys in cmds_d dictionary
         for m in fitmeth:
+            if not Path(infpath / m).is_dir():
+                Path(infpath / m).mkdir()
             cmdvars['m'] = m.lower()
+            cmdvars['dwif'] = dwif
             with WorkingContext(m):
                 if m == 'UKF':
                     result += tuple([run_subprocess(c % cmdvars) for c in cmds_d[m]['slicerpart1']])
