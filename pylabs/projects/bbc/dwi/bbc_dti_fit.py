@@ -31,7 +31,7 @@ filterS0 = True
 if filterS0:
     filterS0_string = '_withmf3S0'
 fname_templ = 'sub-bbc{sid}_ses-{snum}_{meth}_{runnum}'+filterS0_string+'_ec_thr1'
-dwi_fnames = [fname_templ.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r)) for s, ses, m, r in dwi_passed_101]
+dwi_fnames = [fname_templ.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r)) for s, ses, m, r in dwi_passed_qc]
 override_mask = {'sub-bbc101_ses-2_dti_15dir_b1000_1_withmf3S0_ec_thr1': fs / project / 'sub-bbc101/ses-2/dwi/sub-bbc101_ses-2_dti_15dir_b1000_1_S0_brain_mask_jsedits.nii'}
 #fit methods to loop over
 fitmeth = ['WLS', 'OLS', 'RESTORE', 'UKF']
@@ -99,7 +99,9 @@ cmds_d = {'RESTORE':
 
                     'fslpart1': ['dtifit --data=%(fdwi)s -m %(mask_fname)s --bvecs=%(fbvecs)s --bvals=%(fbvals)s --sse --save_tensor -o %(dwif)s_%(m)s_fsl',
                                 'fslmaths %(dwif)s_%(m)s_fsl_tensor -fmedian %(dwif)s_%(m)s_fsl_tensor_medfilt',
-                                'fslmaths %(dwif)s_%(m)s_fsl_tensor_medfilt -tensor_decomp %(dwif)s_%(m)s_fsl_tensor_mf'
+                                'fslmaths %(dwif)s_%(m)s_fsl_tensor_medfilt -tensor_decomp %(dwif)s_%(m)s_fsl_tensor_mf',
+                                'imcp %(dwif)s_%(m)s_fsl_tensor_mf_L1 %(dwif)s_%(m)s_fsl_tensor_mf_AD',
+                                'fslmaths %(dwif)s_%(m)s_fsl_tensor_mf_L2 -add %(dwif)s_%(m)s_fsl_tensor_mf_L3 -div 2 %(dwif)s_%(m)s_fsl_tensor_mf_RD -odt float'
                                 ]
                     },
             'WLS': {'campart1': ['modelfit -inputfile %(fdwi)s -schemefile ../scheme.txt -model ldt_wtd -noisemap noise_map.Bdouble '
@@ -108,7 +110,9 @@ cmds_d = {'RESTORE':
 
                     'fslpart1': ['dtifit --data=%(fdwi)s -m %(mask_fname)s --bvecs=%(fbvecs)s --bvals=%(fbvals)s --sse --save_tensor --wls -o %(dwif)s_%(m)s_fsl',
                                 'fslmaths %(dwif)s_%(m)s_fsl_tensor -fmedian %(dwif)s_%(m)s_fsl_tensor_medfilt',
-                                'fslmaths %(dwif)s_%(m)s_fsl_tensor_medfilt -tensor_decomp %(dwif)s_%(m)s_fsl_tensor_mf'
+                                'fslmaths %(dwif)s_%(m)s_fsl_tensor_medfilt -tensor_decomp %(dwif)s_%(m)s_fsl_tensor_mf',
+                                'imcp %(dwif)s_%(m)s_fsl_tensor_mf_L1 %(dwif)s_%(m)s_fsl_tensor_mf_AD',
+                                'fslmaths %(dwif)s_%(m)s_fsl_tensor_mf_L2 -add %(dwif)s_%(m)s_fsl_tensor_mf_L3 -div 2 %(dwif)s_%(m)s_fsl_tensor_mf_RD -odt float'
                         ]
                     },
             'UKF':  {'slicerpart1': [str(slicer_path) + 'UKFTractography --dwiFile %(fdwinrrd)s --seedsFile %(mask_fnamenrrd)s --labels 1 --maskFile %(mask_fnamenrrd)s --tracts %(dwif)s_UKF_whbr.vtk '
@@ -126,7 +130,7 @@ for dwif in dwi_fnames:
     if dwif in override_mask:
         mask_fname = str(override_mask[dwif])
     else:
-        mask_fname = Path(*infpath.parts[:-1]) / str(dwif + '_S0_brain_mask.nii')
+        mask_fname = Path(*infpath.parts[:-1]) / str(dwif.replace('_ec_thr1', '_S0_brain_mask.nii'))
     nii2nrrd(str(fdwi), str(fdwi).replace('.nii.gz','.nhdr'), bvalsf=fbvals, bvecsf=fbvecs)
     nii2nrrd(str(mask_fname), str(mask_fname).replace('.nii','.nhdr'), ismask=True)
     #sets up variables to combine with cmds_d
@@ -162,7 +166,7 @@ for dwif in dwi_fnames:
                         cmdvars['sigmac'] = str(result[-1][0]).strip(' \n')
                         result += tuple([run_subprocess(c % cmdvars) for c in cmds_d[m]['campart2']])
                         fname = infpath / m / str(dwif + '_' + m.lower() + '_cam_tensor_medfilt.nii.gz')
-                        nii2nrrd(str(fname), str(fname).replace('.nii.gz', '.hhdr'), istensor=True)
+                        nii2nrrd(str(fname), str(fname).replace('.nii.gz', '.nhdr'), istensor=True)
                         # calculate sigma variance for dipy restore
                         sigmad = ne.estimate_sigma(data, N=1)  # N=1 for SENSE reconstruction (Philips scanners)
                         # now create dipy restore tensor model
@@ -173,7 +177,7 @@ for dwif in dwi_fnames:
                         # do FSL fits here
                         result += tuple([run_subprocess(c % cmdvars) for c in cmds_d[m]['fslpart1']])
                         fname = infpath / m / str(dwif + '_' + m.lower() + '_fsl_tensor_medfilt.nii.gz')
-                        nii2nrrd(str(fname), str(fname).replace('.nii.gz', '.hhdr'), istensor=True)
+                        nii2nrrd(str(fname), str(fname).replace('.nii.gz', '.nhdr'), istensor=True)
                     # dipy restore fails sometimes now with TypeError
                     try:
                         fit = tenmodel.fit(data, mask)
@@ -192,7 +196,7 @@ for dwif in dwi_fnames:
                         savenii(tensor_ut, img.affine, infpath / m / str(dwif + '_' + m.lower() + '_dipy_tensor.nii'))
                         fname = infpath / m / str(dwif + '_' + m.lower() + '_dipy_tensor_medfilt.nii')
                         savenii(tensor_ut_mf, img.affine, fname)
-                        nii2nrrd(str(fname), str(fname).replace('.nii', '.hhdr'), istensor=True)
+                        nii2nrrd(str(fname), str(fname).replace('.nii', '.nhdr'), istensor=True)
                         savenii(fit.fa, img.affine, infpath / m / str(dwif + '_' + m.lower() + '_dipy_FA.nii'), minmax=(0, 1))
                         savenii(fit.md, img.affine, infpath / m / str(dwif + '_' + m.lower() + '_dipy_MD.nii'))
                         savenii(fit.rd, img.affine, infpath / m / str(dwif + '_' + m.lower() + '_dipy_RD.nii'))
