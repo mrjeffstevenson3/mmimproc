@@ -65,12 +65,17 @@ for m in mods:
                 cmd += 'fslmerge -t ' + '_'.join(['all_pairedLH', f, m+'.nii.gz']) + ' '
                 mergelist = ' '.join([a + b for a, b in zip(dwi_fnames, ['_'+f+'_'+m+'_reg2vbmtempl.nii'] * len(dwi_fnames))])
                 cmd += mergelist
-                results += run_subprocess(cmd)
-                provenance.log(str(regdir / '_'.join(['all', m, f+'.nii.gz'])), 'generate merged all file from '+m+' '+f, mergelist)
+                try:
+                    results += run_subprocess(cmd)
+                except ValueError:
+                    print "Caught fslmerge error for  fit method " + f + " and " + m
+                    print "skipping to next method"
+                    pass
+                #provenance.log(str(regdir / '_'.join(['all', m, f+'.nii.gz'])), 'generate merged all file from '+m+' '+f, mergelist)
 
-dwifslsubcmdtempl = 'fslmaths sub-bbc{csid}_ses-{csnum}_{cmeth}_{crunnum}{filterS0_string}_ec_thr1_{f}_{m}_reg2vbmtempl.nii -sub '
-                    'sub-bbc{fsid}_ses-{fsnum}_{fmeth}_{frunnum}{filterS0_string}_ec_thr1_{f}_{m}_reg2vbmtempl.nii '
-                    'bbc_{dwifs}_subtraction_{f}_{m}_reg2vbmtempl.nii'
+dwifslsubcmdtempl = ('fslmaths sub-bbc{csid}_ses-{csnum}_{cmeth}_{crunnum}{filterS0_string}_ec_thr1_{f}_{m}_reg2vbmtempl.nii -sub '
+    'sub-bbc{fsid}_ses-{fsnum}_{fmeth}_{frunnum}{filterS0_string}_ec_thr1_{f}_{m}_reg2vbmtempl.nii '
+    'bbc_{dwifs}_subtraction_{f}_{m}_reg2vbmtempl.nii')
 # make paired subtractions
 sublist = []
 for dwituppair in dwituppairing:
@@ -79,12 +84,17 @@ for dwituppair in dwituppairing:
     for m in mods:
         for k, fm in fitmethsd.iteritems():
             for f in fm:
-            regdir = fs / project / 'reg' / 'dwi_warps_in_template_space' / m / f
-            kwargs = {'fsid':fost[0], 'fsnum':fost[1], 'fmeth':fost[2], 'frunnum':fost[3],
-                      'csid': cont[0], 'csnum': cont[1], 'cmeth': cont[2], 'crunnum': cont[3],
-                      'dwifs': subtxt, 'f': f, 'm': m, 'filterS0_string': filterS0_string}
+                regdir = fs / project / 'reg' / 'dwi_warps_in_template_space' / m / f
+                kwargs = {'fsid':fost[0], 'fsnum':fost[1], 'fmeth':fost[2], 'frunnum':fost[3],
+                          'csid': cont[0], 'csnum': cont[1], 'cmeth': cont[2], 'crunnum': cont[3],
+                          'dwifs': subtxt, 'f': f, 'm': m, 'filterS0_string': filterS0_string}
             with WorkingContext(str(regdir)):
-                run_subprocess(dwifslsubcmdtempl.format(**kwargs))
+                try:
+                    results += run_subprocess(dwifslsubcmdtempl.format(**kwargs))
+                except ValueError:
+                    print "Caught subtraction error for "+subtxt+" fit method " + f + " and " + m
+                    print "skipping to next pair"
+                    pass
 # merge subtractions into 1 all subs file
 for m in mods:
     for k, fm in fitmethsd.iteritems():
@@ -93,7 +103,12 @@ for m in mods:
             with WorkingContext(str(regdir)):
                 cmd = ''
                 cmd += 'fslmerge -t ' + '_'.join(['all_subtracted_pairsLH', f, m+'.nii.gz']) + ' '
-                mergelist = ' '.join(['bbc_{dwifs}_subtraction_{f}_{m}_reg2vbmtempl.nii'.format(dwifs=d, f=f, m=m) for d, f, m in zip(sublist, [f]*len(sublist), [m]*len(sublist))])
+                mergelist = ' '.join(['bbc_{dwifs}_subtraction_{f}_{m}_reg2vbmtempl.nii.gz'.format(dwifs=d, f=f, m=m) for d, f, m in zip(sublist, [f]*len(sublist), [m]*len(sublist))])
                 cmd += mergelist
-                results += run_subprocess(cmd)
-                provenance.log(str(regdir / '_'.join(['all_subtracted_pairsLH', f, m+'.nii.gz'])), 'generate merged subtraction all file from '+m+' '+f, str(regdir / mergelist))
+                try:
+                    results += run_subprocess(cmd)
+                except ValueError:
+                    print "Caught merge error for fit method " + f + " and " + m
+                    print "skipping to next pair"
+                    pass
+                #provenance.log(str(regdir / '_'.join(['all_subtracted_pairsLH', f, m+'.nii.gz'])), 'generate merged subtraction all file from '+m+' '+f, str(regdir / mergelist))
