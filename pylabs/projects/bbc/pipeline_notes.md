@@ -14,13 +14,13 @@
 **For DTI**
 1. Add file name glob wildcard to bbc_conv dict in conversion/brain_convert.py
 2. convert PAR/REC using bbc/mr_preprocess.py (as above)
-3. do brain extraction with bbc/dti_bet.sh <- make into python
+3. now in eddy.py: do brain extraction with bbc/dti_bet.sh <- make into python
 4. run QC with diffusion/dti_qc.py
-5. build cuda eddy current with subprocess and parallel
-6. build dti fit methods OLS, WLS and Restore
+5. run eddy.py cuda eddy current correction
+6. run bbc_dti_fit.py dti fit methods OLS, WLS, Restore, and UKF
 7. build dti reg module that generates warp and affines
 8. apply inverse warps to mori atlas and generate VTKs for dti deathmatch
-8. apply forward warps and affines moving to template space # waiting for bbc101
+8. apply forward warps and affines moving to template space
 9. filter and extract tensor from dipy and reg to template and atlases
 still to do:
 10. generate mat files

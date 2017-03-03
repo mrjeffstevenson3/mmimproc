@@ -1,20 +1,28 @@
 import nibabel, numpy
 from pylabs.utils import run_subprocess
+from pathlib import *
 
 def loadStack(files):
     data = []
     shapes = []
+    affines = []
     for f, fpath in enumerate(files):
         print('Loading image {} of {}..'.format(f+1, len(files)))
         img = nibabel.load(fpath)
-        sdata = img.get_data()
-        shapes.append(sdata.shape)
-        data.append(sdata)
+        #sdata = img.get_data()
+        data.append(img.get_data())
+        shapes.append(data.shape)
+        affines.append(img.affine)
+        if f == 0:
+            affine = img.get_affine()
     print('Concatenating data..')
     data = numpy.array(data)
-    affine = img.get_affine()
-    for shape in shapes:
-        assert shape==shapes[0] # ensure images have same dimensions
+    for shape, affine in zip(shapes, affines):
+        # ensure images have same dimensions and qforms
+        numpy.testing.assert_almost_equal(shape, shapes[0], 4,
+                                    err_msg='not all shapes match first shape in file list')
+        numpy.testing.assert_almost_equal(affine[:3, 3], affines[0][:3, 3], 4,
+                                       err_msg='not all affines match first qform in file list'+str(affines[0]))
     return data, affine
 
 def combineAsVolumes(files, outfpath):
@@ -24,6 +32,10 @@ def combineAsVolumes(files, outfpath):
 
 def copysform2qform(file):
     cmd = 'fslorient -copysform2qform ' + file
+    run_subprocess(cmd)
+
+def copyqform2sform(file):
+    cmd = 'fslorient -copyqform2sform ' + file
     run_subprocess(cmd)
 
 def savenii(data, affine, outfile, header=None, minmax=('parse', 'parse'), qform_code=1):
@@ -43,3 +55,9 @@ def savenii(data, affine, outfile, header=None, minmax=('parse', 'parse'), qform
     numpy.testing.assert_almost_equal(affine, img.get_qform(), 4,
                                    err_msg='output qform in header does not match input qform')
     nibabel.save(img, str(outfile))
+
+def paired_sub(niifiles, outfname, order=0):
+    for f in niifiles:
+        if not (Path(f)).is_file():
+            raise ValueError("cannot find file "+str(f))
+
