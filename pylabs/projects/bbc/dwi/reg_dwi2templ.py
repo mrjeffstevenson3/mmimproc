@@ -1,6 +1,6 @@
 from pathlib import *
 from pylabs.alignment.ants_reg import subj2templ_applywarp
-from pylabs.projects.bbc.pairing import vbmpairing, dwipairing
+from pylabs.projects.bbc.pairing import vbmpairing, dwipairing, dwituppairing
 from pylabs.utils import run_subprocess, WorkingContext
 from pylabs.utils.paths import getnetworkdataroot
 #set up provenance
@@ -54,22 +54,46 @@ for dwif, vbmf in zip(dwi_fnames, vbm_fnames):
                         pass
                 else:
                     print 'missing one or more input files for {dwif} with {m} for {f}.'.format(dwif=dwif, m=m, f=f)
+# merge all modalities and fit methods - no subtraction yet.
+results = ()
 for m in mods:
     for k, fm in fitmethsd.iteritems():
         for f in fm:
             regdir = fs / project / 'reg' / 'dwi_warps_in_template_space' / m / f
-            print str(regdir)
-            results = ()
             with WorkingContext(str(regdir)):
                 cmd = ''
-                cmd += 'fslmerge -t ' + '_'.join(['all', m, f+'.nii.gz']) + ' '
-                mergelist = ' '.join([a + b for a, b in zip(dwi_fnames, [f+'_'+m+'_reg2vbmtempl.nii'] * len(dwi_fnames))])
+                cmd += 'fslmerge -t ' + '_'.join(['all_pairedLH', f, m+'.nii.gz']) + ' '
+                mergelist = ' '.join([a + b for a, b in zip(dwi_fnames, ['_'+f+'_'+m+'_reg2vbmtempl.nii'] * len(dwi_fnames))])
                 cmd += mergelist
                 results += run_subprocess(cmd)
-                #provenance.log(str(regdir / '_'.join(['all', m, f+'.nii.gz'])), 'generate merged all file from '+m+' '+f, mergelist)
-                print cmd
+                provenance.log(str(regdir / '_'.join(['all', m, f+'.nii.gz'])), 'generate merged all file from '+m+' '+f, mergelist)
 
-
-
-
-
+dwifslsubcmdtempl = 'fslmaths sub-bbc{csid}_ses-{csnum}_{cmeth}_{crunnum}{filterS0_string}_ec_thr1_{f}_{m}_reg2vbmtempl.nii -sub '
+                    'sub-bbc{fsid}_ses-{fsnum}_{fmeth}_{frunnum}{filterS0_string}_ec_thr1_{f}_{m}_reg2vbmtempl.nii '
+                    'bbc_{dwifs}_subtraction_{f}_{m}_reg2vbmtempl.nii'
+# make paired subtractions
+sublist = []
+for dwituppair in dwituppairing:
+    fost, cont, subtxt = dwituppair
+    sublist.append(subtxt)
+    for m in mods:
+        for k, fm in fitmethsd.iteritems():
+            for f in fm:
+            regdir = fs / project / 'reg' / 'dwi_warps_in_template_space' / m / f
+            kwargs = {'fsid':fost[0], 'fsnum':fost[1], 'fmeth':fost[2], 'frunnum':fost[3],
+                      'csid': cont[0], 'csnum': cont[1], 'cmeth': cont[2], 'crunnum': cont[3],
+                      'dwifs': subtxt, 'f': f, 'm': m, 'filterS0_string': filterS0_string}
+            with WorkingContext(str(regdir)):
+                run_subprocess(dwifslsubcmdtempl.format(**kwargs))
+# merge subtractions into 1 all subs file
+for m in mods:
+    for k, fm in fitmethsd.iteritems():
+        for f in fm:
+            regdir = fs / project / 'reg' / 'dwi_warps_in_template_space' / m / f
+            with WorkingContext(str(regdir)):
+                cmd = ''
+                cmd += 'fslmerge -t ' + '_'.join(['all_subtracted_pairsLH', f, m+'.nii.gz']) + ' '
+                mergelist = ' '.join(['bbc_{dwifs}_subtraction_{f}_{m}_reg2vbmtempl.nii'.format(dwifs=d, f=f, m=m) for d, f, m in zip(sublist, [f]*len(sublist), [m]*len(sublist))])
+                cmd += mergelist
+                results += run_subprocess(cmd)
+                provenance.log(str(regdir / '_'.join(['all_subtracted_pairsLH', f, m+'.nii.gz'])), 'generate merged subtraction all file from '+m+' '+f, str(regdir / mergelist))
