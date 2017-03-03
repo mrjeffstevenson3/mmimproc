@@ -8,22 +8,18 @@ def loadStack(files):
     affines = []
     for f, fpath in enumerate(files):
         print('Loading image {} of {}..'.format(f+1, len(files)))
-        img = nibabel.load(fpath)
-        #sdata = img.get_data()
-        data.append(img.get_data())
-        shapes.append(data.shape)
+        img = nibabel.load(str(fpath))
+        sdata = img.get_data()
+        data.append(sdata)
+        shapes.append(sdata.shape)
         affines.append(img.affine)
-        if f == 0:
-            affine = img.get_affine()
     print('Concatenating data..')
     data = numpy.array(data)
-    for shape, affine in zip(shapes, affines):
+    for shape, aff in zip(shapes, affines):
         # ensure images have same dimensions and qforms
-        numpy.testing.assert_almost_equal(shape, shapes[0], 4,
-                                    err_msg='not all shapes match first shape in file list')
-        numpy.testing.assert_almost_equal(affine[:3, 3], affines[0][:3, 3], 4,
-                                       err_msg='not all affines match first qform in file list'+str(affines[0]))
-    return data, affine
+        numpy.testing.assert_almost_equal(shapes[0], shape, 3, err_msg='resolutions do not match. array shapes must be the same.')
+        numpy.testing.assert_almost_equal(affines[0], aff, 3, err_msg='affines do not match. images may be in different spaces.')
+    return data, affines[0]
 
 def combineAsVolumes(files, outfpath):
     data, affine = loadStack(files)
@@ -56,8 +52,21 @@ def savenii(data, affine, outfile, header=None, minmax=('parse', 'parse'), qform
                                    err_msg='output qform in header does not match input qform')
     nibabel.save(img, str(outfile))
 
-def paired_sub(niifiles, outfname, order=0):
+def paired_sub(niifiles, outfname, minuend=0):
+    if int(minuend) not in [0,1]:
+        raise ValueError('minuend defines image in list to subtract other image from. must be either 0 or 1.')
+    if len(niifiles) != 2:
+        raise ValueError('1st arg must be list with 2 valid nifti files to subtract.')
     for f in niifiles:
         if not (Path(f)).is_file():
             raise ValueError("cannot find file "+str(f))
+    data, affine = loadStack(niifiles)
+    data = numpy.rollaxis(data, 0, 4)
+    if minuend == 0:
+        subtrahend = 1
+    elif minuend == 1:
+        subtrahend = 0
+    print('Subtracting data..')
+    sub_data = numpy.subtract(data[:,:,:,minuend],  data[:,:,:,subtrahend])
+    savenii(sub_data, affine, outfname)
 
