@@ -22,15 +22,9 @@ def getlocaldataroot():
 def getnetworkdataroot():
     hostname = socket.gethostname()
 
-    if hostname == 'JVDB':
-        return '/mnt/users/js/'
-    elif hostname == 'scotty.ilabs.uw.edu':
+    if hostname == 'scotty.ilabs.uw.edu':
         return '/media/DiskArray/shared_data/js/'
-    elif hostname == 'sulu.ilabs.uw.edu':
-        return '/mnt/users/js/'
-    elif hostname in ['redshirt.ilabs.uw.edu', 'redshirt']:
-        return '/mnt/users/js/'
-    elif hostname == 'uhora.ilabs.uw.edu':
+    elif hostname in ['redshirt.ilabs.uw.edu', 'redshirt', 'uhora.ilabs.uw.edu', 'uhora', 'sulu.ilabs.uw.edu', 'sulu', 'JVDB']:
         return '/mnt/users/js/'
     elif any(x in hostname for x in ['Jeffs-MacBook-Pro-3.local', 'Jeffs-MBP-3', '.dhcp4.washington.edu']):
         return '/Users/mrjeffs/Documents/Research/data'

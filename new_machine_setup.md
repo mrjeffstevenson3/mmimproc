@@ -8,7 +8,7 @@ on brand new system:
 6. in terminal `cd ~/Software && bash Anaconda2-4.2.0-Linux-x86_64.sh` #nb version numbers will change.
 7. review and accept license and enter install location as /home/toddr/Software/anaconda2  and say yes to prepend to .bashrc
 8. either open a new terminal or `source ~/.bashrc` 
-9. then add basic python dependencies: `pip install pynrrd pathlib`
+9. then add basic python dependencies: `pip install pynrrd pathlib pydicom`
 10. and from conda
 	`conda install --channel https://conda.anaconda.org/dfroger pygpgme`
 	`conda upgrade --all`
@@ -42,4 +42,5 @@ source $FREESURFER_HOME/SetUpFreeSurfer.sh`
     <scotty_ip_addr>:/export /mnt    nfs auto    0   0
     `sudo ufw allow from <scotty_ip_addr>` on new machine and `sudo ufw allow from <your_new_ip_addr>` on scotty
     on scotty set up /etc/exports add to /exports AND /exports/users lines ` <your_new_ip_addr>(rw,nohide,insecure,no_subtree_check,async)` - pls include leading space.
-    
+22. copy scotty .bashrc appropriate elements to ${HOME}/.bashrc (hint use pycharm compare file fn)  
+23. install and start condor: `sudo apt install htcondor && sudo service condor start`
