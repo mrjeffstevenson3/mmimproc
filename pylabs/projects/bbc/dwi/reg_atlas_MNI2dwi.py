@@ -7,13 +7,14 @@ from pylabs.alignment.ants_reg import subj2templ_applywarp
 from pylabs.projects.bbc.pairing import vbmpairing, dwipairing
 from pylabs.utils.paths import getnetworkdataroot
 from pylabs.utils import run_subprocess, WorkingContext
+from pylabs.conversion.nifti2nrrd import nii2nrrd
 #set up provenance
 from pylabs.utils.provenance import ProvenanceWrapper
 provenance = ProvenanceWrapper()
 #setup paths and file names to process
 fs = Path(getnetworkdataroot())
 pylabs_atlasdir = Path(*Path(inspect.getabsfile(pylabs)).parts[:-2]) / 'data' / 'atlases'
-slicer_path = Path(*Path(inspect.getabsfile(pylabs)).parts[:-3]) / 'Slicer-4.5.0-2016-05-02-linux-amd64' / 'Slicer --launch '
+slicer_path = Path(*Path(inspect.getabsfile(pylabs)).parts[:-3]) / 'Slicer-4.7.0-2017-02-01-linux-amd64' / 'Slicer --launch '
 #setup masks and templates:
 anat_atlas = pylabs_atlasdir / 'JHU_MNI_SS_WMPM_Type_I_matched.nii.gz'
 tract_atlas = pylabs_atlasdir / 'JHU-ICBM-tracts-prob-1mm.nii.gz'
@@ -56,7 +57,9 @@ MNI_atlases = {'mori': {'atlas_fname': 'JHU_MNI_SS_WMPM_Type_I_matched.nii.gz', 
                 'JHU_tracts_Left_Unc-17': {'atlas_fname': 'JHU_tracts_thr%(JHU_thr)s_Left_Unc-17.nii', 'roi_list': 17, 'Sl_cmd': 'ModelMaker -l 1 -n '},
                 'JHU_tracts_Right_Unc-18': {'atlas_fname': 'JHU_tracts_thr%(JHU_thr)s_Right_Unc-18.nii', 'roi_list': 18, 'Sl_cmd': 'ModelMaker -l 1 -n '},
 
-                'stats_vbm_WM_s2'  : {'atlas_fname': 'all_WM_mod_s2_n10000_exchbl_tfce_corrp_tstat2.nii.gz', 'roi_list': 1, 'Sl_cmd': 'TractographyLabelMapSeeding -m 2000 -l 2 -x -v 0.1 -a '},
+                'stats_vbm_WM_s2'  : {'atlas_fname': 'all_WM_mod_s2_n10000_exchbl_tfce_corrp_tstat2.nii.gz', 'roi_list': 1, 'Sl_cmd': 'UKFTractography --dwiFile %(fdwinrrd)s --seedsFile %(seed_fnamenrrd)s --labels 1 --maskFile %(mask_fnamenrrd)s --tracts %(dwif)s_UKF_whbr.vtk '
+                                     '--seedsPerVoxel 1 --seedFALimit 0.18 --minFA 0.15 --minGA 0.2 --numThreads -1 --numTensor 2 --stepLength 0.3 --Qm 0 --recordLength 0.9 --maxHalfFiberLength 250 --recordNMSE --freeWater '
+                                     '--recordFA --recordTrace --recordFreeWater --recordTensors --Ql 0 --Qw 0 --Qkappa 0.01 --Qvic 0.004 --Rs 0 --sigmaSignal 0 --maxBranchingAngle 0 --minBranchingAngle 0'},
                 }
 
 tensors = {'RESTORE':['_eddy_corrected_repol_std2_restore_cam_tensor_medfilt.nhdr', '_eddy_corrected_repol_std2_restore_cam_tensor.nhdr', '_eddy_corrected_repol_std2_restore_dipy_tensor.nhdr', '_eddy_corrected_repol_std2_restore_dipy_tensor_medfilt.nhdr'],
@@ -65,6 +68,7 @@ tensors = {'RESTORE':['_eddy_corrected_repol_std2_restore_cam_tensor_medfilt.nhd
             }
 #set project specific files
 project = 'bbc'
+ec_meth = 'cuda_repol_std2_S0mf3_v5'
 fa2t1_outdir = 'reg_subFA2suborigvbmpaired_run2'
 fadir = 'FA_fsl_wls_tensor_mf_ero_paired'
 dwi_templ = 'sub-bbc{sid}_ses-{snum}_{meth}_{runnum}'
@@ -77,6 +81,7 @@ MNI2templ_invwarp = templdir / 'bbc_pairedLH_template_reg2MNI_1InverseWarp.nii.g
 MNI2templ_aff = templdir / 'bbc_pairedLH_template_reg2MNI_0GenericAffine.mat'
 dwi2vbmsubjdir = fs / project / 'reg' / 'reg_subFA2suborigvbmpaired_run2'
 dwi_reg_append = '_eddy_corrected_repol_std2_wls_fsl_tensor_mf_FA_ero_reg2sorigvbm_'
+output = tuple()  # to catch and log errors
 
 #apply the warps
 for dwif, vbmf in zip(dwi_fnames, vbm_fnames):
@@ -88,7 +93,7 @@ for dwif, vbmf in zip(dwi_fnames, vbm_fnames):
             make_mask_fm_tracts(atlas=str(tract_atlas), volidx=a['roi_list'], thresh=JHU_thr, mask_fname=str(pylabs_atlasdir / (a['atlas_fname'] % JHU_thr)))
         elif 'aal_motor' in k:
             make_mask_fm_atlas_parts(atlas=str(pylabs_atlasdir / 'aal_1mm_reg2MNI_masked.nii.gz'), roi_list=a['roi_list'], mask_fname=str(pylabs_atlasdir / a['atlas_fname']))
-        elif 'stats_vbm' in k:
+        elif 'stats' in k:
             make_mask_fm_tracts(atlas=str(vbm_statsdir / a['atlas_fname']), volidx=a['roi_list'], thresh=stat_thr, mask_fname=str(pylabs_atlasdir / (a['atlas_fname'].split('.')[0]+'_thr%(fn_thr)s_bin.nii.gz' % stat_thr)))
         execwdir = fs / project / dwif.split('_')[0] / dwif.split('_')[1] / 'dwi'
         ref = execwdir / str(dwif+'_S0_brain.nii')
@@ -98,8 +103,8 @@ for dwif, vbmf in zip(dwi_fnames, vbm_fnames):
         if 'JHU_' in k:
             mov = pylabs_atlasdir / (a['atlas_fname'] % JHU_thr)
             outf = execwdir / str(dwif+'_'+ (a['atlas_fname'] % JHU_thr))
-        if 'stats_vbm' in k:
-            mov = pylabs_atlasdir / (a['atlas_fname'].split('.')[0]+'_thr%(fn_thr)s_bin.nii.gz' % stat_thr)
+        if 'stats' in k:
+            mov = vbm_statsdir / (a['atlas_fname'].split('.')[0]+'_thr%(fn_thr)s_bin.nii.gz' % stat_thr)
             outf = execwdir / str(dwif+'_'+ (a['atlas_fname'].split('.')[0]+'_thr%(fn_thr)s_bin.nii.gz' % stat_thr))
         iwarp_templ2vbmsubj = templdir / str(vbmf+'InverseWarp.nii.gz')
         iwarp_vbmsub2dwi = dwi2vbmsubjdir / str(dwif+ dwi_reg_append +'1InverseWarp.nii.gz')
@@ -107,13 +112,17 @@ for dwif, vbmf in zip(dwi_fnames, vbm_fnames):
         aff_vbmsub2dwi = dwi2vbmsubjdir / str(dwif + dwi_reg_append + '0GenericAffine.mat')
         warpfiles = [str(MNI2templ_invwarp), str(iwarp_templ2vbmsubj), str(iwarp_vbmsub2dwi)]
         affine_xform = [str(MNI2templ_aff), str(aff_templ2vbmsubj), str(aff_vbmsub2dwi)]
+        if 'stats' in k:  # this is because stats are already in template space so no MNI warps needed.
+            warpfiles = warpfiles[1:]
+            affine_xform = affine_xform[1:]
         subj2templ_applywarp(str(mov), str(ref), str(outf), warpfiles, str(execwdir), affine_xform=affine_xform, inv=True)
+        nii2nrrd(str(outf), str(outf).replace('.nii','.nhdr'), ismask=True)
         vtkdir = execwdir / 'vtk_tensor_comp_run7'
         if not vtkdir.is_dir():
             vtkdir.mkdir()
         #recoded till here
         try:
-            if not a['Sl_cmd'] == None:
+            if not a['Sl_cmd'] == None and 'stats_vbm' not in k:
                 if a['Sl_cmd'] == 'ModelMaker -l 1 -n ':
                     cmd = ''
                     cmd += str(slicer_path) + a['Sl_cmd']
@@ -137,9 +146,9 @@ for dwif, vbmf in zip(dwi_fnames, vbm_fnames):
                         provenance.log(str(vtkdir / str(dwif+'_'+k+'.vtk')), 'generate model vtk', str(outf), script=__file__, provenance=params)
                     elif 'JHU_' in k:
                         provenance.log(str(vtkdir / str(dwif + '_' + (a['atlas_fname'] % JHU_thr).split('.')[0]) + '.vtk'), 'generate model vtk', str(outf), script=__file__, provenance=params)
-                else:
+                elif 'stats' not in k:
                     for m, ts in tensors.iteritems():
-                        tenpath = execwdir / 'cuda_repol_std2_v2' / m
+                        tenpath = execwdir / ec_meth / m
                         for t in ts:
                             cmd = ''
                             cmd += str(slicer_path) + a['Sl_cmd']
@@ -156,5 +165,15 @@ for dwif, vbmf in zip(dwi_fnames, vbm_fnames):
                             params['cmd'] = cmd
                             params['output'] = output
                             provenance.log(str(vtkdir / str(dwif+t.split('.')[0]+'_'+k))+'.vtk', 'generate fiberbundle vtk from tensors', [str(outf), str(tenpath / str(dwif+t))] , script=__file__, provenance=params)
+                elif 'stats' in k:
+                    # sets up variables to combine with MNI_atlases dict
+                    cmdvars = {'mask_fname': str(mask_fname), 'm': m.lower(), 'dwif': dwif,
+                               'fdwinrrd': str(outf).replace('.nii','.nhdr'),
+                               'seed_fnamenrrd': str(outf).replace('.nii', '.nhdr')}
+
+                    with WorkingContext(m):
+                        output += tuple(run_subprocess(MNI_atlases[a]['Sl_cmd'] % cmdvars))
+
+
         except:
             print "exception caught for "+dwif+". Missing "+k+" for "+' '.join(list(a))+" or "+m
