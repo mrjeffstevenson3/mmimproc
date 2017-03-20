@@ -43,3 +43,26 @@ source $FREESURFER_HOME/SetUpFreeSurfer.sh`
     `sudo ufw allow from <scotty_ip_addr>` on new machine and `sudo ufw allow from <your_new_ip_addr>` on scotty
     on scotty set up /etc/exports add to /exports AND /exports/users lines ` <your_new_ip_addr>(rw,nohide,insecure,no_subtree_check,async)` - pls include leading space.
     
+install sip, pyqt4, mayavi, pysurfer:
+cd ${HOME}/Software
+https://riverbankcomputing.com/software/sip/download
+example docs:
+file:///Users/mrjeffs/Software/sip-4.19.2.dev1703031758/doc/html/build_system.html
+cd sip-4.19*
+python configure.py
+make
+make install
+cd ..
+http://pyqt.sourceforge.net/Docs/PyQt4/installation.html#downloading-pyqt4
+cd PyQt4*
+python configure-ng.py
+make
+make install
+cd ..
+git clone https://github.com/enthought/mayavi
+cd mayavi
+python setup.py develop
+cd ..
+git clone https://github.com/nipy/PySurfer
+cd PySurfer
+python setup.py develop
