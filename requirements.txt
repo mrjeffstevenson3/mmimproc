@@ -15,3 +15,13 @@ pathlib
 pynrrd
 pandas
 sh
+dipy
+mne
+matplotlib
+shell
+seaborn
+dill
+latex
+dateutil
+IPython
+statsmodels

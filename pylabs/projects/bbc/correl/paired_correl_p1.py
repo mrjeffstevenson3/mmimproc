@@ -44,6 +44,7 @@ for behav in unsub_data.iteritems():
     num_waves = (len(behav[1]) / 2) + 2 if groupcol else (len(behav[1]) / 2) + 1
     num_pnts = len(behav[1])
     unsub_content += '/NumWaves\t{0}\n/NumPoints\t{1}\n'.format(num_waves, num_pnts)
+    heights = ['{0:6e}\t'.format(0)] * (len(behav[1]) / 2)
     unsub_content += '/PPheights\t\t{0:.6e} {1:.6e}\n'.format(
         unsub_data[behav[0]].min(), unsub_data[behav[0]].max())
     unsub_content += '/Matrix\n'
