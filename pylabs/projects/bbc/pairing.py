@@ -1,4 +1,17 @@
 #this file specifies pairing for each modality is in the exact same subject order for zip.
+from pathlib import *
+from pylabs.utils.paths import getnetworkdataroot
+#setup data paths and file names to process
+fs = Path(getnetworkdataroot())
+project = 'bbc'
+ecdir = 'cuda_repol_std2_S0mf3_v5'
+filterS0_string = ''
+filterS0 = True
+if filterS0:
+    filterS0_string = '_withmf3S0'
+dwitemplate = fs / project / 'reg' / 'ants_vbm_pairedLH_in_template_space' / 'bbc_pairedLH_template_resampled2dwi.nii'
+dwitemplatet2 = fs / project / 'reg' / 'ants_vbm_pairedLH_in_template_space' / 'bbc_pairedLH_template_invT2c_resampled2dwi.nii.gz'
+vbmtemplate = fs / project / 'reg' / 'ants_vbm_pairedLH_in_template_space' / 'bbc_pairedLH_template.nii.gz'
 
 vbmpairing = [
     (101, 1, 'mpr', 3),
@@ -62,3 +75,11 @@ vbmtuppairing = [
     ((118, 1, 'mpr', 2), (243, 1, 'mpr', 1), '243-118'),
     ((119, 3, 'mpr', 1), (231, 1, 'mpr', 1), '231-119'),
     ((120, 1, 'mpr', 1), (253, 1, 'mpr', 1), '253-120')]
+
+dwi_ftempl = 'sub-bbc{sid}_ses-{snum}_{meth}_{runnum}'+filterS0_string+'_ec_thr1'
+dwi_fnames = [dwi_ftempl.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r)) for s, ses, m, r in dwipairing]
+vbm_ftempl = 'bbc_pairedLH_sub-bbc{sid}_ses-{snum}_{meth}_{runnum}_brain_susan_nl_comroll'
+vbm_fnames = [vbm_ftempl.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r)) for s, ses, m, r in vbmpairing]
+dwi_ec_paths_fnames = [''] * len(dwi_fnames)
+for i, fnm in enumerate(dwi_fnames):
+    dwi_ec_paths_fnames[i] = fs / project / fnm.split('_')[0] / fnm.split('_')[1] / 'dwi' / ecdir / str(fnm+'.nii.gz')

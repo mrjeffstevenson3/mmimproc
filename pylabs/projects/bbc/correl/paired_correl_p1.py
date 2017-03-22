@@ -44,9 +44,9 @@ for behav in unsub_data.iteritems():
     num_waves = (len(behav[1]) / 2) + 2 if groupcol else (len(behav[1]) / 2) + 1
     num_pnts = len(behav[1])
     unsub_content += '/NumWaves\t{0}\n/NumPoints\t{1}\n'.format(num_waves, num_pnts)
-    heights = ['{0:6e}\t'.format(1)] * num_waves
-    unsub_content += '/PPheights\t\t{0:.6e} {1:.6e}\n'.format(
-        unsub_data[behav[0]].min(), unsub_data[behav[0]].max())
+    heights = ['{0:6e}\t'.format(2)] * num_waves
+    heights[num_waves-1] = '{0:.6e}'.format(behav[1].max() - behav[1].min())
+    unsub_content += '/PPheights\t{0}\n'.format(''.join(heights))
     unsub_content += '/Matrix\n'
     counter = 0
     for i, vals in enumerate(behav[1]):
@@ -81,11 +81,12 @@ with open(str(subconfname), mode='w') as subconfile:
 # con file for unsubtracted correlations
 unsubconfname = outdir / 'paired_correl_exch_blks_c{0}.con'.format((len(unsub_data.iloc[:,0])/2)+2 if groupcol else (len(unsub_data.iloc[:,0])/2)+1)
 unsubcon_content = ''
-unsubcon_content += '/ContrastName1\tsubtracted pairs controls gt foster\n'
-unsubcon_content += '/ContrastName2\tsubtracted pairs foster gt controls\n'
+unsubcon_content += '/ContrastName1\tpaired exch blk controls gt foster\n'
+unsubcon_content += '/ContrastName2\tpaired exch blk foster gt controls\n'
 unsubcon_content += '/NumWaves\t{0}\n'.format((len(unsub_data.iloc[:,0])/2)+2 if groupcol else (len(unsub_data.iloc[:,0])/2)+1)
 unsubcon_content += '/NumContrasts\t{0}\n'.format(2)
-unsubcon_content += '/PPheights\t{0:.6e}\t{1:.6e}\n'.format(0,1)
+heights = ['{0:6e}\t'.format(1)] * num_waves
+unsubcon_content += '/PPheights\t{0}\n'.format(''.join(heights))
 unsubcon_content += '/RequiredEffect\t{0:.6e}\t{1:.6e}\n'.format(0,40)
 unsubcon_content += '/Matrix\n\n'
 unsub_cols = ['{0:6e}\t'.format(0)] * ((len(unsub_data.iloc[:,0])/2)+1)
@@ -104,3 +105,4 @@ for x in np.arange(1,len(unsub_data.iloc[:,0])/2+1, 0.5).astype(int):
     exchblk_content += '{0}\n'.format(x)
 with open(str(exchblk_fname), mode='w') as exchblkfile:
     exchblkfile.write(exchblk_content)
+
