@@ -21,7 +21,7 @@ rm -f input1.vtk input2.vtk
 cp ${afile} input1.vtk
 cp ${afile/.vtk/_channel.vtk} input2.vtk
 
-${PYLABS}/pylabs/diffusion/makevolumeric_fromvtk
+${PYLABS}/pylabs/diffusion/makevolumetric_fromvtk
 echo ${afile}
 done
 done
