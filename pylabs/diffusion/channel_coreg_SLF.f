@@ -7,12 +7,12 @@ c
 	equivalence (cnmr,nmr)
 	integer iy(10),iz(10)
 	real rfa(10)
-	iy(1) = 71
-	iz(1) = 64
-	iy(2) = 72
+	iy(1) = 66
+	iz(1) = 69
+	iy(2) = 62
 	iz(2) = 69
-	iy(3) = 68
-	iz(3) = 72
+	iy(3) = 54
+	iz(3) = 67
 	iy(4) = 63
 	iz(4) = 71
 	iy(5) = 59
@@ -49,7 +49,7 @@ c now extract out values for each point along the arcuate
 c
 	open(11,file = 'fa.txt')
 	it=1
-	do ip=1,6
+	do ip=1,3
 	sum = 0
 	size = 0	
 	do k=iz(ip)-2,iz(ip)+2
@@ -69,7 +69,7 @@ c
 c
 	open(11,file = 'ad.txt')
 	it=2
-	do ip=1,6
+	do ip=1,3
 	sum = 0
 	size = 0	
 	do k=iz(ip)-2,iz(ip)+2
@@ -89,7 +89,7 @@ c
 c
 	open(11,file = 'rd.txt')
 	it=3
-	do ip=1,6
+	do ip=1,3
 	sum = 0
 	size = 0	
 	do k=iz(ip)-2,iz(ip)+2
@@ -109,7 +109,7 @@ c
 c
 	open(11,file = 'md.txt')
 	it=4
-	do ip=1,6
+	do ip=1,3
 	sum = 0
 	size = 0	
 	do k=iz(ip)-2,iz(ip)+2

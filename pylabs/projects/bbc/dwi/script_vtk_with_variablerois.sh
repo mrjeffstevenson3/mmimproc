@@ -14,10 +14,10 @@ sub43=SLF-43
 sub131=SLF-131
 #get bbc subject directories
 cd ${DATADIR}/bbc
-list=`python -c "from pylabs.projects.bbc.pairing import dwipairing; \
-    print(' '.join(['sub-bbc{sid}'.format(sid=str(s)) for s, ses, m, r in dwipairing]))"`
+#list=`python -c "from pylabs.projects.bbc.pairing import dwipairing; \
+#    print(' '.join(['sub-bbc{sid}'.format(sid=str(s)) for s, ses, m, r in dwipairing]))"`
 #list='sub-bbc108 sub-bbc211 sub-bbc231 sub-bbc241 sub-bbc243 sub-bbc249 sub-bbc253'
-#list=sub-bbc101
+list=sub-bbc113
 #list=`ls -d sub-bbc*`
 #rm -f ${DATADIR}/bbc/allvtk_channel_run${run}.txt
 #loop over subject dirs
@@ -28,8 +28,9 @@ echo working on ${afolder}
 cd ${DATADIR}/bbc/${afolder}/*/*/vtk_tensor_comp_run${run}
 #rm -f *_channel*
 #list2=`ls *wls_fsl_tensor_medfilt*[^_channel].vtk *ols_fsl_tensor_medfilt*[^_channel].vtk *ols_dipy_tensor_medfilt*[^_channel].vtk \
-#          *wls_dipy_tensor_medfilt*[^_channel].vtk`
-list2=`ls *wls_fsl_tensor_medfilt*[^_channel].vtk *ols_fsl_tensor_medfilt*[^_channel].vtk`
+#         *ols_dipy_tensor_medfilt*[^_channel].vtk`
+list2=`ls *wls_fsl_tensor_medfilt*LeftPostIntCap*[^_channel].vtk`
+
 #list2=`ls sub-bbc243_ses-1_dti_15dir_b1000_1_eddy_corrected_repol_std2_wls_fsl_tensor_medfilt_mori_CC.vtk`
 #list2=sub-bbc253_ses-1_dti_15dir_b1000_1_eddy_corrected_repol_std2_wls_fsl_tensor_mori_RightPostIntCap-123.vtk
 #list2=sub-bbc253_ses-1_dti_15dir_b1000_1_eddy_corrected_repol_std2_wls_fsl_tensor_medfilt_mori_CC.vtk

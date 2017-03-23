@@ -1,0 +1,28 @@
+#this script takes output from bbc/dwi/reg_dwichannel2templ.py and extracts 10 regions from each tract named
+# this script requires that the registration has already taken place using reg_dwichannel software
+cd /mnt/users/js/bbc/reg/ants_dwiS0_in_template_space/combs_4vol_in_template_space
+
+tracts="Forceps"
+for t in $tracts; do
+     list=`ls *wls_fsl_tensor_medfilt*${t}*.nii.gz`
+    for afile in $list
+    do
+    echo working on $afile
+    rm afile.*
+    cp $afile afile.nii.gz
+    fslchfiletype ANALYZE afile
+    if [[ $t == "LeftPost" || $t == "RightPost" ]]; then
+        ${PYLABS}/pylabs/diffusion/channel_coreg_PostInt
+    elif [[ $t == "Left_SLF" || $t == "Right_SLF" ]]; then
+        ${PYLABS}/pylabs/diffusion/channel_coreg_SLF
+    elif [[ $t == "Forceps" ]]; then
+        ${PYLABS}/pylabs/diffusion/channel_coreg_forceps
+    fi
+
+    for m in fa ad rd md; do
+        data=`cat ${m}.txt | tr -s " "`
+        echo "${afile},${m}${data// /,}" >> /mnt/users/js/bbc/reg/ants_dwiS0_in_template_space/combs_4vol_in_template_space/${t}_$(date +%Y%m%d).csv
+    done
+done
+done
+
