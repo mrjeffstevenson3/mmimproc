@@ -64,10 +64,10 @@ def make_mask_fm_atlas_parts(atlas, roi_list, mask_fname):
         raise IOError(atlas + " atlas file File Doesn't Exist. Please check.")
     img = nibabel.load(atlas)
     img_data = img.get_data()
-    mask = numpy.zeros(img_data.shape)
+    mask = numpy.zeros(img_data.shape).astype('int16')
     for roi in roi_list:
         mask[img_data == roi] = 1
-    mask_img = nibabel.Nifti1Image(mask, img.affine, img.header)
+    mask_img = nibabel.Nifti1Image(mask, img.affine)
     mask_img.set_qform(img.affine, code=1)
     mask_img.header['cal_max'] = 1
     nibabel.save(mask_img, mask_fname)
@@ -83,9 +83,9 @@ def make_mask_fm_tracts(atlas, volidx, thresh, mask_fname):
     img_data = img.get_data()
     if len(img_data.shape) != 4:
         raise IOError(atlas + " atlas file File Doesn't have 4 Dims. must be a 4D tract probability Vol.")
-    mask = numpy.zeros(img_data.shape[:3])
+    mask = numpy.zeros(img_data.shape[:3]).astype('int16')
     mask[img_data[..., volidx - 1] > thresh['thr']] = 1
-    mask_img = nibabel.Nifti1Image(mask, img.affine, img.header)
+    mask_img = nibabel.Nifti1Image(mask, img.affine)
     mask_img.set_qform(img.affine, code=1)
     mask_img.header['cal_max'] = 1
     nibabel.save(mask_img, mask_fname)
