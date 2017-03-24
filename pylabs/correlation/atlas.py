@@ -92,3 +92,17 @@ def make_mask_fm_tracts(atlas, volidx, thresh, mask_fname):
     provenance.log(mask_fname, 'extract roi_list regions from atlas into mask', atlas, script=__file__,
                    provenance={'vol indx': volidx, 'thresh': thresh['thr']})
     return
+
+def make_mask_fm_stats(stats, thresh, mask_fname):
+    if not stats.is_file():
+        raise IOError(str(stats) + " stats File not found. Please check.")
+    img = nibabel.load(str(stats))
+    img_data = img.get_data()
+    mask = numpy.zeros(img_data.shape).astype('int16')
+    mask[img_data > thresh] = 1
+    mask_img = nibabel.Nifti1Image(mask, img.affine)
+    mask_img.set_qform(img.affine, code=1)
+    mask_img.header['cal_max'] = 1
+    nibabel.save(mask_img, str(mask_fname))
+    provenance.log(str(mask_fname), 'make stats above threshold into mask', str(stats), script=__file__, provenance={'thresh': thresh})
+    return
