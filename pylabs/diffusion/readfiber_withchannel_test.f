@@ -271,7 +271,7 @@ c	write(25,*)'1'
 	ifinalinc = 1
 	write(6,*)'ilines numpointsb numpointc ', ilines, numpointsb, numpointsc
 	write(26,*)ilines
-	do i=1,ilines
+	do i=1,ilines,1
 c	do i=280,280
 	do ifil=2,4
 	if(ifil.eq.2)numpoints = numpointsb
@@ -619,7 +619,7 @@ c	write(6,*)'update 40-3 '
 		write(6,*)'found endmarker for tensor ',i
 		go to 299
 		endif
-c	write(6,*)'tensor ',cnmr(i),inmr(i),i
+	write(6,*)'tensor42 ',cnmr(i),inmr(i),i
 		enddo
  299 	continue
  	open(12,file='temp2.txt')
@@ -640,7 +640,7 @@ c	write(6,*)'tensor ',cnmr(i),inmr(i),i
 		write(6,*)'found endmarker for tensor2 ',i
 		go to 699
 		endif
-c	write(6,*)'tensor ',cnmr(i),inmr(i),i
+	write(6,*)'tensor30 ',cnmr(i),inmr(i),i
 		enddo
  699 	continue
 
@@ -733,7 +733,7 @@ c	write(6,*)'tensor ',tensors(16,ii),i
 c
 c test output 
 	do ii=1,9
-c	write(6,*)'tensors 1 ',tensors(1,ii),ii
+	write(6,*)'tensors 1st time ',tensors(1,ii),ii
 	enddo
 	do ii=1,9
 c	write(6,*)'tensors end ',tensors(itensors,ii),ii
@@ -851,15 +851,15 @@ c
 	call fgetc(11,vtk(i),istate)
 	enddo
 	do i=1,isize
-	if(vtk(i).eq.'P'.and.vtk(i+1).eq.'O'.and.vtk(i+2).eq.'I'.and.vtk(i+3).eq.'N')then
+	if(vtk(i).eq.'s'.and.vtk(i+1).eq.'o'.and.vtk(i+2).eq.'r'.and.vtk(i+3).eq.'s')then
 	iset = i
-	write(6,*)'find POI ',iset
+	write(6,*)'find sors ',iset
 	endif
 	enddo
-	do i=iset,iset+22
+	do i=iset,iset+20
 c	write(6,*)'vtk ivtk ',vtk(i),ivtk(i),i
 	enddo
-	do i=iset+5,iset+50
+	do i=iset+1,iset+10
 	if(ivtk(i).eq.10)then
 	write(6,*)'found endmarker for tensor for fnew ',i
 	imarktensor = i

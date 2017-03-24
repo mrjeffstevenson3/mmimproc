@@ -1,8 +1,11 @@
 import os, inspect, itertools, platform
 from pathlib import *
+import sh
 import numpy as np
 import nibabel as nib
 import pylabs
+from sh import Command
+fslmaths = Command('fslmaths')
 from dipy.io import read_bvals_bvecs
 from dipy.core.gradients import gradient_table
 import dipy.reconst.dti as dti
@@ -100,3 +103,5 @@ for dwif in dwi_fnames:
             JHU_fname_nrrd = execwdir / str(UKF_atlases[labels]['atlas_fname'] % {'JHU_thr': JHU_thr}).replace('.nii', '.nhdr'))
             nii2nrrd(str(JHU_fname), str(JHU_fname_nrrd), ismask=True)
         if 'stats_' in labels:
+            stats_fname = vbm_statsdir / str(UKF_atlases[labels]['atlas_fname'])
+            sh

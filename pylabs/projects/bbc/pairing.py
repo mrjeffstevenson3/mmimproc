@@ -80,6 +80,16 @@ dwi_ftempl = 'sub-bbc{sid}_ses-{snum}_{meth}_{runnum}'+filterS0_string+'_ec_thr1
 dwi_fnames = [dwi_ftempl.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r)) for s, ses, m, r in dwipairing]
 vbm_ftempl = 'bbc_pairedLH_sub-bbc{sid}_ses-{snum}_{meth}_{runnum}_brain_susan_nl_comroll'
 vbm_fnames = [vbm_ftempl.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r)) for s, ses, m, r in vbmpairing]
-dwi_ec_paths_fnames = [''] * len(dwi_fnames)
+dwi_ec_ppaths_fnames = [''] * len(dwi_fnames)
+dwi_ec_str_fnames = [''] * len(dwi_fnames)
 for i, fnm in enumerate(dwi_fnames):
-    dwi_ec_paths_fnames[i] = fs / project / fnm.split('_')[0] / fnm.split('_')[1] / 'dwi' / ecdir / str(fnm+'.nii.gz')
+    dwi_ec_ppaths_fnames[i] = fs / project / fnm.split('_')[0] / fnm.split('_')[1] / 'dwi' / ecdir / str(fnm+'.nii.gz')
+    dwi_ec_str_fnames[i] = str(dwi_ec_ppaths_fnames[i])
+
+mods = ['FA', 'MD', 'RD', 'AD']
+dwi_mods_ftempl = 'sub-bbc{sid}_ses-{snum}_{meth}_{runnum}_{fit_meth}_{mod}_reg2vbmtempl.nii'
+fit_meth = 'wls_fsl_tensor_mf'
+mod=mods[0]
+FA_ppath_fnames = [fs / project / 'reg' / 'ants_dwiS0_in_template_space' / mod / fit_meth / dwi_mods_ftempl.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r), fit_meth=fit_meth, mod=mod) for s, ses, m, r in dwipairing]
+FA_str_fnames = []
+FA_str_fnames.append(str(x)+' ' for x in FA_ppath_fnames)
