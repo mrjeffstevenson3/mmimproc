@@ -28,6 +28,8 @@ templdir = fs / project / 'reg' / 'ants_vbm_pairedLH_in_template_space'
 vbm_statsdir = templdir / 'stats' / 'exchblks'
 JHU_atlas = pylabs_atlasdir / 'JHU-ICBM-tracts-prob-1mm.nii.gz'
 mori_atlas = pylabs_atlasdir / 'JHU_MNI_SS_WMPM_Type_I_matched.nii.gz'
+MNI2templ_invwarp = templdir / 'bbc_pairedLH_template_reg2MNI_1InverseWarp.nii.gz'
+MNI2templ_aff = templdir / 'bbc_pairedLH_template_reg2MNI_0GenericAffine.mat'
 #directory where eddy current corrected data is stored (from eddy.py)
 ec_meth = 'cuda_repol_std2_S0mf3_v5'
 JHU_thr = 5  # remove low probability tract regions
@@ -85,7 +87,10 @@ for dwif in dwi_fnames:
     mori_fname = fs / project / dwif.split('_')[0] / dwif.split('_')[1] / 'dwi' / str('_'.join(dwif.split('_')[:6])+'_mori.nii')
     mori_fname_nrrd =  execwdir / str(dwif+'_mori.nhdr')
     # apply warp to this subj mori atlas then convert to nrrd
-    # apply warp cmd here
+    warp1 = (fs / project / 'reg' / 'ants_dwiS0_in_template_space' / str(dwif + regext + '1Warp.nii.gz'))
+    aff1 = (fs / project / 'reg' / 'ants_dwiS0_in_template_space' / str(dwif + regext + '0GenericAffine.mat'))
+    warpfiles = [str(MNI2templ_invwarp), str(iwarp_templ2vbmsubj)]
+    affine_xform = [str(MNI2templ_aff), str(aff_templ2vbmsubj)]
     nii2nrrd(str(mori_fname), str(mori_fname_nrrd), ismask=True)
     if dwif in override_mask:
         mask_fname = str(override_mask[dwif])
