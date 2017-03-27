@@ -89,7 +89,7 @@ for dwif in dwi_fnames:
     nii2nrrd(str(mori_fname), str(mori_fname_nrrd), ismask=True)
     if dwif in override_mask:
         mask_fname = str(override_mask[dwif])
-        mask_fname_nrrd = execwdir / str(dwif.replace('.nii', '.nhdr'))
+        mask_fname_nrrd = execwdir / str(override_mask[dwif].name.replace('.nii', '.nhdr'))
         nii2nrrd(str(mask_fname), str(mask_fname_nrrd), ismask=True)
     else:
         mask_fname = Path(*execwdir.parts[:-2]) / str(dwif.replace('_ec_thr1', '_S0_brain_mask.nii'))
@@ -110,7 +110,7 @@ for dwif in dwi_fnames:
                            'mask_fnamenrrd': str(mask_fname_nrrd),
                            'label_mask_fnamenrrd': str(mori_fname_nrrd),
                            'label_num': UKF_atlases[atlas]['ROIs'][roi]['roi_list']}
-                with WorkingContext(execwdir):
+                with WorkingContext(str(execwdir)):
                     result += run_subprocess(cmds_d['UKF']['slicerpart1'][0] % cmdvars)
         #
         # if 'JHU' in atlas:
