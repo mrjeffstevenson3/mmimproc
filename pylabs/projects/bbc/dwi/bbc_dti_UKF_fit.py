@@ -18,7 +18,7 @@ from pylabs.utils.paths import getnetworkdataroot
 from pylabs.utils import run_subprocess, WorkingContext
 from pylabs.io.images import savenii
 from pylabs.conversion.nifti2nrrd import nii2nrrd
-from pylabs.projects.bbc.dwi.bbc_dti_fit import MNI_atlases
+from pylabs.correlation.atlas import make_mask_fm_stats
 from pylabs.utils.provenance import ProvenanceWrapper
 provenance = ProvenanceWrapper()
 fs = Path(getnetworkdataroot())
@@ -33,7 +33,8 @@ templdir = fs / project / 'reg' / 'ants_vbm_pairedLH_in_template_space'
 vbm_statsdir = templdir / 'stats' / 'exchblks'
 #directory where eddy current corrected data is stored (from eddy.py)
 ec_meth = 'cuda_repol_std2_S0mf3_v5'
-JHU_thr = 5
+JHU_thr = 5  # remove low probability tract regions
+stats_thr = 0.95
 filterS0_string = ''
 filterS0 = True
 if filterS0:
@@ -100,8 +101,11 @@ for dwif in dwi_fnames:
     for labels in UKF_atlases:
         if 'JHU_' in labels:
             JHU_fname = fs / project / dwif.split('_')[0] / dwif.split('_')[1] / 'dwi' / str(UKF_atlases[labels]['atlas_fname'] % {'JHU_thr': JHU_thr})
-            JHU_fname_nrrd = execwdir / str(UKF_atlases[labels]['atlas_fname'] % {'JHU_thr': JHU_thr}).replace('.nii', '.nhdr'))
+            JHU_fname_nrrd = execwdir / str(UKF_atlases[labels]['atlas_fname'] % {'JHU_thr': JHU_thr}).replace('.nii', '.nhdr')
             nii2nrrd(str(JHU_fname), str(JHU_fname_nrrd), ismask=True)
         if 'stats_' in labels:
             stats_fname = vbm_statsdir / str(UKF_atlases[labels]['atlas_fname'])
-            sh
+            stats_mask = execwdir / str(UKF_atlases[labels]['atlas_fname']).replace('.nii.gz', '_thr'+str(stats_thr).replace('0.','')+'_bin.nii')
+            stats_mask_nrrd = execwdir / str(UKF_atlases[labels]['atlas_fname']).replace('.nii.gz', '_thr'+str(stats_thr).replace('0.','')+'_bin.nhdr')
+            make_mask_fm_stats(stats_fname, thresh=stats_thr, stats_mask)
+            nii2nrrd(str(stats_mask), str(stats_mask_nrrd), ismask=True)
