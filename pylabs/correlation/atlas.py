@@ -93,6 +93,8 @@ def make_mask_fm_tracts(atlas, volidx, thresh, mask_fname):
                    provenance={'vol indx': volidx, 'thresh': thresh['thr']})
     return
 
+
+
 def make_mask_fm_stats(stats, thresh, mask_fname):
     if not stats.is_file():
         raise IOError(str(stats) + " stats File not found. Please check.")
