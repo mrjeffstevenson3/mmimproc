@@ -1,3 +1,4 @@
+# this script takes eddy corrected dti data and using mori and JHU tract atlases generates UKF vtk files.
 import os, inspect, itertools, platform
 from pathlib import *
 import sh
@@ -69,8 +70,8 @@ UKF_atlases = {'mori': {'atlas_fname': mori_atlas, 'ROIs': {
                 'JHU_tracts_Left_Unc-17': {'atlas_fname': 'JHU_tracts_thr%(JHU_thr)s_Left_Unc-17.nhdr', 'roi_list': 17, 'Sl_cmd': 'ModelMaker -l 1 -n '},
                 'JHU_tracts_Right_Unc-18': {'atlas_fname': 'JHU_tracts_thr%(JHU_thr)s_Right_Unc-18.nhdr', 'roi_list': 18, 'Sl_cmd': 'ModelMaker -l 1 -n '},},},
 
-                'stats':{'atlas_fname': mori_atlas, 'ROIs': {
-                'stats_vbm_WM_s2'  : {'atlas_fname': 'all_WM_mod_s2_n10000_exchbl_tfce_corrp_tstat2.nii.gz', 'roi_list': 1, 'Sl_cmd': 'UKFTractography --dwiFile %(fdwinrrd)s --seedsFile %(seed_fnamenrrd)s --labels 1 --maskFile %(mask_fnamenrrd)s --tracts %(dwif)s_UKF_whbr.vtk '
+                'stats_VBM':{'atlas_fname': mori_atlas, 'ROIs': {
+                'stats_vbm_WM_s2'  : {'atlas_fname': vbm_statsdir / 'all_WM_mod_s2_n10000_exchbl_tfce_corrp_tstat2.nii.gz', 'roi_list': 1, 'Sl_cmd': 'UKFTractography --dwiFile %(fdwinrrd)s --seedsFile %(seed_fnamenrrd)s --labels 1 --maskFile %(mask_fnamenrrd)s --tracts %(dwif)s_UKF_whbr.vtk '
                                      '--seedsPerVoxel 1 --seedFALimit 0.18 --minFA 0.15 --minGA 0.2 --numThreads -1 --numTensor 2 --stepLength 0.3 --Qm 0 --recordLength 0.9 --maxHalfFiberLength 250 --recordNMSE --freeWater '
                                      '--recordFA --recordTrace --recordFreeWater --recordTensors --Ql 0 --Qw 0 --Qkappa 0.01 --Qvic 0.004 --Rs 0 --sigmaSignal 0 --maxBranchingAngle 0 --minBranchingAngle 0'},},
                 }
@@ -82,10 +83,13 @@ cmds_d = {'UKF':  {'slicerpart1': [str(slicer_path) + 'UKFTractography --dwiFile
         }
 #primary loop over subjects dwi
 for dwif in dwi_fnames:
+    # set working directory to execute
     execwdir = fs / project / dwif.split('_')[0] / dwif.split('_')[1] / 'dwi' / ec_meth / fitmeth
     if not execwdir.is_dir():
         execwdir.mkdir(parents=True)
+    # set eddy corrected DTI nrrd file
     fdwi = fs / project / dwif.split('_')[0] / dwif.split('_')[1] / 'dwi' / ec_meth / str(dwif+'.nhdr')
+    # set mori atlas targets in subject space
     mori_fname = fs / project / dwif.split('_')[0] / dwif.split('_')[1] / 'dwi' / str('_'.join(dwif.split('_')[:6])+'_mori.nii')
     mori_fname_nrrd =  execwdir / str(dwif+'_mori.nhdr')
     # apply warp to this subj mori atlas then convert to nrrd
@@ -96,10 +100,11 @@ for dwif in dwi_fnames:
     affine_xform = [str(MNI2templ_aff), str(aff1)]
     subj2templ_applywarp(str(mori_atlas), str(ref), str(mori_fname), warpfiles, str(execwdir), affine_xform=affine_xform, inv=True)
     nii2nrrd(str(mori_fname), str(mori_fname_nrrd), ismask=True)
-    # now same for JHU
+    # now set targets for JHU atlas
     JHU_fname = fs / project / dwif.split('_')[0] / dwif.split('_')[1] / 'dwi' / str('_'.join(dwif.split('_')[:6])+'_JHU_prob_tracts.nii')
     JHU_fname_nrrd = execwdir / str('_'.join(dwif.split('_')[:6])+'_JHU_prob_tracts.nii').replace('.nii', '.nhdr')
     subj2templ_applywarp(str(JHU_atlas), str(ref), str(JHU_fname), warpfiles, str(execwdir), affine_xform=affine_xform, dims=4, inv=True)
+    # set whole brain mask
     if dwif in override_mask:
         mask_fname = str(override_mask[dwif])
         mask_fname_nrrd = execwdir / str(override_mask[dwif].name.replace('.nii', '.nhdr'))
@@ -109,6 +114,7 @@ for dwif in dwi_fnames:
         mask_fname_nrrd = execwdir / str(dwif.replace('_ec_thr1', '_S0_brain_mask.nhdr'))
         nii2nrrd(str(mask_fname), str(mask_fname_nrrd), ismask=True)
     result = tuple()
+    # start processing
     for atlas in UKF_atlases:
         if 'mori' in atlas:
             for roi in UKF_atlases[atlas]['ROIs']:
