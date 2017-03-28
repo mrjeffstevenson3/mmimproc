@@ -90,8 +90,8 @@ for dwif in dwi_fnames:
     mori_fname_nrrd =  execwdir / str(dwif+'_mori.nhdr')
     # apply warp to this subj mori atlas then convert to nrrd
     ref = Path(*execwdir.parts[:-2]) / str(dwif.replace('_ec_thr1', '_S0_brain.nii'))
-    inv_warp1 = (fs / project / 'reg' / 'ants_dwiS0_in_template_space' / str(dwif + regext + '1InverseWarp.nii.gz'))
-    aff1 = (fs / project / 'reg' / 'ants_dwiS0_in_template_space' / str(dwif + regext + '0GenericAffine.mat'))
+    inv_warp1 = fs / project / 'reg' / 'ants_dwiS0_in_template_space' / str(dwif.replace('_withmf3s0_ec_thr1', regext + '1InverseWarp.nii.gz'))
+    aff1 = fs / project / 'reg' / 'ants_dwiS0_in_template_space' / str(dwif.replace('_withmf3s0_ec_thr1', regext + '0GenericAffine.mat'))
     warpfiles = [str(MNI2templ_invwarp), str(inv_warp1)]
     affine_xform = [str(MNI2templ_aff), str(aff1)]
     subj2templ_applywarp(str(mori_atlas), str(ref), str(mori_fname), warpfiles, str(execwdir), affine_xform=affine_xform, inv=True)
@@ -123,7 +123,7 @@ for dwif in dwi_fnames:
             JHU_data = nib.load(str(JHU_fname)).get_data()
             affine = nib.load(str(JHU_fname)).affine
             JHU_data_thr_mask = np.zeros(JHU_data.shape)
-            JHU_data_thr_mask[JHU_data_thr > JHU_thr] = 1
+            JHU_data_thr_mask[JHU_data > JHU_thr] = 1
             for roi in UKF_atlases[atlas]['ROIs']:
                 JHU_nrrd_fname = execwdir / str(dwif.replace('ec_thr1', UKF_atlases[atlas]['ROIs'][roi]['atlas_fname'] % {'JHU_thr': JHU_thr}))
                 array2nrrd(JHU_data_thr_mask[:,:,:,UKF_atlases[atlas]['ROIs'][roi]['roi_list'] - 1], affine, str(JHU_nrrd_fname), ismask=True)
@@ -132,7 +132,7 @@ for dwif in dwi_fnames:
                            'mask_fnamenrrd': str(mask_fname_nrrd),
                            'label_mask_fnamenrrd': str(JHU_nrrd_fname),
                            'label_num': 1}
-                with WorkingContext(execwdir):
+                with WorkingContext(str(execwdir)):
                     result += run_subprocess(cmds_d['UKF']['slicerpart1'][0] % cmdvars)
 
         # if 'stats_' in atlas:
