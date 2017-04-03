@@ -27,8 +27,8 @@ echo working on ${afolder}
 #get vtk files to process
 cd ${DATADIR}/bbc/${afolder}/*/*/cuda_repol_std2_S0mf3_v5/UKF
 #rm -f *_channel*
-#list2=`ls *mori*[^_channel]_UKF.vtk`
-list2=sub-bbc253_ses-1_dti_15dir_b1000_1_withmf3S0_ec_thr1_mori_Left_IFOF-45-47_UKF.vtk
+list2=`ls *mori*[^_channel]_UKF.vtk`
+#list2=sub-bbc253_ses-1_dti_15dir_b1000_1_withmf3S0_ec_thr1_mori_Left_IFOF-45-47_UKF.vtk
 
 #loop over vtk files
 for afile in ${list2}
