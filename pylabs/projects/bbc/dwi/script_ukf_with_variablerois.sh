@@ -27,8 +27,8 @@ echo working on ${afolder}
 #get vtk files to process
 cd ${DATADIR}/bbc/${afolder}/*/*/cuda_repol_std2_S0mf3_v5/UKF
 #rm -f *_channel*
-list2=`ls *mori*[^_channel]_UKF.vtk`
-
+#list2=`ls *mori*[^_channel]_UKF.vtk`
+list2=sub-bbc253_ses-1_dti_15dir_b1000_1_withmf3S0_ec_thr1_mori_Left_IFOF-45-47_UKF.vtk
 
 #loop over vtk files
 for afile in ${list2}
@@ -45,11 +45,24 @@ if [[ "$afile" == *"$sub70"* ]]; then
 cp /mnt/users/js/bbc/holdaal/base.vtk .
 cp /mnt/users/js/bbc/holdaal/aal_motor.vtk .
 cp *JHU*Left_IFOF-11_model.vtk channel.vtk
+${PYLABS}/pylabs/diffusion/readfiber_withchannel_ukf_fa1_injection_apdivisions
+${PYLABS}/pylabs/diffusion/makecsv_fromvtk_ukf
+cp fnew.vtk ${afile/.vtk/_channel.vtk}
+echo -n "${afile} " >> ${DATADIR}/bbc/allukf_channel_run${run}.txt
+cat ukf_10regions.csv >> ${DATADIR}/bbc/allukf_channel_run${run}.txt
+cp ukf_10regions.csv ukf_10regions_${afile}.csv
+
 fi
 if [[ "$afile" == *"$sub158"* ]]; then
 cp /mnt/users/js/bbc/holdaal/base.vtk .
 cp /mnt/users/js/bbc/holdaal/aal_motor.vtk .
 cp *JHU*Right_IFOF-12_model.vtk channel.vtk
+${PYLABS}/pylabs/diffusion/readfiber_withchannel_ukf_fa1_injection_apdivisions
+${PYLABS}/pylabs/diffusion/makecsv_fromvtk_ukf
+cp fnew.vtk ${afile/.vtk/_channel.vtk}
+echo -n "${afile} " >> ${DATADIR}/bbc/allukf_channel_run${run}.txt
+cat ukf_10regions.csv >> ${DATADIR}/bbc/allukf_channel_run${run}.txt
+cp ukf_10regions.csv ukf_10regions_${afile}.csv
 fi
 #special case for corpus callosum
 if [[ "$afile" == *"$subcc"* ]]; then
@@ -61,8 +74,9 @@ cp /mnt/users/js/bbc/holdaal/aal_motor.vtk .
     ${PYLABS}/pylabs/diffusion/readfiber_withchannel_ukf_fa1_injection_apdivisions
     ${PYLABS}/pylabs/diffusion/makecsv_fromvtk_ukf
     cp fnew.vtk ${afile/.vtk/_Forceps_Major_channel.vtk}
-echo -n "${afile} " >> ${DATADIR}/bbc/allukf_channel_run${run}.txt
+echo -n "${afile} Forceps_Major" >> ${DATADIR}/bbc/allukf_channel_run${run}.txt
 cat ukf_10regions.csv >> ${DATADIR}/bbc/allukf_channel_run${run}.txt
+cp ukf_10regions.csv ukf_10regions_${afile}_Forceps_Major.csv
 
     echo -n "${afile/.vtk/_Forceps_Major_channel.vtk} " >> ${DATADIR}/bbc/allvtk_channel_run${run}.txt
     cat dti_results.txt >> ${DATADIR}/bbc/allvtk_channel_run${run}.txt
@@ -71,9 +85,9 @@ cat ukf_10regions.csv >> ${DATADIR}/bbc/allukf_channel_run${run}.txt
     ${PYLABS}/pylabs/diffusion/readfiber_withchannel_ukf_fa1_injection_apdivisions
     ${PYLABS}/pylabs/diffusion/makecsv_fromvtk_ukf
     cp fnew.vtk ${afile/.vtk/_Forceps_Minor_channel.vtk}
-echo -n "${afile} " >> ${DATADIR}/bbc/allukf_channel_run${run}.txt
+echo -n "${afile} Forceps_Minor" >> ${DATADIR}/bbc/allukf_channel_run${run}.txt
 cat ukf_10regions.csv >> ${DATADIR}/bbc/allukf_channel_run${run}.txt
-
+cp ukf_10regions.csv ukf_10regions_${afile}_Forceps_Minor.csv
      echo -n "${afile/.vtk/_Forceps_Minor_channel.vtk} " >> ${DATADIR}/bbc/allvtk_channel_run${run}.txt
     cat dti_results.txt >> ${DATADIR}/bbc/allvtk_channel_run${run}.txt
     rm -f fnew.vtk
@@ -87,6 +101,7 @@ ${PYLABS}/pylabs/diffusion/makecsv_fromvtk_ukf
 cp fnew.vtk ${afile/.vtk/_channel.vtk}
 echo -n "${afile} " >> ${DATADIR}/bbc/allukf_channel_run${run}.txt
 cat ukf_10regions.csv >> ${DATADIR}/bbc/allukf_channel_run${run}.txt
+cp ukf_10regions.csv ukf_10regions_${afile}.csv
 fi
 if [[ "$afile" == *"$sub123"* ]]; then
 cp /mnt/users/js/bbc/holdaal/base.vtk .
@@ -97,6 +112,7 @@ ${PYLABS}/pylabs/diffusion/makecsv_fromvtk_ukf
 cp fnew.vtk ${afile/.vtk/_channel.vtk}
 echo -n "${afile} " >> ${DATADIR}/bbc/allukf_channel_run${run}.txt
 cat ukf_10regions.csv >> ${DATADIR}/bbc/allukf_channel_run${run}.txt
+cp ukf_10regions.csv ukf_10regions_${afile}.csv
 fi
 if [[ "$afile" == *"$sub43"* ]]; then
 cp /mnt/users/js/bbc/holdaal/base.vtk .
@@ -107,6 +123,7 @@ ${PYLABS}/pylabs/diffusion/makecsv_fromvtk_ukf
 cp fnew.vtk ${afile/.vtk/_channel.vtk}
 echo -n "${afile} " >> ${DATADIR}/bbc/allukf_channel_run${run}.txt
 cat ukf_10regions.csv >> ${DATADIR}/bbc/allukf_channel_run${run}.txt
+cp ukf_10regions.csv ukf_10regions_${afile}.csv
 fi
 if [[ "$afile" == *"$sub131"* ]]; then
 cp /mnt/users/js/bbc/holdaal/base.vtk .
@@ -117,6 +134,7 @@ ${PYLABS}/pylabs/diffusion/makecsv_fromvtk_ukf
 cp fnew.vtk ${afile/.vtk/_channel.vtk}
 echo -n "${afile} " >> ${DATADIR}/bbc/allukf_channel_run${run}.txt
 cat ukf_10regions.csv >> ${DATADIR}/bbc/allukf_channel_run${run}.txt
+cp ukf_10regions.csv ukf_10regions_${afile}.csv
 fi
 done
 done
