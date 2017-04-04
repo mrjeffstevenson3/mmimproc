@@ -5,7 +5,7 @@ import numpy as np
 from scipy.stats import spearmanr as sp_correl
 from pylabs.utils.paths import getnetworkdataroot
 from pylabs.utils.provenance import ProvenanceWrapper
-from pylabs.correlation.correlate import wholeBrain
+from pylabs.io.images import loadStack
 from pylabs.projects.bbc.pairing import FA_foster_pnames, FA_control_pnames, \
     MD_foster_pnames, MD_control_pnames, RD_foster_pnames, RD_control_pnames, \
     AD_foster_pnames, AD_control_pnames, foster_paired_behav_subjs, control_paired_behav_subjs
@@ -21,12 +21,14 @@ mat_outdir = fs / project / 'stats' / 'matfiles'
 results_dir = fs / project / 'stats' / results_dirname
 data = pd.read_csv(str(csvraw), header=[0,1], index_col=1, tupleize_cols=True)
 
-foster_data = data.loc[foster_paired_behav_subjs, behav_list]
-control_data = data.loc[control_paired_behav_subjs, behav_list]
+foster_behav_data = data.loc[foster_paired_behav_subjs, behav_list]
+control_behav_data = data.loc[control_paired_behav_subjs, behav_list]
 
 if not mat_outdir.is_dir():
     mat_outdir.mkdir(parents=True)
 if not results_dir.is_dir():
     results_dir.mkdir(parents=True)
 
+foster_FA_data = loadStack(FA_foster_pnames)
+foster_FA_rho_stats, foster_FA_tstat_stats =  sp_correl(foster_FA_data, foster_behav_data[(u'26', u'PPVTSS')], axis=3)
 
