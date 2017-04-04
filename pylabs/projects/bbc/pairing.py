@@ -80,7 +80,7 @@ vbmtuppairing = [
     ((120, 1, 'mpr', 1), (253, 1, 'mpr', 1), '253-120'),
         ]
 
-foster_subjs = [
+paired_foster_subjs_tup = [
     (101, 2, 'dti_15dir_b1000', 1),
     (105, 1, 'dti_15dir_b1000', 1),
     (106, 1, 'dti_15dir_b1000', 1),
@@ -92,7 +92,7 @@ foster_subjs = [
     (120, 1, 'dti_15dir_b1000', 1),
         ]
 
-control_subs = [
+paired_control_subjs_tup = [
     (202, 1, 'dti_15dir_b1000', 1),
     (208, 1, 'dti_15dir_b1000', 1),
     (209, 1, 'dti_15dir_b1000', 1),
@@ -103,23 +103,41 @@ control_subs = [
     (249, 1, 'dti_15dir_b1000', 1),
     (253, 1, 'dti_15dir_b1000', 1),
         ]
+
+paired_foster_subjs_sorted = sorted(paired_foster_subjs_tup, key=lambda x: x[0])
+paired_control_subjs_sorted = sorted(paired_control_subjs_tup, key=lambda x: x[0])
+foster_paired_behav_subjs = ['BBC{sid}'.format(sid=s) for s, ses, m, r in paired_foster_subjs_sorted]
+control_paired_behav_subjs = ['BBC{sid}'.format(sid=s) for s, ses, m, r in paired_control_subjs_sorted]
 dwi_ftempl = 'sub-bbc{sid}_ses-{snum}_{meth}_{runnum}'+filterS0_string+'_ec_thr1'
 dwi_fnames = [dwi_ftempl.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r)) for s, ses, m, r in dwipairing]
-vbm_ftempl = 'bbc_pairedLH_sub-bbc{sid}_ses-{snum}_{meth}_{runnum}_brain_susan_nl_comroll'
-vbm_fnames = [vbm_ftempl.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r)) for s, ses, m, r in vbmpairing]
 dwi_ec_ppaths_fnames = [''] * len(dwi_fnames)
 dwi_ec_str_fnames = [''] * len(dwi_fnames)
 for i, fnm in enumerate(dwi_fnames):
     dwi_ec_ppaths_fnames[i] = fs / project / fnm.split('_')[0] / fnm.split('_')[1] / 'dwi' / ecdir / str(fnm+'.nii.gz')
     dwi_ec_str_fnames[i] = str(dwi_ec_ppaths_fnames[i])
-
+foster_dwi_fnames = [dwi_ftempl.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r)) for s, ses, m, r in paired_foster_subjs_sorted]
+control_dwi_fnames = [dwi_ftempl.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r)) for s, ses, m, r in paired_control_subjs_sorted]
+vbm_ftempl = 'bbc_pairedLH_sub-bbc{sid}_ses-{snum}_{meth}_{runnum}_brain_susan_nl_comroll'
+vbm_fnames = [vbm_ftempl.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r)) for s, ses, m, r in vbmpairing]
 mods = ['FA', 'MD', 'RD', 'AD']
 dwi_mods_ftempl = 'sub-bbc{sid}_ses-{snum}_{meth}_{runnum}_{fit_meth}_{mod}_reg2vbmtempl.nii'
 fit_meth = 'wls_fsl_tensor_mf'
-mod='FA'
+mod = 'FA'
 FA_paired_pnames = [fs / project / 'reg' / 'ants_dwiS0_in_template_space' / mod / fit_meth / dwi_mods_ftempl.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r), fit_meth=fit_meth, mod=mod) for s, ses, m, r in dwipairing]
-FA_foster_pnames = [fs / project / 'reg' / 'ants_dwiS0_in_template_space' / mod / fit_meth / dwi_mods_ftempl.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r), fit_meth=fit_meth, mod=mod) for s, ses, m, r in foster_subjs]
-FA_control_pnames = [fs / project / 'reg' / 'ants_dwiS0_in_template_space' / mod / fit_meth / dwi_mods_ftempl.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r), fit_meth=fit_meth, mod=mod) for s, ses, m, r in control_subs]
+FA_foster_pnames = [fs / project / 'reg' / 'ants_dwiS0_in_template_space' / mod / fit_meth / dwi_mods_ftempl.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r), fit_meth=fit_meth, mod=mod) for s, ses, m, r in paired_foster_subjs_sorted]
+FA_control_pnames = [fs / project / 'reg' / 'ants_dwiS0_in_template_space' / mod / fit_meth / dwi_mods_ftempl.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r), fit_meth=fit_meth, mod=mod) for s, ses, m, r in paired_control_subjs_sorted]
+mod = 'MD'
+MD_paired_pnames = [fs / project / 'reg' / 'ants_dwiS0_in_template_space' / mod / fit_meth / dwi_mods_ftempl.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r), fit_meth=fit_meth, mod=mod) for s, ses, m, r in dwipairing]
+MD_foster_pnames = [fs / project / 'reg' / 'ants_dwiS0_in_template_space' / mod / fit_meth / dwi_mods_ftempl.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r), fit_meth=fit_meth, mod=mod) for s, ses, m, r in paired_foster_subjs_sorted]
+MD_control_pnames = [fs / project / 'reg' / 'ants_dwiS0_in_template_space' / mod / fit_meth / dwi_mods_ftempl.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r), fit_meth=fit_meth, mod=mod) for s, ses, m, r in paired_control_subjs_sorted]
+mod = 'RD'
+RD_paired_pnames = [fs / project / 'reg' / 'ants_dwiS0_in_template_space' / mod / fit_meth / dwi_mods_ftempl.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r), fit_meth=fit_meth, mod=mod) for s, ses, m, r in dwipairing]
+RD_foster_pnames = [fs / project / 'reg' / 'ants_dwiS0_in_template_space' / mod / fit_meth / dwi_mods_ftempl.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r), fit_meth=fit_meth, mod=mod) for s, ses, m, r in paired_foster_subjs_sorted]
+RD_control_pnames = [fs / project / 'reg' / 'ants_dwiS0_in_template_space' / mod / fit_meth / dwi_mods_ftempl.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r), fit_meth=fit_meth, mod=mod) for s, ses, m, r in paired_control_subjs_sorted]
+mod = 'AD'
+AD_paired_pnames = [fs / project / 'reg' / 'ants_dwiS0_in_template_space' / mod / fit_meth / dwi_mods_ftempl.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r), fit_meth=fit_meth, mod=mod) for s, ses, m, r in dwipairing]
+AD_foster_pnames = [fs / project / 'reg' / 'ants_dwiS0_in_template_space' / mod / fit_meth / dwi_mods_ftempl.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r), fit_meth=fit_meth, mod=mod) for s, ses, m, r in paired_foster_subjs_sorted]
+AD_control_pnames = [fs / project / 'reg' / 'ants_dwiS0_in_template_space' / mod / fit_meth / dwi_mods_ftempl.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r), fit_meth=fit_meth, mod=mod) for s, ses, m, r in paired_control_subjs_sorted]
 
 
 #FA_str_fnames = []
