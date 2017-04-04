@@ -1,4 +1,4 @@
-c gfortran  -O3 -mcmodel=medium -g readfiber_withchannel_ukf_fa1_injection_sidivisions.f -o readfiber_withchannel_ukf_fa1_injection_sidivisions -ffixed-line-length-none
+c gfortran  -O3 -mcmodel=medium -g readfiber_withchannel_ukf_fa1_injection_apdivisions.f -o readfiber_withchannel_ukf_fa1_injection_apdivisions -ffixed-line-length-none
 c read DTI fiber track vtk and quantify the FA and several other parameters
 c read vtk binary file
 c
@@ -538,7 +538,7 @@ c	write(6,*)'the minimum distance between line and model is ',rmindistance(ifil)
 c  for the rmaxz find the closest cortex model point
 c
 	if(iprocmethod.eq.1)then  !channel only
-	if(rmindistance(2).lt.1000.0.and.rmindistance(3).le.1000.0.and.rfraction_subline.ge.0.60)then
+	if(rmindistance(2).lt.1000.0.and.rmindistance(3).le.1000.0.and.rfraction_subline.ge.0.70)then
 	igood = igood+1
 	dnmr(igood) = sum   ! sum distance for one line
 c save the indices for later tensors selection
@@ -978,8 +978,8 @@ c
 c
 c 1st divide up the region into 10 parts
 c
-	rminz = 10000
-	rmaxz = 0
+	rminy = 10000
+	rmaxy = 0
 	do i=1,itensors   !between tensors
 c
 c this part below will repaint the tensor a different color if the fiber 
@@ -991,8 +991,8 @@ c
 		ipoly = polyfinal(ii,1)
 
 		if(i.eq.ipoly)then
-		rminz = min(polysav(i,3,1),rminz)
-		rmaxz = max(polysav(i,3,1),rmaxz)
+		rminy = min(polysav(i,2,1),rminy)
+		rmaxy = max(polysav(i,2,1),rmaxy)
 		poly(1) = 2.0
 		do it=1,1
 		tensors(i,it) = poly(it)
@@ -1002,15 +1002,15 @@ c		write(6,*)'inside of fa1'
 		enddo   !ii
 	enddo  !within tensor
 c
-	rfact =(rmaxz-rminz)/10.0
+	rfact =(rmaxy-rminy)/10.0
 	do ifil=1,10
 	r1 = ifil
-	rstart = rminz+ ((r1-1)*rfact)
+	rstart = rminy+ ((r1-1)*rfact)
 	rend = rstart+rfact
 	do i=1,itensors
 		do ii=1,ifinalcount
 		ipoly = polyfinal(ii,1)
-		polyy = polysav(i,3,1)
+		polyy = polysav(i,2,1)
 
 		if(i.eq.ipoly.and.polyy.ge.rstart.and.polyy.le.rend)then
 		poly(1) = ifil
