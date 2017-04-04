@@ -31,7 +31,8 @@ vbmpairing = [
     (119, 3, 'mpr', 1),
     (231, 1, 'mpr', 1),
     (120, 1, 'mpr', 1),
-    (253, 1, 'mpr', 1)]
+    (253, 1, 'mpr', 1),
+        ]
 #here dwi pairing bbc101 ses-2 is a hybrid of ses-1 & 3 due to bad motion on both. eddy does re-alignment with vectors intact
 dwipairing = [
     (101, 2, 'dti_15dir_b1000', 1),
@@ -51,7 +52,8 @@ dwipairing = [
     (119, 2, 'dti_15dir_b1000', 2),
     (231, 1, 'dti_15dir_b1000', 1),
     (120, 1, 'dti_15dir_b1000', 1),
-    (253, 1, 'dti_15dir_b1000', 1)]
+    (253, 1, 'dti_15dir_b1000', 1),
+        ]
 
 #tuple pairing for subs and concats
 dwituppairing = [
@@ -63,7 +65,8 @@ dwituppairing = [
     ((116, 1, 'dti_15dir_b1000', 1), (241, 1, 'dti_15dir_b1000', 1), '241-116'),
     ((118, 1, 'dti_15dir_b1000', 1), (243, 1, 'dti_15dir_b1000', 1), '243-118'),
     ((119, 2, 'dti_15dir_b1000', 2), (231, 1, 'dti_15dir_b1000', 1), '231-119'),
-    ((120, 1, 'dti_15dir_b1000', 1), (253, 1, 'dti_15dir_b1000', 1), '253-120')]
+    ((120, 1, 'dti_15dir_b1000', 1), (253, 1, 'dti_15dir_b1000', 1), '253-120'),
+        ]
 
 vbmtuppairing = [
     ((101, 1, 'mpr', 3), (209, 1, 'mpr', 1), '209-101'),
@@ -74,8 +77,32 @@ vbmtuppairing = [
     ((116, 1, 'wempr', 1), (241, 1, 'mpr', 2), '241-116'),
     ((118, 1, 'mpr', 2), (243, 1, 'mpr', 1), '243-118'),
     ((119, 3, 'mpr', 1), (231, 1, 'mpr', 1), '231-119'),
-    ((120, 1, 'mpr', 1), (253, 1, 'mpr', 1), '253-120')]
+    ((120, 1, 'mpr', 1), (253, 1, 'mpr', 1), '253-120'),
+        ]
 
+foster_subjs = [
+    (101, 2, 'dti_15dir_b1000', 1),
+    (105, 1, 'dti_15dir_b1000', 1),
+    (106, 1, 'dti_15dir_b1000', 1),
+    (108, 1, 'dti_15dir_b1000', 1),
+    (113, 1, 'dti_15dir_b1000', 1),
+    (116, 1, 'dti_15dir_b1000', 1),
+    (118, 1, 'dti_15dir_b1000', 1),
+    (119, 2, 'dti_15dir_b1000', 2),
+    (120, 1, 'dti_15dir_b1000', 1),
+        ]
+
+control_subs = [
+    (202, 1, 'dti_15dir_b1000', 1),
+    (208, 1, 'dti_15dir_b1000', 1),
+    (209, 1, 'dti_15dir_b1000', 1),
+    (211, 2, 'dti_15dir_b1000', 1),
+    (231, 1, 'dti_15dir_b1000', 1),
+    (241, 1, 'dti_15dir_b1000', 1),
+    (243, 1, 'dti_15dir_b1000', 1),
+    (249, 1, 'dti_15dir_b1000', 1),
+    (253, 1, 'dti_15dir_b1000', 1),
+        ]
 dwi_ftempl = 'sub-bbc{sid}_ses-{snum}_{meth}_{runnum}'+filterS0_string+'_ec_thr1'
 dwi_fnames = [dwi_ftempl.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r)) for s, ses, m, r in dwipairing]
 vbm_ftempl = 'bbc_pairedLH_sub-bbc{sid}_ses-{snum}_{meth}_{runnum}_brain_susan_nl_comroll'
@@ -89,7 +116,11 @@ for i, fnm in enumerate(dwi_fnames):
 mods = ['FA', 'MD', 'RD', 'AD']
 dwi_mods_ftempl = 'sub-bbc{sid}_ses-{snum}_{meth}_{runnum}_{fit_meth}_{mod}_reg2vbmtempl.nii'
 fit_meth = 'wls_fsl_tensor_mf'
-mod=mods[0]
-FA_ppath_fnames = [fs / project / 'reg' / 'ants_dwiS0_in_template_space' / mod / fit_meth / dwi_mods_ftempl.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r), fit_meth=fit_meth, mod=mod) for s, ses, m, r in dwipairing]
-FA_str_fnames = []
-FA_str_fnames.append(str(x)+' ' for x in FA_ppath_fnames)
+mod='FA'
+FA_paired_pnames = [fs / project / 'reg' / 'ants_dwiS0_in_template_space' / mod / fit_meth / dwi_mods_ftempl.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r), fit_meth=fit_meth, mod=mod) for s, ses, m, r in dwipairing]
+FA_foster_pnames = [fs / project / 'reg' / 'ants_dwiS0_in_template_space' / mod / fit_meth / dwi_mods_ftempl.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r), fit_meth=fit_meth, mod=mod) for s, ses, m, r in foster_subjs]
+FA_control_pnames = [fs / project / 'reg' / 'ants_dwiS0_in_template_space' / mod / fit_meth / dwi_mods_ftempl.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r), fit_meth=fit_meth, mod=mod) for s, ses, m, r in control_subs]
+
+
+#FA_str_fnames = []
+#FA_str_fnames.append(str(x)+' ' for x in FA_ppath_fnames)
