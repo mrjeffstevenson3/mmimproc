@@ -1,9 +1,8 @@
-from pylabs.utils import Shell, paths, InDir
-import os, subprocess
+from pylabs.utils import paths
 from pylabs.utils import run_subprocess, WorkingContext
 from pathlib import *
-from os.path import join
 from pylabs.utils.paths import getnetworkdataroot
+
 fs = Path(getnetworkdataroot())
 project = 'nbwr'
 subject = 'sub-nbwr999b'
@@ -20,9 +19,6 @@ if not source_path.is_dir():
 if not results_dir.is_dir():
     results_dir.mkdir(parents=True)
 
-shell = Shell()
-
-
 mpath = paths.getgannettpath()
 rt_act = source_path / rt_actfname
 rt_ref = source_path / rt_reffname
@@ -36,7 +32,15 @@ lt_mcode = "addpath('{0}'); MRS_struct = GannetLoad({{'{1}'}},{{'{2}'}}); MRS_st
 
 rt_cmd = 'matlab -nodisplay -nosplash -nodesktop -r "{0}"'.format(rt_mcode)
 lt_cmd = 'matlab -nodisplay -nosplash -nodesktop -r "{0}"'.format(lt_mcode)
+output =()
 with WorkingContext(str(results_dir)):
-    subprocess.check_call(rt_cmd, shell=True)
-    subprocess.check_call(lt_cmd, shell=True)
+    try:
+        output += run_subprocess(rt_cmd)
+        output += run_subprocess(lt_cmd)
+    except:
+        print('an exception has occured.')
+        print("({})".format(", ".join(output)))
+    else:
+        print("({})".format(", ".join(output)))
+        print('GABA fits completed normally.')
 
