@@ -1,6 +1,7 @@
 import os, socket, inspect, pylabs
 import petname
 from os.path import expanduser, join
+from pathlib import *
 
 
 def getlocaldataroot():
@@ -43,4 +44,6 @@ def getgannettpath():
     hostname = socket.gethostname()
     if hostname in hostlist:
         gannettpath = join(expanduser('~'), 'Software', 'Gannet2.0')
+    if 'Jeffs' in hostname:
+        gannettpath = join(expanduser('~'), 'Software', 'Gannet2.0-master')
     return gannettpath
