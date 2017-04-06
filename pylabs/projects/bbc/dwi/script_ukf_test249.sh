@@ -17,7 +17,7 @@ cd ${DATADIR}/bbc
 #list=`python -c "from pylabs.projects.bbc.pairing import dwipairing; \
 #    print(' '.join(['sub-bbc{sid}'.format(sid=str(s)) for s, ses, m, r in dwipairing]))"`
 #list='sub-bbc108 sub-bbc211 sub-bbc231 sub-bbc241 sub-bbc243 sub-bbc249 sub-bbc253'
-list=sub-bbc120
+list=sub-bbc249
 #list=`ls -d sub-bbc*`
 #rm -f ${DATADIR}/bbc/allvtk_channel_run${run}.txt
 #loop over subject dirs
@@ -27,8 +27,8 @@ echo working on ${afolder}
 #get vtk files to process
 cd ${DATADIR}/bbc/${afolder}/*/*/cuda_repol_std2_S0mf3_v5/UKF
 #rm -f *_channel*
-list2=`ls *mori*[^_channel]_UKF.vtk`
-#list2=sub-bbc253_ses-1_dti_15dir_b1000_1_withmf3S0_ec_thr1_mori_Left_IFOF-45-47_UKF.vtk
+#list2=`ls *mori*[^_channel]_UKF.vtk`
+list2=sub-bbc249_ses-1_dti_15dir_b1000_1_withmf3S0_ec_thr1_mori_Right_SLF-131-169-171_UKF.vtk
 
 #loop over vtk files
 for afile in ${list2}
@@ -45,7 +45,7 @@ if [[ "$afile" == *"$sub70"* ]]; then
 cp /mnt/users/js/bbc/holdaal/base.vtk .
 cp /mnt/users/js/bbc/holdaal/aal_motor.vtk .
 cp *JHU*Left_IFOF-11_model.vtk channel.vtk
-${PYLABS}/pylabs/diffusion/readfiber_withchannel_ukf_fa1_injection_apdivisions_ifof
+${PYLABS}/pylabs/diffusion/readfiber_withchannel_ukf_fa1_injection_apdivisions
 ${PYLABS}/pylabs/diffusion/makecsv_fromvtk_ukf
 cp fnew.vtk ${afile/.vtk/_channel.vtk}
 echo -n "${afile} " >> ${DATADIR}/bbc/allukf_channel_run${run}.txt
@@ -57,7 +57,7 @@ if [[ "$afile" == *"$sub158"* ]]; then
 cp /mnt/users/js/bbc/holdaal/base.vtk .
 cp /mnt/users/js/bbc/holdaal/aal_motor.vtk .
 cp *JHU*Right_IFOF-12_model.vtk channel.vtk
-${PYLABS}/pylabs/diffusion/readfiber_withchannel_ukf_fa1_injection_apdivisions_ifof
+${PYLABS}/pylabs/diffusion/readfiber_withchannel_ukf_fa1_injection_apdivisions
 ${PYLABS}/pylabs/diffusion/makecsv_fromvtk_ukf
 cp fnew.vtk ${afile/.vtk/_channel.vtk}
 echo -n "${afile} " >> ${DATADIR}/bbc/allukf_channel_run${run}.txt
@@ -118,7 +118,7 @@ if [[ "$afile" == *"$sub43"* ]]; then
 cp /mnt/users/js/bbc/holdaal/base.vtk .
 cp /mnt/users/js/bbc/holdaal/aal_motor.vtk .
 cp *JHU*Left_SLF-15_model.vtk channel.vtk
-${PYLABS}/pylabs/diffusion/readfiber_withchannel_ukf_fa1_injection_slf_left
+${PYLABS}/pylabs/diffusion/readfiber_withchannel_ukf_fa1_injection_slf
 ${PYLABS}/pylabs/diffusion/makecsv_fromvtk_ukf
 cp fnew.vtk ${afile/.vtk/_channel.vtk}
 echo -n "${afile} " >> ${DATADIR}/bbc/allukf_channel_run${run}.txt
