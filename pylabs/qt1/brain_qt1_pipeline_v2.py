@@ -47,7 +47,7 @@ bet = fsl.BET()    #instantiate fsl bet command
 fslroi = fsl.ExtractROI()   #instantiate fslroi command
 fslrfov = fsl.RobustFOV()     #instantiate robust fov command for cropping B1map before reg
 fslflirt = fsl.FLIRT()
-fslapplyxfm = fsl.ApplyXfm()
+fslapplyxfm = fsl.ApplyXFM()
 
 for dir in subjdirs:
     subjSPGRparfiles = sort_par_glob(glob(pathjoin(dir, 'source_parrec/*T1_MAP*.PAR')))
@@ -117,7 +117,7 @@ for dir in subjdirs:
         fslflirt.inputs.out_matrix_file = pathjoin(b1mapdir, subjid+'_b1map_mag_rfov_reg2qT1.mat')
         fslflirt.inputs.out_file = pathjoin(b1mapdir, subjid+'_b1map_mag_rfov_reg2qT1.nii.gz')
         fslflirt.run()
-        fslapplyxfm = fsl.ApplyXfm()
+        fslapplyxfm = fsl.ApplyXFM()
         fslapplyxfm.inputs.in_file = pathjoin(b1mapdir, subjid+'_b1map_phase_rfov.nii.gz')
         fslapplyxfm.inputs.in_matrix_file = pathjoin(b1mapdir, subjid+'_b1map_mag_rfov_reg2qT1.mat')
         fslapplyxfm.inputs.interp = 'nearestneighbour'

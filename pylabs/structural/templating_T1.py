@@ -11,7 +11,7 @@ from pylabs.utils.paths import getnetworkdataroot, getlocaldataroot
 from pylabs.utils.provenance import ProvenanceWrapper
 prov = ProvenanceWrapper()
 flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo', output_type='NIFTI')
-applyxfm = fsl.ApplyXfm(output_type='NIFTI')
+applyxfm = fsl.ApplyXFM(output_type='NIFTI')
 #fs = getnetworkdataroot()
 fs = getlocaldataroot()
 project = 'roots_of_empathy'

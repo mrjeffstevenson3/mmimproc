@@ -10,7 +10,7 @@ from pylabs.conversion.brain_convert import conv_subjs
 from pylabs.utils.paths import getnetworkdataroot, getlocaldataroot
 prov = ProvenanceWrapper()
 flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo', output_type='NIFTI')
-applyxfm = fsl.ApplyXfm(output_type='NIFTI')
+applyxfm = fsl.ApplyXFM(output_type='NIFTI')
 fs = getnetworkdataroot()
 project = 'bbc'
 subtemplate = 'sub-bbc{sid}'

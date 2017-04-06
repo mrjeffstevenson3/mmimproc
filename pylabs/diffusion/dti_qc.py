@@ -6,7 +6,7 @@ from pylabs.utils._run import run_subprocess
 from pylabs.utils.paths import getnetworkdataroot, getpylabspath
 prov = ProvenanceWrapper()
 flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo')
-applyxfm = fsl.ApplyXfm()
+applyxfm = fsl.ApplyXFM()
 fs = getnetworkdataroot()
 
 def dti_motion_qc(project, subjects, alpha=3.4):

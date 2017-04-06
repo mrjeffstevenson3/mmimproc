@@ -15,7 +15,7 @@ from pylabs.utils.paths import getnetworkdataroot
 fs = getnetworkdataroot()
 prov = ProvenanceWrapper()
 flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo', output_type='NIFTI')
-applyxfm = fsl.ApplyXfm(interp='nearestneighbour', output_type='NIFTI')
+applyxfm = fsl.ApplyXFM(interp='nearestneighbour', output_type='NIFTI')
 bet = fsl.BET(output_type='NIFTI')
 fast = fsl.FAST(output_type='NIFTI')
 project = 'tadpole'

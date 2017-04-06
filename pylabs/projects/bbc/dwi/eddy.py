@@ -22,7 +22,7 @@ from pylabs.utils.paths import getnetworkdataroot
 provenance = ProvenanceWrapper()
 fs = Path(getnetworkdataroot())
 flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo', output_type='NIFTI')
-applyxfm = fsl.ApplyXfm(interp='nearestneighbour', output_type='NIFTI')
+applyxfm = fsl.ApplyXFM(interp='nearestneighbour', output_type='NIFTI')
 bet = fsl.BET(output_type='NIFTI')
 pylabs_basepath = Path(*Path(inspect.getabsfile(pylabs)).parts[:-2])
 #set paths for BET atlases
