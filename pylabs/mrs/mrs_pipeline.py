@@ -1,30 +1,36 @@
 from pylabs.utils import Shell, paths, InDir
 import os, subprocess
+from pylabs.utils import run_subprocess, WorkingContext
+from pathlib import *
 from os.path import join
 from pylabs.utils.paths import getnetworkdataroot
-fs = getnetworkdataroot()
-project = 'tadpole'
-subject = 'JONAH_DAY1'
-actfname = 'TADPOLE_PR20160803_WIP_GABAMM_TE80_120DYN_3_2_raw_act.SDAT'
-reffname = 'TADPOLE_PR20160803_WIP_GABAMM_TE80_120DYN_3_2_raw_ref.SDAT'
+fs = Path(getnetworkdataroot())
+project = 'nbwr'
+subject = 'sub-nbwr999b'
+rt_actfname = 'NWBR999B_WIP_RTGABAMM_TE80_120DYN_5_2_raw_act.SPAR'
+rt_reffname = 'NWBR999B_WIP_RTGABAMM_TE80_120DYN_5_2_raw_ref.SPAR'
+lt_actfname = 'NWBR999B_WIP_LTPRESS_TE80_GLU_48MEAS_9_2_raw_act.SPAR'
+lt_reffname = 'NWBR999B_WIP_LTPRESS_TE80_GLU_48MEAS_9_2_raw_ref.SPAR'
+source_path = fs / project / subject / 'ses-1' / 'source_parrec'
+results_dir = fs / project / subject / 'ses-1' / 'mrs'
+
+if not source_path.is_dir():
+    raise ValueError('source_parrec dir with mrs SPAR not found. '+str(source_path))
+
+if not results_dir.is_dir():
+    results_dir.mkdir(parents=True)
 
 shell = Shell()
 
-try:
-    os.makedirs(join(fs, project, subject, 'mrs'))
-except OSError:
-    if not os.path.isdir(join(fs, project, subject, 'mrs')):
-        raise
-tempdir = InDir(join(fs, project, subject, 'mrs'))
 
 mpath = paths.getgannettpath()
-act = join(fs, project, subject, 'source_parrec', actfname)
-ref = join(fs, project, subject, 'source_parrec', reffname)
+act = source_path / rt_actfname
+ref = source_path / rt_reffname
 
 mcode = "addpath('{0}'); MRS_struct = GannetLoad({{'{1}'}},{{'{2}'}}); MRS_struct = GannetFit(MRS_struct); exit;".format(
-        mpath, act, ref)
+        mpath, str(act), str(ref))
 
 cmd = 'matlab -nodisplay -nosplash -nodesktop -r "{0}"'.format(mcode)
-tempdir.__enter__()
-subprocess.check_call(cmd, shell=True)
-os.chdir(tempdir._orig_dir)
+with WorkingContext(str(results_dir)):
+    subprocess.check_call(cmd, shell=True)
+
