@@ -29,6 +29,8 @@ if not mat_outdir.is_dir():
 if not results_dir.is_dir():
     results_dir.mkdir(parents=True)
 
-foster_FA_data = loadStack(FA_foster_pnames)
+foster_FA_data, foster_FA_affine = loadStack(FA_foster_pnames)
+
+
 foster_FA_rho_stats, foster_FA_tstat_stats =  sp_correl(foster_FA_data, foster_behav_data[(u'26', u'PPVTSS')], axis=3)
 

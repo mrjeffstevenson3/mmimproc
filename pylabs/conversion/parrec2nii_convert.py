@@ -17,7 +17,7 @@ from nibabel.volumeutils import fname_ext_ul_case
 from nibabel.orientations import (io_orientation, inv_ornt_aff,
                                   apply_orientation)
 from nibabel.affines import apply_affine, from_matvec, to_matvec
-
+import collections
 #js addl imports
 from collections import defaultdict
 import pandas as pd
