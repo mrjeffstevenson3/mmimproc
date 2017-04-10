@@ -108,7 +108,9 @@ if run_topup:
         nib.save(topup_dn_concat_img, str(dwipath / str(topup + '_topdn_concat.nii')))
         cmd = 'topup --imain='+str(dwipath / str(topup + '_topdn_concat.nii'))
         cmd += ' --datain=acq_params.txt --config=b02b0.cnf --out='
-        cmd += str(dwipath / str(topup + '_topdn_concat_unwarped.nii'))
+        cmd += str(dwipath / str(topup + '_topdn_concat'))
+        cmd += ' --iout='+str(dwipath / str(topup + '_topdn_concat_unwarped.nii'))
+        cmd += ' --fout='+str(dwipath / str(topup + '_topdn_concat_warp_field.nii'))
         result = ()
         with WorkingContext(str(dwipath)):
             result = run_subprocess(cmd)
