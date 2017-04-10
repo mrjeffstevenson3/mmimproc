@@ -44,3 +44,4 @@ with WorkingContext(str(results_dir)):
         print("({})".format(", ".join(output)))
         print('GABA fits completed normally.')
 
+# add provenance here. traverse gannett out dirs to find PDFs

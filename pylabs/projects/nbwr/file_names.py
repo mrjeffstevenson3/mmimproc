@@ -4,6 +4,14 @@
 # topup_unwarped is the output from topup and input to eddy
 
 orig_dwi = [
-    (('999b', 1, 'dwi-topup_6S0', 1),('999b', 1, 'dwi-topdn_6S0', 1),('999b', 1,'dwi-topup_64dir-3sh-800-2000', 1)),
+    (('999b', 1, 'dwi-topup_6S0', 1), ('999b', 1, 'dwi-topdn_6S0', 1), ('999b', 1,'dwi-topup_64dir-3sh-800-2000', 1)),
 
     ]
+ftempl = 'sub-nbwr{}_ses-{}_{}_{}'
+topup_fname = []
+topdn_fname = []
+dwi_fname = []
+for topup, topdn, dwi in orig_dwi:
+    topup_fname.append(ftempl.format(*topup))
+    topdn_fname.append(ftempl.format(*topdn))
+    dwi_fname.append(ftempl.format(*dwi))
