@@ -9,7 +9,6 @@ filterS0_string = '_withmf3S0'
 dwitemplate = fs / project / 'reg' / 'ants_vbm_pairedLH_in_template_space' / 'bbc_pairedLH_template_resampled2dwi.nii'
 dwitemplatet2 = fs / project / 'reg' / 'ants_vbm_pairedLH_in_template_space' / 'bbc_pairedLH_template_invT2c_resampled2dwi.nii.gz'
 vbmtemplate = fs / project / 'reg' / 'ants_vbm_pairedLH_in_template_space' / 'bbc_pairedLH_template.nii.gz'
-vbmdatadir = fs / project / 'myvbm' /
 
 vbmpairing = [
     (101, 1, 'mpr', 3),
@@ -104,27 +103,27 @@ paired_control_subjs_tup = [
         ]
 
 paired_vbm_foster_subjs_tup = [
-    (101, 1, 'mpr', 3),
-    (105, 1, 'mpr', 1),
-    (106, 1, 'mpr', 1),
-    (108, 1, 'mpr', 1),
-    (113, 1, 'mpr', 1),
-    (116, 1, 'wempr', 1),
-    (118, 1, 'mpr', 2),
-    (119, 3, 'mpr', 1),
-    (120, 1, 'mpr', 1),
+    (101, '0000'),
+    (105, '0002'),
+    (106, '0004'),
+    (108, '0006'),
+    (113, '0008'),
+    (116, '0010'),
+    (118, '0012'),
+    (119, '0014'),
+    (120, '0016'),
     ]
 
 paired_vbm_control_subjs_tup = [
-    (209, 1, 'mpr', 1),
-    (211, 2, 'mpr', 1),
-    (208, 1, 'mpr', 1),
-    (202, 1, 'mpr', 1),
-    (249, 1, 'mpr', 1),
-    (241, 1, 'mpr', 2),
-    (243, 1, 'mpr', 1),
-    (231, 1, 'mpr', 1),
-    (253, 1, 'mpr', 1),
+    (209, '0001'),
+    (211, '0003'),
+    (208, '0005'),
+    (202, '0007'),
+    (249, '0009'),
+    (241, '0011'),
+    (243, '0013'),
+    (231, '0015'),
+    (253, '0017'),
     ]
 paired_foster_subjs_sorted = sorted(paired_foster_subjs_tup, key=lambda x: x[0])
 paired_control_subjs_sorted = sorted(paired_control_subjs_tup, key=lambda x: x[0])
@@ -164,9 +163,12 @@ AD_foster_pnames = [fs / project / 'reg' / 'ants_dwiS0_in_template_space' / mod 
 AD_control_pnames = [fs / project / 'reg' / 'ants_dwiS0_in_template_space' / mod / fit_meth / dwi_mods_ftempl.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r), fit_meth=fit_meth, mod=mod) for s, ses, m, r in paired_control_subjs_sorted]
 
 #make GM + WM s2 file name templates for foster & control. may need to move or link files to dwi paths for mod to take
-GMVBM_foster_pnames = [fs / project / #fix this 'reg' / 'ants_dwiS0_in_template_space' / mod / fit_meth / dwi_mods_ftempl.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r), fit_meth=fit_meth, mod=mod) for s, ses, m, r in paired_foster_subjs_sorted]
-GMVBM_control_pnames = [fs / project / #fix this  'reg' / 'ants_dwiS0_in_template_space' / mod / fit_meth / dwi_mods_ftempl.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r), fit_meth=fit_meth, mod=mod) for s, ses, m, r in paired_control_subjs_sorted]
+gm_s2_ftempl = 'sub-bbc{sid}_GM_mod_s2_vol{vol}.nii.gz'
+wm_s2_ftempl = 'sub-bbc{sid}_WM_mod_s2_vol{vol}.nii.gz'
+mod = 'GM'
+GMVBM_foster_pnames = [fs / project / 'myvbm' / 'ants_vbm_template_pairedLH' / mod / gm_s2_ftempl.format(sid=str(s), vol=str(v)) for s, v in paired_vbm_foster_subjs_sorted]
+GMVBM_control_pnames = [fs / project / 'myvbm' / 'ants_vbm_template_pairedLH' / mod / gm_s2_ftempl.format(sid=str(s), vol=str(v)) for s, v in paired_vbm_control_subjs_sorted]
+mod = 'WM'
+WMVBM_foster_pnames = [fs / project / 'myvbm' / 'ants_vbm_template_pairedLH' / mod / wm_s2_ftempl.format(sid=str(s), vol=str(v)) for s, v in paired_vbm_foster_subjs_sorted]
+WMVBM_control_pnames = [fs / project / 'myvbm' / 'ants_vbm_template_pairedLH' / mod / wm_s2_ftempl.format(sid=str(s), vol=str(v)) for s, v in paired_vbm_control_subjs_sorted]
 
-/media/DiskArray/shared_data/js/
-                      bbc/
-                        myvbm/ants_vbm_template_pairedLH/stats/exchblks

@@ -50,7 +50,8 @@ from pylabs.utils.provenance import ProvenanceWrapper
 from pylabs.io.images import loadStack
 from pylabs.projects.bbc.pairing import FA_foster_pnames, FA_control_pnames, \
     MD_foster_pnames, MD_control_pnames, RD_foster_pnames, RD_control_pnames, \
-    AD_foster_pnames, AD_control_pnames, foster_paired_behav_subjs, control_paired_behav_subjs
+    AD_foster_pnames, AD_control_pnames, GMVBM_foster_pnames, GMVBM_control_pnames, WMVBM_foster_pnames, \
+    WMVBM_control_pnames, foster_paired_behav_subjs, control_paired_behav_subjs
 provenance = ProvenanceWrapper()
 fs = Path(getnetworkdataroot())
 
@@ -82,8 +83,8 @@ if not mat_outdir.is_dir():
 if not results_dir.is_dir():
     results_dir.mkdir(parents=True)
 
-foster_files = [FA_foster_pnames, MD_foster_pnames, RD_foster_pnames, AD_foster_pnames] # add vbm foster
-control_files = [FA_control_pnames, MD_control_pnames, RD_control_pnames, AD_control_pnames,] # add vbm control
+foster_files = [FA_foster_pnames, MD_foster_pnames, RD_foster_pnames, AD_foster_pnames, GMVBM_foster_pnames, WMVBM_foster_pnames]
+control_files = [FA_control_pnames, MD_control_pnames, RD_control_pnames, AD_control_pnames, GMVBM_control_pnames, WMVBM_control_pnames]
 foster_variables = foster_behav_data
 control_variables = control_behav_data
 outdir = results_dir
