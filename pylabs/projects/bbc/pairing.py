@@ -5,13 +5,11 @@ from pylabs.utils.paths import getnetworkdataroot
 fs = Path(getnetworkdataroot())
 project = 'bbc'
 ecdir = 'cuda_repol_std2_S0mf3_v5'
-filterS0_string = ''
-filterS0 = True
-if filterS0:
-    filterS0_string = '_withmf3S0'
+filterS0_string = '_withmf3S0'
 dwitemplate = fs / project / 'reg' / 'ants_vbm_pairedLH_in_template_space' / 'bbc_pairedLH_template_resampled2dwi.nii'
 dwitemplatet2 = fs / project / 'reg' / 'ants_vbm_pairedLH_in_template_space' / 'bbc_pairedLH_template_invT2c_resampled2dwi.nii.gz'
 vbmtemplate = fs / project / 'reg' / 'ants_vbm_pairedLH_in_template_space' / 'bbc_pairedLH_template.nii.gz'
+vbmdatadir = fs / project / 'myvbm' /
 
 vbmpairing = [
     (101, 1, 'mpr', 3),
@@ -33,6 +31,7 @@ vbmpairing = [
     (120, 1, 'mpr', 1),
     (253, 1, 'mpr', 1),
         ]
+
 #here dwi pairing bbc101 ses-2 is a hybrid of ses-1 & 3 due to bad motion on both. eddy does re-alignment with vectors intact
 dwipairing = [
     (101, 2, 'dti_15dir_b1000', 1),
@@ -104,8 +103,33 @@ paired_control_subjs_tup = [
     (253, 1, 'dti_15dir_b1000', 1),
         ]
 
+paired_vbm_foster_subjs_tup = [
+    (101, 1, 'mpr', 3),
+    (105, 1, 'mpr', 1),
+    (106, 1, 'mpr', 1),
+    (108, 1, 'mpr', 1),
+    (113, 1, 'mpr', 1),
+    (116, 1, 'wempr', 1),
+    (118, 1, 'mpr', 2),
+    (119, 3, 'mpr', 1),
+    (120, 1, 'mpr', 1),
+    ]
+
+paired_vbm_control_subjs_tup = [
+    (209, 1, 'mpr', 1),
+    (211, 2, 'mpr', 1),
+    (208, 1, 'mpr', 1),
+    (202, 1, 'mpr', 1),
+    (249, 1, 'mpr', 1),
+    (241, 1, 'mpr', 2),
+    (243, 1, 'mpr', 1),
+    (231, 1, 'mpr', 1),
+    (253, 1, 'mpr', 1),
+    ]
 paired_foster_subjs_sorted = sorted(paired_foster_subjs_tup, key=lambda x: x[0])
 paired_control_subjs_sorted = sorted(paired_control_subjs_tup, key=lambda x: x[0])
+paired_vbm_foster_subjs_sorted = sorted(paired_vbm_foster_subjs_tup, key=lambda x: x[0])
+paired_vbm_control_subjs_sorted = sorted(paired_vbm_control_subjs_tup, key=lambda x: x[0])
 foster_paired_behav_subjs = ['BBC{sid}'.format(sid=s) for s, ses, m, r in paired_foster_subjs_sorted]
 control_paired_behav_subjs = ['BBC{sid}'.format(sid=s) for s, ses, m, r in paired_control_subjs_sorted]
 dwi_ftempl = 'sub-bbc{sid}_ses-{snum}_{meth}_{runnum}'+filterS0_string+'_ec_thr1'
@@ -139,6 +163,10 @@ AD_paired_pnames = [fs / project / 'reg' / 'ants_dwiS0_in_template_space' / mod 
 AD_foster_pnames = [fs / project / 'reg' / 'ants_dwiS0_in_template_space' / mod / fit_meth / dwi_mods_ftempl.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r), fit_meth=fit_meth, mod=mod) for s, ses, m, r in paired_foster_subjs_sorted]
 AD_control_pnames = [fs / project / 'reg' / 'ants_dwiS0_in_template_space' / mod / fit_meth / dwi_mods_ftempl.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r), fit_meth=fit_meth, mod=mod) for s, ses, m, r in paired_control_subjs_sorted]
 
+#make GM + WM s2 file name templates for foster & control. may need to move or link files to dwi paths for mod to take
+GMVBM_foster_pnames = [fs / project / #fix this 'reg' / 'ants_dwiS0_in_template_space' / mod / fit_meth / dwi_mods_ftempl.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r), fit_meth=fit_meth, mod=mod) for s, ses, m, r in paired_foster_subjs_sorted]
+GMVBM_control_pnames = [fs / project / #fix this  'reg' / 'ants_dwiS0_in_template_space' / mod / fit_meth / dwi_mods_ftempl.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r), fit_meth=fit_meth, mod=mod) for s, ses, m, r in paired_control_subjs_sorted]
 
-#FA_str_fnames = []
-#FA_str_fnames.append(str(x)+' ' for x in FA_ppath_fnames)
+/media/DiskArray/shared_data/js/
+                      bbc/
+                        myvbm/ants_vbm_template_pairedLH/stats/exchblks

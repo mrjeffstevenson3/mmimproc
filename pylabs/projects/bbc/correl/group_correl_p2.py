@@ -69,7 +69,7 @@ def corr(X, Y):
 
 project = 'bbc'
 behav_csv_name = 'bbc_behav_2-22-2017_rawsub.csv'
-results_dirname = 'py_correl_2ndpass'
+results_dirname = 'py_correl_3rdpass'
 behav_list = [(u'21', u'PATrhyTotSS') , (u'22', u'PATsegTotSS') , (u'23', u'CTOPPphoaCS')  ,(u'24', u'CTOPPrnCS') ,(u'25', u'CTOPPphomCS'), (u'26', u'PPVTSS'), (u'27', u'TOPELeliSS') ,(u'28', u'STIMQ-PSDSscaleScore1-to-15-SUM'), (u'29', u'self-esteem-IAT')]
 csvraw = fs / project / 'behavior' / behav_csv_name
 mat_outdir = fs / project / 'stats' / 'matfiles'
@@ -82,8 +82,8 @@ if not mat_outdir.is_dir():
 if not results_dir.is_dir():
     results_dir.mkdir(parents=True)
 
-foster_files = [FA_foster_pnames, MD_foster_pnames, RD_foster_pnames, AD_foster_pnames]
-control_files = [FA_control_pnames, MD_control_pnames, RD_control_pnames, AD_control_pnames,]
+foster_files = [FA_foster_pnames, MD_foster_pnames, RD_foster_pnames, AD_foster_pnames] # add vbm foster
+control_files = [FA_control_pnames, MD_control_pnames, RD_control_pnames, AD_control_pnames,] # add vbm control
 foster_variables = foster_behav_data
 control_variables = control_behav_data
 outdir = results_dir
