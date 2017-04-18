@@ -90,6 +90,8 @@ paired_foster_subjs_tup = [
     (120, 1, 'dti_15dir_b1000', 1),
         ]
 
+# abuse occurred for 106 in 2nd placement, and 109, 116.
+
 paired_control_subjs_tup = [
     (202, 1, 'dti_15dir_b1000', 1),
     (208, 1, 'dti_15dir_b1000', 1),
