@@ -16,7 +16,11 @@ from pylabs.io.images import loadStack
 from pylabs.projects.bbc.pairing import FA_foster_pnames, FA_control_pnames, \
     MD_foster_pnames, MD_control_pnames, RD_foster_pnames, RD_control_pnames, \
     AD_foster_pnames, AD_control_pnames, GMVBM_foster_pnames, GMVBM_control_pnames, WMVBM_foster_pnames, \
-    WMVBM_control_pnames, foster_paired_behav_subjs, control_paired_behav_subjs
+    WMVBM_control_pnames, foster_paired_behav_subjs, control_paired_behav_subjs, \
+    foster_behav_data, control_behav_data, behav_list, paired_vbm_foster_subjs_sorted, paired_vbm_control_subjs_sorted
+
+
+
 provenance = ProvenanceWrapper()
 fs = Path(getnetworkdataroot())
 project = 'bbc'
@@ -25,20 +29,14 @@ t_thr=5.0
 min_cluster_size=10
 index_fname= statsdir/'foster_WM_PPVTSS_tpos_cluster_index_cthr10.nii.gz'
 index_num=37
-contrl_sid = ['bbc209', 'bbc211', 'bbc208', 'bbc202', 'bbc249', 'bbc241', 'bbc243', 'bbc231', 'bbc253']
-foster_sid = ['bbc101', 'bbc105', 'bbc106', 'bbc108', 'bbc113', 'bbc116', 'bbc118', 'bbc119', 'bbc120']
+contrl_sid = ['{sid}'.format(sid=s) for s, v in paired_vbm_control_subjs_sorted]
+foster_sid = ['{sid}'.format(sid=s) for s, v in paired_vbm_foster_subjs_sorted]
 stat_ftempl = '{pool}_{mod}_{behav}_{tstat}.nii.gz'
 allfile_ftempl = '{pool}_{mod}.nii'
 pool = ['foster', 'control']
 modalities = ['FA', 'AD', 'RD', 'MD', 'GM', 'WM']
-behaviors = ['PATrhyTotSS', 'PATsegTotSS', 'CTOPPphoaCS', 'CTOPPrnCS', 'TOPPphomCS', 'PPVTSS', 'TOPELeliSS', 'STIMQ-PSDSscaleScore1-to-15-SUM', 'self-esteem-IAT']
+behaviors = [str(b[1]) for b in behav_list]
 tstats = ['tpos', 'tneg', 'r']
-stats_files = []
-# for p in pool:
-#     for m in modalities:
-#         for b in behaviors:
-#             for t in tstats:
-#                 stats_files.append(statsdir/stat_ftempl.format(pool=p, mod=m, behav=b, tstat=t))
 all_files = []
 for p in pool:
     for m in modalities:
@@ -57,10 +55,11 @@ for afile in all_files:
     in_zooms = nib.load(str(afile)).header.get_zooms()
     mask = roi_mask
     if not in_data.shape == mask.shape:
-        mask, maffine = reslice_roi(mask, roi_affine, roi_zooms, in_affine, in_zooms)
+        mask, maffine = reslice_roi(mask, roi_affine, roi_zooms, in_affine, in_zooms[:3])
     if len(mask.shape) == 3 and len(in_data.shape) == 4 and in_zooms[3] == 1.0:
         mask = np.repeat(mask[:,:,:,np.newaxis], in_data.shape[3], axis=3)
-        orig_zooms = orig_zooms + (1.0,)
-
     assert mask.shape == in_data.shape, 'bad reslice. could be rounding error.'
+    mask = np.round(mask, 0)
+    maskb = mask[mask == 1]
+    mean = in_data[mask == 1.0].mean()
 
