@@ -49,6 +49,7 @@ if not 1 in np.unique(roi_mask):
 roi_affine = nib.load(str(index_fname)).affine
 roi_zooms = nib.load(str(index_fname)).header.get_zooms()
 tmp_list = []
+
 for afile in all_files:
     in_data = nib.load(str(afile)).get_data()
     in_affine = nib.load(str(afile)).affine
@@ -60,6 +61,7 @@ for afile in all_files:
         mask = np.repeat(mask[:,:,:,np.newaxis], in_data.shape[3], axis=3)
     assert mask.shape == in_data.shape, 'bad reslice. could be rounding error.'
     mask = np.round(mask, 0)
-    maskb = mask[mask == 1]
-    mean = in_data[mask == 1.0].mean()
+    mdata = in_data*mask
+    mdata[mask == 0] = np.nan
+    mean = np.nanmean(mdata, axis=(0,1,2))
 
