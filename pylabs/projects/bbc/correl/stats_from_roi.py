@@ -6,6 +6,7 @@ from pylabs.utils import progress
 import pylabs.io.images
 from pathlib import *
 import pandas as pd
+from pandas.tools.util import cartesian_product
 import numpy as np
 import nibabel as nib
 from scipy.stats import spearmanr as sp_correl
@@ -29,16 +30,17 @@ t_thr=5.0
 min_cluster_size=10
 index_fname= statsdir/'foster_WM_PPVTSS_tpos_cluster_index_cthr10.nii.gz'
 index_num=37
-contrl_sid = ['{sid}'.format(sid=s) for s, v in paired_vbm_control_subjs_sorted]
-foster_sid = ['{sid}'.format(sid=s) for s, v in paired_vbm_foster_subjs_sorted]
+prime_mod = str(index_fname.name).split('_')[1]
+prime_behav_tup = [x for x in behav_list if x[1] == str(index_fname.name).split('_')[2]][0]
 stat_ftempl = '{pool}_{mod}_{behav}_{tstat}.nii.gz'
 allfile_ftempl = '{pool}_{mod}.nii'
-pool = ['foster', 'control']
+pools = ['foster', 'control']
 modalities = ['FA', 'AD', 'RD', 'MD', 'GM', 'WM']
-behaviors = [str(b[1]) for b in behav_list]
+modalities.remove(prime_mod)
+#behav_labels = [str(b[1]) for b in behav_list]
 tstats = ['tpos', 'tneg', 'r']
 all_files = []
-for p in pool:
+for p in pools:
     for m in modalities:
         all_files.append(statsdir/allfile_ftempl.format(pool=p, mod=m))
 roi_data = nib.load(str(index_fname)).get_data().astype(int)
@@ -48,20 +50,41 @@ if not 1 in np.unique(roi_mask):
     raise ValueError('index number '+str(index_num)+' not present in roi file')
 roi_affine = nib.load(str(index_fname)).affine
 roi_zooms = nib.load(str(index_fname)).header.get_zooms()
-tmp_list = []
+subjs = [s for s in foster_paired_behav_subjs + control_paired_behav_subjs]
+gp = [0] * len(foster_paired_behav_subjs) + [1] * len(control_paired_behav_subjs)
+results_mi = pd.MultiIndex.from_arrays(cartesian_product([subjs,gp,behav_list]), names=('subject', 'group', 'behavior'))
 
-for afile in all_files:
-    in_data = nib.load(str(afile)).get_data()
-    in_affine = nib.load(str(afile)).affine
-    in_zooms = nib.load(str(afile)).header.get_zooms()
-    mask = roi_mask
-    if not in_data.shape == mask.shape:
-        mask, maffine = reslice_roi(mask, roi_affine, roi_zooms, in_affine, in_zooms[:3])
-    if len(mask.shape) == 3 and len(in_data.shape) == 4 and in_zooms[3] == 1.0:
-        mask = np.repeat(mask[:,:,:,np.newaxis], in_data.shape[3], axis=3)
-    assert mask.shape == in_data.shape, 'bad reslice. could be rounding error.'
-    mask = np.round(mask, 0)
-    mdata = in_data*mask
-    mdata[mask == 0] = np.nan
-    mean = np.nanmean(mdata, axis=(0,1,2))
+results = pd.DataFrame()
+
+for behavior in behav_list:
+    for afile in all_files:
+        in_data = nib.load(str(afile)).get_data()
+        in_affine = nib.load(str(afile)).affine
+        in_zooms = nib.load(str(afile)).header.get_zooms()
+        mask = roi_mask
+        if not in_data.shape == mask.shape:
+            mask, maffine = reslice_roi(mask, roi_affine, roi_zooms, in_affine, in_zooms[:3])
+        if len(mask.shape) == 3 and len(in_data.shape) == 4 and in_zooms[3] == 1.0:
+            mask = np.repeat(mask[:,:,:,np.newaxis], in_data.shape[3], axis=3)
+        assert mask.shape == in_data.shape, 'bad reslice. could be rounding error.'
+        mask = np.round(mask, 0)
+        mdata = in_data*mask
+        mdata[mask == 0] = np.nan
+        mean = np.nanmean(mdata, axis=(0,1,2))
+
+        results_list = []
+        for s, m in zip(foster_behav_data.index, mean):
+            results_list.append({'subj': s, 'FA': m, 'gp': 0})
+            # how to make 'FA' a param? use % with string format?
+        results = pd.DataFrame()
+
+        pool, mod = str(afile.name).split('.')[0].split('_')
+        if pool == 'foster':
+            behav = foster_behav_data[behavior]
+            sids = pd.Series(foster_behav_data.index.str.strip('BBC'))
+            gp = pd.Series([0]*len(sids))
+        elif pool == 'control':
+            behav = control_behav_data[behavior]
+            sids = pd.Series(control_behav_data.index.str.strip('BBC'))
+            gp = pd.Series([1] * len(sids))
 
