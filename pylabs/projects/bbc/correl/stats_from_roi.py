@@ -10,6 +10,7 @@ from pandas.tools.util import cartesian_product
 import numpy as np
 import nibabel as nib
 from scipy.stats import spearmanr as sp_correl
+from pylabs.correlation.atlas import mori_region_labels
 from pylabs.alignment.resample import reslice_roi
 from pylabs.utils.paths import getnetworkdataroot
 from pylabs.utils.provenance import ProvenanceWrapper
@@ -26,6 +27,9 @@ provenance = ProvenanceWrapper()
 fs = Path(getnetworkdataroot())
 project = 'bbc'
 statsdir = fs/project/'stats'/'py_correl_3rdpass'
+atlases_in_templ_sp_dir = fs/project/'reg'/'atlases_in_template_space'
+mori_atlas = atlases_in_templ_sp_dir/'mori_atlas_reg2template.nii.gz'
+JHUtracts_atlas = atlases_in_templ_sp_dir/'ilabsJHUtracts0_atlas_reg2template.nii.gz'
 t_thr=5.0
 min_cluster_size=10
 index_fname= statsdir/'foster_WM_PPVTSS_tpos_cluster_index_cthr10.nii.gz'
@@ -41,6 +45,26 @@ if not 1 in np.unique(roi_mask):
     raise ValueError('index number '+str(index_num)+' not present in roi file')
 roi_affine = nib.load(str(index_fname)).affine
 roi_zooms = nib.load(str(index_fname)).header.get_zooms()
+
+mori_regions = []
+JHUtract_regions = []
+for a in [mori_atlas]:  # left out JHUtracts_atlas till dict ready
+    a_data = nib.load(str(a)).get_data()
+    a_affine = nib.load(str(a)).affine
+    a_zooms = nib.load(str(a)).header.get_zooms()
+    mask = roi_mask
+    if not a_data.shape == mask.shape:
+        mask, maffine = reslice_roi(mask, roi_affine, roi_zooms, a_affine, a_zooms[:3])
+    assert mask.shape == a_data.shape, 'bad reslice. could be rounding error.'
+    mask = np.round(mask, 0)
+    mdata = a_data * mask
+
+    for r in np.unique(mdata):
+        if not mori_region_labels[r] == 'Background':
+            mori_regions.append(' '.join(mori_region_labels[r].split('_')))
+
+atlas_regions = {'mori': ', '.join(mori_regions), 'JHUtract': ', '.join(JHUtract_regions)}
+
 
 #set up all files to include and test
 
@@ -67,19 +91,20 @@ for p in pools:
     mean = np.nanmean(mdata, axis=(0, 1, 2))
     if p == 'foster':
         for s, m in zip(foster_behav_data.index, mean):
-            prime_foster_results.append({'subj': s, prime_mod: m, 'gp': 0})
+            prime_foster_results.append({'gp': 0, 'subj': s, prime_mod: m})
     if p == 'control':
         for s, m in zip(control_behav_data.index, mean):
-            prime_control_results.append({'subj': s, prime_mod: m, 'gp': 1})
+            prime_control_results.append({'gp': 1, 'subj': s, prime_mod: m})
 
 foster_results = pd.DataFrame(prime_foster_results)
 control_results = pd.DataFrame(prime_control_results)
 foster_results.set_index('subj', inplace=True)
 control_results.set_index('subj', inplace=True)
-foster_results[prime_behav_tup[1]] = foster_behav_data[prime_behav_tup]
-control_results[prime_behav_tup[1]] = control_behav_data[prime_behav_tup]
 foster_results['sids'] = foster_behav_data.index.str.strip('BBC')
 control_results['sids'] = control_behav_data.index.str.strip('BBC')
+foster_results[prime_behav_tup[1]] = foster_behav_data[prime_behav_tup]
+control_results[prime_behav_tup[1]] = control_behav_data[prime_behav_tup]
+
 
 #behav_labels = [str(b[1]) for b in behav_list]
 #tstats = ['tpos', 'tneg', 'r']
@@ -118,8 +143,11 @@ for mod in modalities:
             control_results[mod] = mean
 
 comb_results = pd.concat([foster_results, control_results])
+comb_results['mori'] = atlas_regions['mori']
+comb_results['JHUtract'] = atlas_regions['JHUtract']
+col_order = ['gp', 'sid', prime_behav_tup[1], prime_mod] + modalities + ['mori', 'JHUtract']
 # add mori region labels here
-comb_results.to_csv(str(outfile))
+comb_results.to_csv(str(outfile), columns=col_order)
 
         #
         # for s, m in zip(foster_behav_data.index, mean):
