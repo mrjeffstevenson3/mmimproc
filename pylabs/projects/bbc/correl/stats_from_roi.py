@@ -118,6 +118,8 @@ for mod in modalities:
             control_results[mod] = mean
 
 comb_results = pd.concat([foster_results, control_results])
+# add mori region labels here
+comb_results.to_csv(str(outfile))
 
         #
         # for s, m in zip(foster_behav_data.index, mean):
@@ -127,12 +129,12 @@ comb_results = pd.concat([foster_results, control_results])
         #
         # pool, mod = str(afile.name).split('.')[0].split('_')
 
-        if pool == 'foster':
-            behav = foster_behav_data[behavior]
-            sids = pd.Series(foster_behav_data.index.str.strip('BBC'))
-            gp = pd.Series([0]*len(sids))
-        elif pool == 'control':
-            behav = control_behav_data[behavior]
-            sids = pd.Series(control_behav_data.index.str.strip('BBC'))
-            gp = pd.Series([1] * len(sids))
-
+        # if pool == 'foster':
+        #     behav = foster_behav_data[behavior]
+        #     sids = pd.Series(foster_behav_data.index.str.strip('BBC'))
+        #     gp = pd.Series([0]*len(sids))
+        # elif pool == 'control':
+        #     behav = control_behav_data[behavior]
+        #     sids = pd.Series(control_behav_data.index.str.strip('BBC'))
+        #     gp = pd.Series([1] * len(sids))
+        #

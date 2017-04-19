@@ -111,7 +111,7 @@ def make_mask_fm_stats(stats, thresh, mask_fname):
 
 # JHU_MNI_SS_WMPM_Type-I_SlicerLUT.txt
 # integer_label text_label color
-mori_br_regions = {
+mori_region_labels = {
 0: 'Background', 
 1: 'SUPERIOR_PARIETAL_LOBULE_left',
 2: 'CINGULATE_GYRUS_left',
