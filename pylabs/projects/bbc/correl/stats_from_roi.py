@@ -32,7 +32,7 @@ index_fname= statsdir/'foster_WM_PPVTSS_tpos_cluster_index_cthr10.nii.gz'
 index_num=37
 prime_mod = str(index_fname.name).split('_')[1]
 prime_behav_tup = [x for x in behav_list if x[1] == str(index_fname.name).split('_')[2]][0]
-
+outfile = statsdir/str('roi'+str(index_num)+'_'+prime_mod+'_'+prime_behav_tup[1]+'_mm_stats.csv')
 
 roi_data = nib.load(str(index_fname)).get_data().astype(int)
 roi_mask = np.zeros(roi_data.shape)
