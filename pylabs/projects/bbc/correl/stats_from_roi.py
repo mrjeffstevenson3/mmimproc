@@ -124,9 +124,9 @@ for mod in modalities:
     foster_secondary_results = []
     control_secondary_results = []
     for p in pools:
-        in_data = nib.load(str(statsdir/allfile_ftempl.format(pool=p, mod=prime_mod))).get_data()
-        in_affine = nib.load(str(statsdir/allfile_ftempl.format(pool=p, mod=prime_mod))).affine
-        in_zooms = nib.load(str(statsdir/allfile_ftempl.format(pool=p, mod=prime_mod))).header.get_zooms()
+        in_data = nib.load(str(statsdir/allfile_ftempl.format(pool=p, mod=mod))).get_data()
+        in_affine = nib.load(str(statsdir/allfile_ftempl.format(pool=p, mod=mod))).affine
+        in_zooms = nib.load(str(statsdir/allfile_ftempl.format(pool=p, mod=mod))).header.get_zooms()
         mask = roi_mask
         if not in_data.shape == mask.shape:
             mask, maffine = reslice_roi(mask, roi_affine, roi_zooms, in_affine, in_zooms[:3])
@@ -145,9 +145,9 @@ for mod in modalities:
 comb_results = pd.concat([foster_results, control_results])
 comb_results['mori'] = atlas_regions['mori']
 comb_results['JHUtract'] = atlas_regions['JHUtract']
-col_order = ['gp', 'sid', prime_behav_tup[1], prime_mod] + modalities + ['mori', 'JHUtract']
+col_order = ['gp', 'sids', prime_behav_tup[1], prime_mod] + modalities + ['mori', 'JHUtract']
 # add mori region labels here
-comb_results.to_csv(str(outfile), columns=col_order)
+comb_results.to_csv(str(outfile), columns=col_order, index=False)
 
         #
         # for s, m in zip(foster_behav_data.index, mean):
