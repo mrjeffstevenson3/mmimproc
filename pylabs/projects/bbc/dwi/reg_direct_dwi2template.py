@@ -22,13 +22,10 @@ fext = {'ols_dipy_mf': '.nii', 'ols_fsl_tensor_mf': '.nii.gz','wls_dipy_mf': '.n
 
 project = 'bbc'
 ecdir = 'cuda_repol_std2_S0mf3_v5'
-filterS0_string = ''
-filterS0 = True
-if filterS0:
-    filterS0_string = '_withmf3S0'
+filterS0_string = '_withmf3S0'
 regdir = fs / project / 'reg' / 'ants_dwiS0_in_template_space'
 ref = regdir / 'bbc_pairedLH_template_invT2c_resampled2dwi.nii.gz'
-#dwi_templ = 'sub-bbc{sid}_ses-{snum}_{meth}_{runnum}'
+# dwi_templ = 'sub-bbc{sid}_ses-{snum}_{meth}_{runnum}'
 dwi_bn_templ = 'sub-bbc{sid}_ses-{snum}_{meth}_{runnum}'
 dwif_templ = '{dwif}'+filterS0_string+'_ec_thr1_{fm}_{m}'
 dwi_fnames = [dwi_bn_templ.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r)) for s, ses, m, r in dwipairing]

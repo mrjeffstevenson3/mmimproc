@@ -2,24 +2,24 @@ from pathlib import *
 import pandas as pd
 import numpy as np
 import nibabel as nib
-from pylabs.correlation.atlas import mori_region_labels
+from pylabs.correlation.atlas import mori_region_labels, JHUtracts_region_labels
 from pylabs.alignment.resample import reslice_roi
 from pylabs.utils.paths import getnetworkdataroot
 from pylabs.utils.provenance import ProvenanceWrapper
 from pylabs.projects.bbc.pairing import foster_behav_data, control_behav_data, behav_list
-
-#set up roi
 provenance = ProvenanceWrapper()
 fs = Path(getnetworkdataroot())
+#set up roi
 project = 'bbc'
 statsdir = fs/project/'stats'/'py_correl_2ndpass'
-atlases_in_templ_sp_dir = fs/project/'reg'/'atlases_in_template_space'
-mori_atlas = atlases_in_templ_sp_dir/'mori_atlas_reg2template.nii.gz'
-JHUtracts_atlas = atlases_in_templ_sp_dir/'ilabsJHUtracts0_atlas_reg2template.nii.gz'
+index_num=326
 t_thr=5.0
 min_cluster_size=10
 index_fname= statsdir/'foster_FA_CTOPPrnCS_tpos_cluster_index_cthr10.nii.gz'
-index_num=326
+# define atlases for labeling
+atlases_in_templ_sp_dir = fs/project/'reg'/'atlases_in_template_space'
+mori_atlas = atlases_in_templ_sp_dir/'mori_atlas_reg2template.nii.gz'
+JHUtracts_atlas = atlases_in_templ_sp_dir/'ilabsJHUtracts0_atlas_reg2template.nii.gz'
 prime_mod = str(index_fname.name).split('_')[1]
 prime_behav_tup = [x for x in behav_list if x[1] == str(index_fname.name).split('_')[2]][0]
 outfile = statsdir/str('roi'+str(index_num)+'_'+prime_mod+'_'+prime_behav_tup[1]+'_mm_stats.csv')
@@ -30,10 +30,10 @@ if not 1 in np.unique(roi_mask):
     raise ValueError('index number '+str(index_num)+' not present in roi file')
 roi_affine = nib.load(str(index_fname)).affine
 roi_zooms = nib.load(str(index_fname)).header.get_zooms()
-
+# get atlas label(s) for roi
 mori_regions = []
 JHUtract_regions = []
-for a in [mori_atlas]:  # left out JHUtracts_atlas till dict ready
+for a in [mori_atlas, JHUtracts_atlas]:
     a_data = nib.load(str(a)).get_data()
     a_affine = nib.load(str(a)).affine
     a_zooms = nib.load(str(a)).header.get_zooms()
@@ -45,8 +45,12 @@ for a in [mori_atlas]:  # left out JHUtracts_atlas till dict ready
     mdata = a_data * mask
 
     for r in np.unique(mdata):
-        if not mori_region_labels[r] == 'Background':
-            mori_regions.append(' '.join(mori_region_labels[r].split('_')))
+        if a == mori_atlas:
+            if not mori_region_labels[r] == 'Background':
+                mori_regions.append(' '.join(mori_region_labels[r].split('_')))
+        if a == JHUtracts_atlas:
+            if not JHUtracts_region_labels[r] == 'Background':
+                JHUtract_regions.append(' '.join(JHUtracts_region_labels[r].split('_')))
 
 atlas_regions = {'mori': ', '.join(mori_regions), 'JHUtract': ', '.join(JHUtract_regions)}
 
@@ -116,5 +120,8 @@ comb_results['mori'] = atlas_regions['mori']
 comb_results['JHUtract'] = atlas_regions['JHUtract']
 comb_results[['FA', 'WM', 'GM']] = comb_results[['FA', 'WM', 'GM']].apply(lambda x: x*100)
 comb_results[['MD', 'AD', 'RD']] = comb_results[['MD', 'AD', 'RD']].apply(lambda x: x*10000)
+comb_results.name = 'roi'+str(index_num)+'_'+prime_mod+'_'+prime_behav_tup[1]
 col_order = ['gp', 'sids', prime_behav_tup[1], prime_mod] + modalities + ['mori', 'JHUtract']
 comb_results.to_csv(str(outfile), columns=col_order, index=False)
+provenance.log(str(outfile), 'make multimodal csv from stats index file', str(index_fname), script=__file__, \
+               provenance={'index': index_num, 'behavior': prime_behav_tup[1], 'modalities': [prime_mod] + modalities, 'cols': col_order})
