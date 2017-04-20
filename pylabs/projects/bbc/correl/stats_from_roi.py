@@ -50,7 +50,6 @@ for a in [mori_atlas]:  # left out JHUtracts_atlas till dict ready
 
 atlas_regions = {'mori': ', '.join(mori_regions), 'JHUtract': ', '.join(JHUtract_regions)}
 
-
 #set up all files to include and test
 pools = ['foster', 'control']
 modalities = ['FA', 'AD', 'RD', 'MD', 'GM', 'WM']
