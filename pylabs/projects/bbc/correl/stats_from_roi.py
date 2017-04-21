@@ -11,11 +11,11 @@ provenance = ProvenanceWrapper()
 fs = Path(getnetworkdataroot())
 #set up roi
 project = 'bbc'
-statsdir = fs/project/'stats'/'py_correl_2ndpass'
-index_num=326
+statsdir = fs/project/'stats'/'py_correl_3rdpass'
+index_num=77
 t_thr=5.0
 min_cluster_size=10
-index_fname= statsdir/'foster_FA_CTOPPrnCS_tpos_cluster_index_cthr10.nii.gz'
+index_fname= statsdir/'foster_GM_PPVTSS_tpos_cluster_index_cthr10.nii.gz'
 # define atlases for labeling
 atlases_in_templ_sp_dir = fs/project/'reg'/'atlases_in_template_space'
 mori_atlas = atlases_in_templ_sp_dir/'mori_atlas_reg2template.nii.gz'
