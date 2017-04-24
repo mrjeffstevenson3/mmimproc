@@ -1,8 +1,10 @@
 from __future__ import division
 from os.path import join
+from cloud.serialization.cloudpickle import dumps
 import numpy, nibabel, scipy.stats, math, datetime
 from numpy import square, sqrt
 from pylabs.utils import progress
+from pylabs.clustering import clusterminsize
 import pylabs.io.images
 from pathlib import *
 import pandas as pd
@@ -41,6 +43,7 @@ if not results_dir.is_dir():
 foster_files = [FA_foster_pnames, MD_foster_pnames, RD_foster_pnames, AD_foster_pnames, GMVBM_foster_pnames, WMVBM_foster_pnames]
 control_files = [FA_control_pnames, MD_control_pnames, RD_control_pnames, AD_control_pnames, GMVBM_control_pnames, WMVBM_control_pnames]
 outdir = results_dir
+out_pickle_fname = outdir/"cluster_outfile_{:%Y%m%d%H%M}.pickle".format(datetime.datetime.now())
 niterations = 1000
 pcorr_thr = 0.05
 
@@ -53,9 +56,10 @@ for pool in ['foster', 'control']:
         variables = control_behav_data
 
     for files in file_list:
-        mod = files[0].parts[8]
-
-
+        if (files[0].parts)[-2] == 'WM' or (files[0].parts)[-2] == 'GM':
+            mod = (files[0].parts)[-2]
+        else:
+            mod = (files[0].parts)[-3]
         assert len(files) == variables.shape[0]
         n = nsubjects = variables.shape[0]
         nvars = variables.shape[1]
@@ -139,3 +143,5 @@ for pool in ['foster', 'control']:
         _4D_img = nibabel.Nifti1Image(data4d, affine)
         nibabel.save(_4D_img, str(outdir / str(pool+'_'+mod+'.nii')))
         statfiles, clutables, clumaps = clusterminsize(outfnames, pcorr, minsize=10)
+        with open(str(out_pickle_fname), "ab") as f:
+            f.write(dumps([statfiles, clutables, clumaps, outfnames, pcorr, tcorr]))

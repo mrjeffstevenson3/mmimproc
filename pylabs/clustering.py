@@ -58,9 +58,10 @@ def clusterminsize(statfiles, pcorr, minsize=0):
             tooSmall = clustertables[name][clustertables[name].k<minsize].index
             clustertables[name].drop(tooSmall, inplace=True)
             clustertables[name].sort_values(by='k',ascending=False, inplace=True)
-            print('Kept {}, dropped {} clusters.'.format(
-                clustertables[name].index.size, tooSmall.size))
-            clustertables[name].to_csv('clusters_'+name+'.tsv', sep='\t')
+            print('Kept {}, dropped {} clusters.'.format(clustertables[name].index.size, tooSmall.size)+' for '+pool+' '+mod)
+            with open(str(Path(newfpath).parent / 'stats_results.txt'), 'a') as f:
+                f.write('Kept {}, dropped {} clusters.'.format(clustertables[name].index.size, tooSmall.size)+' for '+pool+' '+mod)
+            clustertables[name].to_csv(str(Path(newfpath).parent / str('clusters_'+name+'.tsv')), sep='\t')
             clustermaps[name] = clusters
             pdataVector[numpy.in1d(clusters.ravel(), tooSmall)] = 0
         maskedData = pdataVector.reshape(pdata.shape)

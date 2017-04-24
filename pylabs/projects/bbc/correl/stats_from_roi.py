@@ -11,11 +11,11 @@ provenance = ProvenanceWrapper()
 fs = Path(getnetworkdataroot())
 #set up roi
 project = 'bbc'
-statsdir = fs/project/'stats'/'py_correl_3rdpass'
-index_num=77
+statsdir = fs/project/'stats'/'py_correl_2ndpass'
+index_num=406
 t_thr=5.0
 min_cluster_size=10
-index_fname= statsdir/'foster_GM_PPVTSS_tpos_cluster_index_cthr10.nii.gz'
+index_fname= statsdir/'foster_AD_PPVTSS_tpos_cluster_index_cthr10.nii.gz'
 # define atlases for labeling
 atlases_in_templ_sp_dir = fs/project/'reg'/'atlases_in_template_space'
 mori_atlas = atlases_in_templ_sp_dir/'mori_atlas_reg2template.nii.gz'
@@ -119,7 +119,7 @@ comb_results = pd.concat([foster_results, control_results])
 comb_results['mori'] = atlas_regions['mori']
 comb_results['JHUtract'] = atlas_regions['JHUtract']
 comb_results[['FA', 'WM', 'GM']] = comb_results[['FA', 'WM', 'GM']].apply(lambda x: x*100)
-comb_results[['MD', 'AD', 'RD']] = comb_results[['MD', 'AD', 'RD']].apply(lambda x: x*10000)
+comb_results[['MD', 'AD', 'RD']] = comb_results[['MD', 'AD', 'RD']].apply(lambda x: x*100000)
 comb_results.name = 'roi'+str(index_num)+'_'+prime_mod+'_'+prime_behav_tup[1]
 col_order = ['gp', 'sids', prime_behav_tup[1], prime_mod] + modalities + ['mori', 'JHUtract']
 comb_results.to_csv(str(outfile), columns=col_order, index=False)
