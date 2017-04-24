@@ -32,7 +32,7 @@ def corr(X, Y):
 
 
 project = 'bbc'
-results_dirname = 'py_correl_3rdpass'
+results_dirname = 'py_correl_4thpass'
 results_dir = fs / project / 'stats' / results_dirname
 
 if not results_dir.is_dir():
@@ -40,21 +40,17 @@ if not results_dir.is_dir():
 # ordering is alphanum within pnames, arbitrary otherwise.
 foster_files = [FA_foster_pnames, MD_foster_pnames, RD_foster_pnames, AD_foster_pnames, GMVBM_foster_pnames, WMVBM_foster_pnames]
 control_files = [FA_control_pnames, MD_control_pnames, RD_control_pnames, AD_control_pnames, GMVBM_control_pnames, WMVBM_control_pnames]
-foster_variables = foster_behav_data
-control_variables = control_behav_data
 outdir = results_dir
 niterations = 1000
-
-
-#start loop here
+pcorr_thr = 0.05
 
 for pool in ['foster', 'control']:
     if pool == 'foster':
         file_list = foster_files
-        variables = foster_variables
+        variables = foster_behav_data
     if pool == 'control':
         file_list = control_files
-        variables = control_variables
+        variables = control_behav_data
 
     for files in file_list:
         mod = files[0].parts[8]
@@ -137,7 +133,9 @@ for pool in ['foster', 'control']:
                 img = nibabel.Nifti1Image(output4d[v, :, :, :], affine)
                 print('Saving file: {}'.format(ftemplates[stat].format(varname[1])))
                 nibabel.save(img, outfnames[varname[1]][stat])
+
         #now save the all file for the given modality
         data4d = np.moveaxis(data, 0, 3)
         _4D_img = nibabel.Nifti1Image(data4d, affine)
         nibabel.save(_4D_img, str(outdir / str(pool+'_'+mod+'.nii')))
+        statfiles, clutables, clumaps = clusterminsize(outfnames, pcorr, minsize=10)

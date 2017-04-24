@@ -1,4 +1,5 @@
 from __future__ import division
+from pathlib import *
 import pandas, numpy, nibabel
 import scipy.ndimage.measurements as measurements
 
@@ -7,14 +8,29 @@ Reports on and masks clusters of voxels over a certain size.
 """
 
 def clusterminsize(statfiles, pcorr, minsize=0):
+    """
+    statfiles is a dict of behavior variable name and stats eg:  
+            stats = {'r': r,
+                    'tneg': tneg,
+                    'tpos': tpos,
+                    '1minp': 1-p, }
+            statfiles[behav_var][stats] = ''.format(file_template)
+    pcorr is the desired fdr corrected pvalue threshold eg p=0.05
+    """
+
     thresh1minp = 1-pcorr
     varnames = statfiles.keys()
     clustertables = {}
     clustermaps = {}
     for var in varnames:
-
         fpath = statfiles[var]['1minp']
         newfpath = fpath.replace('.nii','_clumin{}.nii'.format(minsize))
+        #bbc specific hooks
+        mod = ''
+        pool = ''
+        if (Path(newfpath).name).split('_')[0] == 'foster' or (Path(newfpath).name).split('_')[0] == 'control':
+            pool = (Path(newfpath).name).split('_')[0]
+            mod = (Path(newfpath).name).split('_')[1]
         pimg = nibabel.load(fpath)
         pdata = pimg.get_data()
         pdataVector = pdata.ravel()
@@ -23,6 +39,8 @@ def clusterminsize(statfiles, pcorr, minsize=0):
 
         for direction in ('pos', 'neg'):
             name = var+'-'+direction
+            if (Path(newfpath).name).split('_')[0] == 'foster' or (Path(newfpath).name).split('_')[0] == 'control':
+                name += '-'+pool+'-'+mod
             print('Clustering stats for '+name)
 
             tdirfpath = statfiles[var]['t'+direction]
