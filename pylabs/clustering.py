@@ -35,7 +35,7 @@ def clusterminsize(statfiles, pcorr, minsize=0):
         pdata = pimg.get_data()
         pdataVector = pdata.ravel()
         pdataVector[pdataVector<thresh1minp] = 0
-        affine = pimg.get_affine()
+        affine = pimg.affine()
 
         for direction in ('pos', 'neg'):
             name = var+'-'+direction
@@ -48,6 +48,7 @@ def clusterminsize(statfiles, pcorr, minsize=0):
             sigmask = (pdata>thresh1minp) & (tdir > 0)
 
             clustertables[name] = pandas.DataFrame(columns = ['k', 'x', 'y', 'z'])
+            clustertables[name].index.name = name
             clusters, _ = measurements.label(sigmask)
             _, firstIndices = numpy.unique(clusters, return_index=True)
             coords = numpy.unravel_index(firstIndices, sigmask.shape)
@@ -58,10 +59,10 @@ def clusterminsize(statfiles, pcorr, minsize=0):
             tooSmall = clustertables[name][clustertables[name].k<minsize].index
             clustertables[name].drop(tooSmall, inplace=True)
             clustertables[name].sort_values(by='k',ascending=False, inplace=True)
-            print('Kept {}, dropped {} clusters.'.format(clustertables[name].index.size, tooSmall.size)+' for '+pool+' '+mod)
+            print('Kept {}, dropped {} clusters.'.format(clustertables[name].index.size, tooSmall.size)+' for '+pool+' '+var+' '+mod+'\n')
             with open(str(Path(newfpath).parent / 'stats_results.txt'), 'a') as f:
-                f.write('Kept {}, dropped {} clusters.'.format(clustertables[name].index.size, tooSmall.size)+' for '+pool+' '+mod)
-            clustertables[name].to_csv(str(Path(newfpath).parent / str('clusters_'+name+'.tsv')), sep='\t')
+                f.write('Kept {}, dropped {} clusters.'.format(clustertables[name].index.size, tooSmall.size)+' for '+pool+' '+var+' '+mod+'\n')
+            clustertables[name].to_csv(str(Path(newfpath).parent / str('clusters_results.csv')), mode='a', header=False)
             clustermaps[name] = clusters
             pdataVector[numpy.in1d(clusters.ravel(), tooSmall)] = 0
         maskedData = pdataVector.reshape(pdata.shape)
