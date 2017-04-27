@@ -85,7 +85,7 @@ for p in pools:
     if p == 'control':
         for s, m in zip(control_behav_data.index, mean):
             prime_control_results.append({'gp': 1, 'subj': s, prime_mod: m})
-
+# set up results dataframe
 foster_results = pd.DataFrame(prime_foster_results)
 control_results = pd.DataFrame(prime_control_results)
 foster_results.set_index('subj', inplace=True)
@@ -117,7 +117,7 @@ for mod in modalities:
             foster_results[mod] = mean
         if p == 'control':
             control_results[mod] = mean
-
+# put results together into single dataframe and output csv
 comb_results = pd.concat([foster_results, control_results])
 comb_results['mori'] = atlas_regions['mori']
 comb_results['JHUtract'] = atlas_regions['JHUtract']
