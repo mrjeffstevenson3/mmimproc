@@ -35,7 +35,7 @@ def clusterminsize(statfiles, pcorr, minsize=0):
         pdata = pimg.get_data()
         pdataVector = pdata.ravel()
         pdataVector[pdataVector<thresh1minp] = 0
-        affine = pimg.affine()
+        affine = pimg.affine
 
         for direction in ('pos', 'neg'):
             name = var+'-'+direction

@@ -10,12 +10,15 @@ from pylabs.projects.bbc.pairing import foster_behav_data, control_behav_data, b
 provenance = ProvenanceWrapper()
 fs = Path(getnetworkdataroot())
 #set up roi
+''' MEG auditory regions
+11133  ctx_lh_G_temp_sup-G_T_transv
+'''
 project = 'bbc'
 statsdir = fs/project/'stats'/'py_correl_2ndpass'
-index_num=406
+index_num=384
 t_thr=5.0
 min_cluster_size=10
-index_fname= statsdir/'foster_AD_PPVTSS_tpos_cluster_index_cthr10.nii.gz'
+index_fname= statsdir/'foster_MD_PPVTSS_tpos_cluster_index_cthr10.nii.gz'
 # define atlases for labeling
 atlases_in_templ_sp_dir = fs/project/'reg'/'atlases_in_template_space'
 mori_atlas = atlases_in_templ_sp_dir/'mori_atlas_reg2template.nii.gz'
