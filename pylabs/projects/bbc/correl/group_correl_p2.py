@@ -46,6 +46,7 @@ outdir = results_dir
 out_pickle_fname = outdir/"cluster_outfile_{:%Y%m%d%H%M}.pickle".format(datetime.datetime.now())
 niterations = 1000
 pcorr_thr = 0.05
+cluster_minsize = 10
 
 for pool in ['foster', 'control']:
     if pool == 'foster':
@@ -142,6 +143,6 @@ for pool in ['foster', 'control']:
         data4d = np.moveaxis(data, 0, 3)
         _4D_img = nibabel.Nifti1Image(data4d, affine)
         nibabel.save(_4D_img, str(outdir / str(pool+'_'+mod+'.nii')))
-        statfiles, clutables, clumaps = clusterminsize(outfnames, pcorr, minsize=10)
+        statfiles, clutables, clumaps = clusterminsize(outfnames, pcorr, minsize=cluster_minsize)
         with open(str(out_pickle_fname), "ab") as f:
             f.write(dumps([statfiles, clutables, clumaps, outfnames, pcorr, tcorr]))
