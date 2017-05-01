@@ -2,8 +2,7 @@ from __future__ import division
 from pathlib import *
 import pandas, numpy, nibabel
 import scipy.ndimage.measurements as measurements
-from pylabs.correlation.atlas import mori_region_labels
-from pylabs.correlation.atlas import JHUtracts_region_labels
+from pylabs.correlation.atlas import mori_region_labels, JHUtracts_region_labels
 from pylabs.utils.paths import getnetworkdataroot
 fs = Path(getnetworkdataroot())
 """
@@ -22,6 +21,11 @@ mori_atlas_vbm_shape = nibabel.load(str(mori_atlas_dwi)).get_data().shape
 JHUtracts_atlas_vbm_shape = nibabel.load(str(JHUtracts_atlas_vbm)).get_data().shape
 mori_atlas_dwi_shape = nibabel.load(str(mori_atlas_dwi)).get_data().shape
 JHUtracts_atlas_dwi_shape = nibabel.load(str(JHUtracts_atlas_dwi)).get_data().shape
+mori_atlas_vbm_data = nibabel.load(str(mori_atlas_vbm)).get_data()
+JHUtracts_atlas_vbm_data = nibabel.load(str(JHUtracts_atlas_vbm)).get_data()
+mori_atlas_dwi_data = nibabel.load(str(mori_atlas_dwi)).get_data()
+JHUtracts_atlas_dwi_data = nibabel.load(str(JHUtracts_atlas_dwi)).get_data()
+
 cols = ['k', 'x', 'y', 'z', 'name', 'mori', 'JHU-tracts']
 
 def clusterminsize(statfiles, pcorr, minsize=0):
@@ -79,6 +83,17 @@ def clusterminsize(statfiles, pcorr, minsize=0):
             clustertables[name]['name'] = name
             clustertables[name].index.name = 'cluster index'
             # atlas regions here
+            for idx, row in clustertables[name].iterrows():
+                coord = (int(round(row['x'],0)), int(round(row['y'],0)), int(round(row['z'],0)))
+                if clusters.shape == mori_atlas_dwi_shape and clusters.shape == JHUtracts_atlas_dwi_shape:
+                    clustertables[name].set_value(idx, 'mori', mori_region_labels[int(round(mori_atlas_dwi_data[coord], 0))])
+                    clustertables[name].set_value(idx, 'JHU-tracts', JHUtracts_region_labels[int(round(JHUtracts_atlas_dwi_data[coord], 0))])
+                elif clusters.shape == mori_atlas_vbm_shape and clusters.shape == JHUtracts_atlas_vbm_shape:
+                    clustertables[name].set_value(idx, 'mori', mori_region_labels[int(round(mori_atlas_vbm_data[coord], 0))])
+                    clustertables[name].set_value(idx, 'JHU-tracts', JHUtracts_region_labels[int(round(JHUtracts_atlas_vbm_data[coord], 0))])
+                else:
+                    clustertables[name].set_value(idx, 'mori', 'unknown shape')
+                    clustertables[name].set_value(idx, 'JHU-tracts', 'unknown shape')
 
             print('Kept {}, dropped {} clusters.'.format(clustertables[name].index.size, tooSmall.size)+' for '+pool+' '+var+' '+mod+'\n')
             with open(str(Path(newfpath).parent / stats_results_fname), 'a') as s:

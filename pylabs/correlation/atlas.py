@@ -313,4 +313,7 @@ JHUtracts_region_labels = {
         18: 'Uncinate fasciculus R',
         19: 'Superior longitudinal fasciculus (temporal part) L',
         20: 'Superior longitudinal fasciculus (temporal part) R',
-        }
+        21: 'mid_corpus_callosum',
+        22: 'Left Cerebellum',
+        23: 'Right Cerebellum',
+                }

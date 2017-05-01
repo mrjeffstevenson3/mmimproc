@@ -34,7 +34,7 @@ def corr(X, Y):
 
 
 project = 'bbc'
-results_dirname = 'py_correl_4thpass'
+results_dirname = 'py_correl_5thpass'
 results_dir = fs / project / 'stats' / results_dirname
 
 if not results_dir.is_dir():
