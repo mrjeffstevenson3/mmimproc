@@ -95,9 +95,9 @@ def clusterminsize(statfiles, pcorr, minsize=0):
                     clustertables[name].set_value(idx, 'mori', 'unknown shape')
                     clustertables[name].set_value(idx, 'JHU-tracts', 'unknown shape')
 
-            print('Kept {}, dropped {} clusters.'.format(clustertables[name].index.size, tooSmall.size)+' for '+pool+' '+var+' '+mod+'\n')
+            print('Kept {}, dropped {} clusters.'.format(clustertables[name].index.size, tooSmall.size)+' in '+direction+' direction for '+pool+' '+var+' '+mod+'\n')
             with open(str(Path(newfpath).parent / stats_results_fname), 'a') as s:
-                s.write('Kept {}, dropped {} clusters.'.format(clustertables[name].index.size, tooSmall.size)+' for '+pool+' '+var+' '+mod+'\n')
+                s.write('Kept {}, dropped {} clusters.'.format(clustertables[name].index.size, tooSmall.size)+' in '+direction+' direction for '+pool+' '+var+' '+mod+'\n')
                 if not clustertables[name].empty:
                     clustertables[name].to_csv(str(Path(newfpath).parent / stats_results_fname), columns=cols, mode='a')
             if not clustertables[name].empty:
