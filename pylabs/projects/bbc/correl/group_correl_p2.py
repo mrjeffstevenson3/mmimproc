@@ -44,9 +44,12 @@ foster_files = [FA_foster_pnames, MD_foster_pnames, RD_foster_pnames, AD_foster_
 control_files = [FA_control_pnames, MD_control_pnames, RD_control_pnames, AD_control_pnames, GMVBM_control_pnames, WMVBM_control_pnames]
 outdir = results_dir
 out_pickle_fname = outdir/"cluster_outfile_{:%Y%m%d%H%M}.pickle".format(datetime.datetime.now())
-niterations = 1000
-pcorr_thr = 0.05
-cluster_minsize = 10
+niterations = 1000    # for FDR
+pcorr_thr = 0.05      # for FDR
+cluster_minsize = 10  # for clustering -uses FDR pcorr from that behav and modality for threshold
+cluster_report_fname = 'cluster_report.csv' # should be same as in clustering fn
+with open(str(outdir / cluster_report_fname), mode='a') as f:
+    f.write('cluster-index, num-vox, x, y, z, name'+'\n')   #write header to file
 
 for pool in ['foster', 'control']:
     if pool == 'foster':

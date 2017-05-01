@@ -6,6 +6,8 @@ import scipy.ndimage.measurements as measurements
 """
 Reports on and masks clusters of voxels over a certain size.
 """
+cluster_report_fname = 'cluster_report.csv'
+stats_results_fname = 'stats_results.txt'
 
 def clusterminsize(statfiles, pcorr, minsize=0):
     """
@@ -45,9 +47,9 @@ def clusterminsize(statfiles, pcorr, minsize=0):
 
             tdirfpath = statfiles[var]['t'+direction]
             tdir = nibabel.load(tdirfpath).get_data()
-            sigmask = (pdata>thresh1minp) & (tdir > 0)
+            sigmask = (pdata>thresh1minp) & (tdir > 0)   # boolian of sig voxels
 
-            clustertables[name] = pandas.DataFrame(columns = ['k', 'x', 'y', 'z'])
+            clustertables[name] = pandas.DataFrame(columns = ['name', 'k', 'x', 'y', 'z'])
             clustertables[name].index.name = name
             clusters, _ = measurements.label(sigmask)
             _, firstIndices = numpy.unique(clusters, return_index=True)
@@ -59,13 +61,29 @@ def clusterminsize(statfiles, pcorr, minsize=0):
             tooSmall = clustertables[name][clustertables[name].k<minsize].index
             clustertables[name].drop(tooSmall, inplace=True)
             clustertables[name].sort_values(by='k',ascending=False, inplace=True)
+            clustertables[name]['name'] = name
+            clustertables[name].index.name = 'cluster index'
             print('Kept {}, dropped {} clusters.'.format(clustertables[name].index.size, tooSmall.size)+' for '+pool+' '+var+' '+mod+'\n')
-            with open(str(Path(newfpath).parent / 'stats_results.txt'), 'a') as f:
-                f.write('Kept {}, dropped {} clusters.'.format(clustertables[name].index.size, tooSmall.size)+' for '+pool+' '+var+' '+mod+'\n')
-            clustertables[name].to_csv(str(Path(newfpath).parent / str('clusters_results.csv')), mode='a', header=False)
+            with open(str(Path(newfpath).parent / stats_results_fname), 'a') as s:
+                s.write('Kept {}, dropped {} clusters.'.format(clustertables[name].index.size, tooSmall.size)+' for '+pool+' '+var+' '+mod+'\n')
+                if not clustertables[name].empty:
+                    clustertables[name].to_csv(str(Path(newfpath).parent / stats_results_fname), columns=['k', 'x', 'y', 'z', 'name'], mode='a')
+            if not clustertables[name].empty:
+                with open(str(Path(newfpath).parent / cluster_report_fname), mode='a') as f:
+                    clustertables[name].to_csv(str(Path(newfpath).parent / cluster_report_fname), columns=['k', 'x', 'y', 'z', 'name'], mode='a', header=False)
+                tdir_clust = numpy.zeros(len(clusters.ravel()))
+                tdir_clust[:] = clusters.ravel()
+                tdir_clust[numpy.in1d(clusters.ravel(), tooSmall)] = 0
+                tdir_clust = tdir_clust.reshape(clusters.shape)
+                tdir_img = nibabel.Nifti1Image(tdir_clust, affine)
+                nibabel.save(tdir_img, statfiles[var]['t'+direction].replace('.nii.gz', '_cluster_index.nii.gz'))
             clustermaps[name] = clusters
             pdataVector[numpy.in1d(clusters.ravel(), tooSmall)] = 0
         maskedData = pdataVector.reshape(pdata.shape)
-        nibabel.save(nibabel.Nifti1Image(maskedData, affine), newfpath)
-        statfiles[var]['1minp'] = newfpath
+        if 'pos' in name and not clustertables[name].empty or not clustertables[name.replace('pos', 'neg')].empty:
+            nibabel.save(nibabel.Nifti1Image(maskedData, affine), newfpath)
+            statfiles[var]['1minp'] = newfpath
+        elif 'neg' in name and not clustertables[name].empty or not clustertables[name.replace('neg', 'pos')].empty:
+            nibabel.save(nibabel.Nifti1Image(maskedData, affine), newfpath)
+            statfiles[var]['1minp'] = newfpath
     return statfiles, clustertables, clustermaps
