@@ -4,7 +4,7 @@ from cloud.serialization.cloudpickle import dumps
 import numpy, nibabel, scipy.stats, math, datetime
 from numpy import square, sqrt
 from pylabs.utils import progress
-from pylabs.clustering import clusterminsize
+from pylabs.clustering import clusterminsize, cols
 import pylabs.io.images
 from pathlib import *
 import pandas as pd
@@ -49,7 +49,7 @@ pcorr_thr = 0.05      # for FDR
 cluster_minsize = 10  # for clustering -uses FDR pcorr from that behav and modality for threshold
 cluster_report_fname = 'cluster_report.csv' # should be same as in clustering fn
 with open(str(outdir / cluster_report_fname), mode='a') as f:
-    f.write('cluster-index, num-vox, x, y, z, name'+'\n')   #write header to file
+    f.write('cluster-index, '+', '.join(cols)+'\n')   #write header to file
 
 for pool in ['foster', 'control']:
     if pool == 'foster':
