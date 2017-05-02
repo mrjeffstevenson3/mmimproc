@@ -26,7 +26,7 @@ JHUtracts_atlas_vbm_data = nibabel.load(str(JHUtracts_atlas_vbm)).get_data()
 mori_atlas_dwi_data = nibabel.load(str(mori_atlas_dwi)).get_data()
 JHUtracts_atlas_dwi_data = nibabel.load(str(JHUtracts_atlas_dwi)).get_data()
 
-cols = ['k', 'x', 'y', 'z', 'name', 'mori', 'JHU-tracts']
+cols = ['k', 'x', 'y', 'z', 'name', 'mori', 'JHU_tracts']
 
 def clusterminsize(statfiles, pcorr, minsize=0):
     """
@@ -87,17 +87,17 @@ def clusterminsize(statfiles, pcorr, minsize=0):
                 coord = (int(round(row['x'],0)), int(round(row['y'],0)), int(round(row['z'],0)))
                 if clusters.shape == mori_atlas_dwi_shape and clusters.shape == JHUtracts_atlas_dwi_shape:
                     clustertables[name].set_value(idx, 'mori', mori_region_labels[int(round(mori_atlas_dwi_data[coord], 0))])
-                    clustertables[name].set_value(idx, 'JHU-tracts', JHUtracts_region_labels[int(round(JHUtracts_atlas_dwi_data[coord], 0))])
+                    clustertables[name].set_value(idx, 'JHU_tracts', JHUtracts_region_labels[int(round(JHUtracts_atlas_dwi_data[coord], 0))])
                 elif clusters.shape == mori_atlas_vbm_shape and clusters.shape == JHUtracts_atlas_vbm_shape:
                     clustertables[name].set_value(idx, 'mori', mori_region_labels[int(round(mori_atlas_vbm_data[coord], 0))])
-                    clustertables[name].set_value(idx, 'JHU-tracts', JHUtracts_region_labels[int(round(JHUtracts_atlas_vbm_data[coord], 0))])
+                    clustertables[name].set_value(idx, 'JHU_tracts', JHUtracts_region_labels[int(round(JHUtracts_atlas_vbm_data[coord], 0))])
                 else:
                     clustertables[name].set_value(idx, 'mori', 'unknown shape')
-                    clustertables[name].set_value(idx, 'JHU-tracts', 'unknown shape')
-
-            print('Kept {}, dropped {} clusters.'.format(clustertables[name].index.size, tooSmall.size)+' in '+direction+' direction for '+pool+' '+var+' '+mod+'\n')
+                    clustertables[name].set_value(idx, 'JHU_tracts', 'unknown shape')
+            csvstring = 'Kept {}, dropped {} clusters in '+direction+' direction for '+pool+' '+var+' '+mod+'\n'
+            print(csvstring.format(clustertables[name].index.size, tooSmall.size))
             with open(str(Path(newfpath).parent / stats_results_fname), 'a') as s:
-                s.write('Kept {}, dropped {} clusters.'.format(clustertables[name].index.size, tooSmall.size)+' in '+direction+' direction for '+pool+' '+var+' '+mod+'\n')
+                s.write(csvstring.format(clustertables[name].index.size, tooSmall.size))
                 if not clustertables[name].empty:
                     clustertables[name].to_csv(str(Path(newfpath).parent / stats_results_fname), columns=cols, mode='a')
             if not clustertables[name].empty:

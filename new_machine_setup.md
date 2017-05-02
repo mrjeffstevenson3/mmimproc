@@ -44,26 +44,51 @@ source $FREESURFER_HOME/SetUpFreeSurfer.sh`
     on scotty set up /etc/exports add to /exports AND /exports/users lines ` <your_new_ip_addr>(rw,nohide,insecure,no_subtree_check,async)` - pls include leading space.
 22. copy scotty .bashrc appropriate elements to ${HOME}/.bashrc (hint use pycharm compare file fn)  
 23. install and start condor: `sudo apt install htcondor && sudo service condor start`
-install sip, pyqt4, mayavi, pysurfer:
-cd ${HOME}/Software
-https://riverbankcomputing.com/software/sip/download
-example docs:
-file:///Users/mrjeffs/Software/sip-4.19.2.dev1703031758/doc/html/build_system.html
-cd sip-4.19*
-python configure.py
-make
-make install
-cd ..
-http://pyqt.sourceforge.net/Docs/PyQt4/installation.html#downloading-pyqt4
-cd PyQt4*
-python configure-ng.py
-make
-make install
-cd ..
-git clone https://github.com/enthought/mayavi
-cd mayavi
-python setup.py develop
-cd ..
-git clone https://github.com/nipy/PySurfer
-cd PySurfer
-python setup.py develop
+24. install sip, pyqt4, mayavi, pysurfer:
+        cd ${HOME}/Software
+        https://riverbankcomputing.com/software/sip/download
+        example docs:
+        file:///Users/mrjeffs/Software/sip-4.19.2.dev1703031758/doc/html/build_system.html
+        cd sip-4.19*
+        python configure.py
+        make
+        make install
+        cd ..
+        http://pyqt.sourceforge.net/Docs/PyQt4/installation.html#downloading-pyqt4
+        cd PyQt4*
+        python configure-ng.py
+        make
+        make install
+        cd ..
+        git clone https://github.com/enthought/mayavi
+        cd mayavi
+        python setup.py develop
+        cd ..
+        git clone https://github.com/nipy/PySurfer
+        cd PySurfer
+        python setup.py develop
+25. install into ${HOME}/Software the nightly build of mne-c from https://www.martinos.org/mne/stable/getting_started.html (need user name, pwd, and lic)
+        library problems: libxp6, libquicktime, libgfortran (or gfortran installed above),
+        sudo vim /etc/apt/sources.list
+        # append this line to sources list by scrolling down to empty line hit i  (FOR INSERT) THEN PASTE:
+        deb http://security.ubuntu.com/ubuntu precise-security main
+        # hit
+        esc :wq
+        # to save file with new repo, then
+        sudo apt update
+        sudo apt-get install libxp6
+        sudo apt-get install libquicktime2
+        # make hard links to missing older lib files
+        cd /usr/lib/x86_64-linux-gnu/
+        ls -l libquicktime*
+        sudo ln -s libquicktime.so.2 libquicktime.so
+        sudo ln -s libgfortran.so.3 libgfortran.so.1
+        # then copy following to .bashrc (again assumes Software under home folder is where mne lives)
+            #setup mne
+            MNE_ROOT=${HOME}/Software/MNE-2.7.4-3514-Linux-x86_64
+            PATH=${HOME}/Software/MNE-2.7.4-3514-Linux-x86_64/bin:$PATH
+            MATLAB_ROOT=/usr/local/MATLAB/R2016b/bin/matlab
+            export PATH MNE_ROOT MATLAB_ROOT
+            . $MNE_ROOT/bin/mne_setup_sh
+
+
