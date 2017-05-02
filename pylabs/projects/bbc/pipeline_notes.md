@@ -3,22 +3,24 @@
 **For VBM:**
 1. Add file name glob wildcards to bbc_conv dict in conversion/brain_convert.py
 2. convert PAR/REC using bbc/mr_preprocess.py
-3. do brain extraction with bbc_bet.sh and QC
+3. do brain extraction with bbc_bet.sh and QC <-- convert to python
 4. center QC'd brains with utils/niftidict.py (should move bulk to mr_preprocess.py)
 5. buildtemplateparallel.sh -d 3 -c 2 -j 18 -r 1 -s CC -t GR -m 30x50x20 -n 0 -i 4 -o <outfile path/prepend> *.nii.gz
 6. save qform header info and convert to analyse
 7. run spm segment in batch mode
 8. prepare design.con design.mat and design.grp (exchangeability blocks)
 9. heal headers, convert to nifti, calc Jacobians, smooth and randomise with pylabs/projects/bbc/vbm_post_seg.sh
+10. run FDR with clustering using group_correl_p2.py note masking problem with GM outside brain.
+
 
 **For DTI**
 1. Add file name glob wildcard to bbc_conv dict in conversion/brain_convert.py
 2. convert PAR/REC using bbc/mr_preprocess.py (as above)
 3. now in eddy.py: do brain extraction with bbc/dti_bet.sh <- make into python
-4. run QC with diffusion/dti_qc.py
-5. run eddy.py cuda eddy current correction
+4. run QC with diffusion/dti_qc.py    <-- make reporting summary script
+5. run eddy.py cuda eddy current correction (includes filter S0, test eddy with S0 replaced with reg2templ_3DT2)
 6. run bbc_dti_fit.py dti fit methods OLS, WLS, Restore, and UKF
-7. build dti reg module that generates warp and affines
+7. dti reg module that generates warp and affines using reg_direct_dwi2template
 8. apply inverse warps to mori atlas and generate VTKs for dti deathmatch
 8. apply forward warps and affines moving to template space
 9. filter and extract tensor from dipy and reg to template and atlases

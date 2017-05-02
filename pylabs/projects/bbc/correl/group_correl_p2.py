@@ -34,7 +34,7 @@ def corr(X, Y):
 
 
 project = 'bbc'
-results_dirname = 'py_correl_5thpass'
+results_dirname = 'py_correl_5thpass_cthr15_n5000'
 results_dir = fs / project / 'stats' / results_dirname
 
 if not results_dir.is_dir():
@@ -44,9 +44,9 @@ foster_files = [FA_foster_pnames, MD_foster_pnames, RD_foster_pnames, AD_foster_
 control_files = [FA_control_pnames, MD_control_pnames, RD_control_pnames, AD_control_pnames, GMVBM_control_pnames, WMVBM_control_pnames]
 outdir = results_dir
 out_pickle_fname = outdir/"cluster_outfile_{:%Y%m%d%H%M}.pickle".format(datetime.datetime.now())
-niterations = 1000    # for FDR
+niterations = 5000    # for FDR
 pcorr_thr = 0.05      # for FDR
-cluster_minsize = 10  # for clustering -uses FDR pcorr from that behav and modality for threshold
+cluster_minsize = 15  # for clustering -uses FDR pcorr from that behav and modality for threshold
 cluster_report_fname = 'cluster_report.csv' # should be same as in clustering fn
 with open(str(outdir / cluster_report_fname), mode='a') as f:
     f.write('cluster-index, '+', '.join(cols)+'\n')   #write header to file

@@ -87,6 +87,7 @@ source $FREESURFER_HOME/SetUpFreeSurfer.sh`
             #setup mne
             MNE_ROOT=${HOME}/Software/MNE-2.7.4-3514-Linux-x86_64
             PATH=${HOME}/Software/MNE-2.7.4-3514-Linux-x86_64/bin:$PATH
+            # optional matlab hook. need to change/update release name
             MATLAB_ROOT=/usr/local/MATLAB/R2016b/bin/matlab
             export PATH MNE_ROOT MATLAB_ROOT
             . $MNE_ROOT/bin/mne_setup_sh
