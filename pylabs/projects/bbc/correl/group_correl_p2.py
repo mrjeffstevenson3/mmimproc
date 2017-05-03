@@ -49,7 +49,7 @@ pcorr_thr = 0.05      # for FDR
 cluster_minsize = 15  # for clustering -uses FDR pcorr from that behav and modality for threshold
 cluster_report_fname = 'cluster_report.csv' # should be same as in clustering fn
 with open(str(outdir / cluster_report_fname), mode='a') as f:
-    f.write('cluster-index, '+', '.join(cols)+'\n')   #write header to file
+    f.write('cluster-index,'+','.join(cols)+'\n')   #write cluster header to file
 
 for pool in ['foster', 'control']:
     if pool == 'foster':
