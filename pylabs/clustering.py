@@ -36,7 +36,7 @@ def clusterminsize(statfiles, pcorr, minsize=0):
                     'tpos': tpos,
                     '1minp': 1-p, }
             statfiles[behav_var][stats] = ''.format(file_template)
-    pcorr is the desired fdr corrected pvalue threshold eg p=0.05
+            pcorr is the desired fdr corrected pvalue threshold eg p=0.05
     """
 
     thresh1minp = 1-pcorr
