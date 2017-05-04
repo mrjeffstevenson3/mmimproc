@@ -26,7 +26,7 @@ fname_templ = '{pool}_{mod}.nii'
 cluster_idx_fname_templ = '{pool}_{mod}_{behav}_t{dir}_cluster_index.nii.gz'
 
 
-# In[2]:
+# In[10]:
 
 # prepare cluster roi data
 cluster_fname = 'cluster_report.csv'
@@ -38,7 +38,15 @@ clusters['pool'] = clusters['name'].str.split('-').apply(lambda x: x[-2])
 clusters['dir'] = clusters['name'].str.split('-').apply(lambda x: x[-3])
 clusters['behav'] = clusters['name'].str.split('-').apply(lambda x: x[:-3]).str.join('-')
 clusters['clu_idx_fname'] = clusters[['pool', 'mod', 'behav', 'dir']].apply(lambda x : cluster_idx_fname_templ.format(pool=x[0], mod=x[1], behav=x[2], dir=x[3]), axis=1)
-clusters.head(100)
+with WorkingContext(str(statsdir)):
+    try:
+        for index, row in clusters.iterrows():
+            clusters.set_value(index, 'idx_data', nib.load(row['clu_idx_fname']).get_data())
+            clusters.set_value(index, 'idx_zooms', nib.load(row['clu_idx_fname']).header.get_zooms())
+            clusters.set_value(index, 'idx_shape', nib.load(row['clu_idx_fname']).get_data().shape)
+    except:
+        print('an error has occured loading data into dataframe.')
+clusters.head(10)
 
 
 # In[6]:
@@ -55,14 +63,16 @@ with WorkingContext(str(statsdir)):
         print('an error has occured loading data into dataframe.')
 
 
-# In[ ]:
+# In[5]:
+
+len(list(set(clusters['clu_idx_fname'].values)))
 
 
+# In[9]:
 
-
-# In[ ]:
-
-
+for index, row in clusters.iterrows():
+    print index
+    print row['clu_idx_fname']
 
 
 # In[ ]:
