@@ -21,12 +21,12 @@ from pylabs.utils import run_subprocess, WorkingContext
 from pylabs.utils.paths import getnetworkdataroot
 fs = Path(getnetworkdataroot())
 project = 'bbc'
-statsdir = fs/project/'stats'/'py_correl_3rdpass'   #'py_correl_5thpass'
+statsdir = fs/project/'stats'/'py_correl_2ndpass'   #'py_correl_5thpass_cthr15_n5000'    #'py_correl_3rdpass'   #'py_correl_5thpass'
 fname_templ = '{pool}_{mod}.nii'
 cluster_idx_fname_templ = '{pool}_{mod}_{behav}_t{dir}_cluster_index.nii.gz'
 
 
-# In[10]:
+# In[18]:
 
 # prepare cluster roi data
 cluster_fname = 'cluster_report.csv'
@@ -41,9 +41,12 @@ clusters['clu_idx_fname'] = clusters[['pool', 'mod', 'behav', 'dir']].apply(lamb
 with WorkingContext(str(statsdir)):
     try:
         for index, row in clusters.iterrows():
-            clusters.set_value(index, 'idx_data', nib.load(row['clu_idx_fname']).get_data())
-            clusters.set_value(index, 'idx_zooms', nib.load(row['clu_idx_fname']).header.get_zooms())
-            clusters.set_value(index, 'idx_shape', nib.load(row['clu_idx_fname']).get_data().shape)
+            print os.getcwd(), row['clu_idx_fname'], Path(row['clu_idx_fname']).is_file()
+            print index
+            print row
+            clusters.loc[str(index), 'idx_data'], nib.load(row['clu_idx_fname']).get_data())
+            clusters.set_value(str(index), 'idx_zooms', nib.load(row['clu_idx_fname']).header.get_zooms())
+            clusters.set_value(str(index), 'idx_shape', nib.load(row['clu_idx_fname']).get_data().shape)
     except:
         print('an error has occured loading data into dataframe.')
 clusters.head(10)
@@ -63,9 +66,9 @@ with WorkingContext(str(statsdir)):
         print('an error has occured loading data into dataframe.')
 
 
-# In[5]:
+# In[15]:
 
-len(list(set(clusters['clu_idx_fname'].values)))
+clusters.set_value('201', 'idx_data', 1.0)
 
 
 # In[9]:
