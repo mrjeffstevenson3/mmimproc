@@ -11801,7 +11801,7 @@ div#notebook {
 <span class="kn">from</span> <span class="nn">pylabs.utils.paths</span> <span class="kn">import</span> <span class="n">getnetworkdataroot</span>
 <span class="n">fs</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">getnetworkdataroot</span><span class="p">())</span>
 <span class="n">project</span> <span class="o">=</span> <span class="s1">&#39;bbc&#39;</span>
-<span class="n">statsdir</span> <span class="o">=</span> <span class="n">fs</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="s1">&#39;stats&#39;</span><span class="o">/</span><span class="s1">&#39;py_correl_2ndpass&#39;</span>   <span class="c1">#&#39;py_correl_5thpass_cthr15_n5000&#39;    #&#39;py_correl_3rdpass&#39;   #&#39;py_correl_5thpass&#39;</span>
+<span class="n">statsdir</span> <span class="o">=</span> <span class="n">fs</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="s1">&#39;stats&#39;</span><span class="o">/</span><span class="s1">&#39;py_correl_5thpass_cthr15_n5000&#39;</span> <span class="c1">#&#39;py_correl_2ndpass&#39;   #&#39;py_correl_5thpass_cthr15_n5000&#39;    #&#39;py_correl_3rdpass&#39;   #&#39;py_correl_5thpass&#39;</span>
 <span class="n">fname_templ</span> <span class="o">=</span> <span class="s1">&#39;{pool}_{mod}.nii&#39;</span>
 <span class="n">cluster_idx_fname_templ</span> <span class="o">=</span> <span class="s1">&#39;{pool}_{mod}_{behav}_t{dir}_cluster_index.nii.gz&#39;</span>
 </pre></div>
@@ -11813,12 +11813,12 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[18]:</div>
+<div class="prompt input_prompt">In&nbsp;[2]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="c1"># prepare cluster roi data</span>
 <span class="n">cluster_fname</span> <span class="o">=</span> <span class="s1">&#39;cluster_report.csv&#39;</span>
-<span class="n">clusters</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="o">.</span><span class="n">from_csv</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">statsdir</span><span class="o">/</span><span class="n">cluster_fname</span><span class="p">))</span>
+<span class="n">clusters</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">statsdir</span><span class="o">/</span><span class="n">cluster_fname</span><span class="p">),</span> <span class="n">index_col</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;object&#39;</span><span class="p">)</span>
 <span class="n">clusters</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39; k&#39;</span><span class="p">:</span> <span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="s1">&#39; x&#39;</span><span class="p">:</span> <span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="s1">&#39; y&#39;</span><span class="p">:</span> <span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="s1">&#39; z&#39;</span><span class="p">:</span> <span class="s1">&#39;z&#39;</span><span class="p">,</span> <span class="s1">&#39; name&#39;</span><span class="p">:</span> <span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39; mori&#39;</span><span class="p">:</span> <span class="s1">&#39;mori&#39;</span><span class="p">,</span> <span class="s1">&#39; JHU_tracts&#39;</span><span class="p">:</span> <span class="s1">&#39;JHU_tracts&#39;</span><span class="p">},</span> <span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 <span class="n">clusters</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">clusters</span><span class="p">[(</span><span class="n">clusters</span><span class="o">.</span><span class="n">mori</span> <span class="o">==</span> <span class="s1">&#39;Background&#39;</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">clusters</span><span class="o">.</span><span class="n">JHU_tracts</span> <span class="o">==</span> <span class="s1">&#39;Background&#39;</span><span class="p">)]</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 <span class="n">clusters</span><span class="p">[</span><span class="s1">&#39;mod&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">clusters</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
@@ -11828,16 +11828,12 @@ div#notebook {
 <span class="n">clusters</span><span class="p">[</span><span class="s1">&#39;clu_idx_fname&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">clusters</span><span class="p">[[</span><span class="s1">&#39;pool&#39;</span><span class="p">,</span> <span class="s1">&#39;mod&#39;</span><span class="p">,</span> <span class="s1">&#39;behav&#39;</span><span class="p">,</span> <span class="s1">&#39;dir&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span> <span class="p">:</span> <span class="n">cluster_idx_fname_templ</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">pool</span><span class="o">=</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">mod</span><span class="o">=</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">behav</span><span class="o">=</span><span class="n">x</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="nb">dir</span><span class="o">=</span><span class="n">x</span><span class="p">[</span><span class="mi">3</span><span class="p">]),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <span class="k">with</span> <span class="n">WorkingContext</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">statsdir</span><span class="p">)):</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">clusters</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
-            <span class="k">print</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;clu_idx_fname&#39;</span><span class="p">],</span> <span class="n">Path</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s1">&#39;clu_idx_fname&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">is_file</span><span class="p">()</span>
-            <span class="k">print</span> <span class="n">index</span>
-            <span class="k">print</span> <span class="n">row</span>
-            <span class="n">clusters</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">index</span><span class="p">),</span> <span class="s1">&#39;idx_data&#39;</span><span class="p">],</span> <span class="n">nib</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s1">&#39;clu_idx_fname&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">get_data</span><span class="p">())</span>
-            <span class="n">clusters</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">index</span><span class="p">),</span> <span class="s1">&#39;idx_zooms&#39;</span><span class="p">,</span> <span class="n">nib</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s1">&#39;clu_idx_fname&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">get_zooms</span><span class="p">())</span>
-            <span class="n">clusters</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">index</span><span class="p">),</span> <span class="s1">&#39;idx_shape&#39;</span><span class="p">,</span> <span class="n">nib</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s1">&#39;clu_idx_fname&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">clusters</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+            <span class="n">clusters</span><span class="o">.</span><span class="n">ix</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="s1">&#39;idx_data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">nib</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s1">&#39;clu_idx_fname&#39;</span><span class="p">])</span>
     <span class="k">except</span><span class="p">:</span>
         <span class="k">print</span><span class="p">(</span><span class="s1">&#39;an error has occured loading data into dataframe.&#39;</span><span class="p">)</span>
-<span class="n">clusters</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">print</span><span class="p">(</span><span class="s1">&#39;successfully entered all cluster index files to dataframe&#39;</span><span class="p">)</span>
 </pre></div>
 
 </div>
@@ -11852,221 +11848,9 @@ div#notebook {
 <div class="prompt"></div>
 
 <div class="output_subarea output_stream output_stdout output_text">
-<pre>/mnt/users/js/bbc/stats/py_correl_5thpass_cthr15_n5000 foster_FA_PPVTSS_tpos_cluster_index.nii.gz
-201 k                                                        16
-x                                                        76
-y                                                        41
-z                                                        35
-name                                   PPVTSS-pos-foster-FA
-mori                                             CEREBELLUM
-JHU_tracts                                     Cerebellum_L
-mod                                                      FA
-pool                                                 foster
-dir                                                     pos
-behav                                                PPVTSS
-clu_idx_fname    foster_FA_PPVTSS_tpos_cluster_index.nii.gz
-Name: 201, dtype: object
-True
-an error has occured loading data into dataframe.
+<pre>an error has occured loading data into dataframe.
 </pre>
 </div>
-</div>
-
-<div class="output_area">
-<div class="prompt output_prompt">Out[18]:</div>
-
-
-<div class="output_html rendered_html output_subarea output_execute_result">
-<div>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>k</th>
-      <th>x</th>
-      <th>y</th>
-      <th>z</th>
-      <th>name</th>
-      <th>mori</th>
-      <th>JHU_tracts</th>
-      <th>mod</th>
-      <th>pool</th>
-      <th>dir</th>
-      <th>behav</th>
-      <th>clu_idx_fname</th>
-    </tr>
-    <tr>
-      <th>cluster-index</th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>201</th>
-      <td>16</td>
-      <td>76</td>
-      <td>41</td>
-      <td>35</td>
-      <td>PPVTSS-pos-foster-FA</td>
-      <td>CEREBELLUM</td>
-      <td>Cerebellum_L</td>
-      <td>FA</td>
-      <td>foster</td>
-      <td>pos</td>
-      <td>PPVTSS</td>
-      <td>foster_FA_PPVTSS_tpos_cluster_index.nii.gz</td>
-    </tr>
-    <tr>
-      <th>208</th>
-      <td>21</td>
-      <td>74</td>
-      <td>38</td>
-      <td>36</td>
-      <td>CTOPPphoaCS-pos-foster-FA</td>
-      <td>CEREBELLUM</td>
-      <td>Cerebellum_L</td>
-      <td>FA</td>
-      <td>foster</td>
-      <td>pos</td>
-      <td>CTOPPphoaCS</td>
-      <td>foster_FA_CTOPPphoaCS_tpos_cluster_index.nii.gz</td>
-    </tr>
-    <tr>
-      <th>313</th>
-      <td>23</td>
-      <td>76</td>
-      <td>50</td>
-      <td>57</td>
-      <td>PPVTSS-pos-foster-MD</td>
-      <td>Fornix(cres)_Stria_terminalis_left</td>
-      <td>Inferior_fronto_occipital_fasciculus_L</td>
-      <td>MD</td>
-      <td>foster</td>
-      <td>pos</td>
-      <td>PPVTSS</td>
-      <td>foster_MD_PPVTSS_tpos_cluster_index.nii.gz</td>
-    </tr>
-    <tr>
-      <th>279</th>
-      <td>21</td>
-      <td>63</td>
-      <td>38</td>
-      <td>81</td>
-      <td>CTOPPphoaCS-pos-foster-MD</td>
-      <td>Substancia_Nigra_left</td>
-      <td>Background</td>
-      <td>MD</td>
-      <td>foster</td>
-      <td>pos</td>
-      <td>CTOPPphoaCS</td>
-      <td>foster_MD_CTOPPphoaCS_tpos_cluster_index.nii.gz</td>
-    </tr>
-    <tr>
-      <th>256</th>
-      <td>19</td>
-      <td>58</td>
-      <td>80</td>
-      <td>64</td>
-      <td>CTOPPphoaCS-pos-foster-MD</td>
-      <td>CAUDATE_NUCLEUS_left</td>
-      <td>Background</td>
-      <td>MD</td>
-      <td>foster</td>
-      <td>pos</td>
-      <td>CTOPPphoaCS</td>
-      <td>foster_MD_CTOPPphoaCS_tpos_cluster_index.nii.gz</td>
-    </tr>
-    <tr>
-      <th>229</th>
-      <td>18</td>
-      <td>54</td>
-      <td>80</td>
-      <td>60</td>
-      <td>CTOPPphoaCS-pos-foster-MD</td>
-      <td>CAUDATE_NUCLEUS_left</td>
-      <td>Background</td>
-      <td>MD</td>
-      <td>foster</td>
-      <td>pos</td>
-      <td>CTOPPphoaCS</td>
-      <td>foster_MD_CTOPPphoaCS_tpos_cluster_index.nii.gz</td>
-    </tr>
-    <tr>
-      <th>239</th>
-      <td>21</td>
-      <td>63</td>
-      <td>38</td>
-      <td>81</td>
-      <td>CTOPPphoaCS-pos-foster-RD</td>
-      <td>Substancia_Nigra_left</td>
-      <td>Background</td>
-      <td>RD</td>
-      <td>foster</td>
-      <td>pos</td>
-      <td>CTOPPphoaCS</td>
-      <td>foster_RD_CTOPPphoaCS_tpos_cluster_index.nii.gz</td>
-    </tr>
-    <tr>
-      <th>315</th>
-      <td>37</td>
-      <td>76</td>
-      <td>48</td>
-      <td>58</td>
-      <td>PPVTSS-pos-foster-AD</td>
-      <td>Cingulum_(hippocampus)_left</td>
-      <td>Superior_longitudinal_fasciculus_L</td>
-      <td>AD</td>
-      <td>foster</td>
-      <td>pos</td>
-      <td>PPVTSS</td>
-      <td>foster_AD_PPVTSS_tpos_cluster_index.nii.gz</td>
-    </tr>
-    <tr>
-      <th>240</th>
-      <td>34</td>
-      <td>56</td>
-      <td>70</td>
-      <td>53</td>
-      <td>PPVTSS-pos-foster-AD</td>
-      <td>Cerebral_peduncle_left</td>
-      <td>Anterior_thalamic_radiation_L</td>
-      <td>AD</td>
-      <td>foster</td>
-      <td>pos</td>
-      <td>PPVTSS</td>
-      <td>foster_AD_PPVTSS_tpos_cluster_index.nii.gz</td>
-    </tr>
-    <tr>
-      <th>121</th>
-      <td>16</td>
-      <td>39</td>
-      <td>63</td>
-      <td>54</td>
-      <td>PPVTSS-pos-foster-AD</td>
-      <td>MIDDLE_TEMPORAL_GYRUS_right</td>
-      <td>Background</td>
-      <td>AD</td>
-      <td>foster</td>
-      <td>pos</td>
-      <td>PPVTSS</td>
-      <td>foster_AD_PPVTSS_tpos_cluster_index.nii.gz</td>
-    </tr>
-  </tbody>
-</table>
-</div>
-</div>
-
 </div>
 
 </div>
@@ -12085,9 +11869,11 @@ an error has occured loading data into dataframe.
         <span class="k">for</span> <span class="n">pool</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">clusters</span><span class="p">[</span><span class="s1">&#39;pool&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)):</span>
             <span class="k">for</span> <span class="n">mod</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">clusters</span><span class="p">[</span><span class="s1">&#39;mod&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)):</span>
                 <span class="n">fname</span> <span class="o">=</span> <span class="n">fname_templ</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">pool</span><span class="o">=</span><span class="n">pool</span><span class="p">,</span> <span class="n">mod</span><span class="o">=</span><span class="n">mod</span><span class="p">)</span>
-                <span class="n">data</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="n">pool</span><span class="p">,</span> <span class="n">mod</span><span class="p">,</span> <span class="n">nib</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span><span class="o">.</span><span class="n">get_data</span><span class="p">())</span>
+                <span class="n">data</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="n">pool</span><span class="p">,</span> <span class="n">mod</span><span class="p">,</span> <span class="n">nib</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">fname</span><span class="p">))</span>
     <span class="k">except</span><span class="p">:</span>
         <span class="k">print</span><span class="p">(</span><span class="s1">&#39;an error has occured loading data into dataframe.&#39;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">print</span><span class="p">(</span><span class="s1">&#39;successfully entered all multimodal files to dataframe&#39;</span><span class="p">)</span>
 </pre></div>
 
 </div>
@@ -12100,7 +11886,7 @@ an error has occured loading data into dataframe.
 <div class="prompt input_prompt">In&nbsp;[15]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="n">clusters</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="s1">&#39;201&#39;</span><span class="p">,</span> <span class="s1">&#39;idx_data&#39;</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+<div class=" highlight hl-ipython2"><pre><span></span> 
 </pre></div>
 
 </div>
@@ -13146,9 +12932,7 @@ an error has occured loading data into dataframe.
 <div class="prompt input_prompt">In&nbsp;[9]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">clusters</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
-    <span class="k">print</span> <span class="n">index</span>
-    <span class="k">print</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;clu_idx_fname&#39;</span><span class="p">]</span>
+<div class=" highlight hl-ipython2"><pre><span></span> 
 </pre></div>
 
 </div>

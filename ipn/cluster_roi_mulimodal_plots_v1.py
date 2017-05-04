@@ -21,16 +21,16 @@ from pylabs.utils import run_subprocess, WorkingContext
 from pylabs.utils.paths import getnetworkdataroot
 fs = Path(getnetworkdataroot())
 project = 'bbc'
-statsdir = fs/project/'stats'/'py_correl_2ndpass'   #'py_correl_5thpass_cthr15_n5000'    #'py_correl_3rdpass'   #'py_correl_5thpass'
+statsdir = fs/project/'stats'/'py_correl_5thpass_cthr15_n5000' #'py_correl_2ndpass'   #'py_correl_5thpass_cthr15_n5000'    #'py_correl_3rdpass'   #'py_correl_5thpass'
 fname_templ = '{pool}_{mod}.nii'
 cluster_idx_fname_templ = '{pool}_{mod}_{behav}_t{dir}_cluster_index.nii.gz'
 
 
-# In[18]:
+# In[2]:
 
 # prepare cluster roi data
 cluster_fname = 'cluster_report.csv'
-clusters = pd.DataFrame.from_csv(str(statsdir/cluster_fname))
+clusters = pd.read_csv(str(statsdir/cluster_fname), index_col=False, dtype='object')
 clusters.rename(index=str, columns={' k': 'k', ' x': 'x', ' y': 'y', ' z': 'z', ' name': 'name', ' mori': 'mori', ' JHU_tracts': 'JHU_tracts'}, inplace=True)
 clusters.drop(clusters[(clusters.mori == 'Background') & (clusters.JHU_tracts == 'Background')].index, inplace=True)
 clusters['mod'] = clusters['name'].str.split('-').apply(lambda x: x[-1])
@@ -40,16 +40,12 @@ clusters['behav'] = clusters['name'].str.split('-').apply(lambda x: x[:-3]).str.
 clusters['clu_idx_fname'] = clusters[['pool', 'mod', 'behav', 'dir']].apply(lambda x : cluster_idx_fname_templ.format(pool=x[0], mod=x[1], behav=x[2], dir=x[3]), axis=1)
 with WorkingContext(str(statsdir)):
     try:
-        for index, row in clusters.iterrows():
-            print os.getcwd(), row['clu_idx_fname'], Path(row['clu_idx_fname']).is_file()
-            print index
-            print row
-            clusters.loc[str(index), 'idx_data'], nib.load(row['clu_idx_fname']).get_data())
-            clusters.set_value(str(index), 'idx_zooms', nib.load(row['clu_idx_fname']).header.get_zooms())
-            clusters.set_value(str(index), 'idx_shape', nib.load(row['clu_idx_fname']).get_data().shape)
+        for i, row in clusters.iterrows():
+            clusters.ix[i, 'idx_data'] = nib.load(row['clu_idx_fname'])
     except:
         print('an error has occured loading data into dataframe.')
-clusters.head(10)
+    else:
+        print('successfully entered all cluster index files to dataframe')
 
 
 # In[6]:
@@ -61,21 +57,21 @@ with WorkingContext(str(statsdir)):
         for pool in list(set(clusters['pool'].values)):
             for mod in list(set(clusters['mod'].values)):
                 fname = fname_templ.format(pool=pool, mod=mod)
-                data.set_value(pool, mod, nib.load(fname).get_data())
+                data.set_value(pool, mod, nib.load(fname))
     except:
         print('an error has occured loading data into dataframe.')
+    else:
+        print('successfully entered all multimodal files to dataframe')
 
 
 # In[15]:
 
-clusters.set_value('201', 'idx_data', 1.0)
+
 
 
 # In[9]:
 
-for index, row in clusters.iterrows():
-    print index
-    print row['clu_idx_fname']
+
 
 
 # In[ ]:
