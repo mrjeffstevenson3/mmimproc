@@ -23,22 +23,27 @@ fs = Path(getnetworkdataroot())
 project = 'bbc'
 statsdir = fs/project/'stats'/'py_correl_3rdpass'   #'py_correl_5thpass'
 fname_templ = '{pool}_{mod}.nii'
+cluster_idx_fname_templ = '{pool}_{mod}_{behav}_t{dir}_cluster_index.nii.gz'
 
 
 # In[2]:
 
+# prepare cluster roi data
 cluster_fname = 'cluster_report.csv'
 clusters = pd.DataFrame.from_csv(str(statsdir/cluster_fname))
 clusters.rename(index=str, columns={' k': 'k', ' x': 'x', ' y': 'y', ' z': 'z', ' name': 'name', ' mori': 'mori', ' JHU_tracts': 'JHU_tracts'}, inplace=True)
+clusters.drop(clusters[(clusters.mori == 'Background') & (clusters.JHU_tracts == 'Background')].index, inplace=True)
 clusters['mod'] = clusters['name'].str.split('-').apply(lambda x: x[-1])
 clusters['pool'] = clusters['name'].str.split('-').apply(lambda x: x[-2])
 clusters['dir'] = clusters['name'].str.split('-').apply(lambda x: x[-3])
 clusters['behav'] = clusters['name'].str.split('-').apply(lambda x: x[:-3]).str.join('-')
-clusters.head(15)
+clusters['clu_idx_fname'] = clusters[['pool', 'mod', 'behav', 'dir']].apply(lambda x : cluster_idx_fname_templ.format(pool=x[0], mod=x[1], behav=x[2], dir=x[3]), axis=1)
+clusters.head(100)
 
 
 # In[6]:
 
+# prepare data for correlations
 data = pd.DataFrame(index=list(set(clusters['pool'].values)), columns=list(set(clusters['mod'].values)))
 with WorkingContext(str(statsdir)):
     try:
