@@ -21,12 +21,12 @@ from pylabs.utils import run_subprocess, WorkingContext
 from pylabs.utils.paths import getnetworkdataroot
 fs = Path(getnetworkdataroot())
 project = 'bbc'
-statsdir = fs/project/'stats'/'py_correl_5thpass_cthr15_n5000' #'py_correl_2ndpass'   #'py_correl_5thpass_cthr15_n5000'    #'py_correl_3rdpass'   #'py_correl_5thpass'
+statsdir = fs/project/'stats'/'py_correl_2ndpass' #'py_correl_2ndpass'   #'py_correl_5thpass_cthr15_n5000'    #'py_correl_3rdpass'   #'py_correl_5thpass'
 fname_templ = '{pool}_{mod}.nii'
 cluster_idx_fname_templ = '{pool}_{mod}_{behav}_t{dir}_cluster_index.nii.gz'
 
 
-# In[2]:
+# In[5]:
 
 # prepare cluster roi data
 cluster_fname = 'cluster_report.csv'
@@ -39,16 +39,21 @@ clusters['dir'] = clusters['name'].str.split('-').apply(lambda x: x[-3])
 clusters['behav'] = clusters['name'].str.split('-').apply(lambda x: x[:-3]).str.join('-')
 clusters['clu_idx_fname'] = clusters[['pool', 'mod', 'behav', 'dir']].apply(lambda x : cluster_idx_fname_templ.format(pool=x[0], mod=x[1], behav=x[2], dir=x[3]), axis=1)
 with WorkingContext(str(statsdir)):
-    try:
-        for i, row in clusters.iterrows():
-            clusters.ix[i, 'idx_data'] = nib.load(row['clu_idx_fname'])
-    except:
-        print('an error has occured loading data into dataframe.')
-    else:
-        print('successfully entered all cluster index files to dataframe')
+#     try:
+    for i, row in clusters.iterrows():
+        clusters.set_value(i, 'idx_data', nib.load(row['clu_idx_fname'])).astype(object)
+#     except:
+#         print('an error has occured loading data into dataframe.')
+#     else:
+#         print('successfully entered all cluster index files to dataframe')
 
 
-# In[6]:
+# In[ ]:
+
+
+
+
+# In[7]:
 
 # prepare data for correlations
 data = pd.DataFrame(index=list(set(clusters['pool'].values)), columns=list(set(clusters['mod'].values)))
@@ -64,14 +69,57 @@ with WorkingContext(str(statsdir)):
         print('successfully entered all multimodal files to dataframe')
 
 
-# In[15]:
+# In[ ]:
+
+atlases
 
 
+# In[2]:
+
+from pathlib import *
+import pandas as pd
+import numpy as np
+import nibabel as nib
+import scipy.ndimage.measurements as measurements
+from pylabs.correlation.atlas import mori_region_labels, JHUtracts_region_labels
+from pylabs.utils.paths import getnetworkdataroot
+fs = Path(getnetworkdataroot())
+"""
+makes atlas objects.
+"""
+project = 'bbc'
+atlases_in_templ_sp_dir = fs/project/'reg'/'atlases_in_template_space'
+# define atlases for labeling in template space
+atlas_midx = pd.MultiIndex.from_arrays([['dwi', 'dwi', 'vbm', 'vbm'], ['mori', 'JHU_tracts', 'mori', 'JHU_tracts']])
+atlases = pd.DataFrame(index=['data'], columns=atlas_midx)
+# get atlas data
+mori_atlas_vbm = atlases_in_templ_sp_dir/'mori_atlas_reg2template.nii.gz'
+JHUtracts_atlas_vbm = atlases_in_templ_sp_dir/'ilabsJHUtracts0_atlas_reg2template.nii.gz'
+mori_atlas_dwi = atlases_in_templ_sp_dir/'mori_atlas_reg2template_resamp2dwi.nii.gz'
+JHUtracts_atlas_dwi = atlases_in_templ_sp_dir/'ilabsJHUtracts0_atlas_reg2template_resamp2dwi.nii.gz'
 
 
-# In[9]:
+# In[30]:
+
+atlases.sort_index(axis=1, inplace=True)
+atlases['vbm'].set_value('data', 'mori', nib.load(str(mori_atlas_vbm)))
+atlases['vbm'].set_value('data', 'JHU_tracts', nib.load(str(JHUtracts_atlas_vbm)))
+atlases['dwi'].set_value('data', 'mori', nib.load(str(mori_atlas_dwi)))
+atlases['dwi'].set_value('data', 'JHU_tracts', nib.load(str(JHUtracts_atlas_dwi)))
+atlases
 
 
+# In[51]:
+
+atlases.loc['data', ('dwi', 'JHU_tracts')].get_data().shape
+
+
+# In[1]:
+
+atlases['vbm'].set_value('data', 'mori', nib.load(str(mori_atlas_vbm)))
+atlases['vbm'].set_value('data', 'JHU_tracts', nib.load(str(JHUtracts_atlas_vbm)))
+atlases['dwi'].set_value('data', 'mori', nib.load(str(mori_atlas_dwi)).get_data())
+atlases['dwi'].set_value('data', 'JHU_tracts', nib.load(str(JHUtracts_atlas_dwi)))
 
 
 # In[ ]:

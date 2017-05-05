@@ -11801,7 +11801,7 @@ div#notebook {
 <span class="kn">from</span> <span class="nn">pylabs.utils.paths</span> <span class="kn">import</span> <span class="n">getnetworkdataroot</span>
 <span class="n">fs</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">getnetworkdataroot</span><span class="p">())</span>
 <span class="n">project</span> <span class="o">=</span> <span class="s1">&#39;bbc&#39;</span>
-<span class="n">statsdir</span> <span class="o">=</span> <span class="n">fs</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="s1">&#39;stats&#39;</span><span class="o">/</span><span class="s1">&#39;py_correl_5thpass_cthr15_n5000&#39;</span> <span class="c1">#&#39;py_correl_2ndpass&#39;   #&#39;py_correl_5thpass_cthr15_n5000&#39;    #&#39;py_correl_3rdpass&#39;   #&#39;py_correl_5thpass&#39;</span>
+<span class="n">statsdir</span> <span class="o">=</span> <span class="n">fs</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="s1">&#39;stats&#39;</span><span class="o">/</span><span class="s1">&#39;py_correl_2ndpass&#39;</span> <span class="c1">#&#39;py_correl_2ndpass&#39;   #&#39;py_correl_5thpass_cthr15_n5000&#39;    #&#39;py_correl_3rdpass&#39;   #&#39;py_correl_5thpass&#39;</span>
 <span class="n">fname_templ</span> <span class="o">=</span> <span class="s1">&#39;{pool}_{mod}.nii&#39;</span>
 <span class="n">cluster_idx_fname_templ</span> <span class="o">=</span> <span class="s1">&#39;{pool}_{mod}_{behav}_t{dir}_cluster_index.nii.gz&#39;</span>
 </pre></div>
@@ -11813,7 +11813,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[2]:</div>
+<div class="prompt input_prompt">In&nbsp;[5]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="c1"># prepare cluster roi data</span>
@@ -11827,13 +11827,13 @@ div#notebook {
 <span class="n">clusters</span><span class="p">[</span><span class="s1">&#39;behav&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">clusters</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[:</span><span class="o">-</span><span class="mi">3</span><span class="p">])</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">)</span>
 <span class="n">clusters</span><span class="p">[</span><span class="s1">&#39;clu_idx_fname&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">clusters</span><span class="p">[[</span><span class="s1">&#39;pool&#39;</span><span class="p">,</span> <span class="s1">&#39;mod&#39;</span><span class="p">,</span> <span class="s1">&#39;behav&#39;</span><span class="p">,</span> <span class="s1">&#39;dir&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span> <span class="p">:</span> <span class="n">cluster_idx_fname_templ</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">pool</span><span class="o">=</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">mod</span><span class="o">=</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">behav</span><span class="o">=</span><span class="n">x</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="nb">dir</span><span class="o">=</span><span class="n">x</span><span class="p">[</span><span class="mi">3</span><span class="p">]),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <span class="k">with</span> <span class="n">WorkingContext</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">statsdir</span><span class="p">)):</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">clusters</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
-            <span class="n">clusters</span><span class="o">.</span><span class="n">ix</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="s1">&#39;idx_data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">nib</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s1">&#39;clu_idx_fname&#39;</span><span class="p">])</span>
-    <span class="k">except</span><span class="p">:</span>
-        <span class="k">print</span><span class="p">(</span><span class="s1">&#39;an error has occured loading data into dataframe.&#39;</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">print</span><span class="p">(</span><span class="s1">&#39;successfully entered all cluster index files to dataframe&#39;</span><span class="p">)</span>
+<span class="c1">#     try:</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">clusters</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+        <span class="n">clusters</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="s1">&#39;idx_data&#39;</span><span class="p">,</span> <span class="n">nib</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s1">&#39;clu_idx_fname&#39;</span><span class="p">]))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">object</span><span class="p">)</span>
+<span class="c1">#     except:</span>
+<span class="c1">#         print(&#39;an error has occured loading data into dataframe.&#39;)</span>
+<span class="c1">#     else:</span>
+<span class="c1">#         print(&#39;successfully entered all cluster index files to dataframe&#39;)</span>
 </pre></div>
 
 </div>
@@ -11847,9 +11847,25 @@ div#notebook {
 <div class="output_area">
 <div class="prompt"></div>
 
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>an error has occured loading data into dataframe.
-</pre>
+<div class="output_subarea output_text output_error">
+<pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">FileNotFoundError</span>                         Traceback (most recent call last)
+<span class="ansi-green-fg">&lt;ipython-input-5-f62a8e8f797d&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span><span class="ansi-blue-fg">()</span>
+<span class="ansi-green-intense-fg ansi-bold">     12</span> <span class="ansi-red-fg">#     try:</span>
+<span class="ansi-green-intense-fg ansi-bold">     13</span>     <span class="ansi-green-fg">for</span> i<span class="ansi-blue-fg">,</span> row <span class="ansi-green-fg">in</span> clusters<span class="ansi-blue-fg">.</span>iterrows<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">---&gt; 14</span><span class="ansi-red-fg">         </span>clusters<span class="ansi-blue-fg">.</span>set_value<span class="ansi-blue-fg">(</span>i<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">&#39;idx_data&#39;</span><span class="ansi-blue-fg">,</span> nib<span class="ansi-blue-fg">.</span>load<span class="ansi-blue-fg">(</span>row<span class="ansi-blue-fg">[</span><span class="ansi-blue-fg">&#39;clu_idx_fname&#39;</span><span class="ansi-blue-fg">]</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">.</span>astype<span class="ansi-blue-fg">(</span>object<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">     15</span> <span class="ansi-red-fg">#     except:</span>
+<span class="ansi-green-intense-fg ansi-bold">     16</span> <span class="ansi-red-fg">#         print(&#39;an error has occured loading data into dataframe.&#39;)</span>
+
+<span class="ansi-green-fg">/Users/mrjeffs/Software/nibabel/nibabel/loadsave.pyc</span> in <span class="ansi-cyan-fg">load</span><span class="ansi-blue-fg">(filename, **kwargs)</span>
+<span class="ansi-green-intense-fg ansi-bold">     38</span>     &#39;&#39;&#39;
+<span class="ansi-green-intense-fg ansi-bold">     39</span>     <span class="ansi-green-fg">if</span> <span class="ansi-green-fg">not</span> op<span class="ansi-blue-fg">.</span>exists<span class="ansi-blue-fg">(</span>filename<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">---&gt; 40</span><span class="ansi-red-fg">         </span><span class="ansi-green-fg">raise</span> FileNotFoundError<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">&#34;No such file: &#39;%s&#39;&#34;</span> <span class="ansi-blue-fg">%</span> filename<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">     41</span>     sniff <span class="ansi-blue-fg">=</span> None
+<span class="ansi-green-intense-fg ansi-bold">     42</span>     <span class="ansi-green-fg">for</span> image_klass <span class="ansi-green-fg">in</span> all_image_classes<span class="ansi-blue-fg">:</span>
+
+<span class="ansi-red-fg">FileNotFoundError</span>: No such file: &#39;foster_GM_self-esteem-IAT_tpos_cluster_index.nii.gz&#39;</pre>
 </div>
 </div>
 
@@ -11859,7 +11875,20 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[6]:</div>
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span> 
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[7]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="c1"># prepare data for correlations</span>
@@ -11880,1065 +11909,6 @@ div#notebook {
 </div>
 </div>
 
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[15]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span> 
-</pre></div>
-
-</div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-<div class="prompt output_prompt">Out[15]:</div>
-
-
-<div class="output_html rendered_html output_subarea output_execute_result">
-<div>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>k</th>
-      <th>x</th>
-      <th>y</th>
-      <th>z</th>
-      <th>name</th>
-      <th>mori</th>
-      <th>JHU_tracts</th>
-      <th>mod</th>
-      <th>pool</th>
-      <th>dir</th>
-      <th>behav</th>
-      <th>clu_idx_fname</th>
-      <th>idx_data</th>
-    </tr>
-    <tr>
-      <th>cluster-index</th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>201</th>
-      <td>16</td>
-      <td>76</td>
-      <td>41</td>
-      <td>35</td>
-      <td>PPVTSS-pos-foster-FA</td>
-      <td>CEREBELLUM</td>
-      <td>Cerebellum_L</td>
-      <td>FA</td>
-      <td>foster</td>
-      <td>pos</td>
-      <td>PPVTSS</td>
-      <td>foster_FA_PPVTSS_tpos_cluster_index.nii.gz</td>
-      <td>1.0</td>
-    </tr>
-    <tr>
-      <th>208</th>
-      <td>21</td>
-      <td>74</td>
-      <td>38</td>
-      <td>36</td>
-      <td>CTOPPphoaCS-pos-foster-FA</td>
-      <td>CEREBELLUM</td>
-      <td>Cerebellum_L</td>
-      <td>FA</td>
-      <td>foster</td>
-      <td>pos</td>
-      <td>CTOPPphoaCS</td>
-      <td>foster_FA_CTOPPphoaCS_tpos_cluster_index.nii.gz</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>313</th>
-      <td>23</td>
-      <td>76</td>
-      <td>50</td>
-      <td>57</td>
-      <td>PPVTSS-pos-foster-MD</td>
-      <td>Fornix(cres)_Stria_terminalis_left</td>
-      <td>Inferior_fronto_occipital_fasciculus_L</td>
-      <td>MD</td>
-      <td>foster</td>
-      <td>pos</td>
-      <td>PPVTSS</td>
-      <td>foster_MD_PPVTSS_tpos_cluster_index.nii.gz</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>279</th>
-      <td>21</td>
-      <td>63</td>
-      <td>38</td>
-      <td>81</td>
-      <td>CTOPPphoaCS-pos-foster-MD</td>
-      <td>Substancia_Nigra_left</td>
-      <td>Background</td>
-      <td>MD</td>
-      <td>foster</td>
-      <td>pos</td>
-      <td>CTOPPphoaCS</td>
-      <td>foster_MD_CTOPPphoaCS_tpos_cluster_index.nii.gz</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>256</th>
-      <td>19</td>
-      <td>58</td>
-      <td>80</td>
-      <td>64</td>
-      <td>CTOPPphoaCS-pos-foster-MD</td>
-      <td>CAUDATE_NUCLEUS_left</td>
-      <td>Background</td>
-      <td>MD</td>
-      <td>foster</td>
-      <td>pos</td>
-      <td>CTOPPphoaCS</td>
-      <td>foster_MD_CTOPPphoaCS_tpos_cluster_index.nii.gz</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>229</th>
-      <td>18</td>
-      <td>54</td>
-      <td>80</td>
-      <td>60</td>
-      <td>CTOPPphoaCS-pos-foster-MD</td>
-      <td>CAUDATE_NUCLEUS_left</td>
-      <td>Background</td>
-      <td>MD</td>
-      <td>foster</td>
-      <td>pos</td>
-      <td>CTOPPphoaCS</td>
-      <td>foster_MD_CTOPPphoaCS_tpos_cluster_index.nii.gz</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>239</th>
-      <td>21</td>
-      <td>63</td>
-      <td>38</td>
-      <td>81</td>
-      <td>CTOPPphoaCS-pos-foster-RD</td>
-      <td>Substancia_Nigra_left</td>
-      <td>Background</td>
-      <td>RD</td>
-      <td>foster</td>
-      <td>pos</td>
-      <td>CTOPPphoaCS</td>
-      <td>foster_RD_CTOPPphoaCS_tpos_cluster_index.nii.gz</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>315</th>
-      <td>37</td>
-      <td>76</td>
-      <td>48</td>
-      <td>58</td>
-      <td>PPVTSS-pos-foster-AD</td>
-      <td>Cingulum_(hippocampus)_left</td>
-      <td>Superior_longitudinal_fasciculus_L</td>
-      <td>AD</td>
-      <td>foster</td>
-      <td>pos</td>
-      <td>PPVTSS</td>
-      <td>foster_AD_PPVTSS_tpos_cluster_index.nii.gz</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>240</th>
-      <td>34</td>
-      <td>56</td>
-      <td>70</td>
-      <td>53</td>
-      <td>PPVTSS-pos-foster-AD</td>
-      <td>Cerebral_peduncle_left</td>
-      <td>Anterior_thalamic_radiation_L</td>
-      <td>AD</td>
-      <td>foster</td>
-      <td>pos</td>
-      <td>PPVTSS</td>
-      <td>foster_AD_PPVTSS_tpos_cluster_index.nii.gz</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>121</th>
-      <td>16</td>
-      <td>39</td>
-      <td>63</td>
-      <td>54</td>
-      <td>PPVTSS-pos-foster-AD</td>
-      <td>MIDDLE_TEMPORAL_GYRUS_right</td>
-      <td>Background</td>
-      <td>AD</td>
-      <td>foster</td>
-      <td>pos</td>
-      <td>PPVTSS</td>
-      <td>foster_AD_PPVTSS_tpos_cluster_index.nii.gz</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>282</th>
-      <td>18</td>
-      <td>55</td>
-      <td>94</td>
-      <td>66</td>
-      <td>CTOPPphoaCS-pos-foster-AD</td>
-      <td>Cingulum_(cingulate_gyrus)_left</td>
-      <td>Cingulum_(cingulate_gyrus)_L</td>
-      <td>AD</td>
-      <td>foster</td>
-      <td>pos</td>
-      <td>CTOPPphoaCS</td>
-      <td>foster_AD_CTOPPphoaCS_tpos_cluster_index.nii.gz</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>246</th>
-      <td>30</td>
-      <td>76</td>
-      <td>47</td>
-      <td>58</td>
-      <td>CTOPPphomCS-pos-foster-AD</td>
-      <td>Fornix(cres)_Stria_terminalis_left</td>
-      <td>Superior_longitudinal_fasciculus_(temporal_part)_L</td>
-      <td>AD</td>
-      <td>foster</td>
-      <td>pos</td>
-      <td>CTOPPphomCS</td>
-      <td>foster_AD_CTOPPphomCS_tpos_cluster_index.nii.gz</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>116</th>
-      <td>270</td>
-      <td>111</td>
-      <td>67</td>
-      <td>69</td>
-      <td>PPVTSS-pos-foster-GM</td>
-      <td>CEREBELLUM</td>
-      <td>Cerebellum_L</td>
-      <td>GM</td>
-      <td>foster</td>
-      <td>pos</td>
-      <td>PPVTSS</td>
-      <td>foster_GM_PPVTSS_tpos_cluster_index.nii.gz</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>109</th>
-      <td>178</td>
-      <td>107</td>
-      <td>53</td>
-      <td>94</td>
-      <td>PPVTSS-pos-foster-GM</td>
-      <td>CEREBELLUM</td>
-      <td>Cerebellum_L</td>
-      <td>GM</td>
-      <td>foster</td>
-      <td>pos</td>
-      <td>PPVTSS</td>
-      <td>foster_GM_PPVTSS_tpos_cluster_index.nii.gz</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>100</th>
-      <td>125</td>
-      <td>102</td>
-      <td>151</td>
-      <td>190</td>
-      <td>PPVTSS-pos-foster-GM</td>
-      <td>MIDDLE_FRONTAL_GYRUS_left</td>
-      <td>Background</td>
-      <td>GM</td>
-      <td>foster</td>
-      <td>pos</td>
-      <td>PPVTSS</td>
-      <td>foster_GM_PPVTSS_tpos_cluster_index.nii.gz</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>121</th>
-      <td>33</td>
-      <td>126</td>
-      <td>158</td>
-      <td>150</td>
-      <td>PPVTSS-pos-foster-GM</td>
-      <td>INFERIOR_FRONTAL_GYRUS_left</td>
-      <td>Background</td>
-      <td>GM</td>
-      <td>foster</td>
-      <td>pos</td>
-      <td>PPVTSS</td>
-      <td>foster_GM_PPVTSS_tpos_cluster_index.nii.gz</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>92</th>
-      <td>24</td>
-      <td>98</td>
-      <td>157</td>
-      <td>189</td>
-      <td>PPVTSS-pos-foster-GM</td>
-      <td>SUPERIOR_FRONTAL_GYRUS_left</td>
-      <td>Background</td>
-      <td>GM</td>
-      <td>foster</td>
-      <td>pos</td>
-      <td>PPVTSS</td>
-      <td>foster_GM_PPVTSS_tpos_cluster_index.nii.gz</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>101</th>
-      <td>22</td>
-      <td>128</td>
-      <td>70</td>
-      <td>181</td>
-      <td>CTOPPphoaCS-pos-foster-GM</td>
-      <td>ANGULAR_GYRUS_left</td>
-      <td>Background</td>
-      <td>GM</td>
-      <td>foster</td>
-      <td>pos</td>
-      <td>CTOPPphoaCS</td>
-      <td>foster_GM_CTOPPphoaCS_tpos_cluster_index.nii.gz</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>102</th>
-      <td>22</td>
-      <td>128</td>
-      <td>161</td>
-      <td>146</td>
-      <td>CTOPPphoaCS-pos-foster-GM</td>
-      <td>INFERIOR_FRONTAL_GYRUS_left</td>
-      <td>Background</td>
-      <td>GM</td>
-      <td>foster</td>
-      <td>pos</td>
-      <td>CTOPPphoaCS</td>
-      <td>foster_GM_CTOPPphoaCS_tpos_cluster_index.nii.gz</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>116</th>
-      <td>30</td>
-      <td>127</td>
-      <td>93</td>
-      <td>183</td>
-      <td>PATrhyTotSS-pos-foster-GM</td>
-      <td>SUPRAMARGINAL_WM_left</td>
-      <td>Superior_longitudinal_fasciculus_L</td>
-      <td>GM</td>
-      <td>foster</td>
-      <td>pos</td>
-      <td>PATrhyTotSS</td>
-      <td>foster_GM_PATrhyTotSS_tpos_cluster_index.nii.gz</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>100</th>
-      <td>22</td>
-      <td>107</td>
-      <td>192</td>
-      <td>156</td>
-      <td>PATrhyTotSS-pos-foster-GM</td>
-      <td>MIDDLE_FRONTAL_GYRUS_left</td>
-      <td>Background</td>
-      <td>GM</td>
-      <td>foster</td>
-      <td>pos</td>
-      <td>PATrhyTotSS</td>
-      <td>foster_GM_PATrhyTotSS_tpos_cluster_index.nii.gz</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>58</th>
-      <td>16</td>
-      <td>73</td>
-      <td>88</td>
-      <td>102</td>
-      <td>PATrhyTotSS-pos-foster-GM</td>
-      <td>Superior_cerebellar_peduncle_right</td>
-      <td>Cerebellum_R</td>
-      <td>GM</td>
-      <td>foster</td>
-      <td>pos</td>
-      <td>PATrhyTotSS</td>
-      <td>foster_GM_PATrhyTotSS_tpos_cluster_index.nii.gz</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>58</th>
-      <td>63</td>
-      <td>131</td>
-      <td>96</td>
-      <td>145</td>
-      <td>PATrhyTotSS-neg-foster-GM</td>
-      <td>SUPERIOR_TEMPORAL_WM_left</td>
-      <td>Superior_longitudinal_fasciculus_L</td>
-      <td>GM</td>
-      <td>foster</td>
-      <td>neg</td>
-      <td>PATrhyTotSS</td>
-      <td>foster_GM_PATrhyTotSS_tneg_cluster_index.nii.gz</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>58</th>
-      <td>23</td>
-      <td>99</td>
-      <td>73</td>
-      <td>179</td>
-      <td>CTOPPphomCS-neg-foster-GM</td>
-      <td>SUPERIOR_PARIETAL_WM_left</td>
-      <td>Background</td>
-      <td>GM</td>
-      <td>foster</td>
-      <td>neg</td>
-      <td>CTOPPphomCS</td>
-      <td>foster_GM_CTOPPphomCS_tneg_cluster_index.nii.gz</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>58</th>
-      <td>45</td>
-      <td>99</td>
-      <td>123</td>
-      <td>133</td>
-      <td>STIMQ-PSDSscaleScore1-to-15-SUM-neg-foster-GM</td>
-      <td>GLOBUS_PALLIDUS_left</td>
-      <td>Background</td>
-      <td>GM</td>
-      <td>foster</td>
-      <td>neg</td>
-      <td>STIMQ-PSDSscaleScore1-to-15-SUM</td>
-      <td>foster_GM_STIMQ-PSDSscaleScore1-to-15-SUM_tneg_cluster_index.nii.gz</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>108</th>
-      <td>752</td>
-      <td>101</td>
-      <td>147</td>
-      <td>181</td>
-      <td>self-esteem-IAT-pos-foster-WM</td>
-      <td>MIDDLE_FRONTAL_GYRUS_left</td>
-      <td>Background</td>
-      <td>WM</td>
-      <td>foster</td>
-      <td>pos</td>
-      <td>self-esteem-IAT</td>
-      <td>foster_WM_self-esteem-IAT_tpos_cluster_index.nii.gz</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>104</th>
-      <td>204</td>
-      <td>99</td>
-      <td>190</td>
-      <td>158</td>
-      <td>self-esteem-IAT-pos-foster-WM</td>
-      <td>MIDDLE_FRONTAL_GYRUS_left</td>
-      <td>Background</td>
-      <td>WM</td>
-      <td>foster</td>
-      <td>pos</td>
-      <td>self-esteem-IAT</td>
-      <td>foster_WM_self-esteem-IAT_tpos_cluster_index.nii.gz</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>116</th>
-      <td>158</td>
-      <td>111</td>
-      <td>105</td>
-      <td>143</td>
-      <td>self-esteem-IAT-pos-foster-WM</td>
-      <td>SUPERIOR_TEMPORAL_GYRUS</td>
-      <td>Background</td>
-      <td>WM</td>
-      <td>foster</td>
-      <td>pos</td>
-      <td>self-esteem-IAT</td>
-      <td>foster_WM_self-esteem-IAT_tpos_cluster_index.nii.gz</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>154</th>
-      <td>83</td>
-      <td>139</td>
-      <td>124</td>
-      <td>156</td>
-      <td>self-esteem-IAT-pos-foster-WM</td>
-      <td>POSTCENTRAL_GYRUS_left</td>
-      <td>Background</td>
-      <td>WM</td>
-      <td>foster</td>
-      <td>pos</td>
-      <td>self-esteem-IAT</td>
-      <td>foster_WM_self-esteem-IAT_tpos_cluster_index.nii.gz</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>100</th>
-      <td>39</td>
-      <td>96</td>
-      <td>164</td>
-      <td>122</td>
-      <td>self-esteem-IAT-pos-foster-WM</td>
-      <td>LATERAL_FRONTO_ORBITAL_WM_left</td>
-      <td>Background</td>
-      <td>WM</td>
-      <td>foster</td>
-      <td>pos</td>
-      <td>self-esteem-IAT</td>
-      <td>foster_WM_self-esteem-IAT_tpos_cluster_index.nii.gz</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>...</th>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-    </tr>
-    <tr>
-      <th>136</th>
-      <td>52</td>
-      <td>98</td>
-      <td>183</td>
-      <td>175</td>
-      <td>CTOPPrnCS-neg-control-GM</td>
-      <td>MIDDLE_FRONTAL_GYRUS_left</td>
-      <td>Background</td>
-      <td>GM</td>
-      <td>control</td>
-      <td>neg</td>
-      <td>CTOPPrnCS</td>
-      <td>control_GM_CTOPPrnCS_tneg_cluster_index.nii.gz</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>171</th>
-      <td>33</td>
-      <td>131</td>
-      <td>78</td>
-      <td>108</td>
-      <td>CTOPPrnCS-neg-control-GM</td>
-      <td>FUSIFORM_GYRUS_left</td>
-      <td>Inferior_longitudinal_fasciculus_L</td>
-      <td>GM</td>
-      <td>control</td>
-      <td>neg</td>
-      <td>CTOPPrnCS</td>
-      <td>control_GM_CTOPPrnCS_tneg_cluster_index.nii.gz</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>149</th>
-      <td>25</td>
-      <td>114</td>
-      <td>86</td>
-      <td>180</td>
-      <td>CTOPPrnCS-neg-control-GM</td>
-      <td>SUPERIOR_PARIETAL_WM_left</td>
-      <td>Superior_longitudinal_fasciculus_L</td>
-      <td>GM</td>
-      <td>control</td>
-      <td>neg</td>
-      <td>CTOPPrnCS</td>
-      <td>control_GM_CTOPPrnCS_tneg_cluster_index.nii.gz</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>102</th>
-      <td>23</td>
-      <td>84</td>
-      <td>61</td>
-      <td>180</td>
-      <td>CTOPPrnCS-neg-control-GM</td>
-      <td>PRE_CUNEUS_right</td>
-      <td>Background</td>
-      <td>GM</td>
-      <td>control</td>
-      <td>neg</td>
-      <td>CTOPPrnCS</td>
-      <td>control_GM_CTOPPrnCS_tneg_cluster_index.nii.gz</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>154</th>
-      <td>22</td>
-      <td>117</td>
-      <td>70</td>
-      <td>118</td>
-      <td>CTOPPrnCS-neg-control-GM</td>
-      <td>INFERIOR_OCCIPITAL_WM_left</td>
-      <td>Inferior_fronto_occipital_fasciculus_L</td>
-      <td>GM</td>
-      <td>control</td>
-      <td>neg</td>
-      <td>CTOPPrnCS</td>
-      <td>control_GM_CTOPPrnCS_tneg_cluster_index.nii.gz</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>152</th>
-      <td>20</td>
-      <td>116</td>
-      <td>133</td>
-      <td>132</td>
-      <td>CTOPPrnCS-neg-control-GM</td>
-      <td>INSULAR</td>
-      <td>Background</td>
-      <td>GM</td>
-      <td>control</td>
-      <td>neg</td>
-      <td>CTOPPrnCS</td>
-      <td>control_GM_CTOPPrnCS_tneg_cluster_index.nii.gz</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>127</th>
-      <td>18</td>
-      <td>92</td>
-      <td>72</td>
-      <td>142</td>
-      <td>CTOPPrnCS-neg-control-GM</td>
-      <td>PRE_CUNEUS_left</td>
-      <td>Cingulum_(cingulate_gyrus)_L</td>
-      <td>GM</td>
-      <td>control</td>
-      <td>neg</td>
-      <td>CTOPPrnCS</td>
-      <td>control_GM_CTOPPrnCS_tneg_cluster_index.nii.gz</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>178</th>
-      <td>15</td>
-      <td>137</td>
-      <td>116</td>
-      <td>139</td>
-      <td>CTOPPrnCS-neg-control-GM</td>
-      <td>SUPERIOR_TEMPORAL_GYRUS</td>
-      <td>Background</td>
-      <td>GM</td>
-      <td>control</td>
-      <td>neg</td>
-      <td>CTOPPrnCS</td>
-      <td>control_GM_CTOPPrnCS_tneg_cluster_index.nii.gz</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>58</th>
-      <td>181</td>
-      <td>98</td>
-      <td>151</td>
-      <td>197</td>
-      <td>STIMQ-PSDSscaleScore1-to-15-SUM-pos-control-GM</td>
-      <td>SUPERIOR_FRONTAL_GYRUS_left</td>
-      <td>Background</td>
-      <td>GM</td>
-      <td>control</td>
-      <td>pos</td>
-      <td>STIMQ-PSDSscaleScore1-to-15-SUM</td>
-      <td>control_GM_STIMQ-PSDSscaleScore1-to-15-SUM_tpos_cluster_index.nii.gz</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>109</th>
-      <td>44</td>
-      <td>138</td>
-      <td>120</td>
-      <td>146</td>
-      <td>STIMQ-PSDSscaleScore1-to-15-SUM-neg-control-GM</td>
-      <td>POSTCENTRAL_GYRUS_left</td>
-      <td>Background</td>
-      <td>GM</td>
-      <td>control</td>
-      <td>neg</td>
-      <td>STIMQ-PSDSscaleScore1-to-15-SUM</td>
-      <td>control_GM_STIMQ-PSDSscaleScore1-to-15-SUM_tneg_cluster_index.nii.gz</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>101</th>
-      <td>24</td>
-      <td>132</td>
-      <td>131</td>
-      <td>174</td>
-      <td>STIMQ-PSDSscaleScore1-to-15-SUM-neg-control-GM</td>
-      <td>PRECENTRAL_GYRUS_left</td>
-      <td>Superior_longitudinal_fasciculus_L</td>
-      <td>GM</td>
-      <td>control</td>
-      <td>neg</td>
-      <td>STIMQ-PSDSscaleScore1-to-15-SUM</td>
-      <td>control_GM_STIMQ-PSDSscaleScore1-to-15-SUM_tneg_cluster_index.nii.gz</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>116</th>
-      <td>62</td>
-      <td>112</td>
-      <td>160</td>
-      <td>175</td>
-      <td>TOPELeliSS-neg-control-WM</td>
-      <td>MIDDLE_FRONTAL_GYRUS_left</td>
-      <td>Background</td>
-      <td>WM</td>
-      <td>control</td>
-      <td>neg</td>
-      <td>TOPELeliSS</td>
-      <td>control_WM_TOPELeliSS_tneg_cluster_index.nii.gz</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>121</th>
-      <td>16</td>
-      <td>116</td>
-      <td>44</td>
-      <td>136</td>
-      <td>TOPELeliSS-neg-control-WM</td>
-      <td>MIDDLE_OCCIPITAL_GYRUS</td>
-      <td>Background</td>
-      <td>WM</td>
-      <td>control</td>
-      <td>neg</td>
-      <td>TOPELeliSS</td>
-      <td>control_WM_TOPELeliSS_tneg_cluster_index.nii.gz</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>104</th>
-      <td>15</td>
-      <td>102</td>
-      <td>204</td>
-      <td>154</td>
-      <td>TOPELeliSS-neg-control-WM</td>
-      <td>MIDDLE_FRONTAL_GYRUS_left</td>
-      <td>Background</td>
-      <td>WM</td>
-      <td>control</td>
-      <td>neg</td>
-      <td>TOPELeliSS</td>
-      <td>control_WM_TOPELeliSS_tneg_cluster_index.nii.gz</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>100</th>
-      <td>481</td>
-      <td>88</td>
-      <td>71</td>
-      <td>94</td>
-      <td>PPVTSS-neg-control-WM</td>
-      <td>CEREBELLUM</td>
-      <td>Cerebellum_L</td>
-      <td>WM</td>
-      <td>control</td>
-      <td>neg</td>
-      <td>PPVTSS</td>
-      <td>control_WM_PPVTSS_tneg_cluster_index.nii.gz</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>149</th>
-      <td>88</td>
-      <td>136</td>
-      <td>125</td>
-      <td>148</td>
-      <td>PPVTSS-neg-control-WM</td>
-      <td>POSTCENTRAL_GYRUS_left</td>
-      <td>Superior_longitudinal_fasciculus_L</td>
-      <td>WM</td>
-      <td>control</td>
-      <td>neg</td>
-      <td>PPVTSS</td>
-      <td>control_WM_PPVTSS_tneg_cluster_index.nii.gz</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>129</th>
-      <td>83</td>
-      <td>119</td>
-      <td>134</td>
-      <td>144</td>
-      <td>PPVTSS-neg-control-WM</td>
-      <td>PRECENTRAL_GYRUS_left</td>
-      <td>Superior_longitudinal_fasciculus_L</td>
-      <td>WM</td>
-      <td>control</td>
-      <td>neg</td>
-      <td>PPVTSS</td>
-      <td>control_WM_PPVTSS_tneg_cluster_index.nii.gz</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>142</th>
-      <td>69</td>
-      <td>127</td>
-      <td>83</td>
-      <td>107</td>
-      <td>PPVTSS-neg-control-WM</td>
-      <td>INFERIOR_TEMPORAL_GYRUS</td>
-      <td>Background</td>
-      <td>WM</td>
-      <td>control</td>
-      <td>neg</td>
-      <td>PPVTSS</td>
-      <td>control_WM_PPVTSS_tneg_cluster_index.nii.gz</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>109</th>
-      <td>66</td>
-      <td>98</td>
-      <td>43</td>
-      <td>158</td>
-      <td>PPVTSS-neg-control-WM</td>
-      <td>CUNEUS_left</td>
-      <td>Background</td>
-      <td>WM</td>
-      <td>control</td>
-      <td>neg</td>
-      <td>PPVTSS</td>
-      <td>control_WM_PPVTSS_tneg_cluster_index.nii.gz</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>102</th>
-      <td>47</td>
-      <td>90</td>
-      <td>160</td>
-      <td>172</td>
-      <td>PPVTSS-neg-control-WM</td>
-      <td>SUPERIOR_FRONTAL_WM_left</td>
-      <td>Cingulum_(cingulate_gyrus)_L</td>
-      <td>WM</td>
-      <td>control</td>
-      <td>neg</td>
-      <td>PPVTSS</td>
-      <td>control_WM_PPVTSS_tneg_cluster_index.nii.gz</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>133</th>
-      <td>38</td>
-      <td>120</td>
-      <td>85</td>
-      <td>154</td>
-      <td>PPVTSS-neg-control-WM</td>
-      <td>ANGULAR_GYRUS_left</td>
-      <td>Superior_longitudinal_fasciculus_L</td>
-      <td>WM</td>
-      <td>control</td>
-      <td>neg</td>
-      <td>PPVTSS</td>
-      <td>control_WM_PPVTSS_tneg_cluster_index.nii.gz</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>83</th>
-      <td>27</td>
-      <td>82</td>
-      <td>140</td>
-      <td>189</td>
-      <td>PPVTSS-neg-control-WM</td>
-      <td>SUPERIOR_FRONTAL_GYRUS_left</td>
-      <td>Background</td>
-      <td>WM</td>
-      <td>control</td>
-      <td>neg</td>
-      <td>PPVTSS</td>
-      <td>control_WM_PPVTSS_tneg_cluster_index.nii.gz</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>116</th>
-      <td>15</td>
-      <td>110</td>
-      <td>42</td>
-      <td>155</td>
-      <td>PPVTSS-neg-control-WM</td>
-      <td>SUPERIOR_OCCIPITAL_GYRUS_left</td>
-      <td>Forceps_major</td>
-      <td>WM</td>
-      <td>control</td>
-      <td>neg</td>
-      <td>PPVTSS</td>
-      <td>control_WM_PPVTSS_tneg_cluster_index.nii.gz</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>73</th>
-      <td>27</td>
-      <td>100</td>
-      <td>41</td>
-      <td>137</td>
-      <td>CTOPPphomCS-neg-control-WM</td>
-      <td>MIDDLE_OCCIPITAL_GYRUS</td>
-      <td>Forceps_major</td>
-      <td>WM</td>
-      <td>control</td>
-      <td>neg</td>
-      <td>CTOPPphomCS</td>
-      <td>control_WM_CTOPPphomCS_tneg_cluster_index.nii.gz</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>83</th>
-      <td>628</td>
-      <td>84</td>
-      <td>74</td>
-      <td>177</td>
-      <td>PATsegTotSS-neg-control-WM</td>
-      <td>PRE_CUNEUS_right</td>
-      <td>Background</td>
-      <td>WM</td>
-      <td>control</td>
-      <td>neg</td>
-      <td>PATsegTotSS</td>
-      <td>control_WM_PATsegTotSS_tneg_cluster_index.nii.gz</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>116</th>
-      <td>185</td>
-      <td>128</td>
-      <td>58</td>
-      <td>117</td>
-      <td>PATsegTotSS-neg-control-WM</td>
-      <td>INFERIOR_OCCIPITAL_GYRUS</td>
-      <td>Inferior_longitudinal_fasciculus_L</td>
-      <td>WM</td>
-      <td>control</td>
-      <td>neg</td>
-      <td>PATsegTotSS</td>
-      <td>control_WM_PATsegTotSS_tneg_cluster_index.nii.gz</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>121</th>
-      <td>167</td>
-      <td>137</td>
-      <td>124</td>
-      <td>148</td>
-      <td>PATsegTotSS-neg-control-WM</td>
-      <td>POSTCENTRAL_GYRUS_left</td>
-      <td>Background</td>
-      <td>WM</td>
-      <td>control</td>
-      <td>neg</td>
-      <td>PATsegTotSS</td>
-      <td>control_WM_PATsegTotSS_tneg_cluster_index.nii.gz</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>101</th>
-      <td>117</td>
-      <td>110</td>
-      <td>40</td>
-      <td>154</td>
-      <td>PATsegTotSS-neg-control-WM</td>
-      <td>SUPERIOR_OCCIPITAL_GYRUS_left</td>
-      <td>Background</td>
-      <td>WM</td>
-      <td>control</td>
-      <td>neg</td>
-      <td>PATsegTotSS</td>
-      <td>control_WM_PATsegTotSS_tneg_cluster_index.nii.gz</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>104</th>
-      <td>34</td>
-      <td>118</td>
-      <td>154</td>
-      <td>180</td>
-      <td>PATsegTotSS-neg-control-WM</td>
-      <td>MIDDLE_FRONTAL_GYRUS_left</td>
-      <td>Background</td>
-      <td>WM</td>
-      <td>control</td>
-      <td>neg</td>
-      <td>PATsegTotSS</td>
-      <td>control_WM_PATsegTotSS_tneg_cluster_index.nii.gz</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>100</th>
-      <td>15</td>
-      <td>106</td>
-      <td>148</td>
-      <td>180</td>
-      <td>PATsegTotSS-neg-control-WM</td>
-      <td>MIDDLE_FRONTAL_WM_left</td>
-      <td>Background</td>
-      <td>WM</td>
-      <td>control</td>
-      <td>neg</td>
-      <td>PATsegTotSS</td>
-      <td>control_WM_PATsegTotSS_tneg_cluster_index.nii.gz</td>
-      <td>NaN</td>
-    </tr>
-  </tbody>
-</table>
-<p>140 rows × 13 columns</p>
-</div>
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[9]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span> 
-</pre></div>
-
-</div>
-</div>
-</div>
-
 <div class="output_wrapper">
 <div class="output">
 
@@ -12947,288 +11917,240 @@ div#notebook {
 <div class="prompt"></div>
 
 <div class="output_subarea output_stream output_stdout output_text">
-<pre>201
-foster_FA_PPVTSS_tpos_cluster_index.nii.gz
-208
-foster_FA_CTOPPphoaCS_tpos_cluster_index.nii.gz
-313
-foster_MD_PPVTSS_tpos_cluster_index.nii.gz
-279
-foster_MD_CTOPPphoaCS_tpos_cluster_index.nii.gz
-256
-foster_MD_CTOPPphoaCS_tpos_cluster_index.nii.gz
-229
-foster_MD_CTOPPphoaCS_tpos_cluster_index.nii.gz
-239
-foster_RD_CTOPPphoaCS_tpos_cluster_index.nii.gz
-315
-foster_AD_PPVTSS_tpos_cluster_index.nii.gz
-240
-foster_AD_PPVTSS_tpos_cluster_index.nii.gz
-121
-foster_AD_PPVTSS_tpos_cluster_index.nii.gz
-282
-foster_AD_CTOPPphoaCS_tpos_cluster_index.nii.gz
-246
-foster_AD_CTOPPphomCS_tpos_cluster_index.nii.gz
-116
-foster_GM_PPVTSS_tpos_cluster_index.nii.gz
-109
-foster_GM_PPVTSS_tpos_cluster_index.nii.gz
-100
-foster_GM_PPVTSS_tpos_cluster_index.nii.gz
-121
-foster_GM_PPVTSS_tpos_cluster_index.nii.gz
-92
-foster_GM_PPVTSS_tpos_cluster_index.nii.gz
-101
-foster_GM_CTOPPphoaCS_tpos_cluster_index.nii.gz
-102
-foster_GM_CTOPPphoaCS_tpos_cluster_index.nii.gz
-116
-foster_GM_PATrhyTotSS_tpos_cluster_index.nii.gz
-100
-foster_GM_PATrhyTotSS_tpos_cluster_index.nii.gz
-58
-foster_GM_PATrhyTotSS_tpos_cluster_index.nii.gz
-58
-foster_GM_PATrhyTotSS_tneg_cluster_index.nii.gz
-58
-foster_GM_CTOPPphomCS_tneg_cluster_index.nii.gz
-58
-foster_GM_STIMQ-PSDSscaleScore1-to-15-SUM_tneg_cluster_index.nii.gz
-108
-foster_WM_self-esteem-IAT_tpos_cluster_index.nii.gz
-104
-foster_WM_self-esteem-IAT_tpos_cluster_index.nii.gz
-116
-foster_WM_self-esteem-IAT_tpos_cluster_index.nii.gz
-154
-foster_WM_self-esteem-IAT_tpos_cluster_index.nii.gz
-100
-foster_WM_self-esteem-IAT_tpos_cluster_index.nii.gz
-101
-foster_WM_self-esteem-IAT_tpos_cluster_index.nii.gz
-121
-foster_WM_TOPELeliSS_tneg_cluster_index.nii.gz
-155
-foster_WM_TOPELeliSS_tneg_cluster_index.nii.gz
-205
-foster_WM_TOPELeliSS_tneg_cluster_index.nii.gz
-138
-foster_WM_TOPELeliSS_tneg_cluster_index.nii.gz
-124
-foster_WM_TOPELeliSS_tneg_cluster_index.nii.gz
-157
-foster_WM_TOPELeliSS_tneg_cluster_index.nii.gz
-101
-foster_WM_TOPELeliSS_tneg_cluster_index.nii.gz
-159
-foster_WM_TOPELeliSS_tneg_cluster_index.nii.gz
-162
-foster_WM_TOPELeliSS_tneg_cluster_index.nii.gz
-131
-foster_WM_PPVTSS_tneg_cluster_index.nii.gz
-245
-foster_WM_PPVTSS_tneg_cluster_index.nii.gz
-101
-foster_WM_PPVTSS_tneg_cluster_index.nii.gz
-248
-foster_WM_PPVTSS_tneg_cluster_index.nii.gz
-167
-foster_WM_PPVTSS_tneg_cluster_index.nii.gz
-211
-foster_WM_PPVTSS_tneg_cluster_index.nii.gz
-283
-foster_WM_PPVTSS_tneg_cluster_index.nii.gz
-278
-foster_WM_PPVTSS_tneg_cluster_index.nii.gz
-116
-foster_WM_PPVTSS_tneg_cluster_index.nii.gz
-268
-foster_WM_PPVTSS_tneg_cluster_index.nii.gz
-171
-foster_WM_PPVTSS_tneg_cluster_index.nii.gz
-228
-foster_WM_PPVTSS_tneg_cluster_index.nii.gz
-242
-foster_WM_PPVTSS_tneg_cluster_index.nii.gz
-187
-foster_WM_PPVTSS_tneg_cluster_index.nii.gz
-136
-foster_WM_PPVTSS_tneg_cluster_index.nii.gz
-238
-foster_WM_PPVTSS_tneg_cluster_index.nii.gz
-101
-foster_WM_PATrhyTotSS_tneg_cluster_index.nii.gz
-115
-foster_WM_CTOPPphomCS_tneg_cluster_index.nii.gz
-142
-foster_WM_CTOPPphomCS_tneg_cluster_index.nii.gz
-120
-foster_WM_CTOPPphomCS_tneg_cluster_index.nii.gz
-171
-foster_WM_CTOPPphomCS_tneg_cluster_index.nii.gz
-152
-foster_WM_CTOPPphomCS_tneg_cluster_index.nii.gz
-157
-foster_WM_CTOPPphomCS_tneg_cluster_index.nii.gz
-121
-foster_WM_CTOPPphomCS_tneg_cluster_index.nii.gz
-232
-foster_WM_CTOPPphomCS_tneg_cluster_index.nii.gz
-202
-foster_WM_CTOPPphomCS_tneg_cluster_index.nii.gz
-104
-foster_WM_CTOPPphomCS_tneg_cluster_index.nii.gz
-259
-foster_WM_CTOPPphomCS_tneg_cluster_index.nii.gz
-205
-foster_WM_CTOPPphomCS_tneg_cluster_index.nii.gz
-124
-foster_WM_CTOPPphomCS_tneg_cluster_index.nii.gz
-267
-foster_WM_CTOPPphomCS_tneg_cluster_index.nii.gz
-294
-foster_WM_CTOPPphomCS_tneg_cluster_index.nii.gz
-226
-foster_WM_CTOPPphomCS_tneg_cluster_index.nii.gz
-263
-foster_WM_CTOPPphomCS_tneg_cluster_index.nii.gz
-100
-foster_WM_PATsegTotSS_tpos_cluster_index.nii.gz
-92
-foster_WM_PATsegTotSS_tpos_cluster_index.nii.gz
-58
-foster_WM_PATsegTotSS_tpos_cluster_index.nii.gz
-101
-foster_WM_PATsegTotSS_tpos_cluster_index.nii.gz
-101
-foster_WM_STIMQ-PSDSscaleScore1-to-15-SUM_tpos_cluster_index.nii.gz
-185
-control_FA_TOPELeliSS_tneg_cluster_index.nii.gz
-92
-control_GM_self-esteem-IAT_tneg_cluster_index.nii.gz
-185
-control_GM_TOPELeliSS_tneg_cluster_index.nii.gz
-101
-control_GM_TOPELeliSS_tneg_cluster_index.nii.gz
-168
-control_GM_TOPELeliSS_tneg_cluster_index.nii.gz
-223
-control_GM_TOPELeliSS_tneg_cluster_index.nii.gz
-138
-control_GM_TOPELeliSS_tneg_cluster_index.nii.gz
-135
-control_GM_TOPELeliSS_tneg_cluster_index.nii.gz
-109
-control_GM_TOPELeliSS_tneg_cluster_index.nii.gz
-187
-control_GM_TOPELeliSS_tneg_cluster_index.nii.gz
-182
-control_GM_TOPELeliSS_tneg_cluster_index.nii.gz
-134
-control_GM_TOPELeliSS_tneg_cluster_index.nii.gz
-171
-control_GM_TOPELeliSS_tneg_cluster_index.nii.gz
-160
-control_GM_TOPELeliSS_tneg_cluster_index.nii.gz
-120
-control_GM_TOPELeliSS_tneg_cluster_index.nii.gz
-159
-control_GM_PPVTSS_tneg_cluster_index.nii.gz
-132
-control_GM_PPVTSS_tneg_cluster_index.nii.gz
-100
-control_GM_PPVTSS_tneg_cluster_index.nii.gz
-58
-control_GM_PPVTSS_tneg_cluster_index.nii.gz
-109
-control_GM_PPVTSS_tneg_cluster_index.nii.gz
-160
-control_GM_PPVTSS_tneg_cluster_index.nii.gz
-83
-control_GM_PPVTSS_tneg_cluster_index.nii.gz
-102
-control_GM_CTOPPphoaCS_tneg_cluster_index.nii.gz
-116
-control_GM_CTOPPphoaCS_tneg_cluster_index.nii.gz
-101
-control_GM_CTOPPphoaCS_tneg_cluster_index.nii.gz
-73
-control_GM_PATrhyTotSS_tpos_cluster_index.nii.gz
-102
-control_GM_PATsegTotSS_tneg_cluster_index.nii.gz
-100
-control_GM_PATsegTotSS_tneg_cluster_index.nii.gz
-124
-control_GM_PATsegTotSS_tneg_cluster_index.nii.gz
-135
-control_GM_PATsegTotSS_tneg_cluster_index.nii.gz
-163
-control_GM_CTOPPrnCS_tneg_cluster_index.nii.gz
-136
-control_GM_CTOPPrnCS_tneg_cluster_index.nii.gz
-171
-control_GM_CTOPPrnCS_tneg_cluster_index.nii.gz
-149
-control_GM_CTOPPrnCS_tneg_cluster_index.nii.gz
-102
-control_GM_CTOPPrnCS_tneg_cluster_index.nii.gz
-154
-control_GM_CTOPPrnCS_tneg_cluster_index.nii.gz
-152
-control_GM_CTOPPrnCS_tneg_cluster_index.nii.gz
-127
-control_GM_CTOPPrnCS_tneg_cluster_index.nii.gz
-178
-control_GM_CTOPPrnCS_tneg_cluster_index.nii.gz
-58
-control_GM_STIMQ-PSDSscaleScore1-to-15-SUM_tpos_cluster_index.nii.gz
-109
-control_GM_STIMQ-PSDSscaleScore1-to-15-SUM_tneg_cluster_index.nii.gz
-101
-control_GM_STIMQ-PSDSscaleScore1-to-15-SUM_tneg_cluster_index.nii.gz
-116
-control_WM_TOPELeliSS_tneg_cluster_index.nii.gz
-121
-control_WM_TOPELeliSS_tneg_cluster_index.nii.gz
-104
-control_WM_TOPELeliSS_tneg_cluster_index.nii.gz
-100
-control_WM_PPVTSS_tneg_cluster_index.nii.gz
-149
-control_WM_PPVTSS_tneg_cluster_index.nii.gz
-129
-control_WM_PPVTSS_tneg_cluster_index.nii.gz
-142
-control_WM_PPVTSS_tneg_cluster_index.nii.gz
-109
-control_WM_PPVTSS_tneg_cluster_index.nii.gz
-102
-control_WM_PPVTSS_tneg_cluster_index.nii.gz
-133
-control_WM_PPVTSS_tneg_cluster_index.nii.gz
-83
-control_WM_PPVTSS_tneg_cluster_index.nii.gz
-116
-control_WM_PPVTSS_tneg_cluster_index.nii.gz
-73
-control_WM_CTOPPphomCS_tneg_cluster_index.nii.gz
-83
-control_WM_PATsegTotSS_tneg_cluster_index.nii.gz
-116
-control_WM_PATsegTotSS_tneg_cluster_index.nii.gz
-121
-control_WM_PATsegTotSS_tneg_cluster_index.nii.gz
-101
-control_WM_PATsegTotSS_tneg_cluster_index.nii.gz
-104
-control_WM_PATsegTotSS_tneg_cluster_index.nii.gz
-100
-control_WM_PATsegTotSS_tneg_cluster_index.nii.gz
+<pre>successfully entered all multimodal files to dataframe
 </pre>
 </div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">atlases</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[2]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">nibabel</span> <span class="kn">as</span> <span class="nn">nib</span>
+<span class="kn">import</span> <span class="nn">scipy.ndimage.measurements</span> <span class="kn">as</span> <span class="nn">measurements</span>
+<span class="kn">from</span> <span class="nn">pylabs.correlation.atlas</span> <span class="kn">import</span> <span class="n">mori_region_labels</span><span class="p">,</span> <span class="n">JHUtracts_region_labels</span>
+<span class="kn">from</span> <span class="nn">pylabs.utils.paths</span> <span class="kn">import</span> <span class="n">getnetworkdataroot</span>
+<span class="n">fs</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">getnetworkdataroot</span><span class="p">())</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">makes atlas objects.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="n">project</span> <span class="o">=</span> <span class="s1">&#39;bbc&#39;</span>
+<span class="n">atlases_in_templ_sp_dir</span> <span class="o">=</span> <span class="n">fs</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="s1">&#39;reg&#39;</span><span class="o">/</span><span class="s1">&#39;atlases_in_template_space&#39;</span>
+<span class="c1"># define atlases for labeling in template space</span>
+<span class="n">atlas_midx</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">MultiIndex</span><span class="o">.</span><span class="n">from_arrays</span><span class="p">([[</span><span class="s1">&#39;dwi&#39;</span><span class="p">,</span> <span class="s1">&#39;dwi&#39;</span><span class="p">,</span> <span class="s1">&#39;vbm&#39;</span><span class="p">,</span> <span class="s1">&#39;vbm&#39;</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;mori&#39;</span><span class="p">,</span> <span class="s1">&#39;JHU_tracts&#39;</span><span class="p">,</span> <span class="s1">&#39;mori&#39;</span><span class="p">,</span> <span class="s1">&#39;JHU_tracts&#39;</span><span class="p">]])</span>
+<span class="n">atlases</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">],</span> <span class="n">columns</span><span class="o">=</span><span class="n">atlas_midx</span><span class="p">)</span>
+<span class="c1"># get atlas data</span>
+<span class="n">mori_atlas_vbm</span> <span class="o">=</span> <span class="n">atlases_in_templ_sp_dir</span><span class="o">/</span><span class="s1">&#39;mori_atlas_reg2template.nii.gz&#39;</span>
+<span class="n">JHUtracts_atlas_vbm</span> <span class="o">=</span> <span class="n">atlases_in_templ_sp_dir</span><span class="o">/</span><span class="s1">&#39;ilabsJHUtracts0_atlas_reg2template.nii.gz&#39;</span>
+<span class="n">mori_atlas_dwi</span> <span class="o">=</span> <span class="n">atlases_in_templ_sp_dir</span><span class="o">/</span><span class="s1">&#39;mori_atlas_reg2template_resamp2dwi.nii.gz&#39;</span>
+<span class="n">JHUtracts_atlas_dwi</span> <span class="o">=</span> <span class="n">atlases_in_templ_sp_dir</span><span class="o">/</span><span class="s1">&#39;ilabsJHUtracts0_atlas_reg2template_resamp2dwi.nii.gz&#39;</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[2]:</div>
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<table border="1" class="dataframe">
+  <thead>
+    <tr>
+      <th></th>
+      <th colspan="2" halign="left">dwi</th>
+      <th colspan="2" halign="left">vbm</th>
+    </tr>
+    <tr>
+      <th></th>
+      <th>mori</th>
+      <th>JHU_tracts</th>
+      <th>mori</th>
+      <th>JHU_tracts</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>data</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[30]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">atlases</span><span class="o">.</span><span class="n">sort_index</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">atlases</span><span class="p">[</span><span class="s1">&#39;vbm&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="s1">&#39;mori&#39;</span><span class="p">,</span> <span class="n">nib</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">mori_atlas_vbm</span><span class="p">)))</span>
+<span class="n">atlases</span><span class="p">[</span><span class="s1">&#39;vbm&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="s1">&#39;JHU_tracts&#39;</span><span class="p">,</span> <span class="n">nib</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">JHUtracts_atlas_vbm</span><span class="p">)))</span>
+<span class="n">atlases</span><span class="p">[</span><span class="s1">&#39;dwi&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="s1">&#39;mori&#39;</span><span class="p">,</span> <span class="n">nib</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">mori_atlas_dwi</span><span class="p">)))</span>
+<span class="n">atlases</span><span class="p">[</span><span class="s1">&#39;dwi&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="s1">&#39;JHU_tracts&#39;</span><span class="p">,</span> <span class="n">nib</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">JHUtracts_atlas_dwi</span><span class="p">)))</span>
+<span class="n">atlases</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[30]:</div>
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<table border="1" class="dataframe">
+  <thead>
+    <tr>
+      <th></th>
+      <th colspan="2" halign="left">dwi</th>
+      <th colspan="2" halign="left">vbm</th>
+    </tr>
+    <tr>
+      <th></th>
+      <th>JHU_tracts</th>
+      <th>mori</th>
+      <th>JHU_tracts</th>
+      <th>mori</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>data</th>
+      <td>&lt;class 'nibabel.nifti1.Nifti1Image'&gt;\ndata sha...</td>
+      <td>&lt;class 'nibabel.nifti1.Nifti1Image'&gt;\ndata sha...</td>
+      <td>&lt;class 'nibabel.nifti1.Nifti1Image'&gt;\ndata sha...</td>
+      <td>&lt;class 'nibabel.nifti1.Nifti1Image'&gt;\ndata sha...</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[51]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">atlases</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;dwi&#39;</span><span class="p">,</span> <span class="s1">&#39;JHU_tracts&#39;</span><span class="p">)]</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span><span class="o">.</span><span class="n">shape</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[51]:</div>
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>(105, 144, 110)</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[1]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">atlases</span><span class="p">[</span><span class="s1">&#39;vbm&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="s1">&#39;mori&#39;</span><span class="p">,</span> <span class="n">nib</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">mori_atlas_vbm</span><span class="p">)))</span>
+<span class="n">atlases</span><span class="p">[</span><span class="s1">&#39;vbm&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="s1">&#39;JHU_tracts&#39;</span><span class="p">,</span> <span class="n">nib</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">JHUtracts_atlas_vbm</span><span class="p">)))</span>
+<span class="n">atlases</span><span class="p">[</span><span class="s1">&#39;dwi&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="s1">&#39;mori&#39;</span><span class="p">,</span> <span class="n">nib</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">mori_atlas_dwi</span><span class="p">))</span><span class="o">.</span><span class="n">get_data</span><span class="p">())</span>
+<span class="n">atlases</span><span class="p">[</span><span class="s1">&#39;dwi&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="s1">&#39;JHU_tracts&#39;</span><span class="p">,</span> <span class="n">nib</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">JHUtracts_atlas_dwi</span><span class="p">)))</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[1]:</div>
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>mori</th>
+      <th>JHU_tracts</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>data</th>
+      <td>[[[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0...</td>
+      <td>&lt;class 'nibabel.nifti1.Nifti1Image'&gt;\ndata sha...</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
 </div>
 
 </div>
