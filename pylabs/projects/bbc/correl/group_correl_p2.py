@@ -34,21 +34,22 @@ def corr(X, Y):
 
 
 project = 'bbc'
-results_dirname = 'py_correl_5thpass_cthr15_n5000'
-results_dir = fs / project / 'stats' / results_dirname
+run = 6
+niterations = 1000    # for FDR
+pcorr_thr = 0.05      # for FDR
+cluster_minsize = 12  # for clustering -uses FDR pcorr from that behav and modality for threshold
 
-if not results_dir.is_dir():
-    results_dir.mkdir(parents=True)
-# ordering is alphanum within pnames, arbitrary otherwise.
+# ordering is alphanum within pnames, otherwise it would be arbitrary.
 foster_files = [FA_foster_pnames, MD_foster_pnames, RD_foster_pnames, AD_foster_pnames, GMVBM_foster_pnames, WMVBM_foster_pnames]
 control_files = [FA_control_pnames, MD_control_pnames, RD_control_pnames, AD_control_pnames, GMVBM_control_pnames, WMVBM_control_pnames]
-outdir = results_dir
-out_pickle_fname = outdir/"cluster_outfile_{:%Y%m%d%H%M}.pickle".format(datetime.datetime.now())
-niterations = 5000    # for FDR
-pcorr_thr = 0.05      # for FDR
-cluster_minsize = 15  # for clustering -uses FDR pcorr from that behav and modality for threshold
+
+results_dirname = 'py_correl_cthr{clu}_n{n}_run{run}'.format(run=run, clu=cluster_minsize, n=niterations)
+results_dir = fs / project / 'stats' / results_dirname
+if not results_dir.is_dir():
+    results_dir.mkdir(parents=True)
+out_pickle_fname = results_dir/"cluster_outfile_{:%Y%m%d%H%M}.pickle".format(datetime.datetime.now())
 cluster_report_fname = 'cluster_report.csv' # should be same as in clustering fn
-with open(str(outdir / cluster_report_fname), mode='a') as f:
+with open(str(results_dir / cluster_report_fname), mode='a') as f:
     f.write('cluster-index,'+','.join(cols)+'\n')   #write cluster header to file
 
 for pool in ['foster', 'control']:
@@ -113,7 +114,7 @@ for pool in ['foster', 'control']:
         assert pcorr < alpha
         print('\nCorrected p-value: {}'.format(pcorr))
         print('Corresponding t-value: {}'.format(tcorr))
-        with open(str(outdir / 'stats_results.txt'), 'a') as f:
+        with open(str(results_dir / 'stats_results.txt'), 'a') as f:
             f.write('Corrected p-value for {pool} {mod}: {pcorr}\n'.format(pcorr=pcorr, mod=mod, pool=pool))
             f.write('Corresponding t-value for {pool} {mod}: {tcorr}\n'.format(tcorr=tcorr, mod=mod, pool=pool))
 
@@ -137,7 +138,7 @@ for pool in ['foster', 'control']:
             output2d[:, mask1d] = vector
             output4d = output2d.reshape((nvars,) + spatialdims)
             for v, varname in enumerate(variables.columns.values):
-                outfnames[varname[1]][stat] = join(str(outdir), ftemplates[stat].format(varname[1]))
+                outfnames[varname[1]][stat] = join(str(results_dir), ftemplates[stat].format(varname[1]))
                 img = nibabel.Nifti1Image(output4d[v, :, :, :], affine)
                 print('Saving file: {}'.format(ftemplates[stat].format(varname[1])))
                 nibabel.save(img, outfnames[varname[1]][stat])
@@ -145,7 +146,7 @@ for pool in ['foster', 'control']:
         #now save the all file for the given modality
         data4d = np.moveaxis(data, 0, 3)
         _4D_img = nibabel.Nifti1Image(data4d, affine)
-        nibabel.save(_4D_img, str(outdir / str(pool+'_'+mod+'.nii')))
+        nibabel.save(_4D_img, str(results_dir / str(pool+'_'+mod+'.nii')))
         statfiles, clutables, clumaps = clusterminsize(outfnames, pcorr, minsize=cluster_minsize)
         with open(str(out_pickle_fname), "ab") as f:
             f.write(dumps([statfiles, clutables, clumaps, outfnames, pcorr, tcorr]))

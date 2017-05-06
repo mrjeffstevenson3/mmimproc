@@ -26,7 +26,7 @@ JHUtracts_atlas_vbm_data = nibabel.load(str(JHUtracts_atlas_vbm)).get_data()
 mori_atlas_dwi_data = nibabel.load(str(mori_atlas_dwi)).get_data()
 JHUtracts_atlas_dwi_data = nibabel.load(str(JHUtracts_atlas_dwi)).get_data()
 
-cols = ['k', 'x', 'y', 'z', 'name', 'mori', 'JHU_tracts']
+cols = ['k', 'x', 'y', 'z', 'pcorr', 'name', 'mori', 'JHU_tracts']
 
 def clusterminsize(statfiles, pcorr, minsize=0):
     """
@@ -81,6 +81,7 @@ def clusterminsize(statfiles, pcorr, minsize=0):
             clustertables[name].drop(tooSmall, inplace=True)
             clustertables[name].sort_values(by='k',ascending=False, inplace=True)
             clustertables[name]['name'] = name
+            clustertables[name]['pcorr'] = pcorr
             clustertables[name].index.name = 'cluster index'
             # atlas regions here
             for idx, row in clustertables[name].iterrows():
