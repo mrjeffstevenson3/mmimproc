@@ -21,7 +21,7 @@ fs = Path(getnetworkdataroot())
 
 project = 'nbwr'
 eddy_corr_dir = 'eddy_cuda_repol_v1'
-
+filterS0_string = '_mf'
 niipickle = fs / project / 'nbwrniftiDict_dev_subj999b_201704101132.pickle'
 #stages to run
 convert = True
@@ -66,7 +66,9 @@ if run_topup:
     for i, (topup, topdn, dwif) in enumerate(zip(topup_fname, topdn_fname, dwi_fname)):
         dwipath = fs / project / dwif.split('_')[0] / dwif.split('_')[1] / 'dwi'
         ec_dir = dwipath / eddy_corr_dir
+        dwi_basename = dwipath / dwif
         orig_dwif_fname = dwipath / str(dwif + '.nii')
+
         dwi_bvals_fname = dwipath / str(dwif + '.bvals')
         dwi_bvecs_fname = dwipath / str(dwif + '.bvecs')
         dwi_dwellt_fname = dwipath / str(dwif + '.dwell_time')
@@ -100,7 +102,6 @@ if run_topup:
 
         bvals, bvecs = read_bvals_bvecs(str(dwi_bvals_fname), str(dwi_bvecs_fname))
         gtab = gradient_table(bvals, bvecs)
-
         topup_img = nib.load(str(topup_fname))
         topup_data = topup_img.get_data()
         topup_affine = topup_img.affine
@@ -127,5 +128,20 @@ if run_topup:
             eddy_cmd = 'eddy_cuda7.5 --imain='+str(orig_dwif_fname)+' --mask='+str(dwipath/str(topup + '_topdn_concat_unwarped_mean_brain_mask.nii'))
             eddy_cmd += ' --acqp=acq_params.txt  --index=index.txt --bvecs='+str(dwi_bvecs_fname)
             eddy_cmd += ' --bvals='+str(dwi_bvals_fname)+' --topup='+str(dwipath / str(topup + '_topdn_concat_unwarped'))
-            eddy_cmd += '  --repol --out='+str(ec_dir/str(topup + '_topdn_unwarped_ec'))
+            eddy_cmd += '  --repol --out='+str(ec_dir/str(dwif + '_topdn_unwarped_ec'))
             result = run_subprocess(eddy_cmd)
+            dwi_bvecs_ec_rot_fname = str(ec_dir/str(dwif + '_topdn_unwarped_ec.eddy_rotated_bvecs'))
+            # clamp and filter
+            ec_data = nib.load(str(ec_dir/str(dwif + '_topdn_unwarped_ec.nii'))).get_data()
+            bvals, bvecs = read_bvals_bvecs(str(dwi_bvals_fname), str(dwi_bvecs_ec_rot_fname))
+            gtab = gradient_table(bvals, bvecs)
+            S0 = ec_data[:, :, :, gtab.b0s_mask]
+            if filterS0_string != '':
+                S0_fname = infpath / str(dwif + filterS0_string + '_S0.nii')
+                S0 = medianf(S0, size=3)
+                data[:, :, :, gtab.b0s_mask] = S0
+                fdwi = infpath / str(dwif + filterS0_string + '.nii')
+                savenii(data, img.affine, str(fdwi), header=img.header)
+
+            S0_data =
+

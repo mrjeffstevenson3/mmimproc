@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+from pathlib import *
 import os
 import tempfile
 import shutil
@@ -37,4 +37,18 @@ class InTempDir(InDir):
         super(InTempDir, self).__exit__(type_, value, tb)
         if self._del:
             shutil.rmtree(self._dir)
-    
+
+
+def appendposix(fname, suff):
+    fname = Path(fname)
+    ext = fname.suffixes
+    l = len(ext)
+    ext = ''.join(ext)
+    fname = fname.stem
+    if l == 2:
+        fname = Path(fname).stem
+    if l == 3:
+        fname = Path(fname).stem
+    fname = str(fname)
+    fname += suff+ext
+    return Path(fname)

@@ -46,7 +46,8 @@ def extract_brain(file, f_factor=0.3):
     file = Path(file)
     if not file.is_file():
         raise ValueError(str(file)+' file is not found. please check')
-    ext = ''.join(file.suffixes)
+    ext = file.suffixes
+    ext = ''.join(ext)
     if not ext in '.nii' or not ext in '.nii.gz':
         raise ValueError(str(file) + ' file is not nifti with .nii or .nii.gz ext. please check')
     # make mat file for center of mass ROI and mask in MNI template
