@@ -57,7 +57,7 @@ def appendposix(fname, suff):
     if l == 3:
         fname = Path(fname).stem
     fname = str(fname)
-    if suff == '.gz' and ext == '.nii':
+    if suff == '.gz' and ext == '.nii' or suff == '.gz' and ext == '.raw':
         fname +=  ext + suff
     else:
         fname += suff+ext
