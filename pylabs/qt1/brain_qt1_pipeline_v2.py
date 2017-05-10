@@ -1,3 +1,4 @@
+#this is now obsolete. needs refactoring with new conversion routine used in nbwr
 import os, sys
 from glob import glob
 from os.path import join as pathjoin
