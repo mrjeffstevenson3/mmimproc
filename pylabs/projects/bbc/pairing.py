@@ -184,6 +184,21 @@ csvraw = fs / project / 'behavior' / behav_csv_name
 data = pd.read_csv(str(csvraw), header=[0,1], index_col=1, tupleize_cols=True)
 foster_behav_data = data.loc[foster_paired_behav_subjs, behav_list]
 control_behav_data = data.loc[control_paired_behav_subjs, behav_list]
-
+# fmri base file names list
 fmri_fname_templ = 'sub-bbc{sid}_ses-{snum}_fmri_{runnum}.nii'
 fmri_fnames = [fmri_fname_templ.format(sid=str(s), snum=str(ses), runnum=str(r)) for s, ses, r in picks]
+
+# fsl wls tensor mf fits for warping to template space
+# make aligned tensor, warp, affine lists to zip
+
+foster_dwi_fsl_wls_tensor_mf_fnames = [fname+'_wls_fsl_tensor_mf.nii.gz' for fname in foster_dwi_fnames]
+control_dwi_fsl_wls_tensor_mf_fnames = [fname+'_wls_fsl_tensor_mf.nii.gz' for fname in control_dwi_fnames]
+dwi_fsl_wls_tensor_mf_fnames = foster_dwi_fsl_wls_tensor_mf_fnames + control_dwi_fsl_wls_tensor_mf_fnames
+foster_dwi2templ_warp_fnames = [fname.replace('_withmf3S0_ec_thr1', '_withmf3S0_S0_brain_j1_s10_r1_reg2dwiT2template_1Warp.nii.gz') for fname in foster_dwi_fnames]
+control_dwi2templ_warp_fnames = [fname.replace('_withmf3S0_ec_thr1', '_withmf3S0_S0_brain_j1_s10_r1_reg2dwiT2template_1Warp.nii.gz') for fname in control_dwi_fnames]
+dwi2templ_warp_fnames = foster_dwi2templ_warp_fnames + control_dwi2templ_warp_fnames
+foster_dwi2templ_affine_fnames = [fname.replace('_withmf3S0_ec_thr1', '_withmf3S0_S0_brain_j1_s10_r1_reg2dwiT2template_0GenericAffine.mat') for fname in foster_dwi_fnames]
+control_dwi2templ_affine_fnames = [fname.replace('_withmf3S0_ec_thr1', '_withmf3S0_S0_brain_j1_s10_r1_reg2dwiT2template_0GenericAffine.mat') for fname in control_dwi_fnames]
+dwi2templ_affine_fnames = foster_dwi2templ_affine_fnames + control_dwi2templ_affine_fnames
+
+

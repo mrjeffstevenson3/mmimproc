@@ -16,7 +16,7 @@ templdir = fs/project/'reg'/'ants_vbm_pairedLH_in_template_space'
 ref = templdir/'bbc_pairedLH_template_invT2c_resampled2fmri.nii.gz'
 
 if not regdir.is_dir():
-    regdir.mkdir(Parents=True)
+    regdir.mkdir(parents=True)
 
 for fmri in fmri_fnames:
     results = ()
