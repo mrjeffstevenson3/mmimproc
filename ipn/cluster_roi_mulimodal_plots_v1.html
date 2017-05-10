@@ -11778,6 +11778,23 @@ div#notebook {
   <div tabindex="-1" id="notebook" class="border-box-sizing">
     <div class="container" id="notebook-container">
 
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<ul>
+<li>atlases: multi index of mori and JHU in 2 diff res. call each with matching roi from zooms and shape</li>
+<li>foster_behav_data: foster and control behavior data in tuplised df.</li>
+<li>behav_list: is list of behav tuples</li>
+<li>clusters: df of cluster index number and file name</li>
+<li>data: df of all multimodal mri</li>
+<li>bbcresults: multiindex of multimodal roi and behaviors as in csv saved</li>
+</ul>
+
+</div>
+</div>
+</div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
 <div class="prompt input_prompt">In&nbsp;[1]:</div>
@@ -11797,26 +11814,21 @@ div#notebook {
 <span class="kn">from</span> <span class="nn">pylabs.correlation.atlas</span> <span class="kn">import</span> <span class="n">mori_region_labels</span><span class="p">,</span> <span class="n">JHUtracts_region_labels</span>
 <span class="kn">from</span> <span class="nn">pylabs.projects.bbc.pairing</span> <span class="kn">import</span> <span class="n">foster_behav_data</span><span class="p">,</span> <span class="n">control_behav_data</span><span class="p">,</span> <span class="n">behav_list</span>
 <span class="kn">from</span> <span class="nn">pylabs.projects.bbc.correl.atlases</span> <span class="kn">import</span> <span class="n">atlases</span>
+<span class="kn">from</span> <span class="nn">pylabs.alignment.resample</span> <span class="kn">import</span> <span class="n">reslice_roi</span>
 <span class="kn">from</span> <span class="nn">pylabs.utils</span> <span class="kn">import</span> <span class="n">run_subprocess</span><span class="p">,</span> <span class="n">WorkingContext</span>
 <span class="kn">from</span> <span class="nn">pylabs.utils.paths</span> <span class="kn">import</span> <span class="n">getnetworkdataroot</span>
 <span class="n">fs</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">getnetworkdataroot</span><span class="p">())</span>
+<span class="n">output2file</span> <span class="o">=</span> <span class="bp">False</span>
 <span class="n">project</span> <span class="o">=</span> <span class="s1">&#39;bbc&#39;</span>
-<span class="n">statsdir</span> <span class="o">=</span> <span class="n">fs</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="s1">&#39;stats&#39;</span><span class="o">/</span><span class="s1">&#39;py_correl_2ndpass&#39;</span> <span class="c1">#&#39;py_correl_2ndpass&#39;   #&#39;py_correl_5thpass_cthr15_n5000&#39;    #&#39;py_correl_3rdpass&#39;   #&#39;py_correl_5thpass&#39;</span>
+<span class="n">statsdir</span> <span class="o">=</span> <span class="n">fs</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="s1">&#39;stats&#39;</span><span class="o">/</span><span class="s1">&#39;py_correl_5thpass_cthr15_n5000&#39;</span> <span class="c1">#&#39;py_correl_2ndpass&#39;   #&#39;py_correl_5thpass_cthr15_n5000&#39;    #&#39;py_correl_3rdpass&#39;   #&#39;py_correl_5thpass&#39;</span>
 <span class="n">fname_templ</span> <span class="o">=</span> <span class="s1">&#39;{pool}_{mod}.nii&#39;</span>
 <span class="n">cluster_idx_fname_templ</span> <span class="o">=</span> <span class="s1">&#39;{pool}_{mod}_{behav}_t{dir}_cluster_index.nii.gz&#39;</span>
-</pre></div>
+<span class="c1"># prep behavior dataframe</span>
+<span class="n">foster_behav_data</span><span class="p">[</span><span class="s1">&#39;pool&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;foster&#39;</span>
+<span class="n">control_behav_data</span><span class="p">[</span><span class="s1">&#39;pool&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;control&#39;</span>
+<span class="n">behaviors</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">foster_behav_data</span><span class="p">,</span> <span class="n">control_behav_data</span><span class="p">])</span>
 
-</div>
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[5]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="c1"># prepare cluster roi data</span>
+<span class="c1"># prepare cluster roi data</span>
 <span class="n">cluster_fname</span> <span class="o">=</span> <span class="s1">&#39;cluster_report.csv&#39;</span>
 <span class="n">clusters</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">statsdir</span><span class="o">/</span><span class="n">cluster_fname</span><span class="p">),</span> <span class="n">index_col</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;object&#39;</span><span class="p">)</span>
 <span class="n">clusters</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39; k&#39;</span><span class="p">:</span> <span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="s1">&#39; x&#39;</span><span class="p">:</span> <span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="s1">&#39; y&#39;</span><span class="p">:</span> <span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="s1">&#39; z&#39;</span><span class="p">:</span> <span class="s1">&#39;z&#39;</span><span class="p">,</span> <span class="s1">&#39; name&#39;</span><span class="p">:</span> <span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39; mori&#39;</span><span class="p">:</span> <span class="s1">&#39;mori&#39;</span><span class="p">,</span> <span class="s1">&#39; JHU_tracts&#39;</span><span class="p">:</span> <span class="s1">&#39;JHU_tracts&#39;</span><span class="p">},</span> <span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
@@ -11826,14 +11838,964 @@ div#notebook {
 <span class="n">clusters</span><span class="p">[</span><span class="s1">&#39;dir&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">clusters</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="o">-</span><span class="mi">3</span><span class="p">])</span>
 <span class="n">clusters</span><span class="p">[</span><span class="s1">&#39;behav&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">clusters</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[:</span><span class="o">-</span><span class="mi">3</span><span class="p">])</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">)</span>
 <span class="n">clusters</span><span class="p">[</span><span class="s1">&#39;clu_idx_fname&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">clusters</span><span class="p">[[</span><span class="s1">&#39;pool&#39;</span><span class="p">,</span> <span class="s1">&#39;mod&#39;</span><span class="p">,</span> <span class="s1">&#39;behav&#39;</span><span class="p">,</span> <span class="s1">&#39;dir&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span> <span class="p">:</span> <span class="n">cluster_idx_fname_templ</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">pool</span><span class="o">=</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">mod</span><span class="o">=</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">behav</span><span class="o">=</span><span class="n">x</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="nb">dir</span><span class="o">=</span><span class="n">x</span><span class="p">[</span><span class="mi">3</span><span class="p">]),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">clusters</span><span class="p">[</span><span class="s1">&#39;results_index_nm&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">clusters</span><span class="p">[[</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;cluster-index&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="s1">&#39;_roi&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <span class="k">with</span> <span class="n">WorkingContext</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">statsdir</span><span class="p">)):</span>
-<span class="c1">#     try:</span>
-    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">clusters</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
-        <span class="n">clusters</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="s1">&#39;idx_data&#39;</span><span class="p">,</span> <span class="n">nib</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s1">&#39;clu_idx_fname&#39;</span><span class="p">]))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">object</span><span class="p">)</span>
-<span class="c1">#     except:</span>
-<span class="c1">#         print(&#39;an error has occured loading data into dataframe.&#39;)</span>
-<span class="c1">#     else:</span>
-<span class="c1">#         print(&#39;successfully entered all cluster index files to dataframe&#39;)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">clusters</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+            <span class="n">clusters</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="s1">&#39;idx_data&#39;</span><span class="p">,</span> <span class="n">nib</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s1">&#39;clu_idx_fname&#39;</span><span class="p">]))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">object</span><span class="p">)</span>
+    <span class="k">except</span><span class="p">:</span>
+         <span class="k">print</span><span class="p">(</span><span class="s1">&#39;an error has occured loading data into dataframe.&#39;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+         <span class="k">print</span><span class="p">(</span><span class="s1">&#39;successfully entered all cluster index files to dataframe&#39;</span><span class="p">)</span>
+
+<span class="c1"># prepare data for correlations</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">clusters</span><span class="p">[</span><span class="s1">&#39;pool&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)),</span> <span class="n">columns</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">clusters</span><span class="p">[</span><span class="s1">&#39;mod&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)),</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;object&#39;</span><span class="p">)</span>
+<span class="k">with</span> <span class="n">WorkingContext</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">statsdir</span><span class="p">)):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">pool</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">clusters</span><span class="p">[</span><span class="s1">&#39;pool&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)):</span>
+            <span class="k">for</span> <span class="n">mod</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">clusters</span><span class="p">[</span><span class="s1">&#39;mod&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)):</span>
+                <span class="n">fname</span> <span class="o">=</span> <span class="n">fname_templ</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">pool</span><span class="o">=</span><span class="n">pool</span><span class="p">,</span> <span class="n">mod</span><span class="o">=</span><span class="n">mod</span><span class="p">)</span>
+                <span class="n">data</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="n">pool</span><span class="p">,</span> <span class="n">mod</span><span class="p">,</span> <span class="n">nib</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">fname</span><span class="p">))</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">print</span><span class="p">(</span><span class="s1">&#39;an error has occured loading data into dataframe.&#39;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">print</span><span class="p">(</span><span class="s1">&#39;successfully entered all multimodal files to dataframe&#39;</span><span class="p">)</span>
+        
+<span class="n">pools</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">clusters</span><span class="p">[</span><span class="s1">&#39;pool&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">))</span>
+<span class="n">modalities</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">clusters</span><span class="p">[</span><span class="s1">&#39;mod&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">))</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt"></div>
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>successfully entered all cluster index files to dataframe
+successfully entered all multimodal files to dataframe
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[2]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="c1">#create results container for inclusion into clusters index?? or just add to clusters</span>
+<span class="c1">#i = 0</span>
+<span class="c1">#idx = clusters.index[i]</span>
+<span class="c1">#row = clusters.loc[idx]</span>
+<span class="c1">#os.chdir(str(statsdir))</span>
+<span class="k">with</span> <span class="n">WorkingContext</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">statsdir</span><span class="p">)):</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="n">row</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">clusters</span><span class="o">.</span><span class="n">iterrows</span><span class="p">()):</span>
+        <span class="n">index_num</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s1">&#39;cluster-index&#39;</span><span class="p">])</span>
+        <span class="n">prime_mod</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;mod&#39;</span><span class="p">]</span>
+        <span class="n">prime_behav_tup</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">behav_list</span> <span class="k">if</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;behav&#39;</span><span class="p">]]</span>
+        <span class="n">modalities</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">modalities</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">modalities</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">prime_mod</span><span class="p">)))</span>
+        <span class="n">cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;gp&#39;</span><span class="p">,</span> <span class="s1">&#39;sids&#39;</span><span class="p">,</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;behav&#39;</span><span class="p">]]</span> <span class="o">+</span> <span class="n">modalities</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;mori&#39;</span><span class="p">,</span> <span class="s1">&#39;JHUtract&#39;</span><span class="p">,</span> <span class="s1">&#39;pool&#39;</span><span class="p">]</span>
+        <span class="c1">#setup container for loop</span>
+        <span class="n">one_result</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="n">behaviors</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">cols</span><span class="p">)</span>
+        <span class="n">one_result</span><span class="p">[</span><span class="n">row</span><span class="p">[</span><span class="s1">&#39;behav&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">behaviors</span><span class="p">[</span><span class="n">prime_behav_tup</span><span class="p">]</span>
+        <span class="n">one_result</span><span class="p">[</span><span class="s1">&#39;pool&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">behaviors</span><span class="p">[</span><span class="s1">&#39;pool&#39;</span><span class="p">]</span>
+        <span class="n">one_result</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">one_result</span><span class="p">[</span><span class="s1">&#39;pool&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;foster&#39;</span><span class="p">,</span> <span class="s1">&#39;gp&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">one_result</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">one_result</span><span class="p">[</span><span class="s1">&#39;pool&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;control&#39;</span><span class="p">,</span> <span class="s1">&#39;gp&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">one_result</span><span class="p">[</span><span class="s1">&#39;sids&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">behaviors</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39;BBC&#39;</span><span class="p">)</span>
+
+        <span class="n">roi_data</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;idx_data&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+        <span class="n">roi_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">roi_data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="n">roi_mask</span><span class="p">[(</span><span class="n">roi_data</span> <span class="o">==</span> <span class="n">index_num</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="mi">1</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">roi_mask</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;index number &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">index_num</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39; not present in roi file&#39;</span><span class="p">)</span>
+        <span class="n">roi_affine</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;idx_data&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">affine</span>
+        <span class="n">roi_zooms</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;idx_data&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">get_zooms</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">roi_zooms</span><span class="p">,</span> <span class="n">atlases</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s1">&#39;zooms&#39;</span><span class="p">][</span><span class="s1">&#39;dwi&#39;</span><span class="p">,</span> <span class="s1">&#39;mori&#39;</span><span class="p">])</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">roi_data</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">atlases</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s1">&#39;shape&#39;</span><span class="p">][</span><span class="s1">&#39;dwi&#39;</span><span class="p">,</span> <span class="s1">&#39;mori&#39;</span><span class="p">]):</span>
+            <span class="n">image</span> <span class="o">=</span> <span class="s1">&#39;dwi&#39;</span>
+        <span class="k">elif</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">roi_zooms</span><span class="p">,</span> <span class="n">atlases</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s1">&#39;zooms&#39;</span><span class="p">][</span><span class="s1">&#39;vbm&#39;</span><span class="p">,</span> <span class="s1">&#39;mori&#39;</span><span class="p">])</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">roi_data</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">atlases</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s1">&#39;shape&#39;</span><span class="p">][</span><span class="s1">&#39;vbm&#39;</span><span class="p">,</span> <span class="s1">&#39;mori&#39;</span><span class="p">]):</span>
+            <span class="n">image</span> <span class="o">=</span> <span class="s1">&#39;vbm&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;roi does not have matching atlase shapes.&quot;</span><span class="p">)</span>
+        
+        <span class="c1"># get atlas label(s) for roi</span>
+        <span class="n">mori_regions</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">JHUtract_regions</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;mori&#39;</span><span class="p">,</span> <span class="s1">&#39;JHU_tracts&#39;</span><span class="p">]:</span>
+            <span class="n">a_data</span> <span class="o">=</span> <span class="n">atlases</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s1">&#39;img&#39;</span><span class="p">][</span><span class="n">image</span><span class="p">,</span> <span class="n">a</span><span class="p">]</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
+            <span class="n">a_affine</span> <span class="o">=</span> <span class="n">atlases</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s1">&#39;img&#39;</span><span class="p">][</span><span class="n">image</span><span class="p">,</span> <span class="n">a</span><span class="p">]</span><span class="o">.</span><span class="n">affine</span>
+            <span class="n">a_zooms</span> <span class="o">=</span> <span class="n">atlases</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s1">&#39;img&#39;</span><span class="p">][</span><span class="n">image</span><span class="p">,</span> <span class="n">a</span><span class="p">]</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">get_zooms</span><span class="p">()</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="n">roi_mask</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="n">mdata</span> <span class="o">=</span> <span class="n">a_data</span> <span class="o">*</span> <span class="n">mask</span>
+
+            <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">mdata</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">a</span> <span class="o">==</span> <span class="s1">&#39;mori&#39;</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">mori_region_labels</span><span class="p">[</span><span class="n">r</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;Background&#39;</span><span class="p">:</span>
+                        <span class="n">mori_regions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">mori_region_labels</span><span class="p">[</span><span class="n">r</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)))</span>
+                <span class="k">if</span> <span class="n">a</span> <span class="o">==</span> <span class="s1">&#39;JHU_tracts&#39;</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">JHUtracts_region_labels</span><span class="p">[</span><span class="n">r</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;Background&#39;</span><span class="p">:</span>
+                        <span class="n">JHUtract_regions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">JHUtracts_region_labels</span><span class="p">[</span><span class="n">r</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)))</span>
+        <span class="n">one_result</span><span class="p">[</span><span class="s1">&#39;mori&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">mori_regions</span><span class="p">)</span>
+        <span class="n">one_result</span><span class="p">[</span><span class="s1">&#39;JHU_tracts&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">JHUtract_regions</span><span class="p">)</span>          
+
+        <span class="c1"># run modalities</span>
+        <span class="k">for</span> <span class="n">mod</span> <span class="ow">in</span> <span class="n">modalities</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">pools</span><span class="p">:</span>
+                <span class="n">in_data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">p</span><span class="p">,</span> <span class="n">mod</span><span class="p">]</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
+                <span class="n">in_affine</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">p</span><span class="p">,</span> <span class="n">mod</span><span class="p">]</span><span class="o">.</span><span class="n">affine</span>
+                <span class="n">in_zooms</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">p</span><span class="p">,</span> <span class="n">mod</span><span class="p">]</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">get_zooms</span><span class="p">()</span>
+                <span class="n">mask</span> <span class="o">=</span> <span class="n">roi_mask</span>
+                <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">in_data</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">mask</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
+                    <span class="n">mask</span><span class="p">,</span> <span class="n">maffine</span> <span class="o">=</span> <span class="n">reslice_roi</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">roi_affine</span><span class="p">,</span> <span class="n">roi_zooms</span><span class="p">,</span> <span class="n">in_affine</span><span class="p">,</span> <span class="n">in_zooms</span><span class="p">[:</span><span class="mi">3</span><span class="p">])</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">mask</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">in_data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+                    <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">mask</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">],</span> <span class="n">in_data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+                <span class="n">mdata</span> <span class="o">=</span> <span class="n">in_data</span><span class="o">*</span><span class="n">mask</span>
+                <span class="n">mdata</span><span class="p">[</span><span class="n">mask</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+                <span class="n">mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">mdata</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>
+                <span class="k">if</span> <span class="n">p</span> <span class="o">==</span> <span class="s1">&#39;foster&#39;</span><span class="p">:</span>
+                    <span class="n">one_result</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">one_result</span><span class="p">[</span><span class="s1">&#39;gp&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="n">mod</span><span class="p">]</span> <span class="o">=</span> <span class="n">mean</span>
+                <span class="k">if</span> <span class="n">p</span> <span class="o">==</span> <span class="s1">&#39;control&#39;</span><span class="p">:</span>
+                    <span class="n">one_result</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">one_result</span><span class="p">[</span><span class="s1">&#39;gp&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="n">mod</span><span class="p">]</span> <span class="o">=</span> <span class="n">mean</span>
+        
+        <span class="k">if</span> <span class="n">output2file</span><span class="p">:</span>
+            <span class="n">outfile</span> <span class="o">=</span> <span class="n">statsdir</span><span class="o">/</span><span class="nb">str</span><span class="p">(</span><span class="s1">&#39;roi&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">index_num</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;_&#39;</span><span class="o">+</span><span class="n">prime_mod</span><span class="o">+</span><span class="s1">&#39;_&#39;</span><span class="o">+</span><span class="n">prime_behav_tup</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="s1">&#39;_mm_stats.csv&#39;</span><span class="p">)</span>
+            <span class="n">one_result</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;roi&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">index_num</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;_&#39;</span><span class="o">+</span><span class="n">prime_mod</span><span class="o">+</span><span class="s1">&#39;_&#39;</span><span class="o">+</span><span class="n">prime_behav_tup</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">col_order</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;gp&#39;</span><span class="p">,</span> <span class="s1">&#39;sids&#39;</span><span class="p">,</span> <span class="n">prime_behav_tup</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">prime_mod</span><span class="p">]</span> <span class="o">+</span> <span class="n">modalities</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;mori&#39;</span><span class="p">,</span> <span class="s1">&#39;JHUtract&#39;</span><span class="p">]</span>
+            <span class="n">one_result</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">outfile</span><span class="p">),</span> <span class="n">columns</span><span class="o">=</span><span class="n">col_order</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+            <span class="n">provenance</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">outfile</span><span class="p">),</span> <span class="s1">&#39;make multimodal csv from stats index file&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">index_fname</span><span class="p">),</span> <span class="n">script</span><span class="o">=</span><span class="vm">__file__</span><span class="p">,</span> \
+                   <span class="n">provenance</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;index&#39;</span><span class="p">:</span> <span class="n">index_num</span><span class="p">,</span> <span class="s1">&#39;behavior&#39;</span><span class="p">:</span> <span class="n">prime_behav_tup</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;modalities&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">prime_mod</span><span class="p">]</span> <span class="o">+</span> <span class="n">modalities</span><span class="p">,</span> <span class="s1">&#39;cols&#39;</span><span class="p">:</span> <span class="n">col_order</span><span class="p">})</span>
+        
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[6]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">clusters</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[6]:</div>
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>cluster-index</th>
+      <th>k</th>
+      <th>x</th>
+      <th>y</th>
+      <th>z</th>
+      <th>name</th>
+      <th>mori</th>
+      <th>JHU_tracts</th>
+      <th>mod</th>
+      <th>pool</th>
+      <th>dir</th>
+      <th>behav</th>
+      <th>clu_idx_fname</th>
+      <th>idx_data</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>201</td>
+      <td>16</td>
+      <td>76</td>
+      <td>41</td>
+      <td>35</td>
+      <td>PPVTSS-pos-foster-FA</td>
+      <td>CEREBELLUM</td>
+      <td>Cerebellum_L</td>
+      <td>FA</td>
+      <td>foster</td>
+      <td>pos</td>
+      <td>PPVTSS</td>
+      <td>foster_FA_PPVTSS_tpos_cluster_index.nii.gz</td>
+      <td>&lt;class 'nibabel.nifti1.Nifti1Image'&gt;\ndata shape (105, 144, 110)\naffine: \n[[  -1.518802   -0.167275    0.008506   86.458817]\n [  -0.167249    1.518806    0.008167  -64.628075]\n [   0.007142   -0.005491    1.999965 -106.261108]\n [   0.          0.          0.          1.      ]]\nmetadata:\n...</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>208</td>
+      <td>21</td>
+      <td>74</td>
+      <td>38</td>
+      <td>36</td>
+      <td>CTOPPphoaCS-pos-foster-FA</td>
+      <td>CEREBELLUM</td>
+      <td>Cerebellum_L</td>
+      <td>FA</td>
+      <td>foster</td>
+      <td>pos</td>
+      <td>CTOPPphoaCS</td>
+      <td>foster_FA_CTOPPphoaCS_tpos_cluster_index.nii.gz</td>
+      <td>&lt;class 'nibabel.nifti1.Nifti1Image'&gt;\ndata shape (105, 144, 110)\naffine: \n[[  -1.518802   -0.167275    0.008506   86.458817]\n [  -0.167249    1.518806    0.008167  -64.628075]\n [   0.007142   -0.005491    1.999965 -106.261108]\n [   0.          0.          0.          1.      ]]\nmetadata:\n...</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[3]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">one_result</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[3]:</div>
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>gp</th>
+      <th>sids</th>
+      <th>CTOPPphoaCS</th>
+      <th>FA</th>
+      <th>MD</th>
+      <th>AD</th>
+      <th>WM</th>
+      <th>RD</th>
+      <th>GM</th>
+      <th>mori</th>
+      <th>JHUtract</th>
+      <th>pool</th>
+      <th>JHU_tracts</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>BBC101</th>
+      <td>0</td>
+      <td>101</td>
+      <td>79</td>
+      <td>3.892045</td>
+      <td>81.479843</td>
+      <td>84.040438</td>
+      <td>1.483751</td>
+      <td>80.199546</td>
+      <td>15.466374</td>
+      <td>CEREBELLUM</td>
+      <td>NaN</td>
+      <td>foster</td>
+      <td>Cerebellum L</td>
+    </tr>
+    <tr>
+      <th>BBC105</th>
+      <td>0</td>
+      <td>105</td>
+      <td>106</td>
+      <td>12.620776</td>
+      <td>77.957760</td>
+      <td>88.533304</td>
+      <td>0.986575</td>
+      <td>72.669988</td>
+      <td>29.001565</td>
+      <td>CEREBELLUM</td>
+      <td>NaN</td>
+      <td>foster</td>
+      <td>Cerebellum L</td>
+    </tr>
+    <tr>
+      <th>BBC106</th>
+      <td>0</td>
+      <td>106</td>
+      <td>106</td>
+      <td>12.742893</td>
+      <td>69.751522</td>
+      <td>79.220135</td>
+      <td>0.337602</td>
+      <td>65.017213</td>
+      <td>26.697611</td>
+      <td>CEREBELLUM</td>
+      <td>NaN</td>
+      <td>foster</td>
+      <td>Cerebellum L</td>
+    </tr>
+    <tr>
+      <th>BBC108</th>
+      <td>0</td>
+      <td>108</td>
+      <td>128</td>
+      <td>20.229165</td>
+      <td>78.090745</td>
+      <td>95.891650</td>
+      <td>0.665496</td>
+      <td>69.190292</td>
+      <td>19.500748</td>
+      <td>CEREBELLUM</td>
+      <td>NaN</td>
+      <td>foster</td>
+      <td>Cerebellum L</td>
+    </tr>
+    <tr>
+      <th>BBC113</th>
+      <td>0</td>
+      <td>113</td>
+      <td>104</td>
+      <td>12.711047</td>
+      <td>74.958753</td>
+      <td>85.091410</td>
+      <td>1.256337</td>
+      <td>69.892424</td>
+      <td>24.466195</td>
+      <td>CEREBELLUM</td>
+      <td>NaN</td>
+      <td>foster</td>
+      <td>Cerebellum L</td>
+    </tr>
+    <tr>
+      <th>BBC116</th>
+      <td>0</td>
+      <td>116</td>
+      <td>87</td>
+      <td>6.339079</td>
+      <td>70.747810</td>
+      <td>75.306616</td>
+      <td>1.039621</td>
+      <td>68.468409</td>
+      <td>27.668066</td>
+      <td>CEREBELLUM</td>
+      <td>NaN</td>
+      <td>foster</td>
+      <td>Cerebellum L</td>
+    </tr>
+    <tr>
+      <th>BBC118</th>
+      <td>0</td>
+      <td>118</td>
+      <td>98</td>
+      <td>8.007443</td>
+      <td>80.150438</td>
+      <td>86.471691</td>
+      <td>1.056942</td>
+      <td>76.989811</td>
+      <td>17.506139</td>
+      <td>CEREBELLUM</td>
+      <td>NaN</td>
+      <td>foster</td>
+      <td>Cerebellum L</td>
+    </tr>
+    <tr>
+      <th>BBC119</th>
+      <td>0</td>
+      <td>119</td>
+      <td>109</td>
+      <td>12.770649</td>
+      <td>67.037097</td>
+      <td>76.564502</td>
+      <td>1.049451</td>
+      <td>62.273395</td>
+      <td>26.273189</td>
+      <td>CEREBELLUM</td>
+      <td>NaN</td>
+      <td>foster</td>
+      <td>Cerebellum L</td>
+    </tr>
+    <tr>
+      <th>BBC120</th>
+      <td>0</td>
+      <td>120</td>
+      <td>98</td>
+      <td>8.575493</td>
+      <td>72.823427</td>
+      <td>79.819825</td>
+      <td>0.899836</td>
+      <td>69.325225</td>
+      <td>23.850620</td>
+      <td>CEREBELLUM</td>
+      <td>NaN</td>
+      <td>foster</td>
+      <td>Cerebellum L</td>
+    </tr>
+    <tr>
+      <th>BBC202</th>
+      <td>1</td>
+      <td>202</td>
+      <td>117</td>
+      <td>12.426251</td>
+      <td>69.803681</td>
+      <td>79.075365</td>
+      <td>0.921547</td>
+      <td>65.167838</td>
+      <td>23.896411</td>
+      <td>CEREBELLUM</td>
+      <td>NaN</td>
+      <td>control</td>
+      <td>Cerebellum L</td>
+    </tr>
+    <tr>
+      <th>BBC208</th>
+      <td>1</td>
+      <td>208</td>
+      <td>113</td>
+      <td>13.095103</td>
+      <td>70.392750</td>
+      <td>80.286104</td>
+      <td>1.202628</td>
+      <td>65.446074</td>
+      <td>25.906240</td>
+      <td>CEREBELLUM</td>
+      <td>NaN</td>
+      <td>control</td>
+      <td>Cerebellum L</td>
+    </tr>
+    <tr>
+      <th>BBC209</th>
+      <td>1</td>
+      <td>209</td>
+      <td>102</td>
+      <td>17.370198</td>
+      <td>69.403853</td>
+      <td>82.286282</td>
+      <td>1.196336</td>
+      <td>62.962640</td>
+      <td>32.381705</td>
+      <td>CEREBELLUM</td>
+      <td>NaN</td>
+      <td>control</td>
+      <td>Cerebellum L</td>
+    </tr>
+    <tr>
+      <th>BBC211</th>
+      <td>1</td>
+      <td>211</td>
+      <td>102</td>
+      <td>7.303148</td>
+      <td>72.360909</td>
+      <td>78.159606</td>
+      <td>0.772157</td>
+      <td>69.461561</td>
+      <td>24.995591</td>
+      <td>CEREBELLUM</td>
+      <td>NaN</td>
+      <td>control</td>
+      <td>Cerebellum L</td>
+    </tr>
+    <tr>
+      <th>BBC231</th>
+      <td>1</td>
+      <td>231</td>
+      <td>115</td>
+      <td>6.577751</td>
+      <td>78.194771</td>
+      <td>83.909345</td>
+      <td>0.453233</td>
+      <td>75.337483</td>
+      <td>28.176196</td>
+      <td>CEREBELLUM</td>
+      <td>NaN</td>
+      <td>control</td>
+      <td>Cerebellum L</td>
+    </tr>
+    <tr>
+      <th>BBC241</th>
+      <td>1</td>
+      <td>241</td>
+      <td>109</td>
+      <td>6.066117</td>
+      <td>78.235403</td>
+      <td>83.693593</td>
+      <td>1.177274</td>
+      <td>75.506307</td>
+      <td>27.277114</td>
+      <td>CEREBELLUM</td>
+      <td>NaN</td>
+      <td>control</td>
+      <td>Cerebellum L</td>
+    </tr>
+    <tr>
+      <th>BBC243</th>
+      <td>1</td>
+      <td>243</td>
+      <td>96</td>
+      <td>11.196192</td>
+      <td>72.179049</td>
+      <td>79.864634</td>
+      <td>0.967271</td>
+      <td>68.336257</td>
+      <td>23.398281</td>
+      <td>CEREBELLUM</td>
+      <td>NaN</td>
+      <td>control</td>
+      <td>Cerebellum L</td>
+    </tr>
+    <tr>
+      <th>BBC249</th>
+      <td>1</td>
+      <td>249</td>
+      <td>115</td>
+      <td>11.294758</td>
+      <td>68.681685</td>
+      <td>75.653588</td>
+      <td>1.046921</td>
+      <td>65.195734</td>
+      <td>25.185344</td>
+      <td>CEREBELLUM</td>
+      <td>NaN</td>
+      <td>control</td>
+      <td>Cerebellum L</td>
+    </tr>
+    <tr>
+      <th>BBC253</th>
+      <td>1</td>
+      <td>253</td>
+      <td>128</td>
+      <td>4.397360</td>
+      <td>77.689460</td>
+      <td>80.701028</td>
+      <td>1.257236</td>
+      <td>76.183675</td>
+      <td>26.033448</td>
+      <td>CEREBELLUM</td>
+      <td>NaN</td>
+      <td>control</td>
+      <td>Cerebellum L</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">result_mi</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">MultiIndex</span>
+<span class="n">bbc_cluster_thr12_results</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[13]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">clusters</span><span class="p">[</span><span class="s1">&#39;results_index_nm&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">clusters</span><span class="p">[[</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;cluster-index&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="s1">&#39;_roi&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[13]:</div>
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>&#39;PPVTSS-pos-foster-FA_roi201&#39;</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[4]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">data</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[4]:</div>
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>MD</th>
+      <th>AD</th>
+      <th>WM</th>
+      <th>RD</th>
+      <th>FA</th>
+      <th>GM</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>control</th>
+      <td>&lt;class 'nibabel.nifti1.Nifti1Image'&gt;\ndata shape (105, 144, 110, 9)\naffine: \n[[  -1.518802   -0.167275    0.008506   86.458817]\n [  -0.167249    1.518806    0.008167  -64.628075]\n [   0.007142   -0.005491    1.999965 -106.261108]\n [   0.          0.          0.          1.      ]]\nmetadata...</td>
+      <td>&lt;class 'nibabel.nifti1.Nifti1Image'&gt;\ndata shape (105, 144, 110, 9)\naffine: \n[[  -1.518802   -0.167275    0.008506   86.458817]\n [  -0.167249    1.518806    0.008167  -64.628075]\n [   0.007142   -0.005491    1.999965 -106.261108]\n [   0.          0.          0.          1.      ]]\nmetadata...</td>
+      <td>&lt;class 'nibabel.nifti1.Nifti1Image'&gt;\ndata shape (160, 256, 256, 9)\naffine: \n[[  -0.993981   -0.094037    0.003653   86.458801]\n [  -0.109456    0.853832    0.003508  -64.628098]\n [   0.004674   -0.003087    0.858985 -106.261002]\n [   0.          0.          0.          1.      ]]\nmetadata...</td>
+      <td>&lt;class 'nibabel.nifti1.Nifti1Image'&gt;\ndata shape (105, 144, 110, 9)\naffine: \n[[  -1.518802   -0.167275    0.008506   86.458817]\n [  -0.167249    1.518806    0.008167  -64.628075]\n [   0.007142   -0.005491    1.999965 -106.261108]\n [   0.          0.          0.          1.      ]]\nmetadata...</td>
+      <td>&lt;class 'nibabel.nifti1.Nifti1Image'&gt;\ndata shape (105, 144, 110, 9)\naffine: \n[[  -1.518802   -0.167275    0.008506   86.458817]\n [  -0.167249    1.518806    0.008167  -64.628075]\n [   0.007142   -0.005491    1.999965 -106.261108]\n [   0.          0.          0.          1.      ]]\nmetadata...</td>
+      <td>&lt;class 'nibabel.nifti1.Nifti1Image'&gt;\ndata shape (160, 256, 256, 9)\naffine: \n[[  -0.993981   -0.094037    0.003653   86.458801]\n [  -0.109456    0.853832    0.003508  -64.628098]\n [   0.004674   -0.003087    0.858985 -106.261002]\n [   0.          0.          0.          1.      ]]\nmetadata...</td>
+    </tr>
+    <tr>
+      <th>foster</th>
+      <td>&lt;class 'nibabel.nifti1.Nifti1Image'&gt;\ndata shape (105, 144, 110, 9)\naffine: \n[[  -1.518802   -0.167275    0.008506   86.458817]\n [  -0.167249    1.518806    0.008167  -64.628075]\n [   0.007142   -0.005491    1.999965 -106.261108]\n [   0.          0.          0.          1.      ]]\nmetadata...</td>
+      <td>&lt;class 'nibabel.nifti1.Nifti1Image'&gt;\ndata shape (105, 144, 110, 9)\naffine: \n[[  -1.518802   -0.167275    0.008506   86.458817]\n [  -0.167249    1.518806    0.008167  -64.628075]\n [   0.007142   -0.005491    1.999965 -106.261108]\n [   0.          0.          0.          1.      ]]\nmetadata...</td>
+      <td>&lt;class 'nibabel.nifti1.Nifti1Image'&gt;\ndata shape (160, 256, 256, 9)\naffine: \n[[  -0.993981   -0.094037    0.003653   86.458801]\n [  -0.109456    0.853832    0.003508  -64.628098]\n [   0.004674   -0.003087    0.858985 -106.261002]\n [   0.          0.          0.          1.      ]]\nmetadata...</td>
+      <td>&lt;class 'nibabel.nifti1.Nifti1Image'&gt;\ndata shape (105, 144, 110, 9)\naffine: \n[[  -1.518802   -0.167275    0.008506   86.458817]\n [  -0.167249    1.518806    0.008167  -64.628075]\n [   0.007142   -0.005491    1.999965 -106.261108]\n [   0.          0.          0.          1.      ]]\nmetadata...</td>
+      <td>&lt;class 'nibabel.nifti1.Nifti1Image'&gt;\ndata shape (105, 144, 110, 9)\naffine: \n[[  -1.518802   -0.167275    0.008506   86.458817]\n [  -0.167249    1.518806    0.008167  -64.628075]\n [   0.007142   -0.005491    1.999965 -106.261108]\n [   0.          0.          0.          1.      ]]\nmetadata...</td>
+      <td>&lt;class 'nibabel.nifti1.Nifti1Image'&gt;\ndata shape (160, 256, 256, 9)\naffine: \n[[  -0.993981   -0.094037    0.003653   86.458801]\n [  -0.109456    0.853832    0.003508  -64.628098]\n [   0.004674   -0.003087    0.858985 -106.261002]\n [   0.          0.          0.          1.      ]]\nmetadata...</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[11]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s1">&#39;control&#39;</span><span class="p">,</span><span class="s1">&#39;MD&#39;</span><span class="p">]</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[11]:</div>
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>&lt;nibabel.nifti1.Nifti1Image at 0x7fe8f66e68d0&gt;</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[5]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">clusters</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[5]:</div>
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>cluster-index</th>
+      <th>k</th>
+      <th>x</th>
+      <th>y</th>
+      <th>z</th>
+      <th>name</th>
+      <th>mori</th>
+      <th>JHU_tracts</th>
+      <th>mod</th>
+      <th>pool</th>
+      <th>dir</th>
+      <th>behav</th>
+      <th>clu_idx_fname</th>
+      <th>idx_data</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>201</td>
+      <td>16</td>
+      <td>76</td>
+      <td>41</td>
+      <td>35</td>
+      <td>PPVTSS-pos-foster-FA</td>
+      <td>CEREBELLUM</td>
+      <td>Cerebellum_L</td>
+      <td>FA</td>
+      <td>foster</td>
+      <td>pos</td>
+      <td>PPVTSS</td>
+      <td>foster_FA_PPVTSS_tpos_cluster_index.nii.gz</td>
+      <td>&lt;class 'nibabel.nifti1.Nifti1Image'&gt;\ndata shape (105, 144, 110)\naffine: \n[[  -1.518802   -0.167275    0.008506   86.458817]\n [  -0.167249    1.518806    0.008167  -64.628075]\n [   0.007142   -0.005491    1.999965 -106.261108]\n [   0.          0.          0.          1.      ]]\nmetadata:\n...</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[6]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">foster_behav_data</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[6]:</div>
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>(21, PATrhyTotSS)</th>
+      <th>(22, PATsegTotSS)</th>
+      <th>(23, CTOPPphoaCS)</th>
+      <th>(24, CTOPPrnCS)</th>
+      <th>(25, CTOPPphomCS)</th>
+      <th>(26, PPVTSS)</th>
+      <th>(27, TOPELeliSS)</th>
+      <th>(28, STIMQ-PSDSscaleScore1-to-15-SUM)</th>
+      <th>(29, self-esteem-IAT)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>BBC101</th>
+      <td>82</td>
+      <td>110</td>
+      <td>79</td>
+      <td>70</td>
+      <td>85</td>
+      <td>88</td>
+      <td>77</td>
+      <td>12</td>
+      <td>0.22</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[7]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">atlases</span><span class="c1">#.loc[&#39;shape&#39;][&#39;dwi&#39;, &#39;mori&#39;]</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[7]:</div>
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<table border="1" class="dataframe">
+  <thead>
+    <tr>
+      <th></th>
+      <th colspan="2" halign="left">dwi</th>
+      <th colspan="2" halign="left">vbm</th>
+    </tr>
+    <tr>
+      <th></th>
+      <th>JHU_tracts</th>
+      <th>mori</th>
+      <th>JHU_tracts</th>
+      <th>mori</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>img</th>
+      <td>&lt;class 'nibabel.nifti1.Nifti1Image'&gt;\ndata shape (105, 144, 110)\naffine: \n[[  -1.518802   -0.167275    0.008506   86.458817]\n [  -0.167249    1.518806    0.008167  -64.628075]\n [   0.007142   -0.005491    1.999965 -106.261108]\n [   0.          0.          0.          1.      ]]\nmetadata:\n...</td>
+      <td>&lt;class 'nibabel.nifti1.Nifti1Image'&gt;\ndata shape (105, 144, 110)\naffine: \n[[  -1.518802   -0.167275    0.008506   86.458817]\n [  -0.167249    1.518806    0.008167  -64.628075]\n [   0.007142   -0.005491    1.999965 -106.261108]\n [   0.          0.          0.          1.      ]]\nmetadata:\n...</td>
+      <td>&lt;class 'nibabel.nifti1.Nifti1Image'&gt;\ndata shape (160, 256, 256)\naffine: \n[[  -0.993981   -0.094037    0.003653   86.458817]\n [  -0.109456    0.853832    0.003508  -64.628075]\n [   0.004674   -0.003087    0.858985 -106.261108]\n [   0.          0.          0.          1.      ]]\nmetadata:\n...</td>
+      <td>&lt;class 'nibabel.nifti1.Nifti1Image'&gt;\ndata shape (160, 256, 256)\naffine: \n[[  -0.993981   -0.094037    0.003653   86.458817]\n [  -0.109456    0.853832    0.003508  -64.628075]\n [   0.004674   -0.003087    0.858985 -106.261108]\n [   0.          0.          0.          1.      ]]\nmetadata:\n...</td>
+    </tr>
+    <tr>
+      <th>zooms</th>
+      <td>(1.528, 1.528, 2.0)</td>
+      <td>(1.528, 1.528, 2.0)</td>
+      <td>(1.0, 0.859, 0.859)</td>
+      <td>(1.0, 0.859, 0.859)</td>
+    </tr>
+    <tr>
+      <th>shape</th>
+      <td>(105, 144, 110)</td>
+      <td>(105, 144, 110)</td>
+      <td>(160, 256, 256)</td>
+      <td>(160, 256, 256)</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[16]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">modalities</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">clusters</span><span class="p">[</span><span class="s1">&#39;mod&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+<span class="n">modalities</span>
+
+                  
+<span class="n">res_columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;gp&#39;</span><span class="p">,</span> <span class="s1">&#39;sids&#39;</span><span class="p">,</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;behav&#39;</span><span class="p">]]</span> <span class="o">+</span> <span class="n">modalities</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;mori&#39;</span><span class="p">,</span> <span class="s1">&#39;JHUtract&#39;</span><span class="p">]</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt"></div>
+
+<div class="output_subarea output_text output_error">
+<pre>
+<span class="ansi-cyan-fg">  File </span><span class="ansi-green-fg">&#34;&lt;ipython-input-16-a83df98822a5&gt;&#34;</span><span class="ansi-cyan-fg">, line </span><span class="ansi-green-fg">2</span>
+<span class="ansi-red-fg">    res_columns = [&#39;gp&#39;, &#39;sids&#39;, row[&#39;behav&#39;]] + modalities + [&#39;mori&#39;, &#39;JHUtract&#39;]</span>
+              ^
+<span class="ansi-red-fg">SyntaxError</span><span class="ansi-red-fg">:</span> invalid syntax
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[20]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">one_result</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 </pre></div>
 
 </div>
@@ -11850,23 +12812,389 @@ div#notebook {
 <div class="output_subarea output_text output_error">
 <pre>
 <span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">FileNotFoundError</span>                         Traceback (most recent call last)
-<span class="ansi-green-fg">&lt;ipython-input-5-f62a8e8f797d&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span><span class="ansi-blue-fg">()</span>
-<span class="ansi-green-intense-fg ansi-bold">     12</span> <span class="ansi-red-fg">#     try:</span>
-<span class="ansi-green-intense-fg ansi-bold">     13</span>     <span class="ansi-green-fg">for</span> i<span class="ansi-blue-fg">,</span> row <span class="ansi-green-fg">in</span> clusters<span class="ansi-blue-fg">.</span>iterrows<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-fg">---&gt; 14</span><span class="ansi-red-fg">         </span>clusters<span class="ansi-blue-fg">.</span>set_value<span class="ansi-blue-fg">(</span>i<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">&#39;idx_data&#39;</span><span class="ansi-blue-fg">,</span> nib<span class="ansi-blue-fg">.</span>load<span class="ansi-blue-fg">(</span>row<span class="ansi-blue-fg">[</span><span class="ansi-blue-fg">&#39;clu_idx_fname&#39;</span><span class="ansi-blue-fg">]</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">.</span>astype<span class="ansi-blue-fg">(</span>object<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">     15</span> <span class="ansi-red-fg">#     except:</span>
-<span class="ansi-green-intense-fg ansi-bold">     16</span> <span class="ansi-red-fg">#         print(&#39;an error has occured loading data into dataframe.&#39;)</span>
+<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
+<span class="ansi-green-fg">&lt;ipython-input-20-a933437b61f2&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span><span class="ansi-blue-fg">()</span>
+<span class="ansi-green-fg">----&gt; 1</span><span class="ansi-red-fg"> </span>one_result<span class="ansi-blue-fg">.</span>head<span class="ansi-blue-fg">(</span><span class="ansi-cyan-fg">1</span><span class="ansi-blue-fg">)</span>
 
-<span class="ansi-green-fg">/Users/mrjeffs/Software/nibabel/nibabel/loadsave.pyc</span> in <span class="ansi-cyan-fg">load</span><span class="ansi-blue-fg">(filename, **kwargs)</span>
-<span class="ansi-green-intense-fg ansi-bold">     38</span>     &#39;&#39;&#39;
-<span class="ansi-green-intense-fg ansi-bold">     39</span>     <span class="ansi-green-fg">if</span> <span class="ansi-green-fg">not</span> op<span class="ansi-blue-fg">.</span>exists<span class="ansi-blue-fg">(</span>filename<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-fg">---&gt; 40</span><span class="ansi-red-fg">         </span><span class="ansi-green-fg">raise</span> FileNotFoundError<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">&#34;No such file: &#39;%s&#39;&#34;</span> <span class="ansi-blue-fg">%</span> filename<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">     41</span>     sniff <span class="ansi-blue-fg">=</span> None
-<span class="ansi-green-intense-fg ansi-bold">     42</span>     <span class="ansi-green-fg">for</span> image_klass <span class="ansi-green-fg">in</span> all_image_classes<span class="ansi-blue-fg">:</span>
-
-<span class="ansi-red-fg">FileNotFoundError</span>: No such file: &#39;foster_GM_self-esteem-IAT_tpos_cluster_index.nii.gz&#39;</pre>
+<span class="ansi-red-fg">NameError</span>: name &#39;one_result&#39; is not defined</pre>
 </div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[19]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span>                 
+<span class="c1">#################################</span>
+
+
+
+    <span class="n">foster_results</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">prime_foster_results</span><span class="p">)</span>
+    <span class="n">control_results</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">prime_control_results</span><span class="p">)</span>
+    <span class="n">foster_results</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s1">&#39;subj&#39;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">control_results</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s1">&#39;subj&#39;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">foster_results</span><span class="p">[</span><span class="s1">&#39;sids&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">foster_behav_data</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39;BBC&#39;</span><span class="p">)</span>
+    <span class="n">control_results</span><span class="p">[</span><span class="s1">&#39;sids&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">control_behav_data</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39;BBC&#39;</span><span class="p">)</span>
+    <span class="n">foster_results</span><span class="p">[</span><span class="n">prime_behav_tup</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="n">foster_behav_data</span><span class="p">[</span><span class="n">prime_behav_tup</span><span class="p">]</span>
+    <span class="n">control_results</span><span class="p">[</span><span class="n">prime_behav_tup</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="n">control_behav_data</span><span class="p">[</span><span class="n">prime_behav_tup</span><span class="p">]</span>
+
+
+                      
+                      
+    <span class="c1"># get prime modality into df first</span>
+    <span class="n">prime_foster_results</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">prime_control_results</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">pools</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">mod</span> <span class="ow">in</span> <span class="n">modalities</span><span class="p">:</span>
+                      
+        <span class="n">in_data</span> <span class="o">=</span> <span class="n">nib</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">statsdir</span><span class="o">/</span><span class="n">allfile_ftempl</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">pool</span><span class="o">=</span><span class="n">p</span><span class="p">,</span> <span class="n">mod</span><span class="o">=</span><span class="n">prime_mod</span><span class="p">)))</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
+        <span class="n">in_affine</span> <span class="o">=</span> <span class="n">nib</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">statsdir</span><span class="o">/</span><span class="n">allfile_ftempl</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">pool</span><span class="o">=</span><span class="n">p</span><span class="p">,</span> <span class="n">mod</span><span class="o">=</span><span class="n">prime_mod</span><span class="p">)))</span><span class="o">.</span><span class="n">affine</span>
+        <span class="n">in_zooms</span> <span class="o">=</span> <span class="n">nib</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">statsdir</span><span class="o">/</span><span class="n">allfile_ftempl</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">pool</span><span class="o">=</span><span class="n">p</span><span class="p">,</span> <span class="n">mod</span><span class="o">=</span><span class="n">prime_mod</span><span class="p">)))</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">get_zooms</span><span class="p">()</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">roi_mask</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">mdata</span> <span class="o">=</span> <span class="n">in_data</span> <span class="o">*</span> <span class="n">mask</span>
+        <span class="n">mdata</span><span class="p">[</span><span class="n">mask</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="n">mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">mdata</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">p</span> <span class="o">==</span> <span class="s1">&#39;foster&#39;</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">s</span><span class="p">,</span> <span class="n">m</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">foster_behav_data</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">mean</span><span class="p">):</span>
+                <span class="n">prime_foster_results</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s1">&#39;gp&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;subj&#39;</span><span class="p">:</span> <span class="n">s</span><span class="p">,</span> <span class="n">prime_mod</span><span class="p">:</span> <span class="n">m</span><span class="p">})</span>
+        <span class="k">if</span> <span class="n">p</span> <span class="o">==</span> <span class="s1">&#39;control&#39;</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">s</span><span class="p">,</span> <span class="n">m</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">control_behav_data</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">mean</span><span class="p">):</span>
+                <span class="n">prime_control_results</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s1">&#39;gp&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;subj&#39;</span><span class="p">:</span> <span class="n">s</span><span class="p">,</span> <span class="n">prime_mod</span><span class="p">:</span> <span class="n">m</span><span class="p">})</span>
+    <span class="c1"># set up results dataframe</span>
+    <span class="n">foster_results</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">prime_foster_results</span><span class="p">)</span>
+    <span class="n">control_results</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">prime_control_results</span><span class="p">)</span>
+    <span class="n">foster_results</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s1">&#39;subj&#39;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">control_results</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s1">&#39;subj&#39;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">foster_results</span><span class="p">[</span><span class="s1">&#39;sids&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">foster_behav_data</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39;BBC&#39;</span><span class="p">)</span>
+    <span class="n">control_results</span><span class="p">[</span><span class="s1">&#39;sids&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">control_behav_data</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39;BBC&#39;</span><span class="p">)</span>
+    <span class="n">foster_results</span><span class="p">[</span><span class="n">prime_behav_tup</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="n">foster_behav_data</span><span class="p">[</span><span class="n">prime_behav_tup</span><span class="p">]</span>
+    <span class="n">control_results</span><span class="p">[</span><span class="n">prime_behav_tup</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="n">control_behav_data</span><span class="p">[</span><span class="n">prime_behav_tup</span><span class="p">]</span>
+
+<span class="c1"># run other modalities</span>
+<span class="k">for</span> <span class="n">mod</span> <span class="ow">in</span> <span class="n">modalities</span><span class="p">:</span>
+    <span class="n">foster_secondary_results</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">control_secondary_results</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">pools</span><span class="p">:</span>
+        <span class="n">in_data</span> <span class="o">=</span> <span class="n">nib</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">statsdir</span><span class="o">/</span><span class="n">allfile_ftempl</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">pool</span><span class="o">=</span><span class="n">p</span><span class="p">,</span> <span class="n">mod</span><span class="o">=</span><span class="n">mod</span><span class="p">)))</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
+        <span class="n">in_affine</span> <span class="o">=</span> <span class="n">nib</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">statsdir</span><span class="o">/</span><span class="n">allfile_ftempl</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">pool</span><span class="o">=</span><span class="n">p</span><span class="p">,</span> <span class="n">mod</span><span class="o">=</span><span class="n">mod</span><span class="p">)))</span><span class="o">.</span><span class="n">affine</span>
+        <span class="n">in_zooms</span> <span class="o">=</span> <span class="n">nib</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">statsdir</span><span class="o">/</span><span class="n">allfile_ftempl</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">pool</span><span class="o">=</span><span class="n">p</span><span class="p">,</span> <span class="n">mod</span><span class="o">=</span><span class="n">mod</span><span class="p">)))</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">get_zooms</span><span class="p">()</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">roi_mask</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">in_data</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">mask</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
+            <span class="n">mask</span><span class="p">,</span> <span class="n">maffine</span> <span class="o">=</span> <span class="n">reslice_roi</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">roi_affine</span><span class="p">,</span> <span class="n">roi_zooms</span><span class="p">,</span> <span class="n">in_affine</span><span class="p">,</span> <span class="n">in_zooms</span><span class="p">[:</span><span class="mi">3</span><span class="p">])</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">mask</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">in_data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span> <span class="ow">and</span> <span class="n">in_zooms</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">==</span> <span class="mf">1.0</span><span class="p">:</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">mask</span><span class="p">[:,:,:,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">],</span> <span class="n">in_data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">mask</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">in_data</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="s1">&#39;bad reslice. could be rounding error.&#39;</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">mdata</span> <span class="o">=</span> <span class="n">in_data</span><span class="o">*</span><span class="n">mask</span>
+        <span class="n">mdata</span><span class="p">[</span><span class="n">mask</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="n">mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">mdata</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">p</span> <span class="o">==</span> <span class="s1">&#39;foster&#39;</span><span class="p">:</span>
+            <span class="n">foster_results</span><span class="p">[</span><span class="n">mod</span><span class="p">]</span> <span class="o">=</span> <span class="n">mean</span>
+        <span class="k">if</span> <span class="n">p</span> <span class="o">==</span> <span class="s1">&#39;control&#39;</span><span class="p">:</span>
+            <span class="n">control_results</span><span class="p">[</span><span class="n">mod</span><span class="p">]</span> <span class="o">=</span> <span class="n">mean</span>
+<span class="c1"># put results together into single dataframe and output csv</span>
+<span class="n">comb_results</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">foster_results</span><span class="p">,</span> <span class="n">control_results</span><span class="p">])</span>
+<span class="n">comb_results</span><span class="p">[</span><span class="s1">&#39;mori&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">atlas_regions</span><span class="p">[</span><span class="s1">&#39;mori&#39;</span><span class="p">]</span>
+<span class="n">comb_results</span><span class="p">[</span><span class="s1">&#39;JHUtract&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">atlas_regions</span><span class="p">[</span><span class="s1">&#39;JHUtract&#39;</span><span class="p">]</span>
+<span class="n">comb_results</span><span class="p">[[</span><span class="s1">&#39;FA&#39;</span><span class="p">,</span> <span class="s1">&#39;WM&#39;</span><span class="p">,</span> <span class="s1">&#39;GM&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">comb_results</span><span class="p">[[</span><span class="s1">&#39;FA&#39;</span><span class="p">,</span> <span class="s1">&#39;WM&#39;</span><span class="p">,</span> <span class="s1">&#39;GM&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">*</span><span class="mi">100</span><span class="p">)</span>
+<span class="n">comb_results</span><span class="p">[[</span><span class="s1">&#39;MD&#39;</span><span class="p">,</span> <span class="s1">&#39;AD&#39;</span><span class="p">,</span> <span class="s1">&#39;RD&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">comb_results</span><span class="p">[[</span><span class="s1">&#39;MD&#39;</span><span class="p">,</span> <span class="s1">&#39;AD&#39;</span><span class="p">,</span> <span class="s1">&#39;RD&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">*</span><span class="mi">100000</span><span class="p">)</span>
+<span class="n">comb_results</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;roi&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">index_num</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;_&#39;</span><span class="o">+</span><span class="n">prime_mod</span><span class="o">+</span><span class="s1">&#39;_&#39;</span><span class="o">+</span><span class="n">prime_behav_tup</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<span class="n">col_order</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;gp&#39;</span><span class="p">,</span> <span class="s1">&#39;sids&#39;</span><span class="p">,</span> <span class="n">prime_behav_tup</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">prime_mod</span><span class="p">]</span> <span class="o">+</span> <span class="n">modalities</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;mori&#39;</span><span class="p">,</span> <span class="s1">&#39;JHUtract&#39;</span><span class="p">]</span>
+<span class="n">comb_results</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">outfile</span><span class="p">),</span> <span class="n">columns</span><span class="o">=</span><span class="n">col_order</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<span class="n">provenance</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">outfile</span><span class="p">),</span> <span class="s1">&#39;make multimodal csv from stats index file&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">index_fname</span><span class="p">),</span> <span class="n">script</span><span class="o">=</span><span class="vm">__file__</span><span class="p">,</span> \
+               <span class="n">provenance</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;index&#39;</span><span class="p">:</span> <span class="n">index_num</span><span class="p">,</span> <span class="s1">&#39;behavior&#39;</span><span class="p">:</span> <span class="n">prime_behav_tup</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;modalities&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">prime_mod</span><span class="p">]</span> <span class="o">+</span> <span class="n">modalities</span><span class="p">,</span> <span class="s1">&#39;cols&#39;</span><span class="p">:</span> <span class="n">col_order</span><span class="p">})</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt"></div>
+
+<div class="output_subarea output_text output_error">
+<pre>
+<span class="ansi-cyan-fg">  File </span><span class="ansi-green-fg">&#34;&lt;ipython-input-19-1b20e3092c89&gt;&#34;</span><span class="ansi-cyan-fg">, line </span><span class="ansi-green-fg">103</span>
+<span class="ansi-red-fg">    in_data = nib.load(str(statsdir/allfile_ftempl.format(pool=p, mod=prime_mod))).get_data()</span>
+          ^
+<span class="ansi-red-fg">IndentationError</span><span class="ansi-red-fg">:</span> expected an indented block
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[13]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">foster_behav_data</span><span class="p">,</span> <span class="n">control_behav_data</span><span class="p">])</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[13]:</div>
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>(21, PATrhyTotSS)</th>
+      <th>(22, PATsegTotSS)</th>
+      <th>(23, CTOPPphoaCS)</th>
+      <th>(24, CTOPPrnCS)</th>
+      <th>(25, CTOPPphomCS)</th>
+      <th>(26, PPVTSS)</th>
+      <th>(27, TOPELeliSS)</th>
+      <th>(28, STIMQ-PSDSscaleScore1-to-15-SUM)</th>
+      <th>(29, self-esteem-IAT)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>BBC101</th>
+      <td>82</td>
+      <td>110</td>
+      <td>79</td>
+      <td>70</td>
+      <td>85</td>
+      <td>88</td>
+      <td>77</td>
+      <td>12</td>
+      <td>0.22</td>
+    </tr>
+    <tr>
+      <th>BBC105</th>
+      <td>118</td>
+      <td>103</td>
+      <td>106</td>
+      <td>88</td>
+      <td>106</td>
+      <td>109</td>
+      <td>110</td>
+      <td>14</td>
+      <td>0.45</td>
+    </tr>
+    <tr>
+      <th>BBC106</th>
+      <td>118</td>
+      <td>93</td>
+      <td>106</td>
+      <td>106</td>
+      <td>109</td>
+      <td>120</td>
+      <td>110</td>
+      <td>10</td>
+      <td>0.82</td>
+    </tr>
+    <tr>
+      <th>BBC108</th>
+      <td>118</td>
+      <td>119</td>
+      <td>128</td>
+      <td>109</td>
+      <td>103</td>
+      <td>106</td>
+      <td>121</td>
+      <td>12</td>
+      <td>-0.09</td>
+    </tr>
+    <tr>
+      <th>BBC113</th>
+      <td>113</td>
+      <td>103</td>
+      <td>104</td>
+      <td>85</td>
+      <td>103</td>
+      <td>109</td>
+      <td>110</td>
+      <td>10</td>
+      <td>-0.12</td>
+    </tr>
+    <tr>
+      <th>BBC116</th>
+      <td>84</td>
+      <td>84</td>
+      <td>87</td>
+      <td>97</td>
+      <td>91</td>
+      <td>92</td>
+      <td>97</td>
+      <td>13</td>
+      <td>0.29</td>
+    </tr>
+    <tr>
+      <th>BBC118</th>
+      <td>74</td>
+      <td>96</td>
+      <td>98</td>
+      <td>88</td>
+      <td>88</td>
+      <td>88</td>
+      <td>94</td>
+      <td>10</td>
+      <td>0.19</td>
+    </tr>
+    <tr>
+      <th>BBC119</th>
+      <td>87</td>
+      <td>73</td>
+      <td>109</td>
+      <td>88</td>
+      <td>115</td>
+      <td>108</td>
+      <td>116</td>
+      <td>9</td>
+      <td>0.07</td>
+    </tr>
+    <tr>
+      <th>BBC120</th>
+      <td>103</td>
+      <td>83</td>
+      <td>98</td>
+      <td>91</td>
+      <td>100</td>
+      <td>104</td>
+      <td>94</td>
+      <td>8</td>
+      <td>-0.26</td>
+    </tr>
+    <tr>
+      <th>BBC202</th>
+      <td>118</td>
+      <td>111</td>
+      <td>117</td>
+      <td>97</td>
+      <td>124</td>
+      <td>130</td>
+      <td>113</td>
+      <td>13</td>
+      <td>0.15</td>
+    </tr>
+    <tr>
+      <th>BBC208</th>
+      <td>118</td>
+      <td>109</td>
+      <td>113</td>
+      <td>97</td>
+      <td>109</td>
+      <td>129</td>
+      <td>113</td>
+      <td>13</td>
+      <td>0.59</td>
+    </tr>
+    <tr>
+      <th>BBC209</th>
+      <td>111</td>
+      <td>96</td>
+      <td>102</td>
+      <td>97</td>
+      <td>103</td>
+      <td>97</td>
+      <td>102</td>
+      <td>11</td>
+      <td>0.93</td>
+    </tr>
+    <tr>
+      <th>BBC211</th>
+      <td>113</td>
+      <td>109</td>
+      <td>102</td>
+      <td>85</td>
+      <td>106</td>
+      <td>115</td>
+      <td>102</td>
+      <td>11</td>
+      <td>0.25</td>
+    </tr>
+    <tr>
+      <th>BBC231</th>
+      <td>113</td>
+      <td>110</td>
+      <td>115</td>
+      <td>97</td>
+      <td>118</td>
+      <td>139</td>
+      <td>118</td>
+      <td>15</td>
+      <td>0.54</td>
+    </tr>
+    <tr>
+      <th>BBC241</th>
+      <td>114</td>
+      <td>108</td>
+      <td>109</td>
+      <td>100</td>
+      <td>118</td>
+      <td>120</td>
+      <td>118</td>
+      <td>15</td>
+      <td>0.27</td>
+    </tr>
+    <tr>
+      <th>BBC243</th>
+      <td>111</td>
+      <td>108</td>
+      <td>96</td>
+      <td>79</td>
+      <td>124</td>
+      <td>121</td>
+      <td>110</td>
+      <td>13</td>
+      <td>-0.06</td>
+    </tr>
+    <tr>
+      <th>BBC249</th>
+      <td>118</td>
+      <td>117</td>
+      <td>115</td>
+      <td>97</td>
+      <td>127</td>
+      <td>138</td>
+      <td>122</td>
+      <td>12</td>
+      <td>-0.15</td>
+    </tr>
+    <tr>
+      <th>BBC253</th>
+      <td>108</td>
+      <td>111</td>
+      <td>128</td>
+      <td>112</td>
+      <td>106</td>
+      <td>131</td>
+      <td>121</td>
+      <td>13</td>
+      <td>0.61</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
 </div>
 
 </div>
@@ -11888,21 +13216,16 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[7]:</div>
+<div class="prompt input_prompt">In&nbsp;[18]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="c1"># prepare data for correlations</span>
-<span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">clusters</span><span class="p">[</span><span class="s1">&#39;pool&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)),</span> <span class="n">columns</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">clusters</span><span class="p">[</span><span class="s1">&#39;mod&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)))</span>
-<span class="k">with</span> <span class="n">WorkingContext</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">statsdir</span><span class="p">)):</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="k">for</span> <span class="n">pool</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">clusters</span><span class="p">[</span><span class="s1">&#39;pool&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)):</span>
-            <span class="k">for</span> <span class="n">mod</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">clusters</span><span class="p">[</span><span class="s1">&#39;mod&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)):</span>
-                <span class="n">fname</span> <span class="o">=</span> <span class="n">fname_templ</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">pool</span><span class="o">=</span><span class="n">pool</span><span class="p">,</span> <span class="n">mod</span><span class="o">=</span><span class="n">mod</span><span class="p">)</span>
-                <span class="n">data</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="n">pool</span><span class="p">,</span> <span class="n">mod</span><span class="p">,</span> <span class="n">nib</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">fname</span><span class="p">))</span>
-    <span class="k">except</span><span class="p">:</span>
-        <span class="k">print</span><span class="p">(</span><span class="s1">&#39;an error has occured loading data into dataframe.&#39;</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">print</span><span class="p">(</span><span class="s1">&#39;successfully entered all multimodal files to dataframe&#39;</span><span class="p">)</span>
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">statsdir</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="n">row</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">clusters</span><span class="o">.</span><span class="n">iterrows</span><span class="p">()):</span>
+    <span class="k">print</span> <span class="n">i</span><span class="p">,</span> <span class="n">idx</span>
+    <span class="k">print</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;clu_idx_fname&#39;</span><span class="p">]</span>
+    <span class="k">print</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;idx_data&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span><span class="o">.</span><span class="n">shape</span>
+    <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="mi">10</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+        <span class="k">break</span>
 </pre></div>
 
 </div>
@@ -11917,9 +13240,171 @@ div#notebook {
 <div class="prompt"></div>
 
 <div class="output_subarea output_stream output_stdout output_text">
-<pre>successfully entered all multimodal files to dataframe
+<pre>0 0
+foster_FA_PPVTSS_tpos_cluster_index.nii.gz
+(105, 144, 110)
+1 1
+foster_FA_CTOPPphoaCS_tpos_cluster_index.nii.gz
+(105, 144, 110)
+2 2
+foster_FA_CTOPPrnCS_tpos_cluster_index.nii.gz
+(105, 144, 110)
+3 3
+foster_FA_STIMQ-PSDSscaleScore1-to-15-SUM_tneg_cluster_index.nii.gz
+(105, 144, 110)
+4 4
+foster_FA_STIMQ-PSDSscaleScore1-to-15-SUM_tneg_cluster_index.nii.gz
+(105, 144, 110)
+5 5
+foster_MD_PPVTSS_tpos_cluster_index.nii.gz
+(105, 144, 110)
+6 6
+foster_MD_PPVTSS_tpos_cluster_index.nii.gz
+(105, 144, 110)
+7 7
+foster_MD_PPVTSS_tpos_cluster_index.nii.gz
+(105, 144, 110)
+8 8
+foster_MD_CTOPPphoaCS_tpos_cluster_index.nii.gz
+(105, 144, 110)
+9 9
+foster_MD_CTOPPphoaCS_tpos_cluster_index.nii.gz
+(105, 144, 110)
+10 10
+foster_MD_CTOPPphoaCS_tpos_cluster_index.nii.gz
+(105, 144, 110)
 </pre>
 </div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[25]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="n">row</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">clusters</span><span class="o">.</span><span class="n">iterrows</span><span class="p">()):</span>
+    <span class="k">print</span> <span class="n">i</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">i</span><span class="p">),</span> <span class="n">idx</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
+    <span class="k">print</span> <span class="n">row</span>
+    <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+        <span class="k">print</span> <span class="s1">&#39;gt 1&#39;</span>
+        <span class="k">break</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt"></div>
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>0 &lt;type &#39;int&#39;&gt; 0 &lt;type &#39;str&#39;&gt;
+cluster-index                                                                                                                                                                                                                                                                                                            201
+k                                                                                                                                                                                                                                                                                                                         16
+x                                                                                                                                                                                                                                                                                                                         76
+y                                                                                                                                                                                                                                                                                                                         41
+z                                                                                                                                                                                                                                                                                                                         35
+name                                                                                                                                                                                                                                                                                                    PPVTSS-pos-foster-FA
+mori                                                                                                                                                                                                                                                                                                              CEREBELLUM
+JHU_tracts                                                                                                                                                                                                                                                                                                      Cerebellum_L
+mod                                                                                                                                                                                                                                                                                                                       FA
+pool                                                                                                                                                                                                                                                                                                                  foster
+dir                                                                                                                                                                                                                                                                                                                      pos
+behav                                                                                                                                                                                                                                                                                                                 PPVTSS
+clu_idx_fname                                                                                                                                                                                                                                                                     foster_FA_PPVTSS_tpos_cluster_index.nii.gz
+idx_data         &lt;class &#39;nibabel.nifti1.Nifti1Image&#39;&gt;\ndata shape (105, 144, 110)\naffine: \n[[  -1.518802   -0.167275    0.008506   86.458817]\n [  -0.167249    1.518806    0.008167  -64.628075]\n [   0.007142   -0.005491    1.999965 -106.261108]\n [   0.          0.          0.          1.      ]]\nmetadata:\n...
+Name: 0, dtype: object
+1 &lt;type &#39;int&#39;&gt; 1 &lt;type &#39;str&#39;&gt;
+cluster-index                                                                                                                                                                                                                                                                                                            208
+k                                                                                                                                                                                                                                                                                                                         21
+x                                                                                                                                                                                                                                                                                                                         74
+y                                                                                                                                                                                                                                                                                                                         38
+z                                                                                                                                                                                                                                                                                                                         36
+name                                                                                                                                                                                                                                                                                               CTOPPphoaCS-pos-foster-FA
+mori                                                                                                                                                                                                                                                                                                              CEREBELLUM
+JHU_tracts                                                                                                                                                                                                                                                                                                      Cerebellum_L
+mod                                                                                                                                                                                                                                                                                                                       FA
+pool                                                                                                                                                                                                                                                                                                                  foster
+dir                                                                                                                                                                                                                                                                                                                      pos
+behav                                                                                                                                                                                                                                                                                                            CTOPPphoaCS
+clu_idx_fname                                                                                                                                                                                                                                                                foster_FA_CTOPPphoaCS_tpos_cluster_index.nii.gz
+idx_data         &lt;class &#39;nibabel.nifti1.Nifti1Image&#39;&gt;\ndata shape (105, 144, 110)\naffine: \n[[  -1.518802   -0.167275    0.008506   86.458817]\n [  -0.167249    1.518806    0.008167  -64.628075]\n [   0.007142   -0.005491    1.999965 -106.261108]\n [   0.          0.          0.          1.      ]]\nmetadata:\n...
+Name: 1, dtype: object
+gt 1
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[8]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">data</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[8]:</div>
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>MD</th>
+      <th>AD</th>
+      <th>WM</th>
+      <th>RD</th>
+      <th>FA</th>
+      <th>GM</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>control</th>
+      <td>&lt;class 'nibabel.nifti1.Nifti1Image'&gt;\ndata shape (105, 144, 110, 9)\naffine: \n[[  -1.518802   -0.167275    0.008506   86.458817]\n [  -0.167249    1.518806    0.008167  -64.628075]\n [   0.007142   -0.005491    1.999965 -106.261108]\n [   0.          0.          0.          1.      ]]\nmetadata...</td>
+      <td>&lt;class 'nibabel.nifti1.Nifti1Image'&gt;\ndata shape (105, 144, 110, 9)\naffine: \n[[  -1.518802   -0.167275    0.008506   86.458817]\n [  -0.167249    1.518806    0.008167  -64.628075]\n [   0.007142   -0.005491    1.999965 -106.261108]\n [   0.          0.          0.          1.      ]]\nmetadata...</td>
+      <td>&lt;class 'nibabel.nifti1.Nifti1Image'&gt;\ndata shape (160, 256, 256, 9)\naffine: \n[[  -0.993981   -0.094037    0.003653   86.458801]\n [  -0.109456    0.853832    0.003508  -64.628098]\n [   0.004674   -0.003087    0.858985 -106.261002]\n [   0.          0.          0.          1.      ]]\nmetadata...</td>
+      <td>&lt;class 'nibabel.nifti1.Nifti1Image'&gt;\ndata shape (105, 144, 110, 9)\naffine: \n[[  -1.518802   -0.167275    0.008506   86.458817]\n [  -0.167249    1.518806    0.008167  -64.628075]\n [   0.007142   -0.005491    1.999965 -106.261108]\n [   0.          0.          0.          1.      ]]\nmetadata...</td>
+      <td>&lt;class 'nibabel.nifti1.Nifti1Image'&gt;\ndata shape (105, 144, 110, 9)\naffine: \n[[  -1.518802   -0.167275    0.008506   86.458817]\n [  -0.167249    1.518806    0.008167  -64.628075]\n [   0.007142   -0.005491    1.999965 -106.261108]\n [   0.          0.          0.          1.      ]]\nmetadata...</td>
+      <td>&lt;class 'nibabel.nifti1.Nifti1Image'&gt;\ndata shape (160, 256, 256, 9)\naffine: \n[[  -0.993981   -0.094037    0.003653   86.458801]\n [  -0.109456    0.853832    0.003508  -64.628098]\n [   0.004674   -0.003087    0.858985 -106.261002]\n [   0.          0.          0.          1.      ]]\nmetadata...</td>
+    </tr>
+    <tr>
+      <th>foster</th>
+      <td>&lt;class 'nibabel.nifti1.Nifti1Image'&gt;\ndata shape (105, 144, 110, 9)\naffine: \n[[  -1.518802   -0.167275    0.008506   86.458817]\n [  -0.167249    1.518806    0.008167  -64.628075]\n [   0.007142   -0.005491    1.999965 -106.261108]\n [   0.          0.          0.          1.      ]]\nmetadata...</td>
+      <td>&lt;class 'nibabel.nifti1.Nifti1Image'&gt;\ndata shape (105, 144, 110, 9)\naffine: \n[[  -1.518802   -0.167275    0.008506   86.458817]\n [  -0.167249    1.518806    0.008167  -64.628075]\n [   0.007142   -0.005491    1.999965 -106.261108]\n [   0.          0.          0.          1.      ]]\nmetadata...</td>
+      <td>&lt;class 'nibabel.nifti1.Nifti1Image'&gt;\ndata shape (160, 256, 256, 9)\naffine: \n[[  -0.993981   -0.094037    0.003653   86.458801]\n [  -0.109456    0.853832    0.003508  -64.628098]\n [   0.004674   -0.003087    0.858985 -106.261002]\n [   0.          0.          0.          1.      ]]\nmetadata...</td>
+      <td>&lt;class 'nibabel.nifti1.Nifti1Image'&gt;\ndata shape (105, 144, 110, 9)\naffine: \n[[  -1.518802   -0.167275    0.008506   86.458817]\n [  -0.167249    1.518806    0.008167  -64.628075]\n [   0.007142   -0.005491    1.999965 -106.261108]\n [   0.          0.          0.          1.      ]]\nmetadata...</td>
+      <td>&lt;class 'nibabel.nifti1.Nifti1Image'&gt;\ndata shape (105, 144, 110, 9)\naffine: \n[[  -1.518802   -0.167275    0.008506   86.458817]\n [  -0.167249    1.518806    0.008167  -64.628075]\n [   0.007142   -0.005491    1.999965 -106.261108]\n [   0.          0.          0.          1.      ]]\nmetadata...</td>
+      <td>&lt;class 'nibabel.nifti1.Nifti1Image'&gt;\ndata shape (160, 256, 256, 9)\naffine: \n[[  -0.993981   -0.094037    0.003653   86.458801]\n [  -0.109456    0.853832    0.003508  -64.628098]\n [   0.004674   -0.003087    0.858985 -106.261002]\n [   0.          0.          0.          1.      ]]\nmetadata...</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
 </div>
 
 </div>
@@ -11931,7 +13416,85 @@ div#notebook {
 <div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="n">atlases</span>
+<div class=" highlight hl-ipython2"><pre><span></span> 
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span> 
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span> 
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span> 
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span> 
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span> 
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span> 
 </pre></div>
 
 </div>
@@ -12159,13 +13722,31 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="prompt input_prompt">In&nbsp;[17]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span> 
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">pd</span><span class="o">.</span><span class="n">IndexSlice</span>
 </pre></div>
 
 </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[17]:</div>
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>&lt;pandas.core.indexing._IndexSlice at 0x7fe905ae7310&gt;</pre>
+</div>
+
+</div>
+
 </div>
 </div>
 
