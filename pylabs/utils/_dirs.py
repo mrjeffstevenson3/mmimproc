@@ -40,6 +40,13 @@ class InTempDir(InDir):
 
 
 def appendposix(fname, suff):
+    '''
+    Adds suffix to end of stem or basename, then puts extentions back on.
+    exception is when .gz added onto .nii where order is reversed
+    :param fname: pathlib path and file name with ext
+    :param suff:  string to append at end of file name such as '_brain
+    :return: returns reformed posix path with string added at end of file name.
+    '''
     fname = Path(fname)
     ext = fname.suffixes
     l = len(ext)
@@ -50,5 +57,8 @@ def appendposix(fname, suff):
     if l == 3:
         fname = Path(fname).stem
     fname = str(fname)
-    fname += suff+ext
+    if suff == '.gz' and ext == '.nii' or suff == '.gz' and ext == '.raw':
+        fname +=  ext + suff
+    else:
+        fname += suff+ext
     return Path(fname)
