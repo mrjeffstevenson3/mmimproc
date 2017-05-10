@@ -1,6 +1,7 @@
 #this file specifies pairing for each modality is in the exact same subject order for zip.
 from pathlib import *
 import pandas as pd
+from pylabs.projects.bbc.fmri.fmr_runs import picks
 from pylabs.utils.paths import getnetworkdataroot
 #setup data paths and file names to process
 fs = Path(getnetworkdataroot())
@@ -183,3 +184,6 @@ csvraw = fs / project / 'behavior' / behav_csv_name
 data = pd.read_csv(str(csvraw), header=[0,1], index_col=1, tupleize_cols=True)
 foster_behav_data = data.loc[foster_paired_behav_subjs, behav_list]
 control_behav_data = data.loc[control_paired_behav_subjs, behav_list]
+
+fmri_fname_templ = 'sub-bbc{sid}_ses-{snum}_fmri_{runnum}.nii'
+fmri_fnames = [fmri_fname_templ.format(sid=str(s), snum=str(ses), runnum=str(r)) for s, ses, r in picks]
