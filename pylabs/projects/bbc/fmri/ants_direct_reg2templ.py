@@ -25,5 +25,5 @@ for fmri in fmri_fnames:
     out_fname = regdir/ fmri.replace('.nii', '_reg2fmriT2template_')
     with WorkingContext(str(regdir)):
         cmd = 'antsRegistrationSyN.sh -d 3 -m '+str(mov)+' -f '+str(ref)+' -o '+str(out_fname)
-        cmd += ' -n 30 -t s -p f -j 1 -s 10 -r 1'
+        cmd += ' -n 30 -t s -p f -j 1 -s 3 -r 1'
         results += run_subprocess(cmd)
