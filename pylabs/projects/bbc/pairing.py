@@ -191,8 +191,8 @@ fmri_fnames = [fmri_fname_templ.format(sid=str(s), snum=str(ses), runnum=str(r))
 # fsl wls tensor mf fits for warping to template space
 # make aligned tensor, warp, affine lists to zip
 
-foster_dwi_fsl_wls_tensor_mf_fnames = [fname+'_wls_fsl_tensor_mf.nii.gz' for fname in foster_dwi_fnames]
-control_dwi_fsl_wls_tensor_mf_fnames = [fname+'_wls_fsl_tensor_mf.nii.gz' for fname in control_dwi_fnames]
+foster_dwi_fsl_wls_tensor_mf_fnames = [fname+'_wls_fsl_tensor_medfilt.nii.gz' for fname in foster_dwi_fnames]
+control_dwi_fsl_wls_tensor_mf_fnames = [fname+'_wls_fsl_tensor_medfilt.nii.gz' for fname in control_dwi_fnames]
 dwi_fsl_wls_tensor_mf_fnames = foster_dwi_fsl_wls_tensor_mf_fnames + control_dwi_fsl_wls_tensor_mf_fnames
 foster_dwi2templ_warp_fnames = [fname.replace('_withmf3S0_ec_thr1', '_withmf3S0_S0_brain_j1_s10_r1_reg2dwiT2template_1Warp.nii.gz') for fname in foster_dwi_fnames]
 control_dwi2templ_warp_fnames = [fname.replace('_withmf3S0_ec_thr1', '_withmf3S0_S0_brain_j1_s10_r1_reg2dwiT2template_1Warp.nii.gz') for fname in control_dwi_fnames]

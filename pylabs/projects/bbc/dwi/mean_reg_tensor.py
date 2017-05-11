@@ -31,16 +31,18 @@ for d, w,a in zip(dwi_fsl_wls_tensor_mf_fnames, dwi2templ_warp_fnames, dwi2templ
     outf = outdir/ appendposix(d, '_reg2dwiT2template')
     subj2templ_applywarp(str(tensor), str(ref), str(outf), warpfiles, str(outdir), dims=4, affine_xform=affine_xform, args=[' --use-BSpline'])
     nii2nrrd(str(outf), str(outf).replace('.nii.gz', '.nhdr'), istensor=True)
-    tensor_fnames.append(outf)
+    tensor_fnames.append(str(outf))
 
-tensor_shape = nib.load(tensor_fnames[0]).get_data().shape
 tensor_affine = nib.load(tensor_fnames[0]).affine
-tensor0 = np.zeros((tensor_shape[:3], len(tensor_fnames)))
-tensor1 = np.zeros((tensor_shape[:3], len(tensor_fnames)))
-tensor2 = np.zeros((tensor_shape[:3], len(tensor_fnames)))
-tensor3 = np.zeros((tensor_shape[:3], len(tensor_fnames)))
-tensor4 = np.zeros((tensor_shape[:3], len(tensor_fnames)))
-tensor5 = np.zeros((tensor_shape[:3], len(tensor_fnames)))
+tensor_hdr = nib.load(tensor_fnames[0]).header
+tensor_shape = nib.load(tensor_fnames[0]).get_data().shape
+component_shape = tensor_shape[:3] + (len(tensor_fnames),)
+tensor0 = np.zeros(component_shape)
+tensor1 = np.zeros(component_shape)
+tensor2 = np.zeros(component_shape)
+tensor3 = np.zeros(component_shape)
+tensor4 = np.zeros(component_shape)
+tensor5 = np.zeros(component_shape)
 
 for i, ten in enumerate(tensor_fnames):
     tendata = nib.load(ten).get_data()
@@ -51,23 +53,20 @@ for i, ten in enumerate(tensor_fnames):
     tensor4[:, :, :, i] = tendata[:, :, :, 4]
     tensor5[:, :, :, i] = tendata[:, :, :, 5]
 
-mean_ten0 = np.mean(tensor0, axis=3)
-mean_ten1 = np.mean(tensor1, axis=3)
-mean_ten2 = np.mean(tensor2, axis=3)
-mean_ten3 = np.mean(tensor3, axis=3)
-mean_ten4 = np.mean(tensor4, axis=3)
-mean_ten5 = np.mean(tensor5, axis=3)
-
 mean_tensor = np.zeros(tensor_shape)
-mean_tensor[:, :, :, 0] = mean_ten0
-mean_tensor[:, :, :, 1] = mean_ten1
-mean_tensor[:, :, :, 2] = mean_ten2
-mean_tensor[:, :, :, 3] = mean_ten3
-mean_tensor[:, :, :, 4] = mean_ten4
-mean_tensor[:, :, :, 5] = mean_ten5
+mean_tensor[:, :, :, 0] = np.mean(tensor0, axis=3)
+mean_tensor[:, :, :, 1] = np.mean(tensor1, axis=3)
+mean_tensor[:, :, :, 2] = np.mean(tensor2, axis=3)
+mean_tensor[:, :, :, 3] = np.mean(tensor3, axis=3)
+mean_tensor[:, :, :, 4] = np.mean(tensor4, axis=3)
+mean_tensor[:, :, :, 5] = np.mean(tensor5, axis=3)
 
-mean_tensor_img = nib.Nifti1Image(mean_tensor, tensor_affine)
+mean_tensor_img = nib.Nifti1Image(mean_tensor, tensor_affine, tensor_hdr)
 mean_tensor_img.set_qform(tensor_affine, code=2)
 mean_tensor_img.set_sform(tensor_affine, code=2)
 nib.save(mean_tensor_img, str(outdir/mean_tensor_fname))
+nii2nrrd(str(outdir/mean_tensor_fname), str(outdir/mean_tensor_fname).replace('.nii', '.nhdr'), istensor=True)
+
 provenance.log(str(outdir/mean_tensor_fname), 'reg to template and calculate mean tensor', tensor_fnames, script=__file__)
+provenance.log(str(outdir/mean_tensor_fname).replace('.nii.gz', '.nhdr'), 'reg to template and calculate mean tensor', str(outdir/mean_tensor_fname), script=__file__)
+
