@@ -53,13 +53,16 @@ for i, ten in enumerate(tensor_fnames):
     tensor4[:, :, :, i] = tendata[:, :, :, 4]
     tensor5[:, :, :, i] = tendata[:, :, :, 5]
 
+mean_tensor0 = np.mean(tensor0, axis=3)
+mean_tensor1 = np.mean(tensor1, axis=3)
+mean_tensor2 = np.mean(tensor2, axis=3)
+mean_tensor3 = np.mean(tensor3, axis=3)
+mean_tensor4 = np.mean(tensor4, axis=3)
+mean_tensor5 = np.mean(tensor5, axis=3)
+
+mean_tensors = [mean_tensor0[:,:,:,None], mean_tensor1[:,:,:,None], mean_tensor2[:,:,:,None], mean_tensor3[:,:,:,None], mean_tensor4[:,:,:,None], mean_tensor5[:,:,:,None]]
 mean_tensor = np.zeros(tensor_shape)
-mean_tensor[:, :, :, 0] = np.mean(tensor0, axis=3)
-mean_tensor[:, :, :, 1] = np.mean(tensor1, axis=3)
-mean_tensor[:, :, :, 2] = np.mean(tensor2, axis=3)
-mean_tensor[:, :, :, 3] = np.mean(tensor3, axis=3)
-mean_tensor[:, :, :, 4] = np.mean(tensor4, axis=3)
-mean_tensor[:, :, :, 5] = np.mean(tensor5, axis=3)
+mean_tensor = np.concatenate(mean_tensors, axis=3)
 
 mean_tensor_img = nib.Nifti1Image(mean_tensor, tensor_affine, tensor_hdr)
 mean_tensor_img.set_qform(tensor_affine, code=2)
@@ -68,5 +71,5 @@ nib.save(mean_tensor_img, str(outdir/mean_tensor_fname))
 nii2nrrd(str(outdir/mean_tensor_fname), str(outdir/mean_tensor_fname).replace('.nii', '.nhdr'), istensor=True)
 
 provenance.log(str(outdir/mean_tensor_fname), 'reg to template and calculate mean tensor', tensor_fnames, script=__file__)
-provenance.log(str(outdir/mean_tensor_fname).replace('.nii.gz', '.nhdr'), 'reg to template and calculate mean tensor', str(outdir/mean_tensor_fname), script=__file__)
+provenance.log(str(outdir/mean_tensor_fname).replace('.nii', '.nhdr'), 'reg to template and calculate mean tensor', str(outdir/mean_tensor_fname), script=__file__)
 
