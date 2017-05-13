@@ -68,8 +68,6 @@ mean_tensor_img = nib.Nifti1Image(mean_tensor, tensor_affine, tensor_hdr)
 mean_tensor_img.set_qform(tensor_affine, code=2)
 mean_tensor_img.set_sform(tensor_affine, code=2)
 nib.save(mean_tensor_img, str(outdir/mean_tensor_fname))
-nii2nrrd(str(outdir/mean_tensor_fname), str(outdir/mean_tensor_fname).replace('.nii', '.nhdr'), istensor=True)
-
 provenance.log(str(outdir/mean_tensor_fname), 'reg to template and calculate mean tensor', tensor_fnames, script=__file__)
-provenance.log(str(outdir/mean_tensor_fname).replace('.nii', '.nhdr'), 'reg to template and calculate mean tensor', str(outdir/mean_tensor_fname), script=__file__)
+nii2nrrd(str(outdir/mean_tensor_fname), str(outdir/mean_tensor_fname).replace('.nii', '.nhdr'), istensor=True)
 
