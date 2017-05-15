@@ -5,22 +5,19 @@
 proc_method=1
 run=7
 #set search sub-strings to identify vtk files
-sub70=IFOF-45
-sub158=IFOF-133
+sub70=IFOF-45x
+sub158=IFOF-133x
 subcc=mori_CC
 sub35=PostIntCap-35
 sub123=PostIntCap-123
-sub43=Left_SLF-43
-sub131=Right_SLF-131
-#get bbc subject directories
+sub43=SLF-43
+sub131=SLF-131
 cd ${DATADIR}/bbc
 #list=`python -c "from pylabs.projects.bbc.pairing import dwipairing; \
 #    print(' '.join(['sub-bbc{sid}'.format(sid=str(s)) for s, ses, m, r in dwipairing]))"`
 #list='sub-bbc108 sub-bbc211 sub-bbc231 sub-bbc241 sub-bbc243 sub-bbc249 sub-bbc253'
 list=sub-bbc253
-#list=`ls -d sub-bbc*`
-#rm -f ${DATADIR}/bbc/allvtk_channel_run${run}.txt
-#loop over subject dirs
+
 for afolder in ${list}
 do
 echo working on ${afolder}
@@ -138,3 +135,4 @@ cp ukf_10regions.csv ukf_10regions_${afile}.csv
 fi
 done
 done
+
