@@ -18,6 +18,8 @@ flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo', out
 applyxfm = fsl.ApplyXFM(interp='nearestneighbour', output_type='NIFTI')
 bet = fsl.BET(output_type='NIFTI')
 fast = fsl.FAST(output_type='NIFTI')
+
+
 project = 'tadpole'
 subject = 'JONAH_DAY1'
 

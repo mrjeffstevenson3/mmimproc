@@ -4,9 +4,11 @@ from collections import defaultdict
 from nipype.interfaces import fsl
 import nibabel as nib
 import numpy as np
-import subprocess
+from dipy.io import read_bvals_bvecs
+from dipy.core.gradients import gradient_table
 from datetime import datetime
 from cloud.serialization.cloudpickle import dumps
+from pylabs.structural.brain_extraction import extract_brain
 from pylabs.structural.brain_extraction import struc_bet
 from pylabs.conversion.brain_convert import conv_subjs
 from pylabs.io.images import loadStack
@@ -18,7 +20,8 @@ applyxfm = fsl.ApplyXFM(output_type='NIFTI')
 fs = Path(getnetworkdataroot())
 
 project = 'nbwr'
-
+eddy_corr_dir = 'eddy_cuda_repol_v1'
+filterS0_string = '_mf'
 niipickle = fs / project / 'nbwrniftiDict_dev_subj999b_201704101132.pickle'
 #stages to run
 convert = True
@@ -62,8 +65,10 @@ def test4file(file):
 if run_topup:
     for i, (topup, topdn, dwif) in enumerate(zip(topup_fname, topdn_fname, dwi_fname)):
         dwipath = fs / project / dwif.split('_')[0] / dwif.split('_')[1] / 'dwi'
-        ec_dir = dwipath / 'cuda_orig_v1'
+        ec_dir = dwipath / eddy_corr_dir
+        dwi_basename = dwipath / dwif
         orig_dwif_fname = dwipath / str(dwif + '.nii')
+
         dwi_bvals_fname = dwipath / str(dwif + '.bvals')
         dwi_bvecs_fname = dwipath / str(dwif + '.bvecs')
         dwi_dwellt_fname = dwipath / str(dwif + '.dwell_time')
@@ -95,6 +100,8 @@ if run_topup:
             for x in range(topdn_numlines):
                 ap.write('0 -1 0 ' + topdn_dwellt + '\n')
 
+        bvals, bvecs = read_bvals_bvecs(str(dwi_bvals_fname), str(dwi_bvecs_fname))
+        gtab = gradient_table(bvals, bvecs)
         topup_img = nib.load(str(topup_fname))
         topup_data = topup_img.get_data()
         topup_affine = topup_img.affine
@@ -109,14 +116,32 @@ if run_topup:
         cmd = 'topup --imain='+str(dwipath / str(topup + '_topdn_concat.nii'))
         cmd += ' --datain=acq_params.txt --config=b02b0.cnf --out='
         cmd += str(dwipath / str(topup + '_topdn_concat'))
-        cmd += ' --iout='+str(dwipath / str(topup + '_topdn_concat_unwarped.nii'))
-        cmd += ' --fout='+str(dwipath / str(topup + '_topdn_concat_warp_field.nii'))
+        cmd += ' --iout='+str(dwipath / str(topup + '_topdn_concat_unwarped'))
+        cmd += ' --fout='+str(dwipath / str(topup + '_topdn_concat_warp_field'))
         result = ()
         with WorkingContext(str(dwipath)):
             result = run_subprocess(cmd)
+            result = run_subprocess('fslmaths '+topup + '_topdn_concat_unwarped'+' -Tmean '+topup + '_topdn_concat_unwarped_mean')
+            with open('index.txt', 'w') as f:
+                f.write('1 ' * len(gtab.bvals))
+            extract_brain(dwipath/str(topup + '_topdn_concat_unwarped_mean.nii'))
+            eddy_cmd = 'eddy_cuda7.5 --imain='+str(orig_dwif_fname)+' --mask='+str(dwipath/str(topup + '_topdn_concat_unwarped_mean_brain_mask.nii'))
+            eddy_cmd += ' --acqp=acq_params.txt  --index=index.txt --bvecs='+str(dwi_bvecs_fname)
+            eddy_cmd += ' --bvals='+str(dwi_bvals_fname)+' --topup='+str(dwipath / str(topup + '_topdn_concat_unwarped'))
+            eddy_cmd += '  --repol --out='+str(ec_dir/str(dwif + '_topdn_unwarped_ec'))
+            result = run_subprocess(eddy_cmd)
+            dwi_bvecs_ec_rot_fname = str(ec_dir/str(dwif + '_topdn_unwarped_ec.eddy_rotated_bvecs'))
+            # clamp and filter
+            ec_data = nib.load(str(ec_dir/str(dwif + '_topdn_unwarped_ec.nii'))).get_data()
+            bvals, bvecs = read_bvals_bvecs(str(dwi_bvals_fname), str(dwi_bvecs_ec_rot_fname))
+            gtab = gradient_table(bvals, bvecs)
+            S0 = ec_data[:, :, :, gtab.b0s_mask]
+            if filterS0_string != '':
+                S0_fname = infpath / str(dwif + filterS0_string + '_S0.nii')
+                S0 = medianf(S0, size=3)
+                data[:, :, :, gtab.b0s_mask] = S0
+                fdwi = infpath / str(dwif + filterS0_string + '.nii')
+                savenii(data, img.affine, str(fdwi), header=img.header)
 
-
-        # with open(str(dwipath / 'index.txt'), 'w') as f:
-        #     f.write('1 ' * len(gtab.bvals))
-        #
+            S0_data =
 

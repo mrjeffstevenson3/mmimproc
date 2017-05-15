@@ -23,20 +23,18 @@ class DTIFitCmds(collections.MutableMapping):
     d.foo returns 'bar'
     '''
 
-    def __init__(self, **kwargs):
+    def __init__(self, *args, **kwargs):
         '''Use the object dict'''
         self.vals = {'dwif': str(kwargs['dwif']),
 
         }
 
 
-        }
 
-
-
-        self.dwif = dwif
-        self.mask_fname = mask_fname
-        self.sigma = sigma
+        self.args = (args)
+        # self.dwif = dwif
+        # self.mask_fname = mask_fname
+        # self.sigma = sigma
 
 
         if len(args) == len(kwargs) == 0:
@@ -58,6 +56,7 @@ class DTIFitCmds(collections.MutableMapping):
             self.__dict__.update(*args, **kwargs)
 
     def campart1(self, cmds):
+        pass
 
 
     # The next five methods are requirements of the ABC.

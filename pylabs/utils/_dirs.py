@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+from pathlib import *
 import os
 import tempfile
 import shutil
@@ -37,4 +37,16 @@ class InTempDir(InDir):
         super(InTempDir, self).__exit__(type_, value, tb)
         if self._del:
             shutil.rmtree(self._dir)
-    
+
+
+def appendposix(file, suff):
+    '''
+    Adds suffix to end of file basename, then puts extention(s) back on.
+    :param file: pathlib path and file name with ext (ext optional)
+    :param suff:  string to append at end of file name such as '_brain' or '_brain_mask
+    :return: returns reformed posix path with string added at end of file name and extension.
+    '''
+    file = Path(file)
+    file_exts = ''.join(file.suffixes)
+    return Path(str(file).replace(file_exts, suff+file_exts))
+

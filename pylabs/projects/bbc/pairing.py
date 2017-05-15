@@ -1,15 +1,18 @@
 #this file specifies pairing for each modality is in the exact same subject order for zip.
 from pathlib import *
+import pandas as pd
+from pylabs.projects.bbc.fmri.fmr_runs import picks
 from pylabs.utils.paths import getnetworkdataroot
 #setup data paths and file names to process
 fs = Path(getnetworkdataroot())
 project = 'bbc'
 ecdir = 'cuda_repol_std2_S0mf3_v5'
 filterS0_string = '_withmf3S0'
+behav_csv_name = 'bbc_behav_2-22-2017_rawsub.csv'
 dwitemplate = fs / project / 'reg' / 'ants_vbm_pairedLH_in_template_space' / 'bbc_pairedLH_template_resampled2dwi.nii'
 dwitemplatet2 = fs / project / 'reg' / 'ants_vbm_pairedLH_in_template_space' / 'bbc_pairedLH_template_invT2c_resampled2dwi.nii.gz'
 vbmtemplate = fs / project / 'reg' / 'ants_vbm_pairedLH_in_template_space' / 'bbc_pairedLH_template.nii.gz'
-
+# combined tuples are paired indexed successively (0->1, 2->3, ...), paired tuples are ordered indexed matched pairs.
 vbmpairing = [
     (101, 1, 'mpr', 3),
     (209, 1, 'mpr', 1),
@@ -90,6 +93,8 @@ paired_foster_subjs_tup = [
     (120, 1, 'dti_15dir_b1000', 1),
         ]
 
+# abuse occurred for 106 in 2nd placement, and 109, 116.
+
 paired_control_subjs_tup = [
     (202, 1, 'dti_15dir_b1000', 1),
     (208, 1, 'dti_15dir_b1000', 1),
@@ -125,6 +130,7 @@ paired_vbm_control_subjs_tup = [
     (231, '0015'),
     (253, '0017'),
     ]
+# sort ascending according to subject id number. paired tuples are ordered indexed matched pairs.
 paired_foster_subjs_sorted = sorted(paired_foster_subjs_tup, key=lambda x: x[0])
 paired_control_subjs_sorted = sorted(paired_control_subjs_tup, key=lambda x: x[0])
 paired_vbm_foster_subjs_sorted = sorted(paired_vbm_foster_subjs_tup, key=lambda x: x[0])
@@ -171,4 +177,28 @@ GMVBM_control_pnames = [fs / project / 'myvbm' / 'ants_vbm_template_pairedLH' / 
 mod = 'WM'
 WMVBM_foster_pnames = [fs / project / 'myvbm' / 'ants_vbm_template_pairedLH' / mod / wm_s2_ftempl.format(sid=str(s), vol=str(v)) for s, v in paired_vbm_foster_subjs_sorted]
 WMVBM_control_pnames = [fs / project / 'myvbm' / 'ants_vbm_template_pairedLH' / mod / wm_s2_ftempl.format(sid=str(s), vol=str(v)) for s, v in paired_vbm_control_subjs_sorted]
+
+
+behav_list = [(u'21', u'PATrhyTotSS') , (u'22', u'PATsegTotSS') , (u'23', u'CTOPPphoaCS')  ,(u'24', u'CTOPPrnCS') ,(u'25', u'CTOPPphomCS'), (u'26', u'PPVTSS'), (u'27', u'TOPELeliSS') ,(u'28', u'STIMQ-PSDSscaleScore1-to-15-SUM'), (u'29', u'self-esteem-IAT')]
+csvraw = fs / project / 'behavior' / behav_csv_name
+data = pd.read_csv(str(csvraw), header=[0,1], index_col=1, tupleize_cols=True)
+foster_behav_data = data.loc[foster_paired_behav_subjs, behav_list]
+control_behav_data = data.loc[control_paired_behav_subjs, behav_list]
+# fmri base file names list
+fmri_fname_templ = 'sub-bbc{sid}_ses-{snum}_fmri_{runnum}.nii'
+fmri_fnames = [fmri_fname_templ.format(sid=str(s), snum=str(ses), runnum=str(r)) for s, ses, r in picks]
+
+# fsl wls tensor mf fits for warping to template space
+# make aligned tensor, warp, affine lists to zip
+
+foster_dwi_fsl_wls_tensor_mf_fnames = [fname+'_wls_fsl_tensor_medfilt.nii.gz' for fname in foster_dwi_fnames]
+control_dwi_fsl_wls_tensor_mf_fnames = [fname+'_wls_fsl_tensor_medfilt.nii.gz' for fname in control_dwi_fnames]
+dwi_fsl_wls_tensor_mf_fnames = foster_dwi_fsl_wls_tensor_mf_fnames + control_dwi_fsl_wls_tensor_mf_fnames
+foster_dwi2templ_warp_fnames = [fname.replace('_withmf3S0_ec_thr1', '_withmf3S0_S0_brain_j1_s10_r1_reg2dwiT2template_1Warp.nii.gz') for fname in foster_dwi_fnames]
+control_dwi2templ_warp_fnames = [fname.replace('_withmf3S0_ec_thr1', '_withmf3S0_S0_brain_j1_s10_r1_reg2dwiT2template_1Warp.nii.gz') for fname in control_dwi_fnames]
+dwi2templ_warp_fnames = foster_dwi2templ_warp_fnames + control_dwi2templ_warp_fnames
+foster_dwi2templ_affine_fnames = [fname.replace('_withmf3S0_ec_thr1', '_withmf3S0_S0_brain_j1_s10_r1_reg2dwiT2template_0GenericAffine.mat') for fname in foster_dwi_fnames]
+control_dwi2templ_affine_fnames = [fname.replace('_withmf3S0_ec_thr1', '_withmf3S0_S0_brain_j1_s10_r1_reg2dwiT2template_0GenericAffine.mat') for fname in control_dwi_fnames]
+dwi2templ_affine_fnames = foster_dwi2templ_affine_fnames + control_dwi2templ_affine_fnames
+
 
