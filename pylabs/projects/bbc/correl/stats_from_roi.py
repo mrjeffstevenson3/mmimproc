@@ -44,7 +44,7 @@ for a in [mori_atlas, JHUtracts_atlas]:
     if not a_data.shape == mask.shape:
         mask, maffine = reslice_roi(mask, roi_affine, roi_zooms, a_affine, a_zooms[:3])
     assert mask.shape == a_data.shape, 'bad reslice. could be rounding error.'
-    mask = np.round(mask, 0)
+    mask = np.ceil(mask)
     mdata = a_data * mask
 
     for r in np.unique(mdata):
@@ -75,7 +75,7 @@ for p in pools:
     if len(mask.shape) == 3 and len(in_data.shape) == 4 and in_zooms[3] == 1.0:
         mask = np.repeat(mask[:, :, :, np.newaxis], in_data.shape[3], axis=3)
     assert mask.shape == in_data.shape, 'bad reslice. could be rounding error.'
-    mask = np.round(mask, 0)
+    mask = np.ceil(mask)
     mdata = in_data * mask
     mdata[mask == 0] = np.nan
     mean = np.nanmean(mdata, axis=(0, 1, 2))
@@ -109,7 +109,7 @@ for mod in modalities:
         if len(mask.shape) == 3 and len(in_data.shape) == 4 and in_zooms[3] == 1.0:
             mask = np.repeat(mask[:,:,:,np.newaxis], in_data.shape[3], axis=3)
         assert mask.shape == in_data.shape, 'bad reslice. could be rounding error.'
-        mask = np.round(mask, 0)
+        mask = np.ceil(mask)
         mdata = in_data*mask
         mdata[mask == 0] = np.nan
         mean = np.nanmean(mdata, axis=(0,1,2))

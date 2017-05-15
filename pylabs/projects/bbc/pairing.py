@@ -12,6 +12,8 @@ behav_csv_name = 'bbc_behav_2-22-2017_rawsub.csv'
 dwitemplate = fs / project / 'reg' / 'ants_vbm_pairedLH_in_template_space' / 'bbc_pairedLH_template_resampled2dwi.nii'
 dwitemplatet2 = fs / project / 'reg' / 'ants_vbm_pairedLH_in_template_space' / 'bbc_pairedLH_template_invT2c_resampled2dwi.nii.gz'
 vbmtemplate = fs / project / 'reg' / 'ants_vbm_pairedLH_in_template_space' / 'bbc_pairedLH_template.nii.gz'
+vbmtemplatet2 = fs / project / 'reg' / 'ants_vbm_pairedLH_in_template_space' / 'bbc_pairedLH_template_invT2c.nii.gz'
+scsqT1templatet2 = fs / project / 'reg' / 'ants_vbm_pairedLH_in_template_space' / 'bbc_pairedLH_template_invT2c_resampled2scsqT1.nii.gz'
 # combined tuples are paired indexed successively (0->1, 2->3, ...), paired tuples are ordered indexed matched pairs.
 vbmpairing = [
     (101, 1, 'mpr', 3),
