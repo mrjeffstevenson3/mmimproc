@@ -39,26 +39,14 @@ class InTempDir(InDir):
             shutil.rmtree(self._dir)
 
 
-def appendposix(fname, suff):
+def appendposix(file, suff):
     '''
-    Adds suffix to end of stem or basename, then puts extentions back on.
-    exception is when .gz added onto .nii where order is reversed
-    :param fname: pathlib path and file name with ext
-    :param suff:  string to append at end of file name such as '_brain
-    :return: returns reformed posix path with string added at end of file name.
+    Adds suffix to end of file basename, then puts extention(s) back on.
+    :param file: pathlib path and file name with ext (ext optional)
+    :param suff:  string to append at end of file name such as '_brain' or '_brain_mask
+    :return: returns reformed posix path with string added at end of file name and extension.
     '''
-    fname = Path(fname)
-    ext = fname.suffixes
-    l = len(ext)
-    ext = ''.join(ext)
-    fname = fname.stem
-    if l == 2:
-        fname = Path(fname).stem
-    if l == 3:
-        fname = Path(fname).stem
-    fname = str(fname)
-    if suff == '.gz' and ext == '.nii' or suff == '.gz' and ext == '.raw':
-        fname +=  ext + suff
-    else:
-        fname += suff+ext
-    return Path(fname)
+    file = Path(file)
+    file_exts = ''.join(file.suffixes)
+    return Path(str(file).replace(file_exts, suff+file_exts))
+
