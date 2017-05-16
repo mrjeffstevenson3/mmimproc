@@ -1,0 +1,233 @@
+	open(11,file = 'f.vtk',form='unformatted')
+	open(31,file = 'fnew_withoutchaff.vtk',form='unformatted')
+
+	do ifil =1,1
+
+	if(ifil.eq.1)then
+	do i=1,200
+	call fgetc(11,cnmr(i),istate)
+	call fputc(31,cnmr(i),istate)
+c	write(6,*)'ufk ',cnmr(i),inmr(i),i
+
+	if(inmr(i-2).eq.97.and.inmr(i-1).eq.116.and.inmr(i).eq.10.and.i.gt.170)then
+	write(6,*)'found the end marker for ufk ',i
+	go to 1197
+	endif
+	enddo  !i=1,200
+	endif
+ 1197	continue
+
+
+	inc = 1
+	if(ifil.eq.1)numpoints = ifinalcount
+
+	do i=1,numpoints
+	do ii=1,3
+	nmr(ii) = poly(ii)
+	enddo
+
+	do ii=1,3*4
+	if(ifil.eq.1)call fgetc(11,cnmr(ii),istate)
+
+	enddo
+	incs = 1
+	do ii=1,3
+	inmr2(incs) = inmr(incs+3)
+	inmr2(incs+1) = inmr(incs+2)
+	inmr2(incs+2) = inmr(incs+1)
+	inmr2(incs+3) = inmr(incs)
+	incs = incs+4
+	enddo
+c	do ii=1,9
+c	write(6,*)'inmr ',inmr(ii),ii
+c	enddo
+c	pause
+
+	do ii=1,3
+	poly(ii) = nmr(ii)
+	enddo
+	polysav(inc,1,ifil) = poly(1)
+	polysav(inc,2,ifil) = poly(2)
+	polysav(inc,3,ifil) = poly(3)
+	polysav(inc,4,ifil) = inc
+c	if(i.eq.1)then
+c	write(6,*)'poly1 ',poly(1),poly(2),poly(3),inc,polysav(inc,1,ifil)
+c	pause
+c	endif
+	inc = inc+1
+	enddo
+c
+	write(6,*)poly(1),poly(2),poly(3),inc
+	
+c	read(11)c6
+c	write(6,*)'enter offset '
+c	read(5,*)ioffset
+	ioffset=19
+	do ii=1,ioffset
+c	if(ifil.eq.2.and.iprocmethod.ne.1)call fgetc(21,cnmr(ii),istate)
+c	if(ifil.eq.3.and.iprocmethod.ne.1)call fgetc(22,cnmr(ii),istate)
+	if(ifil.eq.2)call fgetc(21,cnmr(ii),istate)
+	if(ifil.eq.3)call fgetc(22,cnmr(ii),istate)
+
+	if(ifil.eq.4)call fgetc(23,cnmr(ii),istate)
+c	write(6,*)'inmr ioffset19 ',cnmr(ii),inmr(ii),ii
+	if(inmr(ii).eq.10.and.ii.gt.10)then
+	write(6,*)'found the end marker for line index ',ii
+c	write(6,*)'after numpoints1',inmr(ii),cnmr(ii),ii
+	go to 199
+	endif
+	enddo
+ 199	continue
+
+c find end of line part for ukf
+c
+	if(ifil.eq.1)then
+	do ii=1,25
+		call fgetc(11,cnmr(ii),istate)
+	write(6,*)'ufk ',cnmr(ii),inmr(ii),ii
+
+		cnmr11(ii) = cnmr(ii)
+		if(inmr(ii).eq.10.and.ii.gt.10)then
+	write(6,*)'found the end marker for line index ',ii
+c	write(6,*)'after numpoints1',inmr(ii),cnmr(ii),ii
+	go to 1999
+		endif
+	enddo
+
+	endif
+ 1999	continue
+
+
+
+	enddo  !ifil for each vtk file
+	close(21)
+	close(22)
+	close(23)
+ 
+	open(12,file='templines.txt')
+	do ii=2,14
+	call fputc(12,cnmr11(ii),istate)
+	enddo
+	close(12)
+	open(12,file='templines.txt')
+	read(12,*)c6,ilines,i1
+	close(12)
+
+
+	write(6,*)'number of fibers ',c6,ilines,iend
+
+	write(6,*)'number of fibers iend idiff ',c6,ilines,iend,idiff
+
+	write(6,*)'polysav test ',(polysav(ii,1,1),ii=1,10)
+
+	do i=1,ilines
+c	do i=1,1
+
+	do ii=1,1*4
+	call fgetc(11,cint(ii),istate)
+c	write(6,*)'after fibers ',cint(ii),icint(ii),ii
+	enddo
+	inc = 1
+	icint2(inc) = icint(inc+3)
+	icint2(inc+1) = icint(inc+2)
+
+	icint2(inc+2) = icint(inc+1)
+	icint2(inc+3) = icint(inc)
+
+
+	isublines = iint(1)
+c	write(6,*)'isublines ',isublines,i
+c	if(isublines.lt.2.or.isublines.gt.10000)then
+c	idiff = idiff+1
+c	write(6,*)'finding the offset automatically '
+c	
+c	close(11)
+c	close(12)
+c	go to 99
+c	endif
+c
+	if(i.eq.1)write(6,*)'isublines ',isublines,i
+	line(i,1) = isublines
+	do ii=1,(isublines)*4
+	call fgetc(11,cint(ii),istate)
+	enddo
+
+	inc = 1
+	do ii=1,isublines
+	icint2(inc) = icint(inc+3)
+	icint2(inc+1) = icint(inc+2)
+	icint2(inc+2) = icint(inc+1)
+	icint2(inc+3) = icint(inc)
+
+	inc = inc+4
+	line(i,ii+1) = iint(ii)
+	enddo
+c	write(6,*)'line ',line(i,1),(line(i,ii),ii=2,line(i,1)+1)
+c	write(6,*)'points that go with line ',(polysav(line(i,ii)+1,1,1),line(i,ii)+1,ii,ii=2,line(i,1)+1)
+c	pause
+	if(i.eq.112)then
+c	write(6,*)'line ',line(i,1),(line(i,ii),ii=2,line(i,1)+1)
+
+	endif
+c	write(6,*)'line ',line(i,1),line(i,2),i
+c	if(i.eq.1)then
+c	write(6,*)'first line ',line(i,1),(line(i,ii),ii=2,line(i,1)+1)
+c	endif
+c	pause
+
+
+	enddo  !lines main
+
+c
+c this is where the chosen lines were saved
+c
+	do i=1,ilines,1
+	if(iprocmethod.eq.1)then  !channel only
+	if(rmindistance(2).lt.1000.0.and.rmindistance(3).le.1000.0.and.rfraction_subline.ge.0.70)then
+	igood = igood+1
+	dnmr(igood) = sum   ! sum distance for one line
+c save the indices for later tensors selection
+		write(27,*)icountone,icountone,icountone
+		do ii=2,line(i,1)+1
+		write(27,*)polysav(line(i,ii)+1,1,1),polysav(line(i,ii)+1,2,1),polysav(line(i,ii)+1,3,1)
+		enddo
+c
+c
+		do iextra=1,1
+		iexstart = i-1+iextra
+		do ii=2,line(iexstart,1)+1
+		polyfinal(ifinalinc,1) = line(iexstart,ii)+1
+c	write(6,*)'polyfinal ',polyfinal(ifinalinc,1),ifinalinc,ii,i
+		ifinalinc=ifinalinc+1
+		enddo  !ii
+		enddo  !iextra
+	else
+c
+c these are the chosen single tensors
+	do i=1,itensors   !between tensors
+c
+c this part below will repaint the tensor a different color if the fiber 
+c went through the channel
+c  if the fiber does not pass through the channel it will remain
+c with its normal tensor color
+c
+
+		do ii=1,ifinalcount
+		ipoly = polyfinal(ii,1)
+		if(i.eq.ipoly)then
+		averz = averz + polysav(i,3,1)
+		rminy = min(polysav(i,2,1),rminy)
+		rmaxy = max(polysav(i,2,1),rmaxy)
+		rminz = min(polysav(i,3,1),rminz)
+		rmaxz = max(polysav(i,3,1),rmaxz)
+
+		poly(1) = 2.0
+		do it=1,1
+		tensors(i,it) = poly(it)
+c		write(6,*)'inside of fa1'
+		enddo
+		endif
+		enddo   !ii
+	enddo  !within tensor
+
+
