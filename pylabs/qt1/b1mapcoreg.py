@@ -27,7 +27,7 @@ import nibabel.nifti1 as nifti1
 fslroi = fsl.ExtractROI()   #instantiate fslroi command
 fslrfov = fsl.RobustFOV()     #instantiate robust fov command for cropping B1map before reg
 fslflirt = fsl.FLIRT()
-fslapplyxfm = fsl.ApplyXFM()
+fslapplyxfm = fsl.ApplyXfm()
 
 def b1mapcoreg_1file(inb1path, fa02niifile):
     b1mapdir = os.path.dirname(inb1path)
@@ -76,7 +76,7 @@ def b1mapcoreg_1file(inb1path, fa02niifile):
     fslflirt.inputs.out_matrix_file = pathjoin(b1mapdir, subjid+'_b1map_mag_rfov_reg2qT1.mat')
     fslflirt.inputs.out_file = pathjoin(b1mapdir, subjid+'_b1map_mag_rfov_reg2qT1.nii.gz')
     fslflirt.run()
-    fslapplyxfm = fsl.ApplyXFM()
+    fslapplyxfm = fsl.ApplyXfm()
     fslapplyxfm.inputs.in_file = pathjoin(b1mapdir, subjid+'_b1map_phase_rfov.nii.gz')
     fslapplyxfm.inputs.in_matrix_file = pathjoin(b1mapdir, subjid+'_b1map_mag_rfov_reg2qT1.mat')
     fslapplyxfm.inputs.interp = 'nearestneighbour'
