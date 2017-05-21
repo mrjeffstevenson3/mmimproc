@@ -1,4 +1,4 @@
-c gfortran  -O3 -mcmodel=medium -g writefiber_withpaint_with_meantensor_with_separateroi_may16_2017.f -o writefiber_withpaint_with_meantensor_with_separateroi_may16_2017 -ffixed-line-length-none
+c gfortran  -O3 -mcmodel=medium -g writefiber_withpaint_with_meantensor_ifof_may18_2017.f -o writefiber_withpaint_with_meantensor_ifof_may18_2017 -ffixed-line-length-none
 
 c read DTI fiber track vtk and quantify the FA and several other parameters
 c read vtk binary file
@@ -106,7 +106,7 @@ c
 c
 	write(6,*)'enter the brain region number for each index stats '
 c	read(5,*)ibrainreg1,ibrainreg2,ibrainreg3
-	ibrainreg1 = 406
+	ibrainreg1 = 326
 	ibrainreg2 = 121
 	ibrainreg3 = 47
 	ibrainreg4 = 384
@@ -971,14 +971,9 @@ c	write(6,*)'vtk ivtk ',vtk(i),ivtk(i),i,i-iset
 
 
 
-	do ifil=1,7
-	if(ifil.le.6)then
-	if(ifil.eq.1)open(31,file = 'bbc_dti_AD.vtk',form='unformatted')
-	if(ifil.eq.2)open(31,file = 'bbc_vbm_gm.vtk',form='unformatted')
-	if(ifil.eq.3)open(31,file = 'bbc_vbm_wm.vtk',form='unformatted')
-	if(ifil.eq.4)open(31,file = 'bbc_dti_MD.vtk',form='unformatted')
-	if(ifil.eq.5)open(31,file = 'bbc_cortical_thickness.vtk',form='unformatted')
-	if(ifil.eq.6)open(31,file = 'bbc_dti_overlap_AD_MD.vtk',form='unformatted')
+	do ifil=1,2
+	if(ifil.le.1)then
+	if(ifil.eq.1)open(31,file = 'bbc_dti_FA_IFOF.vtk',form='unformatted')
 
 	iflagindex(ifil) = 0
 
@@ -1012,9 +1007,9 @@ c
 
 c
 
-	do iiz=iz,iz
-	do iiy=iy,iy
-	do iix=ix,ix
+	do iiz=iz-1,iz
+	do iiy=iy-1,iy
+	do iix=ix-1,ix
 	if(dti(iix,iiy,iiz,7).eq.ifil)then
 		iflagindex(ifil) = iflagindex(ifil)+1
 c	write(6,*)'found stats ',iix,iiy,iiz
@@ -1069,9 +1064,9 @@ c
 c for qT1
 c
 
-	if(ifil.eq.7)then
+	if(ifil.eq.2)then
 
-	open(31,file = 'bbc_qt1_slf.vtk',form='unformatted')
+	open(31,file = 'bbc_qt1_ifof.vtk',form='unformatted')
 
 	iflagindex(ifil) = 0
 
