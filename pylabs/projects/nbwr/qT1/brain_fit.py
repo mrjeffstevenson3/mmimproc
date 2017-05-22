@@ -14,7 +14,7 @@ prov = ProvenanceWrapper()
 fs = Path(getnetworkdataroot())
 flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo', output_type='NIFTI')
 if nipype.__version__ >= '0.12.0':
-    applyxfm = fsl.ApplyXfm(interp='nearestneighbour', output_type='NIFTI')
+    applyxfm = fsl.ApplyXFM(interp='nearestneighbour', output_type='NIFTI')
 else:
     applyxfm = fsl.ApplyXFM(interp='nearestneighbour', output_type='NIFTI')
 
@@ -36,7 +36,7 @@ for b1map, spgr05, spgr15, spgr30 in zip(b1map_fname, spgr_fa5_fname, spgr_fa15_
     spgr_dir = fs/project/spgr30.split('_')[0] / spgr30.split('_')[1] / 'qt1'
     b1magcmd = ' '.join(['fslroi', str(b1map_dir/b1map), str(appendposix(b1map_dir/b1map, '_mag')), '0', '1'])
     b1phasecmd = ' '.join(['fslroi', str(b1map_dir/b1map), str(appendposix(b1map_dir/b1map, '_phase')), '2', '1'])
-    b1tospgr30antscmd = [ str(antsRegistrationSyN), '-d 3 -m', str(appendposix(b1map_dir/str(b1map+'.nii'), '_mag')), '-f',
+    b1tospgr30antscmd = [ str(antsRegistrationSyN), '-d 3 -m', str(appendposix(b1map_dir/str(b1map+'.nii.gz'), '_mag')), '-f',
                 str(spgr_dir/str(spgr30+'.nii')), '-o', str(appendposix(b1map_dir/b1map, '_mag_reg2spgr30_')),
                 '-n 30 -t s -p f -j 1 -s 10 -r 1']
     b1tospgr30antscmd = ' '.join(b1tospgr30antscmd)
