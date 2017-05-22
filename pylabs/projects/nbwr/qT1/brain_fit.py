@@ -1,7 +1,7 @@
 from pathlib import *
 import numpy as np
 import nibabel as nib
-import nipype
+import nipype, os
 import nipype.interfaces.fsl as fsl
 from pylabs.structural.brain_extraction import extract_brain
 from pylabs.qt1.fitting import t1fit
@@ -53,7 +53,7 @@ for b1map, spgr05, spgr15, spgr30 in zip(b1map_fname, spgr_fa5_fname, spgr_fa15_
     with WorkingContext(str(b1map_dir)):
         results += run_subprocess(b1magcmd)
         results += run_subprocess(b1phasecmd)
-        results += run_subprocess(b1phab1tospgr30antscmdsecmd)
+        results += run_subprocess(b1tospgr30antscmd)
     with WorkingContext(str(spgr_dir)):
         results += run_subprocess(spgr05tospgr30antscmd)
         results += run_subprocess(spgr15tospgr30antscmd)
