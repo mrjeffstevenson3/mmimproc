@@ -17,14 +17,14 @@ from pylabs.utils.provenance import ProvenanceWrapper
 prov = ProvenanceWrapper()
 
 fs = Path(getnetworkdataroot())
-if os.environ['FSLOUTPUTTYPE'] == 'NIFTI_GZ':
-    os.environ['FSLOUTPUTTYPE'] = 'NIFTI'
+if os.environ['FSLOUTPUTTYPE'] == 'NIFTI':
+    os.environ['FSLOUTPUTTYPE'] = 'NIFTI_GZ'
 
-flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo', output_type='NIFTI')
+flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo', output_type='NIFTI_GZ')
 if nipype.__version__ >= '0.12.0':
-    applyxfm = fsl.ApplyXFM(interp='nearestneighbour', output_type='NIFTI')
+    applyxfm = fsl.ApplyXFM(interp='nearestneighbour', output_type='NIFTI_GZ')
 else:
-    applyxfm = fsl.ApplyXFM(interp='nearestneighbour', output_type='NIFTI')
+    applyxfm = fsl.ApplyXFM(interp='nearestneighbour', output_type='NIFTI_GZ')
 
 if not Path(os.environ.get('ANTSPATH'), 'WarpImageMultiTransform').is_file():
     raise ValueError('must have ants installed with WarpImageMultiTransform in $ANTSPATH directory.')
@@ -47,7 +47,7 @@ for b1map, spgr05, spgr15, spgr30 in zip(b1map_fname, spgr_fa5_fname, spgr_fa15_
     spgr_dir = fs/project/spgr30.split('_')[0] / spgr30.split('_')[1] / 'qt1'
     b1magcmd = ' '.join(['fslroi', str(b1map_dir/b1map), str(appendposix(b1map_dir/b1map, '_mag')), '0', '1'])
     b1phasecmd = ' '.join(['fslroi', str(b1map_dir/b1map), str(appendposix(b1map_dir/b1map, '_phase')), '2', '1'])
-    b1tospgr30antscmd = [ str(antsRegistrationSyN), '-d 3 -m', str(appendposix(b1map_dir/b1map, '_mag.nii')), '-f',
+    b1tospgr30antscmd = [ str(antsRegistrationSyN), '-d 3 -m', str(appendposix(b1map_dir/b1map, '_mag.nii.gz')), '-f',
                 str(spgr_dir/str(spgr30+'.nii')), '-o', str(appendposix(b1map_dir/b1map, '_mag_reg2spgr30_')),
                 '-n 30 -t s -p f -j 1 -s 10 -r 1']
     b1tospgr30antscmd = ' '.join(b1tospgr30antscmd)
@@ -66,9 +66,9 @@ for b1map, spgr05, spgr15, spgr30 in zip(b1map_fname, spgr_fa5_fname, spgr_fa15_
         results += run_subprocess(b1magcmd)
         results += run_subprocess(b1phasecmd)
         results += run_subprocess(b1tospgr30antscmd)
-        mov = appendposix(b1map_dir/b1map, '_phase.nii')
+        mov = appendposix(b1map_dir/b1map, '_phase.nii.gz')
         ref = spgr_dir/str(spgr30+'.nii')
-        outf = appendposix(b1map_dir/b1map, '_phase_reg2spgr30.nii')
+        outf = appendposix(b1map_dir/b1map, '_phase_reg2spgr30.nii.gz')
         warpf = [str(appendposix(b1map_dir/b1map, '_mag_reg2spgr30_1Warp.nii.gz'))]
         affine_xform = [str(appendposix(b1map_dir/b1map, '_mag_reg2spgr30_0GenericAffine.mat'))]
         execwd = b1map_dir
@@ -79,31 +79,31 @@ for b1map, spgr05, spgr15, spgr30 in zip(b1map_fname, spgr_fa5_fname, spgr_fa15_
         phase_data_mf_img = nib.Nifti1Image(phase_data_mf, affine, nib.load(str(outf)).header)
         phase_data_mf_img.header.set_qform(affine, code=1)
         phase_data_mf_img.header.set_sform(affine, code=1)
-        nib.save(phase_data_mf_img, str(appendposix(b1map_dir/b1map, '_phase_reg2spgr30_mf.nii')))
-        prov.log(str(appendposix(b1map_dir/b1map, '_phase_reg2spgr30_mf.nii')), 'median filtered b1 phase map reg to spgr 30', str(b1map_dir/b1map)+'.nii', script=__file__,
+        nib.save(phase_data_mf_img, str(appendposix(b1map_dir/b1map, '_phase_reg2spgr30_mf.nii.gz')))
+        prov.log(str(appendposix(b1map_dir/b1map, '_phase_reg2spgr30_mf.nii.gz')), 'median filtered b1 phase map reg to spgr 30', str(b1map_dir/b1map)+'.nii', script=__file__,
                  provenance={'filter': 'numpy median filter', 'filter size': '7', 'results': results})
 
     with WorkingContext(str(spgr_dir)):
         results += run_subprocess(spgr05tospgr30antscmd)
         results += run_subprocess(spgr15tospgr30antscmd)
         extract_brain(spgr_dir/str(spgr05 + '_reg2spgr30_Warped.nii.gz'))
-        maskfile = spgr_dir/str(spgr05 + '_reg2spgr30_Warped_brain_mask.nii')
+        maskfile = spgr_dir/str(spgr05 + '_reg2spgr30_Warped_brain_mask.nii.gz')
 
-        for f in [appendposix(b1map_dir/b1map, '_phase_reg2spgr30_mf.nii'), spgr_dir/str(spgr15 + '_reg2spgr30_Warped.nii.gz'), spgr_dir/str(spgr30+'.nii')]:
+        for f in [appendposix(b1map_dir/b1map, '_phase_reg2spgr30_mf.nii.gz'), spgr_dir/str(spgr15 + '_reg2spgr30_Warped.nii.gz'), spgr_dir/str(spgr30+'.nii')]:
             mask_cmd = ['fslmaths', str(f), '-mas', str(maskfile), str(appendposix(f, '_brain'))]
             results += run_subprocess(' '.join(mask_cmd))
 
         rootdir = str(fs/project)
-        files = [str(spgr_dir/str(spgr05 + '_reg2spgr30_Warped_brain.nii')),
-                 str(spgr_dir/str(spgr15 + '_reg2spgr30_Warped_brain.nii')),
-                 str(spgr_dir/str(spgr30+'_brain.nii'))]
+        files = [str(spgr_dir/str(spgr05 + '_reg2spgr30_Warped_brain.nii.gz')),
+                 str(spgr_dir/str(spgr15 + '_reg2spgr30_Warped_brain.nii.gz')),
+                 str(spgr_dir/str(spgr30+'_brain.nii.gz'))]
         subject = spgr05.split('_')[0]
         ses = spgr05.split('_')[1]
-        b1file = str(appendposix(b1map_dir/b1map, '_phase_reg2spgr30_mf_brain.nii'))
+        b1file = str(appendposix(b1map_dir/b1map, '_phase_reg2spgr30_mf_brain.nii.gz'))
         X = []
         for a in [spgr05, spgr15, spgr30]:
             X.append(int(a.split('_')[3].split('-')[1]))
-        outfile = str(spgr_dir/ 'qT1_{sub}_{ses}_b1corr.nii'.format(sub=subject, ses=ses))
+        outfile = str(spgr_dir/ 'qT1_{sub}_{ses}_b1corr.nii.gz'.format(sub=subject, ses=ses))
         print(files)
         print(b1file)
         kwargs = {}

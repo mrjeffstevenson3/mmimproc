@@ -2,7 +2,7 @@ from pathlib import *
 from collections import defaultdict
 import subprocess
 from nipype.interfaces import fsl
-fslbet = fsl.BET(output_type='NIFTI')
+fslbet = fsl.BET(output_type='NIFTI_GZ')
 
 import pylabs
 import inspect
@@ -17,15 +17,15 @@ from pylabs.utils import appendposix
 from pylabs.utils.paths import getnetworkdataroot
 fs = getnetworkdataroot()
 from nipype.interfaces.fsl import Eddy
-eddy = Eddy(num_threads=24, output_type='NIFTI')
+eddy = Eddy(num_threads=24, output_type='NIFTI_GZ')
 from nipype.interfaces import fsl
-flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo', output_type='NIFTI')
+flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo', output_type='NIFTI_GZ')
 if nipype.__version__ >= '0.12.0':
-    applyxfm = fsl.ApplyXFM(interp='nearestneighbour', output_type='NIFTI')
+    applyxfm = fsl.ApplyXFM(interp='nearestneighbour', output_type='NIFTI_GZ')
 else:
-    applyxfm = fsl.ApplyXFM(interp='nearestneighbour', output_type='NIFTI')
+    applyxfm = fsl.ApplyXFM(interp='nearestneighbour', output_type='NIFTI_GZ')
 
-bet = fsl.BET(output_type='NIFTI')
+bet = fsl.BET(output_type='NIFTI_GZ')
 prov = niprov.ProvenanceContext()
 
 
@@ -93,8 +93,8 @@ def extract_brain(file, f_factor=0.3):
     bet.inputs.skull = True
     bet.inputs.out_file = brain_outfname
     betres = bet.run()
-    prov.log(brain_outfname + '.nii', 'generic fsl bet brain', str(file), script=__file__, provenance={'f factor': f_factor, 'com': list(bet_com)})
-    prov.log(brain_outfname + '_mask.nii', 'generic fsl bet brain mask', str(file), script=__file__, provenance={'f factor': f_factor, 'com': list(bet_com)})
+    prov.log(brain_outfname, 'generic fsl bet brain', str(file), script=__file__, provenance={'f factor': f_factor, 'com': list(bet_com)})
+    prov.log(str(appendposix(file, '_mask')), 'generic fsl bet brain mask', str(file), script=__file__, provenance={'f factor': f_factor, 'com': list(bet_com)})
     return
 
 
