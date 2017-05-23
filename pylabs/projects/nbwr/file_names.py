@@ -9,7 +9,7 @@ orig_dwi = [
 
     ]
 orig_spgr = [
-    (('999b', 1, 'spgr_fa_05_tr_15p0', 1), ('999b', 1, 'spgr_fa_15_tr_15p0', 1), ('999b', 1,'spgr_fa_30_tr_15p0', 1), ('999b', 1,'b1map', 1))
+    (('999b', 1, 'spgr_fa-05-tr-15p0', 1), ('999b', 1, 'spgr_fa-15-tr-15p0', 1), ('999b', 1,'spgr_fa-30-tr-15p0', 1), ('999b', 1,'b1map', 1))
     ]
 ftempl = 'sub-nbwr{}_ses-{}_{}_{}'
 topup_fname = []

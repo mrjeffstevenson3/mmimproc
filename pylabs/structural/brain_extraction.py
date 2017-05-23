@@ -20,7 +20,7 @@ eddy = Eddy(num_threads=24, output_type='NIFTI')
 from nipype.interfaces import fsl
 flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo', output_type='NIFTI')
 if nipype.__version__ >= '0.12.0':
-    applyxfm = fsl.ApplyXFM(interp='nearestneighbour', output_type='NIFTI')
+    applyxfm = fsl.ApplyXfm(interp='nearestneighbour', output_type='NIFTI')
 else:
     applyxfm = fsl.ApplyXFM(interp='nearestneighbour', output_type='NIFTI')
 
