@@ -68,11 +68,11 @@ for b1map, spgr05, spgr15, spgr30 in zip(b1map_fname, spgr_fa5_fname, spgr_fa15_
         results += run_subprocess(b1tospgr30antscmd)
         mov = appendposix(b1map_dir/b1map, '_phase.nii')
         ref = spgr_dir/str(spgr30+'.nii')
-        outf = appendposix(b1map_dir/b1map, '_phase_reg2spgr30')
+        outf = appendposix(b1map_dir/b1map, '_phase_reg2spgr30.nii')
         warpf = [str(appendposix(b1map_dir/b1map, '_mag_reg2spgr30_1Warp.nii.gz'))]
         affine_xform = [str(appendposix(b1map_dir/b1map, '_mag_reg2spgr30_0GenericAffine.mat'))]
         execwd = b1map_dir
-        subj2templ_applywarp(str(mov), str(ref), str(outf)+'.nii', warpf, str(execwd), affine_xform=affine_xform)
+        subj2templ_applywarp(str(mov), str(ref), str(outf), warpf, str(execwd), affine_xform=affine_xform)
         phase_data = nib.load(str(outf)).get_data().astype('float32')
         phase_data_mf = medianf(phase_data, size=7)
         affine = nib.load(str(outf)).affine
