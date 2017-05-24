@@ -4,6 +4,8 @@ import numpy as np
 import nibabel as nib
 import nipype, os
 import nipype.interfaces.fsl as fsl
+from dipy.segment.mask import applymask
+from scipy.ndimage.morphology import binary_erosion as ero
 from scipy.ndimage.filters import median_filter as medianf
 from pylabs.structural.brain_extraction import extract_brain
 from pylabs.qt1.fitting import t1fit
@@ -22,9 +24,9 @@ if os.environ['FSLOUTPUTTYPE'] == 'NIFTI':
 
 flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo', output_type='NIFTI_GZ')
 if nipype.__version__ >= '0.12.0':
-    applyxfm = fsl.ApplyXFM(interp='nearestneighbour', output_type='NIFTI_GZ')
+    applyxfm = fsl.ApplyXfm(interp='nearestneighbour', output_type='NIFTI_GZ')
 else:
-    applyxfm = fsl.ApplyXFM(interp='nearestneighbour', output_type='NIFTI_GZ')
+    applyxfm = fsl.ApplyXfm(interp='nearestneighbour', output_type='NIFTI_GZ')
 
 if not Path(os.environ.get('ANTSPATH'), 'WarpImageMultiTransform').is_file():
     raise ValueError('must have ants installed with WarpImageMultiTransform in $ANTSPATH directory.')
@@ -123,8 +125,20 @@ for b1map, spgr05, spgr15, spgr30 in zip(b1map_fname, spgr_fa5_fname, spgr_fa15_
             try:
                 t1fit(files, X, **kwargs)
                 qt1_data = nib.load(kwargs['t1filename']).get_data()
-                mask_data = nib.load(kwargs['maskfile']).get_data()
-                # set lower bound to 1 upper bound to 6000 and tighten mask
+                mask_data = nib.load(kwargs['maskfile']).get_data().astype(int)
+                qt1_data[qt1_data < 1] = 0
+                qt1_data[qt1_data > 6000] = 6000
+                mask_data = ero(mask_data, structure=np.ones((2,2,2))).astype(mask_data.dtype)
+                qt1_clamped = applymask(qt1_data, mask_data)
+                qt1_clamped_img = nib.Nifti1Image(qt1_clamped, nib.load(kwargs['t1filename']).affine)
+                qt1_clamped_img.header.set_qform(nib.load(kwargs['t1filename']).affine, code=1)
+                qt1_clamped_img.header.set_sform(nib.load(kwargs['t1filename']).affine, code=1)
+                nib.save(qt1_clamped_img, str(appendposix(kwargs['t1filename'], '_clamped')))
+                kwargs['clamp'] = '1 to 6000'
+                kwargs['erosion'] = (2,2,2)
+                kwargs['flips'] = X
+                prov.log(str(appendposix(kwargs['t1filename'], '_clamped')), 'clamping qT1 fit', kwargs['t1filename'],
+                         script=__file__, provenance=dict(**kwargs))
             except Exception as ex:
                 print('\n--> Error during fitting: ', ex)
 
