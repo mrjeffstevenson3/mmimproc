@@ -78,12 +78,7 @@ for b1map, spgr05, spgr15, spgr30 in zip(b1map_fname, spgr_fa5_fname, spgr_fa15_
         subj2templ_applywarp(str(mov), str(ref), str(outf), warpf, str(execwd), affine_xform=affine_xform)
         phase_data = nib.load(str(outf)).get_data().astype('float32')
         phase_data_mf = medianf(phase_data, size=7)
-        #add savenii
-        affine = nib.load(str(outf)).affine
-        phase_data_mf_img = nib.Nifti1Image(phase_data_mf, affine, nib.load(str(outf)).header)
-        phase_data_mf_img.header.set_qform(affine, code=1)
-        phase_data_mf_img.header.set_sform(affine, code=1)
-        nib.save(phase_data_mf_img, str(appendposix(b1map_dir/b1map, '_phase_reg2spgr30_mf.nii.gz')))
+        savenii(phase_data_mf, nib.load(str(outf)).affine, str(appendposix(b1map_dir/b1map, '_phase_reg2spgr30_mf.nii.gz')))
         prov.log(str(appendposix(b1map_dir/b1map, '_phase_reg2spgr30_mf.nii.gz')), 'median filtered b1 phase map reg to spgr 30', str(b1map_dir/b1map)+'.nii', script=__file__,
                  provenance={'filter': 'numpy median filter', 'filter size': '7', 'results': results})
 
@@ -126,20 +121,17 @@ for b1map, spgr05, spgr15, spgr30 in zip(b1map_fname, spgr_fa5_fname, spgr_fa15_
         else:
             try:
                 t1fit(files, X, **kwargs)
+                kwargs['clamp'] = '1 to 6000'
+                kwargs['erosion structure'] = (2,2,2)
+                kwargs['flips'] = X
+                kwargs['files'] = files
                 qt1_data = nib.load(kwargs['t1filename']).get_data()
                 mask_data = nib.load(kwargs['maskfile']).get_data().astype(int)
                 qt1_data[qt1_data < 1] = 0
                 qt1_data[qt1_data > 6000] = 6000
                 mask_data = ero(mask_data, structure=np.ones((2,2,2))).astype(mask_data.dtype)
                 qt1_clamped = applymask(qt1_data, mask_data)
-                # add savenii with kwargs for prov
-                qt1_clamped_img = nib.Nifti1Image(qt1_clamped, nib.load(kwargs['t1filename']).affine)
-                qt1_clamped_img.header.set_qform(nib.load(kwargs['t1filename']).affine, code=1)
-                qt1_clamped_img.header.set_sform(nib.load(kwargs['t1filename']).affine, code=1)
-                nib.save(qt1_clamped_img, str(appendposix(kwargs['t1filename'], '_clamped')))
-                kwargs['clamp'] = '1 to 6000'
-                kwargs['erosion'] = (2,2,2)
-                kwargs['flips'] = X
+                savenii(qt1_clamped, nib.load(kwargs['t1filename']).affine, str(appendposix(kwargs['t1filename'], '_clamped')))
                 prov.log(str(appendposix(kwargs['t1filename'], '_clamped')), 'clamping qT1 fit', kwargs['t1filename'],
                          script=__file__, provenance=dict(**kwargs))
             except Exception as ex:
