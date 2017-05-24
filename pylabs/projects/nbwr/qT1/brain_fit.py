@@ -39,7 +39,7 @@ async = False
 TR = float(spgr_fa5_fname[0].split('_')[3].split('-')[-1].replace('p','.'))
 pool = Pool(20)
 # testing
-# b1map, spgr05, spgr15, spgr30 = b1map_fname[0], spgr_fa5_fname[0], spgr_fa15_fname[0], spgr_fa30_fname[0]
+b1map, spgr05, spgr15, spgr30 = b1map_fname[0], spgr_fa5_fname[0], spgr_fa15_fname[0], spgr_fa30_fname[0]
 
 
 for b1map, spgr05, spgr15, spgr30 in zip(b1map_fname, spgr_fa5_fname, spgr_fa15_fname, spgr_fa30_fname):
@@ -99,29 +99,32 @@ for b1map, spgr05, spgr15, spgr30 in zip(b1map_fname, spgr_fa5_fname, spgr_fa15_
                  str(spgr_dir/str(spgr30+'_brain.nii.gz'))]
         subject = spgr05.split('_')[0]
         ses = spgr05.split('_')[1]
-        b1file = str(appendposix(b1map_dir/b1map, '_phase_reg2spgr30_mf_brain.nii.gz'))
+        b1file = appendposix(b1map_dir/b1map, '_phase_reg2spgr30_mf_brain.nii.gz')
         X = []
         for a in [spgr05, spgr15, spgr30]:
             X.append(int(a.split('_')[3].split('-')[1]))
-        outfile = str(spgr_dir/ 'qT1_{sub}_{ses}_b1corr.nii.gz'.format(sub=subject, ses=ses))
+        outfile = str(spgr_dir/ '{sub}_{ses}_qT1_b1corr.nii.gz'.format(sub=subject, ses=ses))
         print(files)
         print(b1file)
         kwargs = {}
         kwargs['scantype'] = spgr05.split('_')[2].upper()
         kwargs['TR'] = TR
         kwargs['t1filename'] = outfile
-        if os.path.isfile(b1file):
-            kwargs['b1file'] = b1file
+        if b1file.is_file():
+            kwargs['b1file'] = str(b1file)
         else:
             print('No B1 file for subject {0}'.format(subject))
-        if os.path.isfile(maskfile):
-            kwargs['maskfile'] = maskfile
+        if maskfile.is_file():
+            kwargs['maskfile'] = str(maskfile)
         if async:
             kwargs['mute'] = True
             pool.apply_async(t1fit, [files, X], kwargs)
         else:
             try:
                 t1fit(files, X, **kwargs)
+                qt1_data = nib.load(kwargs['t1filename']).get_data()
+                mask_data = nib.load(kwargs['maskfile']).get_data()
+                # set lower bound to 1 upper bound to 6000 and tighten mask
             except Exception as ex:
                 print('\n--> Error during fitting: ', ex)
 
