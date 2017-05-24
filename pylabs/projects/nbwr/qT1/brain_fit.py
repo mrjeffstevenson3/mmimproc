@@ -78,6 +78,7 @@ for b1map, spgr05, spgr15, spgr30 in zip(b1map_fname, spgr_fa5_fname, spgr_fa15_
         subj2templ_applywarp(str(mov), str(ref), str(outf), warpf, str(execwd), affine_xform=affine_xform)
         phase_data = nib.load(str(outf)).get_data().astype('float32')
         phase_data_mf = medianf(phase_data, size=7)
+        #add savenii
         affine = nib.load(str(outf)).affine
         phase_data_mf_img = nib.Nifti1Image(phase_data_mf, affine, nib.load(str(outf)).header)
         phase_data_mf_img.header.set_qform(affine, code=1)
@@ -131,6 +132,7 @@ for b1map, spgr05, spgr15, spgr30 in zip(b1map_fname, spgr_fa5_fname, spgr_fa15_
                 qt1_data[qt1_data > 6000] = 6000
                 mask_data = ero(mask_data, structure=np.ones((2,2,2))).astype(mask_data.dtype)
                 qt1_clamped = applymask(qt1_data, mask_data)
+                # add savenii with kwargs for prov
                 qt1_clamped_img = nib.Nifti1Image(qt1_clamped, nib.load(kwargs['t1filename']).affine)
                 qt1_clamped_img.header.set_qform(nib.load(kwargs['t1filename']).affine, code=1)
                 qt1_clamped_img.header.set_sform(nib.load(kwargs['t1filename']).affine, code=1)
