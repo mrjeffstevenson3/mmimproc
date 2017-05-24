@@ -14,6 +14,7 @@ from pylabs.utils import run_subprocess, WorkingContext, appendposix
 from pylabs.alignment.ants_reg import subj2templ_applywarp
 from pylabs.structural.brain_extraction import extract_brain
 from pylabs.qt1.fitting import t1fit
+from pylabs.io.images import savenii
 from pylabs.projects.nbwr.file_names import project, spgr_fa5_fname, spgr_fa15_fname, spgr_fa30_fname, b1map_fname
 from pylabs.utils.provenance import ProvenanceWrapper
 prov = ProvenanceWrapper()
