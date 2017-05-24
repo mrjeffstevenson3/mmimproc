@@ -25,9 +25,9 @@ if os.environ['FSLOUTPUTTYPE'] == 'NIFTI':
 
 flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo', output_type='NIFTI_GZ')
 if nipype.__version__ >= '0.12.0':
-    applyxfm = fsl.ApplyXfm(interp='nearestneighbour', output_type='NIFTI_GZ')
+    applyxfm = fsl.ApplyXFM(interp='nearestneighbour', output_type='NIFTI_GZ')
 else:
-    applyxfm = fsl.ApplyXfm(interp='nearestneighbour', output_type='NIFTI_GZ')
+    applyxfm = fsl.ApplyXFM(interp='nearestneighbour', output_type='NIFTI_GZ')
 
 if not Path(os.environ.get('ANTSPATH'), 'WarpImageMultiTransform').is_file():
     raise ValueError('must have ants installed with WarpImageMultiTransform in $ANTSPATH directory.')
