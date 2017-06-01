@@ -1,4 +1,4 @@
-c gfortran  -O3 -mcmodel=medium -g readfiber_withchannel_ukf_fa1_injection_slf.f -o readfiber_withchannel_ukf_fa1_injection_slf -ffixed-line-length-none
+c gfortran  -O3 -mcmodel=medium -g readfiber_withchannel_ukf_fa1_injection_slf_left.f -o readfiber_withchannel_ukf_fa1_injection_slf_left -ffixed-line-length-none
 c read DTI fiber track vtk and quantify the FA and several other parameters
 c read vtk binary file
 c
@@ -602,7 +602,7 @@ c	write(6,*)'polyfinal ',polyfinal(ifinalinc,1),ifinalinc,ii,i
 	endif
 
 	if(iprocmethod.eq.4)then  !base, target, channel
-	if(rmindistance(2).lt.5.0.and.rmindistance(3).le.5.0.and.rfraction_subline.ge.0.5)then
+	if(rmindistance(2).lt.5.0.and.rmindistance(3).le.5.0.and.rfraction_subline.ge.0.7)then
 	igood = igood+1
 	dnmr(igood) = sum   ! sum distance for one line
 c save the indices for later tensors selection
@@ -906,7 +906,7 @@ c
 c write to new file everything up to the point of the tensor part
 c
 	icountbytes = 0
-	imarktensor = imarktensor
+	imarktensor = imarktensor-8
 	do i=1,imarktensor
 	call fputc(31,vtk(i),istate)
 	icountbytes = icountbytes+1
@@ -1004,7 +1004,7 @@ c		write(6,*)'inside of fa1'
 		enddo   !ii
 	enddo  !within tensor
 	rsize = ifinalcount
-	averz = averz/rsize
+	averz = (averz/rsize)-4.0
 c
 	rfact =(rmaxy-rminy)/10.0
 c
