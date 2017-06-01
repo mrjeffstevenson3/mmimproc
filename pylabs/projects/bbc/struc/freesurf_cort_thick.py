@@ -1,9 +1,3 @@
-
-# coding: utf-8
-
-# In[1]:
-
-get_ipython().magic(u'matplotlib inline')
 from pathlib import *
 import pandas as pd
 import numpy as np
@@ -11,29 +5,17 @@ import os, six
 import mne
 import nibabel as nib
 import math
-#from surfer import Brain
 import statsmodels as sm
+import csv
 from scipy import stats as ss
-from IPython.core.display import HTML
-css = open('style-table.css').read() + open('style-notebook.css').read()
-HTML('<style>{}</style>'.format(css))
-pd.set_option('display.width', 999999)
-pd.options.display.max_colwidth = 250
-pd.options.display.max_rows = 999
-from pylabs.projects.bbc.pairing import dwipairing
 from pylabs.utils.paths import getnetworkdataroot
 fs = Path(getnetworkdataroot())
-
-
-# In[2]:
-
+# first set up the 3 cortical thickness dataframes as input
 contrl_sid = ['sub-bbc209', 'sub-bbc211', 'sub-bbc208', 'sub-bbc202', 'sub-bbc249', 'sub-bbc241', 'sub-bbc243', 'sub-bbc231', 'sub-bbc253']
 foster_sid = ['sub-bbc101', 'sub-bbc105', 'sub-bbc106', 'sub-bbc108', 'sub-bbc113', 'sub-bbc116', 'sub-bbc118', 'sub-bbc119', 'sub-bbc120']
 lh_ct = pd.DataFrame.from_csv('/Users/mrjeffs/Documents/Research/data/bbc/freesurfer_stats_results/grp_parc_stats_lh_cortical_thickness.csv', index_col=None)
 rh_ct = pd.DataFrame.from_csv('/Users/mrjeffs/Documents/Research/data/bbc/freesurfer_stats_results/grp_parc_stats_rh_cortical_thickness.csv', index_col=None)
 
-
-# In[3]:
 
 lh_ct['Subjid'] = lh_ct['lh.aparc.a2009s.thickness'].str.partition('/').drop([2,1], axis=1)
 lh_ct = lh_ct.set_index(['Subjid'])
@@ -44,8 +26,6 @@ rh_ct = rh_ct.set_index(['Subjid'])
 rh_ct = rh_ct.drop('rh.aparc.a2009s.thickness', axis=1)
 rh_ct = rh_ct.transpose().astype('float')
 
-
-# In[4]:
 
 lh_ct_ctrl = lh_ct[contrl_sid]
 lh_ct_fost = lh_ct[foster_sid]
@@ -61,23 +41,12 @@ lh_ct['253-120'] = lh_ct['sub-bbc253'] - lh_ct['sub-bbc120']
 lh_paired_sub = lh_ct[['209-101', '211-105', '208-106', '202-108', '249-113', '241-116', '243-118', '231-119', '253-120']]
 lh_paired_sub = lh_paired_sub.transpose()
 
-
-# In[7]:
-
-lh_paired_sub['lh_S_precentral-inf-part_thickness']
-
-
-# In[7]:
-
 lh_ct_stats = lh_paired_sub.apply(ss.ttest_1samp, axis=0, args=(0.0,)).apply(pd.Series)
 lh_ct_stats.columns = ['lh-tstat', 'lh-p-value']
 lh_ct_stats.index.name = 'Region'
 lh_ct_stats['Region'] = lh_ct_stats.index.str.replace('lh_', '').str.replace('_thickness', '')
 lh_sig_results = lh_ct_stats[lh_ct_stats['lh-p-value'] <= 0.05].sort_values(by='lh-p-value')
 lh_sig_results.set_index('Region')
-
-
-# In[8]:
 
 rh_ct['209-101'] = rh_ct['sub-bbc209'] - rh_ct['sub-bbc101']
 rh_ct['211-105'] = rh_ct['sub-bbc211'] - rh_ct['sub-bbc105']
@@ -91,65 +60,61 @@ rh_ct['253-120'] = rh_ct['sub-bbc253'] - rh_ct['sub-bbc120']
 rh_paired_sub = rh_ct[['209-101', '211-105', '208-106', '202-108', '249-113', '241-116', '243-118', '231-119', '253-120']]
 rh_paired_sub = rh_paired_sub.transpose()
 
-
-# In[9]:
-
 rh_ct_stats = rh_paired_sub.apply(ss.ttest_1samp, axis=0, args=(0.0,)).apply(pd.Series)
 rh_ct_stats.columns = ['rh-tstat', 'rh-p-value']
 rh_ct_stats.index.name = 'Region'
 rh_ct_stats['Region'] = rh_ct_stats.index.str.replace('rh_', '').str.replace('_thickness', '')
 rh_sig_results = rh_ct_stats[rh_ct_stats['rh-p-value'] <= 0.05].sort_values(by='rh-p-value')
 rh_sig_results.set_index('Region')
-
-
-# In[10]:
-
+# merge stat results
 rh_sig_results.merge(lh_sig_results, left_on='Region', right_on='Region', how='outer').fillna('').set_index('Region').sort_values(['rh-p-value', 'lh-p-value'])
 
+# read in verticees to test against
+label_dir = fs / project / 'reg' / 'ants_vbm_pairedLH_in_template_space' / 'template_hires_br_freesurf_v6' / 'label' / 'test'
+label_flist = label_dir.glob('*.label')
+all_labels = {}
+for label_fname in label_flist:
+        label = 'ctx_' + str(label_fname.name).replace('.label', '').replace('.', '_')
+        all_labels[label] = []
+        reader = csv.reader(open(str(label_fname)), skipinitialspace=True, delimiter=' ')
+        #skip 1st 2 lines
+        next(reader, None)
+        next(reader, None)
+        for row in reader:
+            all_labels[label].append(int(row[0]))
 
-# In[4]:
+# read, find region, replace, write new thickness file
+lh_ct_fname = fs/project/'reg'/'ants_vbm_pairedLH_in_template_space'/'template_hires_br_freesurf_v6'/'surf'/'lh.thickness.asc'
+lh_contrl_mean_ct_fname = fs/project/'reg'/'ants_vbm_pairedLH_in_template_space'/'template_hires_br_freesurf_v6'/'surf'/'lh.meanthickness_contrl.asc'
+lh_fost_mean_ct_fname = fs/project/'reg'/'ants_vbm_pairedLH_in_template_space'/'template_hires_br_freesurf_v6'/'surf'/'lh.meanthickness_foster.asc'
+lh_mean_diff_ct_fname = fs/project/'reg'/'ants_vbm_pairedLH_in_template_space'/'template_hires_br_freesurf_v6'/'surf'/'lh.mean_diff_thickness.asc'
 
-import mayavi
+with open(str(lh_ct_fname), 'rb') as lh_ct , open(str(lh_contrl_mean_ct_fname), 'wb') as lh_contrl_mean_ct , \
+        open(str(lh_fost_mean_ct_fname), 'wb') as lh_fost_mean_ct, \
+        open(str(lh_mean_diff_ct_fname), 'wb') as lh_mean_diff_ct:
+    reader = csv.reader(lh_ct, skipinitialspace=True, delimiter=' ')
+    cntrl_writer = csv.writer(lh_contrl_mean_ct)
+    foster_writer = csv.writer(lh_fost_mean_ct)
+    diff_writer = csv.writer(lh_mean_diff_ct)
+    for row in reader:
+        # get vertex
+        vert = int(row[0])
+        # get region
+        region = [k for k, v in all_labels.iteritems() if vert in v][0]
+        if region == '':
+            cntrl_thickn = [2.785]
+            foster_thickn = [2.7127]
+            diff_thickn = [0.0732]
+        else:
+            cntrl_thickn = [round(lh_ct_ctrl.mean(axis=1)[region], 4)]
+            foster_thickn = [round(lh_ct_fost.mean(axis=1)[region], 4)]
+            diff_thickn = [round(lh_paired_sub.mean(axis=0).loc[region], 4)]
+        new_ctrl_row = row[:3] + cntrl_thickn
+        new_foster_row = row[:3] + foster_thickn
+        new_diff_row = row[:3] + diff_thickn
 
+        cntrl_writer.writerow(new_ctrl_row)
+        foster_writer.writerow(new_foster_row)
+        diff_writer.writerow(new_diff_row)
 
-# In[3]:
-
-os.environ['SUBJECTS_DIR'] = str(fs / 'bbc' / 'reg' / 'ants_vbm_pairedLH_in_template_space')
-templ = Brain("template_hires_br_freesurf_v6", 'lh', 'white')
-
-
-# In[34]:
-
-file = '/Users/mrjeffs/Documents/Research/data/bbc/reg/ants_vbm_pairedLH_in_template_space/template_hires_br_freesurf_v6/label/lh.aparc.a2009s.annot'
-labels = mne.read_labels_from_annot(annot_fname=file, hemi='lh', parc='aparc.a2009s', subject='template_hires_br_freesurf_v6', subjects_dir='/Users/mrjeffs/Documents/Research/data/bbc/reg/ants_vbm_pairedLH_in_template_space',verbose=True)
-labels
-
-
-# In[25]:
-
-pd_labels.iloc[3][0]
-
-
-# In[33]:
-
-lh_ct_stats.loc['lh_S_oc_middle&Lunatus_thickness']
-
-
-# In[ ]:
-
-
-
-
-# In[9]:
-
-#paired_sub = paired_sub.groupby('Subjid', axis=0)
-#paired_sub.aggregate(ss.ttest_1samp(paired_sub, popmean=0.0, axis=0,))
-#paired_sub['mean'] = paired_sub.mean(axis=1)
-#paired_sub['std_dev'] = paired_sub.std(axis=1)
-#paired_sub['std_err'] = paired_sub['std_dev'] / math.sqrt((len(dwipairing) / 2)-1)
-
-#paired_sub = paired_sub.transpose()
-#paired_sub
-#lh_ct_tstat, np.sort(lh_ct_pval)
-#paired_sub
 

@@ -28,6 +28,7 @@ fslroi = fsl.ExtractROI()   #instantiate fslroi command
 fslrfov = fsl.RobustFOV()     #instantiate robust fov command for cropping B1map before reg
 fslflirt = fsl.FLIRT()
 fslapplyxfm = fsl.ApplyXFM()
+b1phasevolnum = 2
 
 def b1mapcoreg_1file(inb1path, fa02niifile):
     b1mapdir = os.path.dirname(inb1path)
@@ -44,7 +45,7 @@ def b1mapcoreg_1file(inb1path, fa02niifile):
     fslroi = fsl.ExtractROI()
     fslroi.inputs.in_file = inb1path
     fslroi.inputs.roi_file = pathjoin(b1mapdir, subjid+'_b1map_phase.nii.gz')
-    fslroi.inputs.t_min = 2
+    fslroi.inputs.t_min = b1phasevolnum
     fslroi.inputs.t_size = 1
     fslroi.run()
     fslrfov = fsl.RobustFOV()
@@ -76,7 +77,7 @@ def b1mapcoreg_1file(inb1path, fa02niifile):
     fslflirt.inputs.out_matrix_file = pathjoin(b1mapdir, subjid+'_b1map_mag_rfov_reg2qT1.mat')
     fslflirt.inputs.out_file = pathjoin(b1mapdir, subjid+'_b1map_mag_rfov_reg2qT1.nii.gz')
     fslflirt.run()
-    fslapplyxfm = fsl.ApplyXFM()
+    fslapplyxfm = fsl.ApplyXfm()
     fslapplyxfm.inputs.in_file = pathjoin(b1mapdir, subjid+'_b1map_phase_rfov.nii.gz')
     fslapplyxfm.inputs.in_matrix_file = pathjoin(b1mapdir, subjid+'_b1map_mag_rfov_reg2qT1.mat')
     fslapplyxfm.inputs.interp = 'nearestneighbour'

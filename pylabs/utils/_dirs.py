@@ -48,5 +48,8 @@ def appendposix(file, suff):
     '''
     file = Path(file)
     file_exts = ''.join(file.suffixes)
-    return Path(str(file).replace(file_exts, suff+file_exts))
+    if file.suffixes == [] or file_exts == '':
+        return Path(str(file)+suff)
+    else:
+        return Path(str(file).replace(file_exts, suff+file_exts))
 

@@ -3,6 +3,11 @@ import petname
 from os.path import expanduser, join
 from pathlib import *
 
+pylabs_dir = Path(*Path(inspect.getabsfile(pylabs)).parts[:-2])
+pylabs_datadir = pylabs_dir / 'data'
+pylabs_atlasdir = pylabs_datadir / 'atlases'
+moriMNIatlas = pylabs_atlasdir/'mori1_atlas.nii.gz'
+JHUMNIatlas = pylabs_atlasdir/'ilabsJHUtracts0_atlas.nii.gz'
 
 def getlocaldataroot():
     hostname = socket.gethostname()

@@ -106,6 +106,8 @@ def t1fit(files, X, TR=None, maskfile=None, b1file=None, scantype='IR', t1filena
     print(' ')
     t1data = t1data.reshape(imageDimensions)
     t1img = nibabel.Nifti1Image(t1data, affine)
+    t1img.header.set_qform(affine, code=1)
+    t1img.header.set_sform(affine, code=1)
     nibabel.save(t1img, t1filename)
     return t1filename
 

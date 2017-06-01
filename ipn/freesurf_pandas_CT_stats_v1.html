@@ -1,9 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head><meta charset="utf-8" />
-<title>freesurf_pandas_CT_stats_v1</title>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
+<title>freesurf_pandas_CT_stats_v1</title><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
 
 <style type="text/css">
@@ -13,8 +11,8 @@
 *
 */
 /*!
- * Bootstrap v3.3.6 (http://getbootstrap.com)
- * Copyright 2011-2015 Twitter, Inc.
+ * Bootstrap v3.3.7 (http://getbootstrap.com)
+ * Copyright 2011-2016 Twitter, Inc.
  * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
  */
 /*! normalize.css v3.0.3 | MIT License | github.com/necolas/normalize.css */
@@ -1109,7 +1107,6 @@ a:focus {
   text-decoration: underline;
 }
 a:focus {
-  outline: thin dotted;
   outline: 5px auto -webkit-focus-ring-color;
   outline-offset: -2px;
 }
@@ -2538,7 +2535,6 @@ select[size] {
 input[type="file"]:focus,
 input[type="radio"]:focus,
 input[type="checkbox"]:focus {
-  outline: thin dotted;
   outline: 5px auto -webkit-focus-ring-color;
   outline-offset: -2px;
 }
@@ -3029,7 +3025,6 @@ select[multiple].input-lg {
 .btn.focus,
 .btn:active.focus,
 .btn.active.focus {
-  outline: thin dotted;
   outline: 5px auto -webkit-focus-ring-color;
   outline-offset: -2px;
 }
@@ -8760,6 +8755,9 @@ body > #header .header-bar {
     margin-left: 10px;
   }
 }
+[dir="rtl"] #ipython_notebook {
+  float: right !important;
+}
 #noscript {
   width: auto;
   padding-top: 16px;
@@ -8962,8 +8960,14 @@ span#login_widget > .button .badge,
  *
  * Author: Jupyter Development Team
  */
+[dir="rtl"] #tabs li {
+  float: right;
+}
 ul#tabs {
   margin-bottom: 4px;
+}
+[dir="rtl"] ul#tabs {
+  margin-right: 0px;
 }
 ul#tabs a {
   padding-top: 6px;
@@ -8986,6 +8990,16 @@ ul.breadcrumb span {
 }
 .list_toolbar .tree-buttons {
   padding-top: 1px;
+}
+[dir="rtl"] .list_toolbar .tree-buttons {
+  float: left !important;
+}
+[dir="rtl"] .list_toolbar .pull-right {
+  padding-top: 1px;
+  float: left !important;
+}
+[dir="rtl"] .list_toolbar .pull-left {
+  float: right !important;
 }
 .dynamic-buttons {
   padding-top: 3px;
@@ -9122,6 +9136,9 @@ ul.breadcrumb span {
 #tree-selector {
   padding-right: 0px;
 }
+[dir="rtl"] #tree-selector a {
+  float: right;
+}
 #button-select-all {
   min-width: 50px;
 }
@@ -9211,6 +9228,9 @@ ul#new-menu {
   left: auto;
   right: 0;
 }
+[dir="rtl"] #new-menu {
+  text-align: right;
+}
 .kernel-menu-icon {
   padding-right: 12px;
   width: 24px;
@@ -9255,6 +9275,9 @@ ul#new-menu {
 }
 #running .panel-group .panel .panel-body .list_container .list_item:last-child {
   border-bottom: 0px;
+}
+[dir="rtl"] #running .col-sm-8 {
+  float: right !important;
 }
 .delete-button {
   display: none;
@@ -9551,6 +9574,7 @@ div.cell.selected.jupyter-soft-selected {
   }
 }
 div.inner_cell {
+  min-width: 0;
   /* Old browsers */
   display: -webkit-box;
   -webkit-box-orient: vertical;
@@ -9571,11 +9595,6 @@ div.inner_cell {
   box-flex: 1;
   /* Modern browsers */
   flex: 1;
-}
-@-moz-document url-prefix() {
-  div.inner_cell {
-    overflow-x: hidden;
-  }
 }
 /* input_area and input_prompt must match in top border and margin for alignment */
 div.input_area {
@@ -11246,7 +11265,7 @@ div#pager .ui-resizable-handle::after {
 }
 .shortcut_key {
   display: inline-block;
-  width: 20ex;
+  width: 21ex;
   text-align: right;
   font-family: monospace;
 }
@@ -11558,6 +11577,7 @@ ul.typeahead-list > li > a {
   box-shadow: 0px 0px 12px 1px rgba(87, 87, 87, 0.2);
 }
 .terminal-app .terminal {
+  width: 100%;
   float: left;
   font-family: monospace;
   color: white;
@@ -11571,6 +11591,9 @@ ul.typeahead-list > li > a {
 .terminal-app .terminal dummy-screen {
   line-height: 1em;
   font-size: 14px;
+}
+.terminal-app .terminal .xterm-rows {
+  padding: 10px;
 }
 .terminal-app .terminal-cursor {
   color: black;
@@ -11631,8 +11654,10 @@ ul.typeahead-list > li > a {
 .highlight .mh { color: #666666 } /* Literal.Number.Hex */
 .highlight .mi { color: #666666 } /* Literal.Number.Integer */
 .highlight .mo { color: #666666 } /* Literal.Number.Oct */
+.highlight .sa { color: #BA2121 } /* Literal.String.Affix */
 .highlight .sb { color: #BA2121 } /* Literal.String.Backtick */
 .highlight .sc { color: #BA2121 } /* Literal.String.Char */
+.highlight .dl { color: #BA2121 } /* Literal.String.Delimiter */
 .highlight .sd { color: #BA2121; font-style: italic } /* Literal.String.Doc */
 .highlight .s2 { color: #BA2121 } /* Literal.String.Double */
 .highlight .se { color: #BB6622; font-weight: bold } /* Literal.String.Escape */
@@ -11643,9 +11668,11 @@ ul.typeahead-list > li > a {
 .highlight .s1 { color: #BA2121 } /* Literal.String.Single */
 .highlight .ss { color: #19177C } /* Literal.String.Symbol */
 .highlight .bp { color: #008000 } /* Name.Builtin.Pseudo */
+.highlight .fm { color: #0000FF } /* Name.Function.Magic */
 .highlight .vc { color: #19177C } /* Name.Variable.Class */
 .highlight .vg { color: #19177C } /* Name.Variable.Global */
 .highlight .vi { color: #19177C } /* Name.Variable.Instance */
+.highlight .vm { color: #19177C } /* Name.Variable.Magic */
 .highlight .il { color: #666666 } /* Literal.Number.Integer.Long */
     </style>
 <style type="text/css">
@@ -11753,7 +11780,7 @@ div#notebook {
 
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[2]:</div>
+<div class="prompt input_prompt">In&nbsp;[1]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="o">%</span><span class="k">matplotlib</span> inline
@@ -11764,7 +11791,7 @@ div#notebook {
 <span class="kn">import</span> <span class="nn">mne</span>
 <span class="kn">import</span> <span class="nn">nibabel</span> <span class="kn">as</span> <span class="nn">nib</span>
 <span class="kn">import</span> <span class="nn">math</span>
-<span class="kn">from</span> <span class="nn">surfer</span> <span class="kn">import</span> <span class="n">Brain</span>
+<span class="c1">#from surfer import Brain</span>
 <span class="kn">import</span> <span class="nn">statsmodels</span> <span class="kn">as</span> <span class="nn">sm</span>
 <span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">stats</span> <span class="k">as</span> <span class="n">ss</span>
 <span class="kn">from</span> <span class="nn">IPython.core.display</span> <span class="kn">import</span> <span class="n">HTML</span>
@@ -11785,7 +11812,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[3]:</div>
+<div class="prompt input_prompt">In&nbsp;[2]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="n">contrl_sid</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;sub-bbc209&#39;</span><span class="p">,</span> <span class="s1">&#39;sub-bbc211&#39;</span><span class="p">,</span> <span class="s1">&#39;sub-bbc208&#39;</span><span class="p">,</span> <span class="s1">&#39;sub-bbc202&#39;</span><span class="p">,</span> <span class="s1">&#39;sub-bbc249&#39;</span><span class="p">,</span> <span class="s1">&#39;sub-bbc241&#39;</span><span class="p">,</span> <span class="s1">&#39;sub-bbc243&#39;</span><span class="p">,</span> <span class="s1">&#39;sub-bbc231&#39;</span><span class="p">,</span> <span class="s1">&#39;sub-bbc253&#39;</span><span class="p">]</span>
@@ -11801,7 +11828,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[4]:</div>
+<div class="prompt input_prompt">In&nbsp;[3]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="n">lh_ct</span><span class="p">[</span><span class="s1">&#39;Subjid&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">lh_ct</span><span class="p">[</span><span class="s1">&#39;lh.aparc.a2009s.thickness&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
@@ -11821,7 +11848,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[5]:</div>
+<div class="prompt input_prompt">In&nbsp;[4]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="n">lh_ct_ctrl</span> <span class="o">=</span> <span class="n">lh_ct</span><span class="p">[</span><span class="n">contrl_sid</span><span class="p">]</span>
@@ -11846,10 +11873,10 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[6]:</div>
+<div class="prompt input_prompt">In&nbsp;[7]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="n">lh_paired_sub</span>
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">lh_paired_sub</span><span class="p">[</span><span class="s1">&#39;lh_S_precentral-inf-part_thickness&#39;</span><span class="p">]</span>
 </pre></div>
 
 </div>
@@ -11860,282 +11887,23 @@ div#notebook {
 <div class="output">
 
 
-<div class="output_area"><div class="prompt output_prompt">Out[6]:</div>
+<div class="output_area">
+<div class="prompt output_prompt">Out[7]:</div>
 
-<div class="output_html rendered_html output_subarea output_execute_result">
-<div>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>lh_G&amp;S_frontomargin_thickness</th>
-      <th>lh_G&amp;S_occipital_inf_thickness</th>
-      <th>lh_G&amp;S_paracentral_thickness</th>
-      <th>lh_G&amp;S_subcentral_thickness</th>
-      <th>lh_G&amp;S_transv_frontopol_thickness</th>
-      <th>lh_G&amp;S_cingul-Ant_thickness</th>
-      <th>lh_G&amp;S_cingul-Mid-Ant_thickness</th>
-      <th>lh_G&amp;S_cingul-Mid-Post_thickness</th>
-      <th>lh_G_cingul-Post-dorsal_thickness</th>
-      <th>lh_G_cingul-Post-ventral_thickness</th>
-      <th>...</th>
-      <th>lh_S_precentral-inf-part_thickness</th>
-      <th>lh_S_precentral-sup-part_thickness</th>
-      <th>lh_S_suborbital_thickness</th>
-      <th>lh_S_subparietal_thickness</th>
-      <th>lh_S_temporal_inf_thickness</th>
-      <th>lh_S_temporal_sup_thickness</th>
-      <th>lh_S_temporal_transverse_thickness</th>
-      <th>lh_MeanThickness_thickness</th>
-      <th>BrainSegVolNotVent</th>
-      <th>eTIV</th>
-    </tr>
-    <tr>
-      <th>Subjid</th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>209-101</th>
-      <td>0.068</td>
-      <td>0.114</td>
-      <td>0.439</td>
-      <td>0.411</td>
-      <td>-0.485</td>
-      <td>0.396</td>
-      <td>0.522</td>
-      <td>0.338</td>
-      <td>0.209</td>
-      <td>-0.326</td>
-      <td>...</td>
-      <td>0.416</td>
-      <td>0.899</td>
-      <td>-0.260</td>
-      <td>0.342</td>
-      <td>0.764</td>
-      <td>0.710</td>
-      <td>0.616</td>
-      <td>0.35712</td>
-      <td>12477.0</td>
-      <td>-263151.20658</td>
-    </tr>
-    <tr>
-      <th>211-105</th>
-      <td>0.675</td>
-      <td>0.480</td>
-      <td>0.586</td>
-      <td>0.159</td>
-      <td>0.735</td>
-      <td>0.125</td>
-      <td>-0.021</td>
-      <td>-0.012</td>
-      <td>0.047</td>
-      <td>0.331</td>
-      <td>...</td>
-      <td>0.103</td>
-      <td>0.395</td>
-      <td>0.657</td>
-      <td>0.449</td>
-      <td>0.194</td>
-      <td>0.359</td>
-      <td>-0.598</td>
-      <td>0.34532</td>
-      <td>-11609.0</td>
-      <td>-232468.20298</td>
-    </tr>
-    <tr>
-      <th>208-106</th>
-      <td>0.227</td>
-      <td>-0.034</td>
-      <td>0.106</td>
-      <td>-0.170</td>
-      <td>0.366</td>
-      <td>0.594</td>
-      <td>0.567</td>
-      <td>0.083</td>
-      <td>-0.056</td>
-      <td>-0.052</td>
-      <td>...</td>
-      <td>0.253</td>
-      <td>0.329</td>
-      <td>0.235</td>
-      <td>0.057</td>
-      <td>0.050</td>
-      <td>0.138</td>
-      <td>-0.073</td>
-      <td>0.11919</td>
-      <td>-104185.0</td>
-      <td>-101234.60336</td>
-    </tr>
-    <tr>
-      <th>202-108</th>
-      <td>0.009</td>
-      <td>-0.059</td>
-      <td>0.190</td>
-      <td>-0.695</td>
-      <td>0.172</td>
-      <td>0.023</td>
-      <td>0.185</td>
-      <td>-0.407</td>
-      <td>-0.565</td>
-      <td>-0.618</td>
-      <td>...</td>
-      <td>0.125</td>
-      <td>0.222</td>
-      <td>0.118</td>
-      <td>-0.291</td>
-      <td>-0.517</td>
-      <td>-0.163</td>
-      <td>-0.644</td>
-      <td>-0.32367</td>
-      <td>-48793.0</td>
-      <td>196476.13841</td>
-    </tr>
-    <tr>
-      <th>249-113</th>
-      <td>0.257</td>
-      <td>0.041</td>
-      <td>0.311</td>
-      <td>-0.157</td>
-      <td>0.474</td>
-      <td>0.606</td>
-      <td>0.057</td>
-      <td>0.341</td>
-      <td>-0.102</td>
-      <td>0.697</td>
-      <td>...</td>
-      <td>0.087</td>
-      <td>0.399</td>
-      <td>1.286</td>
-      <td>0.176</td>
-      <td>0.487</td>
-      <td>0.169</td>
-      <td>0.238</td>
-      <td>0.20067</td>
-      <td>-96630.0</td>
-      <td>-3192.59407</td>
-    </tr>
-    <tr>
-      <th>241-116</th>
-      <td>0.066</td>
-      <td>-0.058</td>
-      <td>-0.058</td>
-      <td>0.155</td>
-      <td>0.488</td>
-      <td>0.495</td>
-      <td>-0.016</td>
-      <td>0.067</td>
-      <td>-0.286</td>
-      <td>0.109</td>
-      <td>...</td>
-      <td>0.624</td>
-      <td>-0.252</td>
-      <td>1.659</td>
-      <td>-0.407</td>
-      <td>-0.097</td>
-      <td>-0.010</td>
-      <td>-0.844</td>
-      <td>0.12593</td>
-      <td>-9823.0</td>
-      <td>-81100.17617</td>
-    </tr>
-    <tr>
-      <th>243-118</th>
-      <td>0.085</td>
-      <td>0.097</td>
-      <td>-0.267</td>
-      <td>-0.539</td>
-      <td>0.514</td>
-      <td>-0.083</td>
-      <td>-0.194</td>
-      <td>-0.142</td>
-      <td>0.141</td>
-      <td>0.497</td>
-      <td>...</td>
-      <td>0.250</td>
-      <td>0.191</td>
-      <td>0.148</td>
-      <td>0.092</td>
-      <td>0.548</td>
-      <td>0.027</td>
-      <td>-0.278</td>
-      <td>-0.04118</td>
-      <td>-142993.0</td>
-      <td>-104728.87876</td>
-    </tr>
-    <tr>
-      <th>231-119</th>
-      <td>-0.015</td>
-      <td>0.049</td>
-      <td>-0.427</td>
-      <td>0.030</td>
-      <td>-0.322</td>
-      <td>0.043</td>
-      <td>0.213</td>
-      <td>0.293</td>
-      <td>0.178</td>
-      <td>-0.028</td>
-      <td>...</td>
-      <td>0.013</td>
-      <td>-0.069</td>
-      <td>-0.445</td>
-      <td>0.337</td>
-      <td>-0.018</td>
-      <td>0.143</td>
-      <td>-0.196</td>
-      <td>-0.03009</td>
-      <td>38650.0</td>
-      <td>211436.72274</td>
-    </tr>
-    <tr>
-      <th>253-120</th>
-      <td>-0.261</td>
-      <td>-0.210</td>
-      <td>-0.231</td>
-      <td>-0.416</td>
-      <td>0.305</td>
-      <td>0.015</td>
-      <td>0.200</td>
-      <td>0.012</td>
-      <td>0.074</td>
-      <td>0.244</td>
-      <td>...</td>
-      <td>0.088</td>
-      <td>-0.246</td>
-      <td>-0.563</td>
-      <td>-0.178</td>
-      <td>-0.080</td>
-      <td>-0.033</td>
-      <td>-0.905</td>
-      <td>-0.09477</td>
-      <td>86442.0</td>
-      <td>258633.90048</td>
-    </tr>
-  </tbody>
-</table>
-<p>9 rows × 77 columns</p>
-</div>
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>Subjid
+209-101    0.416
+211-105    0.103
+208-106    0.253
+202-108    0.125
+249-113    0.087
+241-116    0.624
+243-118    0.250
+231-119    0.013
+253-120    0.088
+Name: lh_S_precentral-inf-part_thickness, dtype: float64</pre>
 </div>
 
 </div>
@@ -12165,7 +11933,9 @@ div#notebook {
 <div class="output">
 
 
-<div class="output_area"><div class="prompt output_prompt">Out[7]:</div>
+<div class="output_area">
+<div class="prompt output_prompt">Out[7]:</div>
+
 
 <div class="output_html rendered_html output_subarea output_execute_result">
 <div>
@@ -12268,7 +12038,9 @@ div#notebook {
 <div class="output">
 
 
-<div class="output_area"><div class="prompt output_prompt">Out[9]:</div>
+<div class="output_area">
+<div class="prompt output_prompt">Out[9]:</div>
+
 
 <div class="output_html rendered_html output_subarea output_execute_result">
 <div>
@@ -12358,7 +12130,9 @@ div#notebook {
 <div class="output">
 
 
-<div class="output_area"><div class="prompt output_prompt">Out[10]:</div>
+<div class="output_area">
+<div class="prompt output_prompt">Out[10]:</div>
+
 
 <div class="output_html rendered_html output_subarea output_execute_result">
 <div>
@@ -12512,7 +12286,9 @@ div#notebook {
 <div class="output">
 
 
-<div class="output_area"><div class="prompt"></div>
+<div class="output_area">
+<div class="prompt"></div>
+
 <div class="output_subarea output_stream output_stderr output_text">
 <pre>ERROR:root:An unexpected error occurred while tokenizing input
 The following traceback may be corrupted or invalid
@@ -12522,7 +12298,9 @@ The error message is: (&#39;EOF in multi-line string&#39;, (1, 0))
 </div>
 </div>
 
-<div class="output_area"><div class="prompt"></div>
+<div class="output_area">
+<div class="prompt"></div>
+
 <div class="output_subarea output_text output_error">
 <pre>
 <span class="ansi-red-fg">---------------------------------------------------------------------------</span>
@@ -12611,7 +12389,9 @@ PyQT: http://www.riverbankcomputing.co.uk/software/pyqt/intro
 <div class="output">
 
 
-<div class="output_area"><div class="prompt"></div>
+<div class="output_area">
+<div class="prompt"></div>
+
 <div class="output_subarea output_stream output_stdout output_text">
 <pre>Reading labels from parcellation..
    read 75 labels from /Users/mrjeffs/Documents/Research/data/bbc/reg/ants_vbm_pairedLH_in_template_space/template_hires_br_freesurf_v6/label/lh.aparc.a2009s.annot
@@ -12620,7 +12400,9 @@ PyQT: http://www.riverbankcomputing.co.uk/software/pyqt/intro
 </div>
 </div>
 
-<div class="output_area"><div class="prompt output_prompt">Out[34]:</div>
+<div class="output_area">
+<div class="prompt output_prompt">Out[34]:</div>
+
 
 
 <div class="output_text output_subarea output_execute_result">
@@ -12723,7 +12505,9 @@ PyQT: http://www.riverbankcomputing.co.uk/software/pyqt/intro
 <div class="output">
 
 
-<div class="output_area"><div class="prompt output_prompt">Out[25]:</div>
+<div class="output_area">
+<div class="prompt output_prompt">Out[25]:</div>
+
 
 
 <div class="output_text output_subarea output_execute_result">
@@ -12752,7 +12536,9 @@ PyQT: http://www.riverbankcomputing.co.uk/software/pyqt/intro
 <div class="output">
 
 
-<div class="output_area"><div class="prompt output_prompt">Out[33]:</div>
+<div class="output_area">
+<div class="prompt output_prompt">Out[33]:</div>
+
 
 
 <div class="output_text output_subarea output_execute_result">
@@ -12806,4 +12592,8 @@ Name: lh_S_oc_middle&amp;Lunatus_thickness, dtype: object</pre>
     </div>
   </div>
 </body>
+
+ 
+
+
 </html>
