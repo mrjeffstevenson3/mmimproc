@@ -8,6 +8,7 @@ import math
 import statsmodels as sm
 import csv
 from scipy import stats as ss
+from pylabs.utils import run_subprocess, WorkingContext
 from pylabs.utils.paths import getnetworkdataroot
 fs = Path(getnetworkdataroot())
 project = 'bbc'
@@ -72,7 +73,8 @@ rh_ct_stats.index.name = 'Region'
 # # merge stat results
 # rh_sig_results.merge(lh_sig_results, left_on='Region', right_on='Region', how='outer').fillna('').set_index('Region').sort_values(['rh-p-value', 'lh-p-value'])
 
-# read in verticees to test against
+# read in verticees to test against derived from freesurfer mri_annotation2label such as
+# mri_annotation2label --subject template_hires_br_freesurf_v6 --hemi lh --annotation aparc.a2009s --outdir test
 label_dir = fs / project / 'reg' / 'ants_vbm_pairedLH_in_template_space' / 'template_hires_br_freesurf_v6' / 'label' / 'test'
 label_flist = label_dir.glob('*.label')
 all_labels = {}
@@ -88,11 +90,11 @@ for label_fname in label_flist:
 
 # read, find region, replace, write new thickness file
 lh_ct_fname = fs/project/'reg'/'ants_vbm_pairedLH_in_template_space'/'template_hires_br_freesurf_v6'/'surf'/'lh.thickness.asc'
-lh_contrl_mean_ct_fname = fs/project/'reg'/'ants_vbm_pairedLH_in_template_space'/'template_hires_br_freesurf_v6'/'surf'/'lh.control_mean_thickness.asc'
-lh_fost_mean_ct_fname = fs/project/'reg'/'ants_vbm_pairedLH_in_template_space'/'template_hires_br_freesurf_v6'/'surf'/'lh.foster_mean_thickness.asc'
-lh_mean_diff_ct_fname = fs/project/'reg'/'ants_vbm_pairedLH_in_template_space'/'template_hires_br_freesurf_v6'/'surf'/'lh.mean_diff_thickness.asc'
-lh_ct_tstat_fname = fs/project/'reg'/'ants_vbm_pairedLH_in_template_space'/'template_hires_br_freesurf_v6'/'surf'/'lh.tstat_thickness.asc'
-lh_ct_1minp_fname = fs/project/'reg'/'ants_vbm_pairedLH_in_template_space'/'template_hires_br_freesurf_v6'/'surf'/'lh.1minp_thickness.asc'
+lh_contrl_mean_ct_fname = lh_ct_fname.parent/'lh.control_mean_thickness.asc'
+lh_fost_mean_ct_fname = lh_ct_fname.parent/'lh.foster_mean_thickness.asc'
+lh_mean_diff_ct_fname = lh_ct_fname.parent/'lh.mean_diff_thickness.asc'
+lh_ct_tstat_fname = lh_ct_fname.parent/'lh.tstat_thickness.asc'
+lh_ct_1minp_fname = lh_ct_fname.parent/'lh.1minp_thickness.asc'
 
 with open(str(lh_ct_fname), 'rb') as lh_ct , open(str(lh_contrl_mean_ct_fname), 'wb') as lh_contrl_mean_ct , \
         open(str(lh_fost_mean_ct_fname), 'wb') as lh_fost_mean_ct, \
@@ -146,3 +148,11 @@ with open(str(lh_ct_fname), 'rb') as lh_ct , open(str(lh_contrl_mean_ct_fname), 
         tstat_writer.writerow(new_tstat_row)
         _1minp_writer.writerow(new_1minp_row)
 
+# use freesurfer mris_convert to convert back to curv file
+results = ()
+with WorkingContext(str(lh_ct_fname.parent)):
+    for ct_file in [lh_contrl_mean_ct_fname, lh_fost_mean_ct_fname, lh_mean_diff_ct_fname, lh_ct_tstat_fname, lh_ct_1minp_fname]:
+        cmd = ['mris_convert', '-c', str(ct_file), str(ct_file.parent)+'/lh.orig']
+        cmd += [str(ct_file.parent)+'/'+str(ct_file.stem).replace('_thickness', '.thickness')]
+        cmd = ' '.join(cmd)
+        results += run_subprocess(cmd)
