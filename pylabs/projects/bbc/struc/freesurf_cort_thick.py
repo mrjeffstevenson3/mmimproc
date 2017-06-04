@@ -10,11 +10,12 @@ import csv
 from scipy import stats as ss
 from pylabs.utils.paths import getnetworkdataroot
 fs = Path(getnetworkdataroot())
+project = 'bbc'
 # first set up the 3 cortical thickness dataframes as input
 contrl_sid = ['sub-bbc209', 'sub-bbc211', 'sub-bbc208', 'sub-bbc202', 'sub-bbc249', 'sub-bbc241', 'sub-bbc243', 'sub-bbc231', 'sub-bbc253']
 foster_sid = ['sub-bbc101', 'sub-bbc105', 'sub-bbc106', 'sub-bbc108', 'sub-bbc113', 'sub-bbc116', 'sub-bbc118', 'sub-bbc119', 'sub-bbc120']
-lh_ct = pd.DataFrame.from_csv('/Users/mrjeffs/Documents/Research/data/bbc/freesurfer_stats_results/grp_parc_stats_lh_cortical_thickness.csv', index_col=None)
-rh_ct = pd.DataFrame.from_csv('/Users/mrjeffs/Documents/Research/data/bbc/freesurfer_stats_results/grp_parc_stats_rh_cortical_thickness.csv', index_col=None)
+lh_ct = pd.DataFrame.from_csv(fs/project/'grp_parc_stats_lh_cortical_thickness.csv', index_col=None)
+rh_ct = pd.DataFrame.from_csv(fs/project/'grp_parc_stats_rh_cortical_thickness.csv', index_col=None)
 
 
 lh_ct['Subjid'] = lh_ct['lh.aparc.a2009s.thickness'].str.partition('/').drop([2,1], axis=1)
@@ -93,9 +94,9 @@ with open(str(lh_ct_fname), 'rb') as lh_ct , open(str(lh_contrl_mean_ct_fname), 
         open(str(lh_fost_mean_ct_fname), 'wb') as lh_fost_mean_ct, \
         open(str(lh_mean_diff_ct_fname), 'wb') as lh_mean_diff_ct:
     reader = csv.reader(lh_ct, skipinitialspace=True, delimiter=' ')
-    cntrl_writer = csv.writer(lh_contrl_mean_ct)
-    foster_writer = csv.writer(lh_fost_mean_ct)
-    diff_writer = csv.writer(lh_mean_diff_ct)
+    cntrl_writer = csv.writer(lh_contrl_mean_ct, delimiter=' ')
+    foster_writer = csv.writer(lh_fost_mean_ct, delimiter=' ')
+    diff_writer = csv.writer(lh_mean_diff_ct, delimiter=' ')
     for row in reader:
         # get vertex
         vert = int(row[0])
@@ -106,12 +107,19 @@ with open(str(lh_ct_fname), 'rb') as lh_ct , open(str(lh_contrl_mean_ct_fname), 
             foster_thickn = [2.7127]
             diff_thickn = [0.0732]
         else:
-            cntrl_thickn = [round(lh_ct_ctrl.mean(axis=1)[region], 4)]
-            foster_thickn = [round(lh_ct_fost.mean(axis=1)[region], 4)]
-            diff_thickn = [round(lh_paired_sub.mean(axis=0).loc[region], 4)]
-        new_ctrl_row = row[:3] + cntrl_thickn
-        new_foster_row = row[:3] + foster_thickn
-        new_diff_row = row[:3] + diff_thickn
+            region = region.replace('ctx_', '') + '_thickness'
+            try:
+                cntrl_thickn = [round(lh_ct_ctrl.mean(axis=1)[region], 5)]
+                foster_thickn = [round(lh_ct_fost.mean(axis=1)[region], 5)]
+                diff_thickn = [round(lh_paired_sub.mean(axis=0).loc[region], 5)]
+            except:
+                cntrl_thickn = [2.785]
+                foster_thickn = [2.7127]
+                diff_thickn = [0.0732]
+                print ('exception caught in region '+region)
+        new_ctrl_row = row[:4] + cntrl_thickn
+        new_foster_row = row[:4] + foster_thickn
+        new_diff_row = row[:4] + diff_thickn
 
         cntrl_writer.writerow(new_ctrl_row)
         foster_writer.writerow(new_foster_row)
