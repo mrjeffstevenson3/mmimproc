@@ -117,7 +117,7 @@ with open(str(lh_ct_fname), 'rb') as lh_ct , open(str(lh_contrl_mean_ct_fname), 
             foster_thickn = [2.7127]
             diff_thickn = [0.0732]
             tstat_thickn = [0]
-            _1minp_thickn = [1]
+            _1minp_thickn = [0]
         else:
             # convert cortical region name to cortical thickness name
             region = region.replace('ctx_', '') + '_thickness'
@@ -133,7 +133,7 @@ with open(str(lh_ct_fname), 'rb') as lh_ct , open(str(lh_contrl_mean_ct_fname), 
                 foster_thickn = [2.7127]
                 diff_thickn = [0.0732]
                 tstat_thickn = [0]
-                _1minp_thickn = [1]
+                _1minp_thickn = [0]
                 print ('exception caught in region '+region+' for vertice number '+str(vert))
         # replace orig row values with stats
         new_ctrl_row = row[:4] + cntrl_thickn
