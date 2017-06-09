@@ -6,6 +6,9 @@ import nrrd
 from pylabs.utils.provenance import ProvenanceWrapper
 provenance = ProvenanceWrapper()
 
+# need to fix multishell gradient handling. grads are proportional to sqrt(bval/bval_largest)
+# 1st find largest b value, write those vectors unchanged, smaller b value vecs are uniformly scaled as above and written per usual.
+# see web page :  https://na-mic.org/wiki/NAMIC_Wiki:DTI:Nrrd_format#Key.2FValue_pair_convention_for_DWI
 def nii2nrrd(niftifile, nrrd_fname, bvalsf=None, bvecsf=None, istensor=False, ismask=False):
     if istensor + ismask > 1:
         raise ValueError("Only one can be True. istensor= "+istensor+", ismask= "+ismask)
