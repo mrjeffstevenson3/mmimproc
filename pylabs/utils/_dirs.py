@@ -53,3 +53,16 @@ def appendposix(file, suff):
     else:
         return Path(str(file).replace(file_exts, suff+file_exts))
 
+def replacesuffix(file, suff):
+    '''
+    Replaces existing suffix with new string + extention(s).
+    :param file: pathlib path and file name with ext (ext optional)
+    :param suff:  string to append at end of file name such as '_brain.nii.gz' or '_brain_mask.nii.gz
+    :return: returns reformed posix path with string added at end of file name and new extension.
+    '''
+    file = Path(file)
+    if len(file.suffixes) <= 1:
+        return Path(str(file.parent/file.stem)+suff)
+    else:
+        return Path(str(file.parent/Path(file.stem).stem)+suff)
+
