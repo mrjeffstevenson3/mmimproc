@@ -50,8 +50,8 @@ for fname in ('Control-Foster_word1', 'tstat_group_contrast_word1'):
         idx = np.abs(stc.times - t).argmin()
         print('    t=%s' % (stc.times[idx],))
         for hemi in hemis:
-            vol_fname = op.join(work_dir, '%s_%s_%d.nii'
-                                % (fname, hemi, round(1000 * stc.times[idx],)))
+            vol_fname = op.join(work_dir, '%s_%s_%s.nii'
+                                % (fname, hemi, str(int(round(1000 * stc.times[idx],))).zfill(3)))
             if not op.isfile(vol_fname):
                 # Write to disk
                 this_data = getattr(stc, hemi + '_data')[:, idx]

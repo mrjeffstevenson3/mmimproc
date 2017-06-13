@@ -6,23 +6,25 @@ import numpy as np
 import nibabel as nib
 import mne
 from pylabs.utils import getnetworkdataroot
-from pylabs.projects.nbwr.file_names import project
+# from pylabs.projects.nbwr.file_names import project
 fs = Path(getnetworkdataroot())
-
+project = 'bbc'
 hemis = ['lh', 'rh']
-step = 10  # in ms
+step = 5  # in ms
 
 #subjects_dir = mne.get_config('SUBJECTS_DIR')
-subjectid = 'sub-nbwr999b'
-session = 'ses-1'
-subjects_dir = str(fs/project/subjectid/session)
+subject = 'template_hires_br_freesurf_v6'
+# subjectid = 'sub-nbwr999b'
+# session = 'ses-1'
+#subjects_dir = str(fs/project/subjectid/session)
+subjects_dir = str(fs/project/'reg/ants_vbm_pairedLH_in_template_space')
 mne.set_config('SUBJECTS_DIR', subjects_dir)
 
-subject = 'sub-nbwr999b_ses-1_vbm_ti1200_rms_freesurf'
+
 if not op.isdir('temp'):
     os.mkdir('temp')
 
-fname_list = [fs/project/subjectid/session/subject/'Word-NonWord', fs/project/subjectid/session/subject/'Words_td411']
+fname_list = [op.join(subjects_dir, subject, 'Control-Foster_word1')]   # , fs/project/subjectid/session/subject/'Words_td411']
 
 for fnamep in fname_list:
     fname = str(fnamep)
@@ -55,13 +57,13 @@ for fnamep in fname_list:
     template_fname = op.join(subjects_dir, subject, 'mri', 'orig.mgz')
     work_dir = 'temp'
     data = list()
-    times = np.arange(0, 401, step) / 1000.
+    times = np.arange(0, 201, step) / 1000.
     for t in times:
         idx = np.abs(stc.times - t).argmin()
         print('    t=%s' % (stc.times[idx],))
         for hemi in hemis:
-            vol_fname = op.join(work_dir, '%s_%s_%d.nii'
-                                % (fname, hemi, round(1000 * stc.times[idx],)))
+            vol_fname = op.join(work_dir, '%s_%s_%s.nii'
+                                % (fname, hemi, str(int(round(1000 * stc.times[idx],))).zfill(3)))
             if not op.isfile(vol_fname):
                 # Write to disk
                 this_data = getattr(stc, hemi + '_data')[:, idx]
