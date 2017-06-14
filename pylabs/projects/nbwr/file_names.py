@@ -12,21 +12,21 @@ orig_spgr = [
     (('999b', 1, 'spgr_fa-05-tr-15p0', 1), ('999b', 1, 'spgr_fa-15-tr-15p0', 1), ('999b', 1,'spgr_fa-30-tr-15p0', 1), ('999b', 1,'b1map', 1))
     ]
 ftempl = 'sub-nbwr{}_ses-{}_{}_{}'
-topup_fname = []
-topdn_fname = []
-dwi_fname = []
+topup_fnames = []
+topdn_fnames= []
+dwi_fnames = []
 for topup, topdn, dwi in orig_dwi:
-    topup_fname.append(ftempl.format(*topup))
-    topdn_fname.append(ftempl.format(*topdn))
-    dwi_fname.append(ftempl.format(*dwi))
+    topup_fnames.append(ftempl.format(*topup))
+    topdn_fnames.append(ftempl.format(*topdn))
+    dwi_fnames.append(ftempl.format(*dwi))
 
-spgr_fa5_fname = []
-spgr_fa15_fname = []
-spgr_fa30_fname = []
-b1map_fname = []
+spgr_fa5_fnames = []
+spgr_fa15_fnames = []
+spgr_fa30_fnames = []
+b1map_fnames = []
 for spgr_fa5, spgr_fa15, spgr_fa30, b1map in orig_spgr:
-    spgr_fa5_fname.append(ftempl.format(*spgr_fa5))
-    spgr_fa15_fname.append(ftempl.format(*spgr_fa15))
-    spgr_fa30_fname.append(ftempl.format(*spgr_fa30))
-    b1map_fname.append(ftempl.format(*b1map))
+    spgr_fa5_fnames.append(ftempl.format(*spgr_fa5))
+    spgr_fa15_fnames.append(ftempl.format(*spgr_fa15))
+    spgr_fa30_fnames.append(ftempl.format(*spgr_fa30))
+    b1map_fnames.append(ftempl.format(*b1map))
 

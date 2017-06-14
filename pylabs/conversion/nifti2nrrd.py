@@ -10,30 +10,53 @@ provenance = ProvenanceWrapper()
 # 1st find largest b value, write those vectors unchanged, smaller b value vecs are uniformly scaled as above and written per usual.
 # see web page :  https://na-mic.org/wiki/NAMIC_Wiki:DTI:Nrrd_format#Key.2FValue_pair_convention_for_DWI
 def nii2nrrd(niftifile, nrrd_fname, bvalsf=None, bvecsf=None, istensor=False, ismask=False):
+    '''
+    This function converts nifti files to nrrd.
+    '''
+    # test consistency
     if istensor + ismask > 1:
         raise ValueError("Only one can be True. istensor= "+istensor+", ismask= "+ismask)
-    options = {}
-    if bvalsf != None: bvalsf = Path(bvalsf)
-    if bvecsf !=None: bvecsf = Path(bvecsf)
-    niftifile = Path(niftifile)
-    if bvalsf != None and not bvalsf.is_file():
+
+    if (bvalsf is not None and bvecsf is None) or (bvalsf is None and bvecsf is not None):
+        raise ValueError("Either both bvals and bvecs files must be defined or None. bvalsf= " + bvalsf + ", bvecsf= " + bvecsf)
+
+    if bvalsf is not None and not Path(bvalsf).is_file():
         raise IOError( str(bvalsf) + " bvals File Doesn't Exist. Please check.")
 
-    if bvecsf !=None and not bvecsf.is_file():
+    if bvecsf is not None and not Path(bvecsf).is_file():
         raise IOError( str(bvecsf) + " bvecs File Doesn't Exist. Please check.")
 
-    if not niftifile.is_file():
+    if not Path(niftifile).is_file():
         raise IOError( str(niftifile) + " nifti file File Doesn't Exist. Please check.")
     #load data
-    if bvalsf != None: bvals = np.loadtxt(str(bvalsf))
-    if bvecsf !=None: bvecs = np.loadtxt(str(bvecsf))
-    if bvecsf !=None and bvalsf != None:
+    options = {}
+    if bvalsf is not None: bvals = np.loadtxt(str(bvalsf))
+    if bvecsf is not None: bvecs = np.loadtxt(str(bvecsf))
+    if bvecsf is not None and bvalsf is not None:
         options[u'keyvaluepairs'] = {u'modality': u'DWMRI', u'DWMRI_b-value': np.max(bvals).astype(unicode)}
-        for i, x in enumerate(bvecs.T):
-            if u'DWMRI_gradient_'+unicode(i).zfill(4) in options[u'keyvaluepairs']:
-                options[u'keyvaluepairs'][u'DWMRI_gradient_'+unicode(i).zfill(4)].update(' '.join(map(unicode, x)))
-            else:
-                options[u'keyvaluepairs'][u'DWMRI_gradient_' + unicode(i).zfill(4)] = ' '.join(map(unicode, x))
+        if len(np.unique(np.loadtxt(str(bvals_fname)))) == 2:
+            for i, x in enumerate(bvecs.T):
+                if u'DWMRI_gradient_'+unicode(i).zfill(4) in options[u'keyvaluepairs']:
+                    options[u'keyvaluepairs'][u'DWMRI_gradient_'+unicode(i).zfill(4)].update(' '.join(map(unicode, x)))
+                else:
+                    options[u'keyvaluepairs'][u'DWMRI_gradient_' + unicode(i).zfill(4)] = ' '.join(map(unicode, x))
+        elif len(np.unique(bvals)) == 3:
+            ubvals = np.unique(bvals)[::-1]
+            ubvals = np.delete(ubvals, -1)
+            vec_scaling = np.sqrt(ubvals[1]/ubvals[0])
+            for i, (x, b) in enumerate(zip(bvecs.T, bvals)):
+                if b == np.max(bvals):
+                    if u'DWMRI_gradient_'+unicode(i).zfill(4) in options[u'keyvaluepairs']:
+                        options[u'keyvaluepairs'][u'DWMRI_gradient_'+unicode(i).zfill(4)].update(' '.join(map(unicode, x)))
+                    else:
+                        options[u'keyvaluepairs'][u'DWMRI_gradient_' + unicode(i).zfill(4)] = ' '.join(map(unicode, x))
+                if b < np.max(bvals):
+                    if u'DWMRI_gradient_'+unicode(i).zfill(4) in options[u'keyvaluepairs']:
+                        options[u'keyvaluepairs'][u'DWMRI_gradient_'+unicode(i).zfill(4)].update(' '.join(map(unicode, x*vec_scaling)))
+                    else:
+                        options[u'keyvaluepairs'][u'DWMRI_gradient_' + unicode(i).zfill(4)] = ' '.join(map(unicode, x*vec_scaling))
+        elif len(np.unique(bvals)) > 3:
+            raise ValueError("Only 3 shell dwi can be properly converted with scaled vectors at this time.")
     img = nib.load(str(niftifile))
     hdr = img.header
     img_data = img.get_data()
@@ -78,18 +101,18 @@ def array2nrrd(data, affine, nrrd_fname, bvalsf=None, bvecsf=None, istensor=Fals
     if istensor + ismask > 1:
         raise ValueError("Only one can be True. istensor= "+istensor+", ismask= "+ismask)
     options = {}
-    if bvalsf != None: bvalsf = Path(bvalsf)
-    if bvecsf !=None: bvecsf = Path(bvecsf)
-    if bvalsf != None and not bvalsf.is_file():
+    if bvalsf is not None: bvalsf = Path(bvalsf)
+    if bvecsf is not None: bvecsf = Path(bvecsf)
+    if bvalsf is not None and not bvalsf.is_file():
         raise IOError( str(bvalsf) + " bvals File Doesn't Exist. Please check.")
 
-    if bvecsf !=None and not bvecsf.is_file():
+    if bvecsf is not None and not bvecsf.is_file():
         raise IOError( str(bvecsf) + " bvecs File Doesn't Exist. Please check.")
 
     #load data
-    if bvalsf != None: bvals = np.loadtxt(str(bvalsf))
-    if bvecsf !=None: bvecs = np.loadtxt(str(bvecsf))
-    if bvecsf !=None and bvalsf != None:
+    if bvalsf is not None: bvals = np.loadtxt(str(bvalsf))
+    if bvecsf is not None: bvecs = np.loadtxt(str(bvecsf))
+    if bvecsf is not None and bvalsf is not None:
         options[u'keyvaluepairs'] = {u'modality': u'DWMRI', u'DWMRI_b-value': np.max(bvals).astype(unicode)}
         for i, x in enumerate(bvecs.T):
             if u'DWMRI_gradient_'+unicode(i).zfill(4) in options[u'keyvaluepairs']:
