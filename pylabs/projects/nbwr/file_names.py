@@ -6,11 +6,16 @@
 project = 'nbwr'
 orig_dwi = [
     (('999b', 1, 'dwi-topup_6S0', 1), ('999b', 1, 'dwi-topdn_6S0', 1), ('999b', 1,'dwi-topup_64dir-3sh-800-2000', 1)),
-
+    (('998', 1, 'dwi-topup_6S0', 1), ('998', 1, 'dwi-topdn_6S0', 1), ('998', 1,'dwi-topup_64dir-3sh-800-2000', 1)),
     ]
 orig_spgr = [
-    (('999b', 1, 'spgr_fa-05-tr-15p0', 1), ('999b', 1, 'spgr_fa-15-tr-15p0', 1), ('999b', 1,'spgr_fa-30-tr-15p0', 1), ('999b', 1,'b1map', 1))
+    (('999b', 1, 'spgr_fa-05-tr-15p0', 1), ('999b', 1, 'spgr_fa-15-tr-15p0', 1), ('999b', 1,'spgr_fa-30-tr-15p0', 1), ('999b', 1,'b1map', 1)),
+    (('998', 1, 'spgr_fa-05-tr-12p0', 1), ('998', 1, 'spgr_fa-15-tr-12p0', 1), ('998', 1, 'spgr_fa-30-tr-12p0', 1), ('998', 1, 'b1map', 1)),
     ]
+orig_5spgr = [
+    (('998', 1, 'spgr_fa-05-tr-12p0', 1), ('998', 1, 'spgr_fa-10-tr-12p0', 1), ('998', 1, 'spgr_fa-15-tr-12p0', 1), ('998', 1, 'spgr_fa-20-tr-12p0', 1), ('998', 1,'spgr_fa-30-tr-12p0', 1), ('998', 1,'b1map', 1)),
+    ]
+
 ftempl = 'sub-nbwr{}_ses-{}_{}_{}'
 topup_fnames = []
 topdn_fnames= []
@@ -28,5 +33,19 @@ for spgr_fa5, spgr_fa15, spgr_fa30, b1map in orig_spgr:
     spgr_fa5_fnames.append(ftempl.format(*spgr_fa5))
     spgr_fa15_fnames.append(ftempl.format(*spgr_fa15))
     spgr_fa30_fnames.append(ftempl.format(*spgr_fa30))
+    b1map_fnames.append(ftempl.format(*b1map))
+
+spgr5_fa5_fnames = []
+spgr5_fa10_fnames = []
+spgr5_fa15_fnames = []
+spgr5_fa20_fnames = []
+spgr5_fa30_fnames = []
+b1map_fnames = []
+for spgr5_fa5, spgr5_fa10, spgr5_fa15, spgr5_fa20, spgr5_fa30, b1map in orig_5spgr:
+    spgr5_fa5_fnames.append(ftempl.format(*spgr5_fa5))
+    spgr5_fa10_fnames.append(ftempl.format(*spgr5_fa10))
+    spgr5_fa15_fnames.append(ftempl.format(*spgr5_fa15))
+    spgr5_fa20_fnames.append(ftempl.format(*spgr5_fa20))
+    spgr5_fa30_fnames.append(ftempl.format(*spgr5_fa30))
     b1map_fnames.append(ftempl.format(*b1map))
 
