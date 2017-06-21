@@ -38,7 +38,7 @@ prefilter = False
 templating = False
 
 # subjects and files to run on
-from pylabs.projects.nbwr.file_names import topup_fname, topdn_fname, dwi_fname
+from pylabs.projects.nbwr.file_names import topup_fnames, topdn_fnames, dwi_fnames
 
 def default_to_regular(d):
     if isinstance(d, defaultdict):
@@ -65,7 +65,7 @@ def test4file(file):
 #         niftiDict = cPickle.load(f)
 
 if run_topup:
-    for i, (topup, topdn, dwif) in enumerate(zip(topup_fname, topdn_fname, dwi_fname)):
+    for i, (topup, topdn, dwif) in enumerate(zip(topup_fnames, topdn_fnames, dwi_fnames)):
         dwipath = fs / project / dwif.split('_')[0] / dwif.split('_')[1] / 'dwi'
         ec_dir = dwipath / eddy_corr_dir
         orig_dwif_fname = dwipath / str(dwif + '.nii')

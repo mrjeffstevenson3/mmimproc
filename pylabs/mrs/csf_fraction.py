@@ -21,7 +21,7 @@ fast = fsl.FAST(output_type='NIFTI')
 
 
 project = 'nbwr'
-subject = 'sub-nbwr999b'
+subject = 'sub-nbwr998'
 session = 'ses-1'
 side = '_left'
 
@@ -32,8 +32,8 @@ except OSError:
         raise
 tempmrs = InDir(join(fs, project, subject, session, 'mrs'))
 
-sparf = 'NWBR999B_WIP_LTPRESS_TE80_GLU_48MEAS_9_2_raw_act.SPAR'
-sparfname = join(fs, project, subject, session, 'source_parrec', sparf)
+sparf = 'NWBR998_WIP_LTPRESS_TE80_GLU_48MEAS_10_2_raw_act.SPAR'
+sparfname = join(fs, project, subject, session, 'source_sparsdat', sparf)
 matching_parfname = 'NWBR999B_LT_VBM_MATCHING_SPEC_3_7.PAR'
 parfile = join(fs, project, subject, session, 'source_parrec', matching_parfname)
 paroutfname = join(fs, project, subject, session, 'mrs', subject + side + '_mpr_match_sv')

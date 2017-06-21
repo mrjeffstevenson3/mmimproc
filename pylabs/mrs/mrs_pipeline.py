@@ -5,12 +5,12 @@ from pylabs.utils.paths import getnetworkdataroot
 
 fs = Path(getnetworkdataroot())
 project = 'nbwr'
-subject = 'sub-nbwr999b'
-rt_actfname = 'NWBR999B_WIP_RTGABAMM_TE80_120DYN_5_2_raw_act.SDAT'
-rt_reffname = 'NWBR999B_WIP_RTGABAMM_TE80_120DYN_5_2_raw_ref.SDAT'
-lt_actfname = 'NWBR999B_WIP_LTGABAMM_TE80_120DYN_8_2_raw_act.SDAT'
-lt_reffname = 'NWBR999B_WIP_LTGABAMM_TE80_120DYN_8_2_raw_ref.SDAT'
-source_path = fs / project / subject / 'ses-1' / 'source_parrec'
+subject = 'sub-nbwr998'
+rt_actfname = 'NWBR998_WIP_RTGABAMM_TE80_120DYN_6_2_raw_act.SDAT'
+rt_reffname = 'NWBR998_WIP_RTGABAMM_TE80_120DYN_6_2_raw_ref.SDAT'
+lt_actfname = 'NWBR998_WIP_LTGABAMM_TE80_120DYN_9_2_raw_act.SDAT'
+lt_reffname = 'NWBR998_WIP_LTGABAMM_TE80_120DYN_9_2_raw_ref.SDAT'
+source_path = fs / project / subject / 'ses-1' / 'source_sparsdat'
 results_dir = fs / project / subject / 'ses-1' / 'mrs'
 
 if not source_path.is_dir():
@@ -40,8 +40,12 @@ with WorkingContext(str(results_dir)):
     except:
         print('an exception has occured.')
         print("({})".format(", ".join(output)))
+        with open(results_dir/'mrs_gaba_error{:%Y%m%d%H%M}.json'.format(datetime.datetime.now()), mode='a') as logr:
+            json.dump(output, logr, indent=2)
     else:
         print("({})".format(", ".join(output)))
         print('GABA fits completed normally.')
+        with open(results_dir/'mrs_gaba_log{:%Y%m%d%H%M}.json'.format(datetime.datetime.now()), mode='a') as logr:
+            json.dump(output, logr, indent=2)
 
 # add provenance here. traverse gannett out dirs to find PDFs

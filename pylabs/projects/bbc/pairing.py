@@ -203,4 +203,6 @@ foster_dwi2templ_affine_fnames = [fname.replace('_withmf3S0_ec_thr1', '_withmf3S
 control_dwi2templ_affine_fnames = [fname.replace('_withmf3S0_ec_thr1', '_withmf3S0_S0_brain_j1_s10_r1_reg2dwiT2template_0GenericAffine.mat') for fname in control_dwi_fnames]
 dwi2templ_affine_fnames = foster_dwi2templ_affine_fnames + control_dwi2templ_affine_fnames
 
-
+# freesurfer subject directories
+freesurf_dir_templ = 'sub-bbc{sid}/sub-bbc{sid}_ses-{snum}_{meth}_{runnum}_freesurf'
+freesurf_dirs = [fs/project/freesurf_dir_templ.format(sid=s, snum=str(ses), meth=m, runnum=str(r)) for s, ses, m, r in vbmpairing]
