@@ -1138,7 +1138,7 @@ c
 		polyz = polysav(i,3,1)
 
 		if(i.eq.ipoly.and.polyy.ge.rstart.and.polyy.le.rend.and.polyz.gt.slicersuperior)then
-		poly(1) = ifil
+		poly(1) = ifil+1
 		tensors(i,1) = poly(1)
 		endif
 		enddo  !ii
@@ -1162,7 +1162,7 @@ c
 		polyz = polysav(i,3,1)
 
 		if(i.eq.ipoly.and.polyy.ge.rstart.and.polyy.le.rend.and.polyz.le.slicersuperior)then
-		poly(1) = ifil+10
+		poly(1) = ifil+11
 		tensors(i,1) = poly(1)
 		endif
 		enddo  !ii
