@@ -14,15 +14,17 @@ from pylabs.conversion.brain_convert import conv_subjs
 from pylabs.io.images import loadStack
 from pylabs.utils import run_subprocess, WorkingContext
 from pylabs.utils.paths import getnetworkdataroot
-# prov = ProvenanceWrapper()
-flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo', output_type='NIFTI')
-applyxfm = fsl.ApplyXFM(output_type='NIFTI')
+from pylabs.projects.nbwr.file_names import project
+from pylabs.utils.provenance import ProvenanceWrapper
+prov = ProvenanceWrapper()
+
+flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo', output_type='NIFTI_GZ')
+applyxfm = fsl.ApplyXFM(output_type='NIFTI_GZ')
 fs = Path(getnetworkdataroot())
 
-project = 'nbwr'
 eddy_corr_dir = 'eddy_cuda_repol_v1'
 filterS0_string = '_mf'
-niipickle = fs / project / 'nbwrniftiDict_dev_subj999b_201704101132.pickle'
+niipickle = fs / project / 'nbwrniftiDict_dev_subj998_201706221132.pickle'
 #stages to run
 convert = True
 run_topup = True
@@ -36,7 +38,7 @@ prefilter = False
 templating = False
 
 # subjects and files to run on
-from pylabs.projects.nbwr.file_names import topup_fname, topdn_fname, dwi_fname
+from pylabs.projects.nbwr.file_names import topup_fnames, topdn_fnames, dwi_fnames
 
 def default_to_regular(d):
     if isinstance(d, defaultdict):
@@ -63,12 +65,12 @@ def test4file(file):
 #         niftiDict = cPickle.load(f)
 
 if run_topup:
-    for i, (topup, topdn, dwif) in enumerate(zip(topup_fname, topdn_fname, dwi_fname)):
+    for i, (topup, topdn, dwif) in enumerate(zip(topup_fnames, topdn_fnames, dwi_fnames)):
         dwipath = fs / project / dwif.split('_')[0] / dwif.split('_')[1] / 'dwi'
         ec_dir = dwipath / eddy_corr_dir
-        dwi_basename = dwipath / dwif
+        if not ec_dir.is_dir():
+            ec_dir.mkdir(parents=True)
         orig_dwif_fname = dwipath / str(dwif + '.nii')
-
         dwi_bvals_fname = dwipath / str(dwif + '.bvals')
         dwi_bvecs_fname = dwipath / str(dwif + '.bvecs')
         dwi_dwellt_fname = dwipath / str(dwif + '.dwell_time')
@@ -113,23 +115,24 @@ if run_topup:
         topup_dn_concat_img.set_sform(topup_affine, code=1)
         topup_dn_concat_img.set_qform(topup_affine, code=1)
         nib.save(topup_dn_concat_img, str(dwipath / str(topup + '_topdn_concat.nii')))
-        cmd = 'topup --imain='+str(dwipath / str(topup + '_topdn_concat.nii'))
-        cmd += ' --datain=acq_params.txt --config=b02b0.cnf --out='
-        cmd += str(dwipath / str(topup + '_topdn_concat'))
-        cmd += ' --iout='+str(dwipath / str(topup + '_topdn_concat_unwarped'))
-        cmd += ' --fout='+str(dwipath / str(topup + '_topdn_concat_warp_field'))
+        prov.log(str(dwipath / str(topup + '_topdn_concat.nii')), 'concatenated topup-dn S0 vols', [str(topup_fname), str(topdn_fname)])
         result = ()
         with WorkingContext(str(dwipath)):
-            result = run_subprocess(cmd)
-            result = run_subprocess('fslmaths '+topup + '_topdn_concat_unwarped'+' -Tmean '+topup + '_topdn_concat_unwarped_mean')
+            cmd = 'topup --imain=' + str(dwipath / str(topup + '_topdn_concat.nii'))
+            cmd += ' --datain=acq_params.txt --config=b02b0.cnf --out='
+            cmd += str(dwipath / str(topup + '_topdn_concat'))
+            cmd += ' --iout=' + str(dwipath / str(topup + '_topdn_concat_unwarped'))
+            cmd += ' --fout=' + str(dwipath / str(topup + '_topdn_concat_warp_field'))
+            result += run_subprocess(cmd)
+            result += run_subprocess('fslmaths '+topup + '_topdn_concat_unwarped'+' -Tmean '+topup + '_topdn_concat_unwarped_mean')
             with open('index.txt', 'w') as f:
                 f.write('1 ' * len(gtab.bvals))
             extract_brain(dwipath/str(topup + '_topdn_concat_unwarped_mean.nii'))
             eddy_cmd = 'eddy_cuda7.5 --imain='+str(orig_dwif_fname)+' --mask='+str(dwipath/str(topup + '_topdn_concat_unwarped_mean_brain_mask.nii'))
             eddy_cmd += ' --acqp=acq_params.txt  --index=index.txt --bvecs='+str(dwi_bvecs_fname)
-            eddy_cmd += ' --bvals='+str(dwi_bvals_fname)+' --topup='+str(dwipath / str(topup + '_topdn_concat_unwarped'))
+            eddy_cmd += ' --bvals='+str(dwi_bvals_fname)+' --topup='+str(dwipath / str(topup + '_topdn_concat'))
             eddy_cmd += '  --repol --out='+str(ec_dir/str(dwif + '_topdn_unwarped_ec'))
-            result = run_subprocess(eddy_cmd)
+            result += run_subprocess(eddy_cmd)
             dwi_bvecs_ec_rot_fname = str(ec_dir/str(dwif + '_topdn_unwarped_ec.eddy_rotated_bvecs'))
             # clamp and filter
             ec_data = nib.load(str(ec_dir/str(dwif + '_topdn_unwarped_ec.nii'))).get_data()
@@ -143,5 +146,4 @@ if run_topup:
                 fdwi = infpath / str(dwif + filterS0_string + '.nii')
                 savenii(data, img.affine, str(fdwi), header=img.header)
 
-            S0_data =
 

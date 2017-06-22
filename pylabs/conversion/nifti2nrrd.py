@@ -34,7 +34,7 @@ def nii2nrrd(niftifile, nrrd_fname, bvalsf=None, bvecsf=None, istensor=False, is
     if bvecsf is not None: bvecs = np.loadtxt(str(bvecsf))
     if bvecsf is not None and bvalsf is not None:
         options[u'keyvaluepairs'] = {u'modality': u'DWMRI', u'DWMRI_b-value': np.max(bvals).astype(unicode)}
-        if len(np.unique(np.loadtxt(str(bvals_fname)))) == 2:
+        if len(np.unique(np.loadtxt(str(bvalsf)))) == 2:
             for i, x in enumerate(bvecs.T):
                 if u'DWMRI_gradient_'+unicode(i).zfill(4) in options[u'keyvaluepairs']:
                     options[u'keyvaluepairs'][u'DWMRI_gradient_'+unicode(i).zfill(4)].update(' '.join(map(unicode, x)))
