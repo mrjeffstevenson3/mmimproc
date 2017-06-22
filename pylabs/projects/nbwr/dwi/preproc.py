@@ -8,10 +8,13 @@ from dipy.io import read_bvals_bvecs
 from dipy.core.gradients import gradient_table
 from datetime import datetime
 from cloud.serialization.cloudpickle import dumps
+from scipy.ndimage.filters import median_filter as medianf
 from pylabs.structural.brain_extraction import extract_brain
 from pylabs.structural.brain_extraction import struc_bet
 from pylabs.conversion.brain_convert import conv_subjs
+from pylabs.conversion.nifti2nrrd import nii2nrrd
 from pylabs.io.images import loadStack
+from pylabs.io.images import savenii
 from pylabs.utils import run_subprocess, WorkingContext
 from pylabs.utils.paths import getnetworkdataroot
 from pylabs.projects.nbwr.file_names import project
@@ -22,7 +25,7 @@ flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo', out
 applyxfm = fsl.ApplyXFM(output_type='NIFTI_GZ')
 fs = Path(getnetworkdataroot())
 
-eddy_corr_dir = 'eddy_cuda_repol_v1'
+eddy_corr_dir = 'eddy_cuda_repol_v2'
 filterS0_string = '_mf'
 niipickle = fs / project / 'nbwrniftiDict_dev_subj998_201706221132.pickle'
 #stages to run
@@ -127,23 +130,25 @@ if run_topup:
             result += run_subprocess('fslmaths '+topup + '_topdn_concat_unwarped'+' -Tmean '+topup + '_topdn_concat_unwarped_mean')
             with open('index.txt', 'w') as f:
                 f.write('1 ' * len(gtab.bvals))
+            ec_dwi_name = ec_dir/str(dwif + '_topdn_unwarped_ec')
             extract_brain(dwipath/str(topup + '_topdn_concat_unwarped_mean.nii'))
             eddy_cmd = 'eddy_cuda7.5 --imain='+str(orig_dwif_fname)+' --mask='+str(dwipath/str(topup + '_topdn_concat_unwarped_mean_brain_mask.nii'))
             eddy_cmd += ' --acqp=acq_params.txt  --index=index.txt --bvecs='+str(dwi_bvecs_fname)
             eddy_cmd += ' --bvals='+str(dwi_bvals_fname)+' --topup='+str(dwipath / str(topup + '_topdn_concat'))
-            eddy_cmd += '  --repol --out='+str(ec_dir/str(dwif + '_topdn_unwarped_ec'))
+            eddy_cmd += '  --repol --out='+str(ec_dwi_name)
             result += run_subprocess(eddy_cmd)
-            dwi_bvecs_ec_rot_fname = str(ec_dir/str(dwif + '_topdn_unwarped_ec.eddy_rotated_bvecs'))
-            # clamp and filter
-            ec_data = nib.load(str(ec_dir/str(dwif + '_topdn_unwarped_ec.nii'))).get_data()
+            dwi_bvecs_ec_rot_fname = str(ec_dwi_name)+'.eddy_rotated_bvecs'
+            # clamp, filter, and make nrrd
+            ec_data = nib.load(str(ec_dwi_name)+'.nii').get_data()
+            ec_data_affine = nib.load(str(ec_dwi_name)+'.nii').affine
             bvals, bvecs = read_bvals_bvecs(str(dwi_bvals_fname), str(dwi_bvecs_ec_rot_fname))
             gtab = gradient_table(bvals, bvecs)
-            S0 = ec_data[:, :, :, gtab.b0s_mask]
             if filterS0_string != '':
-                S0_fname = infpath / str(dwif + filterS0_string + '_S0.nii')
-                S0 = medianf(S0, size=3)
-                data[:, :, :, gtab.b0s_mask] = S0
-                fdwi = infpath / str(dwif + filterS0_string + '.nii')
-                savenii(data, img.affine, str(fdwi), header=img.header)
+                S0 = ec_data[:, :, :, gtab.b0s_mask]
+                S0_mf = medianf(S0, size=3)
+                ec_data[:, :, :, gtab.b0s_mask] = S0_mf
+            ec_data[ec_data <= 1] = 0
+            savenii(ec_data, ec_data_affine, str(ec_dwi_name)+filterS0_string+'_clamp1.nii')
+            nii2nrrd(str(ec_dwi_name)+filterS0_string+'_clamp1.nii', str(ec_dwi_name)+filterS0_string+'_clamp1.nhdr', bvalsf=str(dwi_bvals_fname), bvecsf=str(dwi_bvecs_ec_rot_fname))
 
 
