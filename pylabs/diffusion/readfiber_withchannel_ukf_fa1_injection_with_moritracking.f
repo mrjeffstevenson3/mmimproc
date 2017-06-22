@@ -1,4 +1,4 @@
-c gfortran  -O3 -mcmodel=medium -g readfiber_withchannel_ukf_fa1_injection_two_rows_june15_2017.f -o readfiber_withchannel_ukf_fa1_injection_two_rows_june15_2017 -ffixed-line-length-none
+c gfortran  -O3 -mcmodel=medium -g readfiber_withchannel_ukf_fa1_injection_with_moritracking.f -o readfiber_withchannel_ukf_fa1_injection_with_moritracking -ffixed-line-length-none
 c read DTI fiber track vtk and quantify the FA and several other parameters
 c read vtk binary file
 c
@@ -415,7 +415,8 @@ c	write(25,*)'1'
 	write(6,*)'ilines numpointsb numpointc ', ilines, numpointsb, numpointsc
 	write(26,*)ilines
 	iprogress = 1
-c	do i=1,ilines  ! fix this later on TR 02/27/2017
+
+
 	do i=1,ilines
 	if(iprogress.gt.1000)then
 	r1 = i
@@ -1072,6 +1073,8 @@ c	write(6,*)'tensor ',nmr(ii),ii
 	enddo
 
 	enddo  !itensors
+c
+
 
 
 c
@@ -1123,6 +1126,39 @@ c
 	rminy = slicerstartrow1
 	rmaxy = slicerendrow1
 	rfact =(rmaxy-rminy)/10.0
+c
+c code the find the location of the starting fiber track
+c
+	incfinal = 0
+	do iii=1,ifinalcount
+		ipoly = polyfinal(iii,1)
+
+
+	do i=1,ilines
+c	do ii=2,line(i,1)+1
+	do ii=2,2
+	dxstart = polysav(line(i,ii)+1,1,1)
+	dystart = polysav(line(i,ii)+1,2,1)
+	dzstart = polysav(line(i,ii)+1,3,1)
+	rx = ((dxstart/rxdim))+(xoffset)
+	ry = ((dystart/rydim))+(yoffset)
+	rz = ((dzstart/abs(rzdim))+zoffset)
+	ix = nint(rx)
+	iy = nint(ry)
+	iz = nint(rz)
+	ibrainregion = dti(ix,iy,iz,1)
+
+	enddo  !subline
+		if(line(i,ii)+1.eq.ipoly.and.dzstart.le.slicersuperior.and.ibrainregion.eq.)then
+	
+	write(6,*)'starting brain region ',rx,ry,rz,ibrainregion,incfinal,slicersuperior
+	incfinal = incfinal+1
+		endif
+	enddo  !ilines
+	enddo  !ifinalcount
+
+	pause
+
 c
 c top level for slf
 c

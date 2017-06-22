@@ -14,10 +14,10 @@ sub43=Left_SLF-43
 sub131=Right_SLF-131
 #get bbc subject directories
 cd ${DATADIR}/bbc
-list=`python -c "from pylabs.projects.bbc.pairing import dwipairing; \
-    print(' '.join(['sub-bbc{sid}'.format(sid=str(s)) for s, ses, m, r in dwipairing]))"`
+#list=`python -c "from pylabs.projects.bbc.pairing import dwipairing; \
+#    print(' '.join(['sub-bbc{sid}'.format(sid=str(s)) for s, ses, m, r in dwipairing]))"`
 #list='sub-bbc108 sub-bbc211 sub-bbc231 sub-bbc241 sub-bbc243 sub-bbc249 sub-bbc253'
-#list=sub-bbc101
+list=sub-bbc113
 #list=`ls -d sub-bbc*`
 #rm -f ${DATADIR}/bbc/allvtk_channel_run${run}.txt
 #loop over subject dirs
@@ -131,9 +131,9 @@ zoffset=`cat z.txt | awk '{ print $15 }'`
 echo $xoffset $yoffset $zoffset > offsets.txt
 fslchfiletype ANALYZE mori
 cp /mnt/users/js/bbc/holdaal/left_slf_config.txt config.txt
-${PYLABS}/pylabs/diffusion/readfiber_withchannel_ukf_fa1_injection_two_rows_june15_2017
+${PYLABS}/pylabs/diffusion/readfiber_withchannel_ukf_fa1_injection_with_moritracking
 ${PYLABS}/pylabs/diffusion/makecsv_fromvtk_ukf_slf
-cp fnew.vtk ${afile/.vtk/_june15_2017_channel.vtk}
+cp fnew.vtk ${afile/.vtk/_moritracking_channel.vtk}
 echo -n "${afile} " >> ${DATADIR}/bbc/allukf_channel_run${run}.txt
 cat ukf_10regions.csv >> ${DATADIR}/bbc/allukf_channel_run${run}.txt
 cp ukf_10regions.csv ukf_10regions_${afile}.csv
