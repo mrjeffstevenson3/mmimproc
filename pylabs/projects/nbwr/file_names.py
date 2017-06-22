@@ -20,7 +20,7 @@ ftempl = 'sub-nbwr{}_ses-{}_{}_{}'
 topup_fnames = []
 topdn_fnames= []
 dwi_fnames = []
-for topup, topdn, dwi in orig_dwi:
+for topup, topdn, dwi in [orig_dwi[1]]:
     topup_fnames.append(ftempl.format(*topup))
     topdn_fnames.append(ftempl.format(*topdn))
     dwi_fnames.append(ftempl.format(*dwi))
