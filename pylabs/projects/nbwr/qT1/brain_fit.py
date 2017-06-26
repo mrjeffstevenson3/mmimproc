@@ -15,7 +15,7 @@ from pylabs.alignment.ants_reg import subj2templ_applywarp
 from pylabs.structural.brain_extraction import extract_brain
 from pylabs.qt1.fitting import t1fit
 from pylabs.io.images import savenii
-from pylabs.projects.nbwr.file_names import project, spgr_fa5_fname, spgr_fa15_fname, spgr_fa30_fname, b1map_fname
+from pylabs.projects.nbwr.file_names import project, spgr_fa5_fnames, spgr_fa15_fnames, spgr_fa30_fnames, b1map_fnames
 from pylabs.utils.provenance import ProvenanceWrapper
 prov = ProvenanceWrapper()
 
@@ -39,13 +39,15 @@ else:
     antsRegistrationSyN = Path(os.environ.get('ANTSPATH') , 'antsRegistrationSyN.sh')
 
 async = False
-TR = float(spgr_fa5_fname[0].split('_')[3].split('-')[-1].replace('p','.'))
 pool = Pool(20)
 # testing
-b1map, spgr05, spgr15, spgr30 = b1map_fname[0], spgr_fa5_fname[0], spgr_fa15_fname[0], spgr_fa30_fname[0]
+picks = -1
+b1map_fnames, spgr_fa5_fnames, spgr_fa15_fnames, spgr_fa30_fnames = [b1map_fnames[picks]], [spgr_fa5_fnames[picks]], [spgr_fa15_fnames[picks]], [spgr_fa30_fnames[picks]]
+
+TR = float(spgr_fa5_fnames[0].split('_')[3].split('-')[-1].replace('p','.'))
 
 
-for b1map, spgr05, spgr15, spgr30 in zip(b1map_fname, spgr_fa5_fname, spgr_fa15_fname, spgr_fa30_fname):
+for b1map, spgr05, spgr15, spgr30 in zip(b1map_fnames, spgr_fa5_fnames, spgr_fa15_fnames, spgr_fa30_fnames):
     b1map_dir = fs/project/b1map.split('_')[0] / b1map.split('_')[1] / 'fmap'
     spgr_dir = fs/project/spgr30.split('_')[0] / spgr30.split('_')[1] / 'qt1'
     b1magcmd = ' '.join(['fslroi', str(b1map_dir/b1map), str(appendposix(b1map_dir/b1map, '_mag')), '0', '1'])
