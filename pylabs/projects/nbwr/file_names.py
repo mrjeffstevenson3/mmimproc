@@ -2,8 +2,16 @@
 # set as a triple tuple (topup_dwi_6S0 6 vol S0 1st, topdn_dwi_6S0 6 vol S0 2nd, dwi-topup_64dir-3sh-800-2000 multishell 64 dir dwi 3rd)
 # topup_dwi_6S0 and topdn_dwi_6S0 are inputs to topup along with dwell time
 # topup_unwarped is the output from topup and input to eddy
-
+sub-nbwr998_ses-1_vbmmempr_ti850_rms_1.nii
 project = 'nbwr'
+vbm_rms = [
+    ('998', 1, 'vbmmempr_ti850_rms', 1),
+    ]
+freesurf_rms = [
+    ('999b', 1, 'vbmmempr_rms', 1),
+    ('998', 1, 'vbmmempr_ti1100_rms', 1),
+    ]
+
 orig_dwi = [
     (('999b', 1, 'dwi-topup_6S0', 1), ('999b', 1, 'dwi-topdn_6S0', 1), ('999b', 1,'dwi-topup_64dir-3sh-800-2000', 1)),
     (('998', 1, 'dwi-topup_6S0', 1), ('998', 1, 'dwi-topdn_6S0', 1), ('998', 1,'dwi-topup_64dir-3sh-800-2000', 1)),
@@ -40,12 +48,17 @@ spgr5_fa10_fnames = []
 spgr5_fa15_fnames = []
 spgr5_fa20_fnames = []
 spgr5_fa30_fnames = []
-b1map_fnames = []
+b1map5_fnames = []
 for spgr5_fa5, spgr5_fa10, spgr5_fa15, spgr5_fa20, spgr5_fa30, b1map in orig_5spgr:
     spgr5_fa5_fnames.append(ftempl.format(*spgr5_fa5))
     spgr5_fa10_fnames.append(ftempl.format(*spgr5_fa10))
     spgr5_fa15_fnames.append(ftempl.format(*spgr5_fa15))
     spgr5_fa20_fnames.append(ftempl.format(*spgr5_fa20))
     spgr5_fa30_fnames.append(ftempl.format(*spgr5_fa30))
-    b1map_fnames.append(ftempl.format(*b1map))
+    b1map5_fnames.append(ftempl.format(*b1map))
 
+vbm_fnames = []
+freesurf_fnames = []
+for vbm, freesurf in zip(vbm_rms, freesurf_rms):
+    vbm_fnames.append(ftempl.format(*vbm))
+    freesurf_fnames.append(ftempl.format(*freesurf_rms))
