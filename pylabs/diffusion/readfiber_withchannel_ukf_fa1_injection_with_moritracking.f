@@ -1133,7 +1133,7 @@ c
 	do iii=1,ifinalcount
 		ipoly = polyfinal(iii,1)
 
-
+	open(31,file = 'testbelow_beltline.txt')
 	do i=1,ilines
 c	do ii=2,line(i,1)+1
 	do ii=2,2
@@ -1149,13 +1149,18 @@ c	do ii=2,line(i,1)+1
 	ibrainregion = dti(ix,iy,iz,1)
 
 	enddo  !subline
-		if(line(i,ii)+1.eq.ipoly.and.dzstart.le.slicersuperior.and.ibrainregion.eq.)then
-	
-	write(6,*)'starting brain region ',rx,ry,rz,ibrainregion,incfinal,slicersuperior
-	incfinal = incfinal+1
+c	if(line(i,ii)+1.eq.ipoly.and.dzstart.le.slicersuperior.and.ibrainregion.eq.19)then
+	if(line(i,ii)+1.eq.ipoly.and.dzstart.le.slicersuperior)then		
+	  write(6,*)'starting brain region ',rx,ry,rz,ibrainregion,incfinal,slicersuperior
+	  write(31,*)line(i,1)+1,' 0 0'
+	  do ii=2,line(i,1)+1
+	write(31,*)polysav(line(i,ii)+1,1,1),polysav(line(i,ii)+1,2,1),polysav(line(i,ii)+1,3,1)
+	  enddo
+	  incfinal = incfinal+1
 		endif
 	enddo  !ilines
 	enddo  !ifinalcount
+	close(31)
 
 	pause
 
