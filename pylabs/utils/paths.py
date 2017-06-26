@@ -50,5 +50,6 @@ def getgannettpath():
     if hostname in hostlist:
         gannettpath = join(expanduser('~'), 'Software', 'Gannet2.0')
     if 'dhcp4.washington.edu' in hostname:
+        print('found dhcp hostname. assuming mrjeffs laptop' )
         gannettpath = join(expanduser('~'), 'Software', 'Gannet2.0')
     return gannettpath

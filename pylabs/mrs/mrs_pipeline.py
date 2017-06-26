@@ -6,10 +6,10 @@ from pylabs.utils.paths import getnetworkdataroot
 fs = Path(getnetworkdataroot())
 project = 'nbwr'
 subject = 'sub-nbwr998'
-rt_actfname = 'NWBR998_WIP_RTGABAMM_TE80_120DYN_6_2_raw_act.SDAT'
-rt_reffname = 'NWBR998_WIP_RTGABAMM_TE80_120DYN_6_2_raw_ref.SDAT'
-lt_actfname = 'NWBR998_WIP_LTGABAMM_TE80_120DYN_9_2_raw_act.SDAT'
-lt_reffname = 'NWBR998_WIP_LTGABAMM_TE80_120DYN_9_2_raw_ref.SDAT'
+rt_actfname = 'NBWR998_WIP_RTGABAMM_TE80_120DYN_6_2_raw_act.SDAT'
+rt_reffname = 'NBWR998_WIP_RTGABAMM_TE80_120DYN_6_2_raw_ref.SDAT'
+lt_actfname = 'NBWR998_WIP_LTGABAMM_TE80_120DYN_9_2_raw_act.SDAT'
+lt_reffname = 'NBWR998_WIP_LTGABAMM_TE80_120DYN_9_2_raw_ref.SDAT'
 source_path = fs / project / subject / 'ses-1' / 'source_sparsdat'
 results_dir = fs / project / subject / 'ses-1' / 'mrs'
 
@@ -19,16 +19,19 @@ if not source_path.is_dir():
 if not results_dir.is_dir():
     results_dir.mkdir(parents=True)
 
-mpath = paths.getgannettpath()
+gannettpath = paths.getgannettpath()
 rt_act = source_path / rt_actfname
 rt_ref = source_path / rt_reffname
 lt_act = source_path / lt_actfname
 lt_ref = source_path / lt_reffname
 
+if not rt_act.is_file() or not rt_ref.is_file() or not lt_act.is_file() or not lt_ref.is_file():
+    raise ValueError('one or more .SDAT files is missing. please check.')
+
 rt_mcode = "addpath('{0}'); MRS_struct = GannetLoad({{'{1}'}},{{'{2}'}}); MRS_struct = GannetFit(MRS_struct); exit;".format(
-        mpath, str(rt_act), str(rt_ref))
+        gannettpath, str(rt_act), str(rt_ref))
 lt_mcode = "addpath('{0}'); MRS_struct = GannetLoad({{'{1}'}},{{'{2}'}}); MRS_struct = GannetFit(MRS_struct); exit;".format(
-        mpath, str(lt_act), str(lt_ref))
+        gannettpath, str(lt_act), str(lt_ref))
 
 rt_cmd = 'matlab -nodisplay -nosplash -nodesktop -r "{0}"'.format(rt_mcode)
 lt_cmd = 'matlab -nodisplay -nosplash -nodesktop -r "{0}"'.format(lt_mcode)
