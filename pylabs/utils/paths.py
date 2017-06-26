@@ -49,6 +49,6 @@ def getgannettpath():
     hostname = socket.gethostname()
     if hostname in hostlist:
         gannettpath = join(expanduser('~'), 'Software', 'Gannet2.0')
-    if 'Jeffs' in hostname:
-        gannettpath = join(expanduser('~'), 'Software', 'Gannet2.0-master')
+    if 'dhcp4.washington.edu' in hostname:
+        gannettpath = join(expanduser('~'), 'Software', 'Gannet2.0')
     return gannettpath
