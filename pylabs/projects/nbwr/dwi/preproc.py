@@ -42,7 +42,9 @@ templating = False
 
 # subjects and files to run on
 from pylabs.projects.nbwr.file_names import topup_fnames, topdn_fnames, dwi_fnames
-
+# testing and selecting
+picks = -1
+topup_fnames, topdn_fnames, dwi_fnames = [topup_fnames[picks]], [topdn_fnames[picks]], [dwi_fnames[picks]]
 def default_to_regular(d):
     if isinstance(d, defaultdict):
         d = {k: default_to_regular(v) for k, v in d.iteritems()}
@@ -131,8 +133,8 @@ if run_topup:
             with open('index.txt', 'w') as f:
                 f.write('1 ' * len(gtab.bvals))
             ec_dwi_name = ec_dir/str(dwif + '_topdn_unwarped_ec')
-            extract_brain(dwipath/str(topup + '_topdn_concat_unwarped_mean.nii'))
-            eddy_cmd = 'eddy_cuda7.5 --imain='+str(orig_dwif_fname)+' --mask='+str(dwipath/str(topup + '_topdn_concat_unwarped_mean_brain_mask.nii'))
+            extract_brain(dwipath/str(topup + '_topdn_concat_unwarped_mean.nii.gz'))
+            eddy_cmd = 'eddy_cuda7.5 --imain='+str(orig_dwif_fname)+' --mask='+str(dwipath/str(topup + '_topdn_concat_unwarped_mean_brain_mask.nii.gz'))
             eddy_cmd += ' --acqp=acq_params.txt  --index=index.txt --bvecs='+str(dwi_bvecs_fname)
             eddy_cmd += ' --bvals='+str(dwi_bvals_fname)+' --topup='+str(dwipath / str(topup + '_topdn_concat'))
             eddy_cmd += '  --repol --out='+str(ec_dwi_name)
