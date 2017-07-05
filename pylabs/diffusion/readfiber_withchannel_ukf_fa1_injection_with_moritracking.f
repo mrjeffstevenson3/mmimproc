@@ -1130,11 +1130,19 @@ c
 c code the find the location of the starting fiber track
 c
 	incfinal = 0
+	open(31,file = 'testbelow_beltline_all.txt')
+	open(32,file = 'testbelow_beltline_part1.txt')
+	open(33,file = 'testbelow_beltline_part2.txt')
+	open(34,file = 'testbelow_beltline_part3.txt')
+
 	do iii=1,ifinalcount
 		ipoly = polyfinal(iii,1)
 
-	open(31,file = 'testbelow_beltline.txt')
 	do i=1,ilines
+	incfinalpart1 = 0
+	incfinalpart2 = 0
+	incfinalpart3 = 0
+
 c	do ii=2,line(i,1)+1
 	do ii=2,2
 	dxstart = polysav(line(i,ii)+1,1,1)
@@ -1153,14 +1161,74 @@ c	if(line(i,ii)+1.eq.ipoly.and.dzstart.le.slicersuperior.and.ibrainregion.eq.19)
 	if(line(i,ii)+1.eq.ipoly.and.dzstart.le.slicersuperior)then		
 	  write(6,*)'starting brain region ',rx,ry,rz,ibrainregion,incfinal,slicersuperior
 	  write(31,*)line(i,1)+1,' 0 0'
+
 	  do ii=2,line(i,1)+1
 	write(31,*)polysav(line(i,ii)+1,1,1),polysav(line(i,ii)+1,2,1),polysav(line(i,ii)+1,3,1)
-	  enddo
+	  enddo  !ii
 	  incfinal = incfinal+1
-		endif
-	enddo  !ilines
-	enddo  !ifinalcount
+	do ii=2,line(i,1)+1
+	  if(polysav(line(i,ii)+1,3,1).le.slicersuperior)then
+	 dnmrsav(incfinalpart1,1)= polysav(line(i,ii)+1,1,1)
+	 dnmrsav(incfinalpart1,2)= polysav(line(i,ii)+1,2,1)
+	 dnmrsav(incfinalpart1,3)= polysav(line(i,ii)+1,3,1)
+
+c	  write(32,*)polysav(line(i,ii)+1,1,1),polysav(line(i,ii)+1,2,1),polysav(line(i,ii)+1,3,1)
+	  incfinalpart1 = incfinalpart1+1
+	  endif
+	enddo  !ii
+	do ii=2,line(i,1)+1
+	  if(polysav(line(i,ii)+1,3,1).gt.slicersuperior)then
+	 dnmrsav(incfinalpart2,4)= polysav(line(i,ii)+1,1,1)
+	 dnmrsav(incfinalpart2,5)= polysav(line(i,ii)+1,2,1)
+	 dnmrsav(incfinalpart2,6)= polysav(line(i,ii)+1,3,1)
+
+c	  write(32,*)polysav(line(i,ii)+1,1,1),polysav(line(i,ii)+1,2,1),polysav(line(i,ii)+1,3,1)
+	  incfinalpart2 = incfinalpart2+1
+	  endif
+	enddo  !ii
+	iflag = 0
+	do ii=2,line(i,1)+1
+	  if(polysav(line(i,ii)+1,3,1).gt.slicersuperior)iflag=1
+	  if(polysav(line(i,ii)+1,3,1).le.slicersuperior.and.iflag.eq.1)then
+	 dnmrsav(incfinalpart3,7)= polysav(line(i,ii)+1,1,1)
+	 dnmrsav(incfinalpart3,8)= polysav(line(i,ii)+1,2,1)
+	 dnmrsav(incfinalpart3,9)= polysav(line(i,ii)+1,3,1)
+
+c	  write(32,*)polysav(line(i,ii)+1,1,1),polysav(line(i,ii)+1,2,1),polysav(line(i,ii)+1,3,1)
+	  incfinalpart3 = incfinalpart3+1
+	  endif
+
+	enddo  !ii
+	if(incfinalpart1.gt.0)then
+	write(32,*)incfinalpart1-1,' 0 0'
+	do ii=1,incfinalpart1-1
+	write(32,*)dnmrsav(ii,1),dnmrsav(ii,2),dnmrsav(ii,3)
+	enddo
+	endif
+	if(incfinalpart2.gt.0)then
+	write(33,*)incfinalpart2-1,' 0 0'
+	do ii=1,incfinalpart2-1
+	write(33,*)dnmrsav(ii,4),dnmrsav(ii,5),dnmrsav(ii,6)
+	enddo
+	endif
+	if(incfinalpart3.gt.0)then
+	write(34,*)incfinalpart3-1,' 0 0'
+	do ii=1,incfinalpart3-1
+	write(34,*)dnmrsav(ii,7),dnmrsav(ii,8),dnmrsav(ii,9)
+	enddo
+	endif
+
+
+		endif  !for line.eq.ipoly.and.dzstart
+
+	
+
+	enddo  !i ilines
+	enddo  !iii ifinalcount
 	close(31)
+	close(32)
+	close(33)
+	close(34)
 
 	pause
 

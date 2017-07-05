@@ -1,0 +1,20 @@
+
+listseeds='1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 40 41 57 59 60 61 62 89 90 91 92 93 94 95 96 97 98 99 100 101 102 103 104 105 106 107 108 109 110 111 112 113 114 115 128 129 145 147 148 149 150'
+rm seed*
+for i in $listseeds
+do
+echo $i;
+
+result1=$(echo "(0.5 +${i})" | bc -l )
+result2=$(echo "(-0.5 +${i})" | bc -l )
+echo $result1 $result2
+fslmaths *mori.nii -thr ${result2} -uthr ${result1} -dilM seed${i}
+
+done
+#each seed region
+ls seed* > listseeds.txt
+
+probtrackx2 --network -x listseeds.txt  -l --onewaycondition --omatrix1 -c 0.2 -S 1000 --steplength=0.5 -P 1000 --fibthresh=0.01 --distthresh=0.0 --sampvox=0.0 --forcedir --opd -s bedpost.bedpostX/merged -m bedpost.bedpostX/nodif_brain_mask  --dir=probtrackoutput
+
+
+

@@ -1,0 +1,8 @@
+ #!/bin/bash
+
+mkdir bedpost
+cp sub-bbc253_ses-1_dti_15dir_b1000_1.nii bedpost/data.nii.gz
+cp *bvals bedpost/bvals
+cp *bvecs bedpost/bvecs
+cp *mask.nii bedpost/nodif_brain_mask.nii.gz
+bedpostx bedpost -n 2
