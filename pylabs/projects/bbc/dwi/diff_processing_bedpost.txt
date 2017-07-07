@@ -1,8 +1,22 @@
  #!/bin/bash
 
+list=`ls -d */*/dwi/*withmf3S0.nii`
+for asubject in ${list}
+do
+echo working on subject ${asubject}
+
+asubjectsub=`echo ${asubject} | awk ' { keep=index($0,"dwi") ; print substr($0, keep-30, 34) } ' ` ;
+echo asubjectsub $asubjectsub
+
+
+cd ${DATADIR}/bbc
+cd ${asubjectsub}
+rm -r bedpost*
 mkdir bedpost
-cp sub-bbc253_ses-1_dti_15dir_b1000_1.nii bedpost/data.nii.gz
+cp cuda_repol_std2_S0mf3_v5/*withmf3S0_ec_thr1.nii.gz bedpost/data.nii.gz
 cp *bvals bedpost/bvals
-cp *bvecs bedpost/bvecs
-cp *mask.nii bedpost/nodif_brain_mask.nii.gz
+cp cuda_repol_std2_S0mf3_v5/*eddy_rotated_bvecs bedpost/bvecs
+cp *withmf3S0_S0_brain_mask.nii bedpost/nodif_brain_mask.nii.gz
 bedpostx bedpost -n 2
+
+done
