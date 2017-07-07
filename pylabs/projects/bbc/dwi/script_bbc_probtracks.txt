@@ -8,7 +8,6 @@ echo working on subject ${asubject}
 asubjectsub=`echo ${asubject} | awk ' { keep=index($0,"dwi") ; print substr($0, keep-30, 34) } ' ` ;
 echo asubjectsub $asubjectsub
 
-
 cd ${DATADIR}/bbc
 cd ${asubjectsub}
 
