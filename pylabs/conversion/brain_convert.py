@@ -149,7 +149,7 @@ nbwr_conv = pd.DataFrame({
                         'verbose': True, 'compressed': False, 'permit_truncated': False, 'bvs': False, 'dwell_time': False, 'b1corr': False,
                         'field_strength': False, 'vol_info': False, 'origin': 'scanner', 'minmax': ('parse', 'parse'), 'store_header': True,
                         'scaling': 'dv', 'keep_trace': False, 'overwrite': True, 'strict_sort': False, 'multisession': (1, 2, 3), 'rms': True},
-            '_WIP_MEMP_VBM_TI1100_': {'dirstruct': 'BIDS', 'outdir': 'anat', 'scan_name': 'vbmmempr', 'scan_info': 'ti1100',
+            '_MEMP_FS_TI1100_': {'dirstruct': 'BIDS', 'outdir': 'anat', 'scan_name': 'fsmempr', 'scan_info': 'ti1100',
                         'fname_template': '{subj}_{session}_{scan_name}_{scan_info}_{run}.nii',
                         'verbose': True, 'compressed': False, 'permit_truncated': False, 'bvs': False,
                         'dwell_time': False, 'b1corr': False,

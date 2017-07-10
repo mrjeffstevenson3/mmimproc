@@ -5,11 +5,11 @@ from pylabs.utils.paths import getnetworkdataroot
 
 fs = Path(getnetworkdataroot())
 project = 'nbwr'
-subject = 'sub-nbwr998'
-rt_actfname = 'NBWR998_WIP_RTGABAMM_TE80_120DYN_6_2_raw_act.SDAT'
-rt_reffname = 'NBWR998_WIP_RTGABAMM_TE80_120DYN_6_2_raw_ref.SDAT'
-lt_actfname = 'NBWR998_WIP_LTGABAMM_TE80_120DYN_9_2_raw_act.SDAT'
-lt_reffname = 'NBWR998_WIP_LTGABAMM_TE80_120DYN_9_2_raw_ref.SDAT'
+subject = 'sub-nbwr144'
+rt_actfname = 'NBWR144_WIP_RTGABAMM_TE80_120DYN_8_2_raw_act.SDAT'
+rt_reffname = 'NBWR144_WIP_RTGABAMM_TE80_120DYN_8_2_raw_ref.SDAT'
+lt_actfname = 'NBWR144_WIP_LTGABAMM_TE80_120DYN_7_2_raw_act.SDAT'
+lt_reffname = 'NBWR144_WIP_LTGABAMM_TE80_120DYN_7_2_raw_ref.SDAT'
 source_path = fs / project / subject / 'ses-1' / 'source_sparsdat'
 results_dir = fs / project / subject / 'ses-1' / 'mrs'
 
