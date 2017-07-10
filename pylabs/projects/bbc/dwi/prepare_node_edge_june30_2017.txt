@@ -1,0 +1,10 @@
+cd /mnt/neuroimaging2/todd/penut/prepare_for_dtiscript/group1_subgr1_inter1_fho_103_01
+
+cp probtrackoutput/fdt_network_matrix2 subject.edge
+rm subject.node
+list=`ls -d seed*.nii.gz`
+for afile in $list
+do
+echo $afile
+echo `fslstats $afile -c` 3 3 3 >> subject.node
+done
