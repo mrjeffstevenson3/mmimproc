@@ -10,7 +10,7 @@ vbm_rms = [
 freesurf_rms = [
     ('999b', 1, 'vbmmempr_rms', 1),
     ('998', 1, 'vbmmempr_ti1100_rms', 1),
-    ('114', 1, 'fsmempr_ti1100_rms', 1),
+    ('144', 1, 'fsmempr_ti1100_rms', 1),
     ]
 
 orig_dwi = [
