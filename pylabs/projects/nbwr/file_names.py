@@ -10,7 +10,7 @@ vbm_rms = [
 freesurf_rms = [
     ('999b', 1, 'vbmmempr_rms', 1),
     ('998', 1, 'vbmmempr_ti1100_rms', 1),
-    ('114', 1, 'vbmmempr_ti1100_rms', 1),
+    ('114', 1, 'fsmempr_ti1100_rms', 1),
     ]
 
 orig_dwi = [
@@ -26,6 +26,10 @@ orig_spgr = [
 orig_5spgr = [
     (('998', 1, 'spgr_fa-05-tr-12p0', 1), ('998', 1, 'spgr_fa-10-tr-12p0', 1), ('998', 1, 'spgr_fa-15-tr-12p0', 1), ('998', 1, 'spgr_fa-20-tr-12p0', 1), ('998', 1,'spgr_fa-30-tr-12p0', 1), ('998', 1,'b1map', 1)),
     (('144', 1, 'spgr_fa-05-tr-12p0', 1), ('144', 1, 'spgr_fa-10-tr-12p0', 1), ('144', 1, 'spgr_fa-15-tr-12p0', 1), ('144', 1, 'spgr_fa-20-tr-12p0', 1), ('144', 1, 'spgr_fa-30-tr-12p0', 1), ('144', 1, 'b1map', 1)),
+    ]
+
+orig_b1map =  [('999b', 1,'b1map', 1), ('998', 1, 'b1map', 1), ('144', 1, 'b1map', 1),
+
     ]
 
 ftempl = 'sub-nbwr{}_ses-{}_{}_{}'

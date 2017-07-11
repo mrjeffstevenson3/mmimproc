@@ -61,7 +61,7 @@ with WorkingContext(str(results_dir)):
             json.dump(output, logr, indent=2)
         for p in results_dir.rglob("*.pdf"):
             if '_RT' in str(p.stem):
-                prov.log(str(p), 'gannet gaba fit for right side', str(rt_act))
+                prov.log(str(p), 'gannet gaba fit for right side', str(rt_act), providence={'log': output})
             if '_LT' in str(p.stem):
-                prov.log(str(p), 'gannet gaba fit for left side', str(lt_act))
+                prov.log(str(p), 'gannet gaba fit for left side', str(lt_act), providence={'log': output})
 

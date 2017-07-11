@@ -1,4 +1,6 @@
+# needs to be made into callable function using extract_brain and msm for segs
 from __future__ import division
+from pathlib import *
 import numpy as np
 import os
 import nibabel
@@ -7,17 +9,16 @@ from pylabs.utils.provenance import ProvenanceWrapper
 from nipype.interfaces import fsl
 from os.path import join
 from scipy.ndimage.measurements import center_of_mass as com
-from pylabs.conversion.parrec import par_to_nii
 from pylabs.utils.paths import getpylabspath
 from pylabs.utils import InDir
 from pylabs.io.spar import load as readspar
 from pylabs.utils.paths import getnetworkdataroot
 fs = getnetworkdataroot()
 prov = ProvenanceWrapper()
-flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo', output_type='NIFTI')
-applyxfm = fsl.ApplyXFM(interp='nearestneighbour', output_type='NIFTI')
-bet = fsl.BET(output_type='NIFTI')
-fast = fsl.FAST(output_type='NIFTI')
+flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo', output_type='NIFTI_GZ')
+applyxfm = fsl.ApplyXfm(interp='nearestneighbour', output_type='NIFTI_GZ')
+bet = fsl.BET(output_type='NIFTI_GZ')
+fast = fsl.FAST(output_type='NIFTI_GZ')
 
 
 project = 'nbwr'
@@ -36,6 +37,10 @@ sparf = 'NBWR144_WIP_LTPRESS_TE80_GLU_48MEAS_6_2_raw_act.SPAR'
 sparfname = join(fs, project, subject, session, 'source_sparsdat', sparf)
 matching_fname = 'sub-nbwr144_ses-1'+side+'_match_mrs_ti1100_1.nii'
 match_file = join(fs, project, subject, session, 'mrs', matching_fname)
+
+# start function here using working directory
+# def make_voi_mask(spar_file, matching_mpr, f_factor=0.3
+
 paroutfname = join(fs, project, subject, session, 'mrs', subject+'_'+session + side + '_match_mrs_ti1100_1')
 maskfname = join(fs, project, subject, session, 'mrs', subject +'_'+session + side + '_glu_sv_voi_mask.nii.gz')
 spar = readspar(sparfname)
@@ -60,6 +65,8 @@ nmask_hdr = nmask_img.header
 nmask_hdr.set_qform(affine, code=2)
 nibabel.save(nmask_img, maskfname)
 prov.log(maskfname, 'sv mrs voi mask file created for csf fraction', sparfname, script=__file__)
+
+# use extract_brain function in struc
 
 flt.inputs.in_file = join(getpylabspath(), 'data', 'atlases', 'MNI152_T1_1mm_bet_zcut.nii.gz')
 flt.inputs.reference = match_file
@@ -102,7 +109,7 @@ bet.inputs.out_file = brain_outfname
 betres = bet.run()
 prov.log(brain_outfname, 'bet brain for segmentation', paroutfname + '.nii', script=__file__)
 
-#segmentation using fsl fast
+#segmentation using fsl fast - should be superseded by msm
 tempmrs.__enter__()
 fast.inputs.in_files = join(fs, project, subject, session, 'mrs', subject + side + '_mpr_match_sv_brain.nii')
 fast.inputs.img_type = 1

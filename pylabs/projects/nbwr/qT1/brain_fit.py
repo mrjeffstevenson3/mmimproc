@@ -8,7 +8,7 @@ from dipy.segment.mask import applymask
 from scipy.ndimage.morphology import binary_erosion as ero
 from scipy.ndimage.filters import median_filter as medianf
 from pylabs.utils.paths import getnetworkdataroot
-from pylabs.utils import run_subprocess, WorkingContext, appendposix
+from pylabs.utils import run_subprocess, WorkingContext, appendposix, replacesuffix
 from pylabs.alignment.ants_reg import subj2templ_applywarp
 from pylabs.structural.brain_extraction import extract_brain
 from pylabs.qt1.fitting import t1fit
@@ -94,7 +94,7 @@ for b1map, spgr05, spgr10, spgr15, spgr20, spgr30 in zip(b1map5_fnames, spgr5_fa
             ref = spgr_dir/str(spgr30+'.nii')
             outf = appendposix(b1map_dir/b1map, '_phase_reg2spgr30.nii.gz')
             warpf = [str(appendposix(b1map_dir/b1map, '_mag_reg2spgr30_1Warp.nii.gz'))]
-            affine_xform = [str(appendposix(b1map_dir/b1map, '_mag_reg2spgr30_0GenericAffine.mat'))]
+            affine_xform = [str(replacesuffix(b1map_dir/b1map, '_mag_reg2spgr30_0GenericAffine.mat'))]
             execwd = b1map_dir
             subj2templ_applywarp(str(mov), str(ref), str(outf), warpf, str(execwd), affine_xform=affine_xform)
             phase_data = nib.load(str(outf)).get_data().astype('float32')
@@ -117,9 +117,9 @@ for b1map, spgr05, spgr10, spgr15, spgr20, spgr30 in zip(b1map5_fnames, spgr5_fa
 
         maskfile = spgr_dir/str(spgr05 + '_reg2spgr30_Warped_brain_mask.nii.gz')
 
-        if flip5
-        for f in [appendposix(b1map_dir/b1map, '_phase_reg2spgr30_mf.nii.gz'), spgr_dir/str(spgr15 + '_reg2spgr30_Warped.nii.gz'), spgr_dir/str(spgr30+'.nii')]:
-            results += run_subprocess(['fslmaths', str(f), '-mas', str(maskfile), str(appendposix(f, '_brain'))])
+        if flip5:
+            for f in [appendposix(b1map_dir/b1map, '_phase_reg2spgr30_mf.nii.gz'), spgr_dir/str(spgr15 + '_reg2spgr30_Warped.nii.gz'), spgr_dir/str(spgr30+'.nii')]:
+                results += run_subprocess(['fslmaths', str(f), '-mas', str(maskfile), str(appendposix(f, '_brain'))])
 
 
         rootdir = str(fs/project)
