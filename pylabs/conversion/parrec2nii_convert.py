@@ -284,7 +284,7 @@ def brain_proc_file(opts, scandict):
             nhdr.extensions.append(dump_ext)
             if opts.rms:
                 rmshdr.extensions.append(dump_ext)
-        np.testing.assert_almost_equal(affine, nhdr.get_qform(), 4,
+        np.testing.assert_almost_equal(affine, nhdr.get_qform(), 3,
                                        err_msg='output qform in header does not match input qform')
         setattr(opts, 'qform', nhdr.get_qform())
         verbose('Writing %s' % outfilename)
@@ -369,7 +369,7 @@ def brain_proc_file(opts, scandict):
             rms_dict[outerkey][rms_middlekey]['b1corr'] = True
             rms_dict[outerkey][rms_middlekey]['orig_data_shape'] = rmsimg.shape
             mergeddicts(scandict, rms_dict)
-            np.testing.assert_almost_equal(affine, rmshdr.get_qform(), 4,
+            np.testing.assert_almost_equal(affine, rmshdr.get_qform(), 3,
                                            err_msg='output qform in rms header does not match input qform')
             nibabel.save(rmsimg, rms_outfilename)
             prov.log(rms_outfilename, 'rms file created by parrec2nii_convert', infile, script=__file__)
