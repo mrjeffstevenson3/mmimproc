@@ -55,7 +55,7 @@ for fsf, b1map in zip(freesurf_fnames, b1map_fnames):
         fs_fname += '_b1corr'
     if noise_filter:
         with WorkingContext(str(subjects_dir / 'anat')):
-            results += run_subprocess(['susan', str(replacesuffix(target, '_b1corr.nii.gz')), '-1 1 3 1 0', str(replacesuffix(target, '_susan.nii.gz'))])
+            results += run_subprocess(['susan '+str(replacesuffix(target, '_b1corr.nii.gz'))+' -1 1 3 1 0 '+str(replacesuffix(target, '_susan.nii.gz'))])
             fs_fname += '_susan'
     fs_sid = fsf+'_freesurf'
 
@@ -64,9 +64,9 @@ for fsf, b1map in zip(freesurf_fnames, b1map_fnames):
             fs_sid += '_hires'
             with open('freesurf_expert_opts.txt', mode='w') as optsf:
                 optsf.write('mris_inflate -n 15\n')
-            results += run_subprocess(['recon-all', '-openmp', '%.0f' % mp, '-hires', '-subjid', fs_sid, '-i', fs_fname+'.nii.gz', '-all', '-expert', 'freesurf_expert_opts.txt'], env=curr_env)
+            results += run_subprocess(['recon-all -parallel -hires -all -subjid '+fs_sid+' -i '+fs_fname+'.nii.gz -expert freesurf_expert_opts.txt'], env=curr_env)
         else:
-            results += run_subprocess(['recon-all', '-openmp', '%.0f' % mp, '-subjid', fs_sid, '-i', fs_fname+'.nii.gz', '-all'], env=curr_env)
+            results += run_subprocess(['recon-all -parallel -subjid '+fs_sid+' -i '+fs_fname+'.nii.gz -all'], env=curr_env)
         with open(fs_sid+'/'+fs_sid+'_log{:%Y%m%d%H%M}.json'.format(datetime.datetime.now()), mode='a') as logr:
             json.dump(results, logr, indent=2)
     fs_subj_ln = fs/project/'freesurf_subjs'/fs_sid
