@@ -21,7 +21,7 @@ fast = fsl.FAST(output_type='NIFTI')
 
 
 project = 'nbwr'
-subject = 'sub-nbwr998'
+subject = 'sub-nbwr144'
 session = 'ses-1'
 side = '_left'
 
@@ -32,20 +32,14 @@ except OSError:
         raise
 tempmrs = InDir(join(fs, project, subject, session, 'mrs'))
 
-sparf = 'NWBR998_WIP_LTPRESS_TE80_GLU_48MEAS_10_2_raw_act.SPAR'
+sparf = 'NBWR144_WIP_LTPRESS_TE80_GLU_48MEAS_6_2_raw_act.SPAR'
 sparfname = join(fs, project, subject, session, 'source_sparsdat', sparf)
-matching_parfname = 'NWBR999B_LT_VBM_MATCHING_SPEC_3_7.PAR'
-parfile = join(fs, project, subject, session, 'source_parrec', matching_parfname)
-paroutfname = join(fs, project, subject, session, 'mrs', subject + side + '_mpr_match_sv')
-maskfname = join(fs, project, subject, session, 'mrs', subject + side + '_glu_sv_voi_mask.nii.gz')
+matching_fname = 'sub-nbwr144_ses-1'+side+'_match_mrs_ti1100_1.nii'
+match_file = join(fs, project, subject, session, 'mrs', matching_fname)
+paroutfname = join(fs, project, subject, session, 'mrs', subject+'_'+session + side + '_match_mrs_ti1100_1')
+maskfname = join(fs, project, subject, session, 'mrs', subject +'_'+session + side + '_glu_sv_voi_mask.nii.gz')
 spar = readspar(sparfname)
-prov.add(parfile)
-
-args = {'infile': parfile, 'outfilename': paroutfname, 'compressed': False,
-        'overwrite': True, 'scaling': 'dv'}
-par_to_nii(**args)
-prov.log(paroutfname + '.nii', 'converted fm parfile with par_to_nii', parfile)
-match_img = nibabel.load(paroutfname + '.nii')
+match_img = nibabel.load(match_file)
 match_hdr = match_img.header
 match_img_data = match_img.get_data()
 affine = match_img.get_affine()
@@ -68,7 +62,7 @@ nibabel.save(nmask_img, maskfname)
 prov.log(maskfname, 'sv mrs voi mask file created for csf fraction', sparfname, script=__file__)
 
 flt.inputs.in_file = join(getpylabspath(), 'data', 'atlases', 'MNI152_T1_1mm_bet_zcut.nii.gz')
-flt.inputs.reference = paroutfname + '.nii'
+flt.inputs.reference = match_file
 flt.inputs.out_matrix_file = join(fs, project, subject, session, 'mrs', subject + side + '_mpr_match_sv.mat')
 flt.inputs.out_file = join(fs, project, subject, session, 'mrs', subject + side + '_match_bet_zcut_MNIroi.nii')
 res = flt.run()
