@@ -5,7 +5,7 @@ import datetime
 import mne, json
 from pylabs.projects.nbwr.file_names import project, freesurf_fnames, b1map_fnames
 from pylabs.utils.paths import getnetworkdataroot
-from pylabs.fmap_correction.b1_map_corr import correct4B1
+from pylabs.fmap_correction.b1_map_corr import correct4b1
 from pylabs.utils import run_subprocess, WorkingContext, appendposix, replacesuffix
 #set up provenance
 from pylabs.utils.provenance import ProvenanceWrapper
