@@ -25,17 +25,24 @@ def getlocaldataroot():
     else:
         raise ValueError('Don''t know where data root is on this computer.')
 
-def getnetworkdataroot():
+def getnetworkdataroot(target='scotty'):
     hostname = socket.gethostname()
-
-    if hostname == 'scotty.ilabs.uw.edu':
-        return '/media/DiskArray/shared_data/js/'
-    elif hostname in ['redshirt.ilabs.uw.edu', 'redshirt', 'uhora.ilabs.uw.edu', 'uhora', 'sulu.ilabs.uw.edu', 'sulu', 'JVDB']:
-        return '/mnt/users/js/'
-    elif any(x in hostname for x in ['Jeffs-MacBook-Pro-3.local', 'Jeffs-MBP-3', '.dhcp4.washington.edu']):
-        return '/Users/mrjeffs/Documents/Research/data'
-    else:
-        raise ValueError('Don''t know where network data root is on this computer.')
+    if target == 'scotty':
+        if hostname == 'scotty.ilabs.uw.edu':
+            return '/media/DiskArray/shared_data/js/'
+        elif hostname in ['redshirt.ilabs.uw.edu', 'redshirt', 'uhora.ilabs.uw.edu', 'uhora', 'sulu.ilabs.uw.edu', 'sulu', 'JVDB']:
+            return '/mnt/users/js/'
+        elif any(x in hostname for x in ['Jeffs-MacBook-Pro-3.local', 'Jeffs-MBP-3', '.dhcp4.washington.edu']):
+            return '/Users/mrjeffs/Documents/Research/data'
+        else:
+            raise ValueError('Dont know where scotty network data root is on this computer.')
+    if target == 'jaba':
+        if hostname in ['scotty.ilabs.uw.edu', 'scotty', 'redshirt.ilabs.uw.edu', 'redshirt', 'uhora.ilabs.uw.edu', 'uhora', 'sulu.ilabs.uw.edu', 'sulu', 'JVDB']:
+            return '/mnt/brainstudio/MRI/data'
+        elif any(x in hostname for x in ['Jeffs-MacBook-Pro-3.local', 'Jeffs-MBP-3', '.dhcp4.washington.edu']):
+            return '/Users/mrjeffs/Documents/Research/data'
+        else:
+            raise ValueError('Dont know where jaba network data root is on this computer.')
 
 
 def tempfile(extension='.tmp'):
