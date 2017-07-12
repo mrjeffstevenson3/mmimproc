@@ -12,6 +12,8 @@ from pylabs.utils.provenance import ProvenanceWrapper
 prov = ProvenanceWrapper()
 #setup paths and file names to process
 fs = Path(getnetworkdataroot())
+# string defining reg directory and appended to file name
+reg_dir_name = 'reg_b1map2fsrms'
 overwrite = True
 hires = True
 b1corr = True
@@ -46,7 +48,6 @@ for fsf, b1map in zip(freesurf_fnames, b1map_fnames):
     mne.set_config('SUBJECTS_DIR', str(subjects_dir))
     curr_env = copy.copy(os.environ)
     target = subjects_dir / 'anat' /str(fsf+'.nii')
-    reg_dir_name = 'reg_b1map2fsrms'
     fs_fname = fsf
 
     if target.is_file() and overwrite:
