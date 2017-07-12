@@ -66,9 +66,9 @@ for fsf, b1map in zip(freesurf_fnames, b1map_fnames):
             fs_sid += '_hires'
             with open('freesurf_expert_opts.txt', mode='w') as optsf:
                 optsf.write('mris_inflate -n 15\n')
-            results += run_subprocess(['recon-all -parallel -hires -all -subjid '+fs_sid+' -i '+fs_fname+'.nii.gz -expert freesurf_expert_opts.txt'], env=curr_env)
+            results += run_subprocess(['recon-all -parallel -hires -all -subjid '+fs_sid+' -i '+fs_fname+'.nii.gz -expert freesurf_expert_opts.txt'])
         else:
-            results += run_subprocess(['recon-all -parallel -subjid '+fs_sid+' -i '+fs_fname+'.nii.gz -all'], env=curr_env)
+            results += run_subprocess(['recon-all -parallel -subjid '+fs_sid+' -i '+fs_fname+'.nii.gz -all'])
         with open(fs_sid+'/'+fs_sid+'_log{:%Y%m%d%H%M}.json'.format(datetime.datetime.now()), mode='a') as logr:
             json.dump(results, logr, indent=2)
     fs_subj_ln = fs/project/'freesurf_subjs'/fs_sid
