@@ -57,8 +57,7 @@ def correct4b1(project, subject, session, b1map_file, target, reg_dir_name):
                  provenance={'filter': 'numpy median filter', 'filter size': '7', 'results': results})
 
     with WorkingContext(str(target.parent)):
-        results += run_subprocess(['fslmaths', target, '-div', str(appendposix(reg_dir/b1map_file.name, '_phase_'+reg_dir_name+'_mf.nii.gz')),
-                                   '-mul 100', str(replacesuffix(target, '_b1corr.nii.gz'))])
+        results += run_subprocess(['fslmaths '+str(target)+' -div '+str(appendposix(reg_dir/b1map_file.name, '_phase_'+reg_dir_name+'_mf.nii.gz'))+' -mul 100 '+str(replacesuffix(target, '_b1corr.nii.gz'))])
         prov.log(str(replacesuffix(target, '_b1corr.nii.gz')),
                  'median filtered b1 phase map correction', str(target), script=__file__,
                  provenance={'filter': 'numpy median filter', 'filter size': '7', 'results': results})
