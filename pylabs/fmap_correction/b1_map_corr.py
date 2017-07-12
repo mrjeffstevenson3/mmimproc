@@ -40,20 +40,24 @@ def correct4b1(project, subject, session, b1map_file, target, reg_dir_name):
         results += run_subprocess(b1totarget_antscmd)
         mov = replacesuffix(b1map_file, '_phase.nii.gz')
         ref = target
-        outf = replacesuffix(b1map_file, '_phase_'+reg_dir_name+'.nii.gz')
-        warpf = [str(replacesuffix(b1map_file, '_mag_'+reg_dir_name+'_1Warp.nii.gz'))]
-        affine_xform = [str(replacesuffix(b1map_file, '_mag_'+reg_dir_name+'_0GenericAffine.mat'))]
+        outf = replacesuffix(b1map_file.name, '_phase_'+reg_dir_name+'.nii.gz')
+        # need to point to reg dir
+        warpf = [str(replacesuffix(b1map_file.name, '_mag_'+reg_dir_name+'_1Warp.nii.gz'))]
+        affine_xform = [str(replacesuffix(b1map_file.name, '_mag_'+reg_dir_name+'_0GenericAffine.mat'))]
         results += subj2templ_applywarp(str(mov), str(ref), str(outf), warpf, str(reg_dir), affine_xform=affine_xform)
         phase_data = nib.load(str(outf)).get_data().astype('float32')
         phase_data_mf = medianf(phase_data, size=7)
         savenii(phase_data_mf, nib.load(str(outf)).affine,
-                str(replacesuffix(b1map_file, '_phase_'+reg_dir_name+'_mf.nii.gz')))
-        prov.log(str(replacesuffix(b1map_file, '_phase_'+reg_dir_name+'_mf.nii.gz')),
+                str(replacesuffix(reg_dir/b1map_file.name, '_phase_'+reg_dir_name+'_mf.nii.gz')))
+        b1map_reg_ln = fs / project / subject / session / 'fmap' / str(replacesuffix(b1map_file.name, '_phase_'+reg_dir_name+'_mf.nii.gz'))
+        if not b1map_reg_ln.is_symlink():
+            b1map_reg_ln.symlink_to(replacesuffix(reg_dir/b1map_file.name, '_phase_'+reg_dir_name+'_mf.nii.gz'), target_is_directory=True)
+        prov.log(str(replacesuffix(reg_dir/b1map_file.name, '_phase_'+reg_dir_name+'_mf.nii.gz')),
                  'median filtered b1 phase map '+reg_dir_name, str(b1map_file), script=__file__,
                  provenance={'filter': 'numpy median filter', 'filter size': '7', 'results': results})
 
     with WorkingContext(str(target.parent)):
-        results += run_subprocess(['fslmaths', target, '-div', str(appendposix(b1map_file, '_phase_'+reg_dir_name+'_mf.nii.gz')),
+        results += run_subprocess(['fslmaths', target, '-div', str(appendposix(reg_dir/b1map_file.name, '_phase_'+reg_dir_name+'_mf.nii.gz')),
                                    '-mul 100', str(replacesuffix(target, '_b1corr.nii.gz'))])
         prov.log(str(replacesuffix(target, '_b1corr.nii.gz')),
                  'median filtered b1 phase map correction', str(target), script=__file__,

@@ -12,8 +12,7 @@ from pylabs.utils.provenance import ProvenanceWrapper
 prov = ProvenanceWrapper()
 #setup paths and file names to process
 fs = Path(getnetworkdataroot())
-# number of cores to use
-mp = 20
+overwrite = True
 hires = True
 b1corr = True
 noise_filter = True
@@ -50,12 +49,14 @@ for fsf, b1map in zip(freesurf_fnames, b1map_fnames):
     reg_dir_name = 'reg_b1map2fsrms'
     fs_fname = fsf
 
-    if b1corr:
-        results += correct4b1(project, subject, session, b1map_file, target, reg_dir_name)
-        fs_fname += '_b1corr'
+    if target.is_file() and overwrite:
+        if b1corr:
+            results += correct4b1(project, subject, session, b1map_file, target, reg_dir_name)
+            fs_fname += '_b1corr'
+
     if noise_filter:
         with WorkingContext(str(subjects_dir / 'anat')):
-            results += run_subprocess(['susan '+str(replacesuffix(target, '_b1corr.nii.gz'))+' -1 1 3 1 0 '+str(replacesuffix(target, '_susan.nii.gz'))])
+            results += run_subprocess(['susan '+str(replacesuffix(target, '_b1corr.nii.gz'))+' -1 1 3 1 0 '+str(replacesuffix(fs_fname, '_susan.nii.gz'))])
             fs_fname += '_susan'
     fs_sid = fsf+'_freesurf'
 
