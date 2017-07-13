@@ -28,7 +28,7 @@ eddy_corr_dir = 'eddy_cuda_repol_v2'
 filterS0_string = '_mf'
 niipickle = fs / project / 'nbwrniftiDict_201706221132.pickle'
 #stages to run
-overwrite = False
+overwrite = True
 convert = False
 run_topup = True
 subT2 = False   #wip
@@ -125,7 +125,7 @@ if run_topup:
         with WorkingContext(str(dwipath)):
             with open('index.txt', 'w') as f:
                 f.write('1 ' * len(gtab.bvals))
-            if overwrite or not (topup + '_topdn_concat_unwarped_mean.nii.gz').is_file():
+            if overwrite or not Path(topup + '_topdn_concat_unwarped_mean.nii.gz').is_file():
                 cmd = 'topup --imain=' + str(dwipath / str(topup + '_topdn_concat.nii.gz'))
                 cmd += ' --datain=acq_params.txt --config=b02b0.cnf --out='
                 cmd += str(dwipath / str(topup + '_topdn_concat'))

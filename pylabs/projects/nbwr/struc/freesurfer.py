@@ -18,6 +18,8 @@ overwrite = True
 hires = True
 b1corr = True
 noise_filter = True
+noise_thresh = -1
+noise_kernel = 1
 picks = -1
 
 freesurf_fnames = [freesurf_fnames[picks]]
@@ -57,8 +59,10 @@ for fsf, b1map in zip(freesurf_fnames, b1map_fnames):
 
     if noise_filter:
         with WorkingContext(str(subjects_dir / 'anat')):
-            results += run_subprocess(['susan '+str(replacesuffix(target, '_b1corr.nii.gz'))+' -1 1 3 1 0 '+str(replacesuffix(fs_fname, '_susan.nii.gz'))])
+            results += run_subprocess(['susan '+str(replacesuffix(target, '_b1corr.nii.gz'))+' '+str(noise_thresh)+' '+str(noise_kernel)+' 3 1 0 '+str(replacesuffix(fs_fname, '_susan.nii.gz'))])
             fs_fname += '_susan'
+            prov.log(str(replacesuffix(fs_fname, '_susan.nii.gz')), 'fs mempr rms with susan noise filtering', script=__file__,
+                     provenance={'filter': 'susan noise filter', 'filter size': '1mm', 'noise level': 'auto', 'results': results})
     fs_sid = fsf+'_freesurf'
 
     with WorkingContext(str(subjects_dir)):
@@ -66,9 +70,9 @@ for fsf, b1map in zip(freesurf_fnames, b1map_fnames):
             fs_sid += '_hires'
             with open('freesurf_expert_opts.txt', mode='w') as optsf:
                 optsf.write('mris_inflate -n 15\n')
-            results += run_subprocess(['recon-all -parallel -hires -all -subjid '+fs_sid+' -i '+fs_fname+'.nii.gz -expert freesurf_expert_opts.txt'])
+            results += run_subprocess(['recon-all -parallel -hires -all -subjid '+fs_sid+' -i '+str(subjects_dir / 'anat'/ appendposix(fs_fname, '.nii.gz'))+' -expert freesurf_expert_opts.txt'])
         else:
-            results += run_subprocess(['recon-all -parallel -subjid '+fs_sid+' -i '+fs_fname+'.nii.gz -all'])
+            results += run_subprocess(['recon-all -parallel -all -subjid '+fs_sid+' -i '+str(subjects_dir / 'anat'/ appendposix(fs_fname, '.nii.gz'))])
         with open(fs_sid+'/'+fs_sid+'_log{:%Y%m%d%H%M}.json'.format(datetime.datetime.now()), mode='a') as logr:
             json.dump(results, logr, indent=2)
     fs_subj_ln = fs/project/'freesurf_subjs'/fs_sid
