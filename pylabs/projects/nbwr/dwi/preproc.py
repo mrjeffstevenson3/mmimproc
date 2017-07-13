@@ -20,16 +20,16 @@ from pylabs.utils.paths import getnetworkdataroot
 from pylabs.projects.nbwr.file_names import project
 from pylabs.utils.provenance import ProvenanceWrapper
 prov = ProvenanceWrapper()
-
+fs = Path(getnetworkdataroot())
 flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo', output_type='NIFTI_GZ')
 applyxfm = fsl.ApplyXFM(output_type='NIFTI_GZ')
-fs = Path(getnetworkdataroot())
-
+print(os.environ['FSLOUTPUTTYPE'])
 eddy_corr_dir = 'eddy_cuda_repol_v2'
 filterS0_string = '_mf'
-niipickle = fs / project / 'nbwrniftiDict_dev_subj998_201706221132.pickle'
+niipickle = fs / project / 'nbwrniftiDict_201706221132.pickle'
 #stages to run
-convert = True
+overwrite = True
+convert = False
 run_topup = True
 subT2 = False   #wip
 eddy_corr = True
@@ -119,19 +119,21 @@ if run_topup:
         topup_dn_concat_img = nib.Nifti1Image(topup_dn_data_concat, topup_affine)
         topup_dn_concat_img.set_sform(topup_affine, code=1)
         topup_dn_concat_img.set_qform(topup_affine, code=1)
-        nib.save(topup_dn_concat_img, str(dwipath / str(topup + '_topdn_concat.nii')))
-        prov.log(str(dwipath / str(topup + '_topdn_concat.nii')), 'concatenated topup-dn S0 vols', [str(topup_fname), str(topdn_fname)])
+        nib.save(topup_dn_concat_img, str(dwipath / str(topup + '_topdn_concat.nii.gz')))
+        prov.log(str(dwipath / str(topup + '_topdn_concat.nii.gz')), 'concatenated topup-dn S0 vols', [str(topup_fname), str(topdn_fname)])
         result = ()
         with WorkingContext(str(dwipath)):
-            cmd = 'topup --imain=' + str(dwipath / str(topup + '_topdn_concat.nii'))
-            cmd += ' --datain=acq_params.txt --config=b02b0.cnf --out='
-            cmd += str(dwipath / str(topup + '_topdn_concat'))
-            cmd += ' --iout=' + str(dwipath / str(topup + '_topdn_concat_unwarped'))
-            cmd += ' --fout=' + str(dwipath / str(topup + '_topdn_concat_warp_field'))
-            result += run_subprocess(cmd)
-            result += run_subprocess('fslmaths '+topup + '_topdn_concat_unwarped'+' -Tmean '+topup + '_topdn_concat_unwarped_mean')
             with open('index.txt', 'w') as f:
                 f.write('1 ' * len(gtab.bvals))
+            if overwrite or not Path(topup + '_topdn_concat_unwarped_mean.nii.gz').is_file():
+                cmd = 'topup --imain=' + str(dwipath / str(topup + '_topdn_concat.nii.gz'))
+                cmd += ' --datain=acq_params.txt --config=b02b0.cnf --out='
+                cmd += str(dwipath / str(topup + '_topdn_concat'))
+                cmd += ' --iout=' + str(dwipath / str(topup + '_topdn_concat_unwarped.nii.gz'))
+                cmd += ' --fout=' + str(dwipath / str(topup + '_topdn_concat_warp_field.nii.gz'))
+                result += run_subprocess(cmd)
+                result += run_subprocess('fslmaths '+topup + '_topdn_concat_unwarped'+' -Tmean '+topup + '_topdn_concat_unwarped_mean.nii.gz')
+
             ec_dwi_name = ec_dir/str(dwif + '_topdn_unwarped_ec')
             extract_brain(dwipath/str(topup + '_topdn_concat_unwarped_mean.nii.gz'))
             eddy_cmd = 'eddy_cuda7.5 --imain='+str(orig_dwif_fname)+' --mask='+str(dwipath/str(topup + '_topdn_concat_unwarped_mean_brain_mask.nii.gz'))
@@ -141,8 +143,8 @@ if run_topup:
             result += run_subprocess(eddy_cmd)
             dwi_bvecs_ec_rot_fname = str(ec_dwi_name)+'.eddy_rotated_bvecs'
             # clamp, filter, and make nrrd
-            ec_data = nib.load(str(ec_dwi_name)+'.nii').get_data()
-            ec_data_affine = nib.load(str(ec_dwi_name)+'.nii').affine
+            ec_data = nib.load(str(ec_dwi_name)+'.nii.gz').get_data()
+            ec_data_affine = nib.load(str(ec_dwi_name)+'.nii.gz').affine
             bvals, bvecs = read_bvals_bvecs(str(dwi_bvals_fname), str(dwi_bvecs_ec_rot_fname))
             gtab = gradient_table(bvals, bvecs)
             if filterS0_string != '':
@@ -150,7 +152,7 @@ if run_topup:
                 S0_mf = medianf(S0, size=3)
                 ec_data[:, :, :, gtab.b0s_mask] = S0_mf
             ec_data[ec_data <= 1] = 0
-            savenii(ec_data, ec_data_affine, str(ec_dwi_name)+filterS0_string+'_clamp1.nii')
-            nii2nrrd(str(ec_dwi_name)+filterS0_string+'_clamp1.nii', str(ec_dwi_name)+filterS0_string+'_clamp1.nhdr', bvalsf=str(dwi_bvals_fname), bvecsf=str(dwi_bvecs_ec_rot_fname))
+            savenii(ec_data, ec_data_affine, str(ec_dwi_name)+filterS0_string+'_clamp1.nii.gz')
+            nii2nrrd(str(ec_dwi_name)+filterS0_string+'_clamp1.nii.gz', str(ec_dwi_name)+filterS0_string+'_clamp1.nhdr', bvalsf=str(dwi_bvals_fname), bvecsf=str(dwi_bvecs_ec_rot_fname))
 
 

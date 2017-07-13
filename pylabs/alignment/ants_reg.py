@@ -65,7 +65,7 @@ def subj2templ_applywarp(moving, ref_img, outfile, warpfiles, execwdir, dims=3, 
     params['output'] = output
     params['ref_img'] = ref_img
     provenance.log(outfile, 'apply WarpImageMultiTransform', moving, script=__file__, provenance=params)
-    return
+    return tuple([(k, v) for k, v in params.iteritems()])
 
 def subj2T1(moving, ref_img, outfile, inargs=None):
     args = []

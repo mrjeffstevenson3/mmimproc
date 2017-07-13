@@ -48,7 +48,7 @@ def savenii(data, affine, outfile, header=None, minmax=('parse', 'parse'), qform
     else:
         img.header['cal_max'] = float(minmax[1])
     img.set_qform(img.affine, code=qform_code)
-    numpy.testing.assert_almost_equal(affine, img.get_qform(), 4,
+    numpy.testing.assert_almost_equal(affine, img.get_qform(), 3,
                                    err_msg='output qform in header does not match input qform')
     nibabel.save(img, str(outfile))
 

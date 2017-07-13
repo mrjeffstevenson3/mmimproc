@@ -8,7 +8,7 @@ fs = Path(getnetworkdataroot())
 project = 'bbc'
 ecdir = 'cuda_repol_std2_S0mf3_v5'
 filterS0_string = '_withmf3S0'
-behav_csv_name = 'bbc_behav_2-22-2017_rawsub.csv'
+behav_csv_name = 'bbc_behav_7-12-2017_rawsub.csv'
 dwitemplate = fs / project / 'reg' / 'ants_vbm_pairedLH_in_template_space' / 'bbc_pairedLH_template_resampled2dwi.nii'
 dwitemplatet2 = fs / project / 'reg' / 'ants_vbm_pairedLH_in_template_space' / 'bbc_pairedLH_template_invT2c_resampled2dwi.nii.gz'
 vbmtemplate = fs / project / 'reg' / 'ants_vbm_pairedLH_in_template_space' / 'bbc_pairedLH_template.nii.gz'
@@ -181,7 +181,7 @@ WMVBM_foster_pnames = [fs / project / 'myvbm' / 'ants_vbm_template_pairedLH' / m
 WMVBM_control_pnames = [fs / project / 'myvbm' / 'ants_vbm_template_pairedLH' / mod / wm_s2_ftempl.format(sid=str(s), vol=str(v)) for s, v in paired_vbm_control_subjs_sorted]
 
 
-behav_list = [(u'21', u'PATrhyTotSS') , (u'22', u'PATsegTotSS') , (u'23', u'CTOPPphoaCS')  ,(u'24', u'CTOPPrnCS') ,(u'25', u'CTOPPphomCS'), (u'26', u'PPVTSS'), (u'27', u'TOPELeliSS') ,(u'28', u'STIMQ-PSDSscaleScore1-to-15-SUM'), (u'29', u'self-esteem-IAT')]
+behav_list = [(u'32', u'time-in-fostercare'), (u'21', u'PATrhyTotSS') , (u'22', u'PATsegTotSS') , (u'23', u'CTOPPphoaCS')  ,(u'24', u'CTOPPrnCS') ,(u'25', u'CTOPPphomCS'), (u'26', u'PPVTSS'), (u'27', u'TOPELeliSS') ,(u'28', u'STIMQ-PSDSscaleScore1-to-15-SUM'), (u'29', u'self-esteem-IAT')]
 csvraw = fs / project / 'behavior' / behav_csv_name
 data = pd.read_csv(str(csvraw), header=[0,1], index_col=1, tupleize_cols=True)
 foster_behav_data = data.loc[foster_paired_behav_subjs, behav_list]

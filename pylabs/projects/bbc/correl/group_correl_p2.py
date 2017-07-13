@@ -34,7 +34,7 @@ def corr(X, Y):
 
 
 project = 'bbc'
-run = 6
+run = 7
 niterations = 1000    # for FDR
 pcorr_thr = 0.05      # for FDR
 cluster_minsize = 12  # for clustering -uses FDR pcorr from that behav and modality for threshold

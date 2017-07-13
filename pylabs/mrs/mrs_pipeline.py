@@ -1,15 +1,18 @@
+import datetime, json
 from pylabs.utils import paths
 from pylabs.utils import run_subprocess, WorkingContext
 from pathlib import *
 from pylabs.utils.paths import getnetworkdataroot
+from pylabs.utils.provenance import ProvenanceWrapper
+prov = ProvenanceWrapper()
 
 fs = Path(getnetworkdataroot())
 project = 'nbwr'
-subject = 'sub-nbwr998'
-rt_actfname = 'NBWR998_WIP_RTGABAMM_TE80_120DYN_6_2_raw_act.SDAT'
-rt_reffname = 'NBWR998_WIP_RTGABAMM_TE80_120DYN_6_2_raw_ref.SDAT'
-lt_actfname = 'NBWR998_WIP_LTGABAMM_TE80_120DYN_9_2_raw_act.SDAT'
-lt_reffname = 'NBWR998_WIP_LTGABAMM_TE80_120DYN_9_2_raw_ref.SDAT'
+subject = 'sub-nbwr144'
+rt_actfname = 'NBWR144_WIP_RTGABAMM_TE80_120DYN_8_2_raw_act.SDAT'
+rt_reffname = 'NBWR144_WIP_RTGABAMM_TE80_120DYN_8_2_raw_ref.SDAT'
+lt_actfname = 'NBWR144_WIP_LTGABAMM_TE80_120DYN_7_2_raw_act.SDAT'
+lt_reffname = 'NBWR144_WIP_LTGABAMM_TE80_120DYN_7_2_raw_ref.SDAT'
 source_path = fs / project / subject / 'ses-1' / 'source_sparsdat'
 results_dir = fs / project / subject / 'ses-1' / 'mrs'
 
@@ -43,12 +46,22 @@ with WorkingContext(str(results_dir)):
     except:
         print('an exception has occured.')
         print("({})".format(", ".join(output)))
-        with open(results_dir/'mrs_gaba_error{:%Y%m%d%H%M}.json'.format(datetime.datetime.now()), mode='a') as logr:
+        with open(str(results_dir/'mrs_gaba_error{:%Y%m%d%H%M}.json'.format(datetime.datetime.now())), mode='a') as logr:
             json.dump(output, logr, indent=2)
     else:
+        for x in results_dir.rglob("MRS*"):
+            for f in x.glob("*.pdf"):
+                if 'fit' in str(x):
+                    f.rename(Path(str(f).replace('.pdf', '_fit.pdf')))
+                if 'output' in str(x):
+                    f.rename(Path(str(f).replace('.pdf', '_output.pdf')))
         print("({})".format(", ".join(output)))
         print('GABA fits completed normally.')
-        with open(results_dir/'mrs_gaba_log{:%Y%m%d%H%M}.json'.format(datetime.datetime.now()), mode='a') as logr:
+        with open(str(results_dir/'mrs_gaba_log{:%Y%m%d%H%M}.json'.format(datetime.datetime.now())), mode='a') as logr:
             json.dump(output, logr, indent=2)
+        for p in results_dir.rglob("*.pdf"):
+            if '_RT' in str(p.stem):
+                prov.log(str(p), 'gannet gaba fit for right side', str(rt_act), providence={'log': output})
+            if '_LT' in str(p.stem):
+                prov.log(str(p), 'gannet gaba fit for left side', str(lt_act), providence={'log': output})
 
-# add provenance here. traverse gannett out dirs to find PDFs

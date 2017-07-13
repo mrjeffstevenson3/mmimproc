@@ -10,14 +10,14 @@ provenance = ProvenanceWrapper()
 fs = Path(getnetworkdataroot())
 
 groupcol=True
-behav_csv_name = 'bbc_behav_2-22-2017_rawsub.csv'
-results_dirname = 'py_correl_1stpass'
+behav_csv_name = 'bbc_behav_7-12-2017.csv'
+results_dirname = 'py_correl_2ndpass_c0'
 sub_subj_list = ['209-101', '211-105', '208-106', '202-108', '249-113', '241-116', '243-118', '231-119', '253-120']
 unsub_subj_list = ['BBC209', 'BBC101', 'BBC211', 'BBC105', 'BBC208', 'BBC106', 'BBC202', 'BBC108', 'BBC249', 'BBC113', 'BBC241',
                    'BBC116', 'BBC243', 'BBC118', 'BBC231', 'BBC119', 'BBC253', 'BBC120']
 foster_subjs = ['sub-bbc101' , 'sub-bbc105' , 'sub-bbc106' , 'sub-bbc108' , 'sub-bbc109' , 'sub-bbc113' , 'sub-bbc116' , 'sub-bbc118' , 'sub-bbc119' , 'sub-bbc120']
 control_subjs = ['sub-bbc202' , 'sub-bbc208' , 'sub-bbc209' , 'sub-bbc211' , 'sub-bbc212' , 'sub-bbc215' , 'sub-bbc218' , 'sub-bbc219' , 'sub-bbc231' , 'sub-bbc236' , 'sub-bbc241' , 'sub-bbc243' , 'sub-bbc249' , 'sub-bbc252' , 'sub-bbc253']
-behav_list = [(u'21', u'PATrhyTotSS') , (u'22', u'PATsegTotSS') , (u'23', u'CTOPPphoaCS')  ,(u'24', u'CTOPPrnCS') ,(u'25', u'CTOPPphomCS'), (u'26', u'PPVTSS'), (u'27', u'TOPELeliSS') ,(u'28', u'STIMQ-PSDSscaleScore1-to-15-SUM'), (u'29', u'self-esteem-IAT')]
+behav_list = [(u'21', u'PATrhyTotSS') , (u'22', u'PATsegTotSS') , (u'23', u'CTOPPphoaCS')  ,(u'24', u'CTOPPrnCS') ,(u'25', u'CTOPPphomCS'), (u'26', u'PPVTSS'), (u'27', u'TOPELeliSS') ,(u'28', u'STIMQ-PSDSscaleScore1-to-15-SUM'), (u'29', u'self-esteem-IAT'), (u'32', u'time-in-fostercare')]
 csvraw = fs / 'bbc' / 'behavior' / behav_csv_name
 mat_outdir = fs / 'bbc' / 'stats' / 'matfiles'
 results_dir = fs / 'bbc' / 'stats' / results_dirname
