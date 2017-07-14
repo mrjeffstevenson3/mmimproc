@@ -43,7 +43,7 @@ def nii2nrrd(niftifile, nrrd_fname, bvalsf=None, bvecsf=None, istensor=False, is
         elif len(np.unique(bvals)) == 3:
             ubvals = np.unique(bvals)[::-1]
             ubvals = np.delete(ubvals, -1)
-            vec_scaling = np.sqrt(ubvals[1]/ubvals[0])
+            vec_scaling = ubvals[1]/ubvals[0]                          # wrong for norm vecs: np.sqrt(ubvals[1]/ubvals[0])
             for i, (x, b) in enumerate(zip(bvecs.T, bvals)):
                 if b == np.max(bvals):
                     if u'DWMRI_gradient_'+unicode(i).zfill(4) in options[u'keyvaluepairs']:
@@ -82,16 +82,16 @@ def nii2nrrd(niftifile, nrrd_fname, bvalsf=None, bvecsf=None, istensor=False, is
     if istensor:
         options[u'kinds'] = [u'space', u'space', u'space', u'3D-symmetric-matrix']
     elif len(img_data.shape) == 4:
-        options[u'kinds'] =  [u'space', u'space', u'space', u'vector']
+        options[u'kinds'] =  [u'space', u'space', u'space', u'list']
     else:
         options[u'kinds'] =  [u'space', u'space', u'space']
     options[u'space'] = u'right-anterior-superior'
     if len(img_data.shape) == 4:
         options[u'space directions'] = [list(x) for x in affine[:3,:3].astype(str)] + [u'none']
-        options[u'thicknesses'] = ['nan', 'nan', affine[2, 2].astype(str), 'nan']
+        options[u'thicknesses'] = ['NaN', 'NaN', str(hdr['pixdim'][3]), 'NaN']
     else:
         options[u'space directions'] = [list(x) for x in affine[:3,:3].astype(str)]
-        options[u'thicknesses'] = ['nan', 'nan', affine[2, 2].astype(str)]
+        options[u'thicknesses'] = ['NaN', 'NaN', str(hdr['pixdim'][3])]
     options[ u'space origin'] = [x for x in affine[:3,3].astype(str)]
     nrrd.write(str(nrrd_fname), img_data, options=options)
     provenance.log(str(nrrd_fname), 'convert nii to nrrd using pynrrd', str(niftifile), script=__file__, provenance=options)

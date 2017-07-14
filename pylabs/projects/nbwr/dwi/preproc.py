@@ -17,7 +17,7 @@ from pylabs.io.images import loadStack
 from pylabs.io.images import savenii
 from pylabs.utils import run_subprocess, WorkingContext
 from pylabs.utils.paths import getnetworkdataroot
-from pylabs.projects.nbwr.file_names import project
+
 from pylabs.utils.provenance import ProvenanceWrapper
 prov = ProvenanceWrapper()
 fs = Path(getnetworkdataroot())
@@ -40,8 +40,8 @@ bet = False
 prefilter = False
 templating = False
 
-# subjects and files to run on
-from pylabs.projects.nbwr.file_names import topup_fnames, topdn_fnames, dwi_fnames
+# project and subjects and files to run on
+from pylabs.projects.nbwr.file_names import project, topup_fnames, topdn_fnames, dwi_fnames
 # testing and selecting
 picks = -1
 topup_fnames, topdn_fnames, dwi_fnames = [topup_fnames[picks]], [topdn_fnames[picks]], [dwi_fnames[picks]]
