@@ -3,6 +3,9 @@ import petname
 from os.path import expanduser, join
 from pathlib import *
 
+# hostnames with functioning gpus
+working_gpus = ['redshirt.ilabs.uw.edu',]
+
 pylabs_dir = Path(*Path(inspect.getabsfile(pylabs)).parts[:-2])
 pylabs_datadir = pylabs_dir / 'data'
 pylabs_atlasdir = pylabs_datadir / 'atlases'
@@ -56,7 +59,25 @@ def getgannettpath():
     hostname = socket.gethostname()
     if hostname in hostlist:
         gannettpath = join(expanduser('~'), 'Software', 'Gannet2.0')
-    if 'dhcp4.washington.edu' in hostname:
+    if any(x in hostname for x in ['Jeffs-MacBook-Pro-3.local', 'Jeffs-MBP-3', '.dhcp4.washington.edu']):
         print('found dhcp hostname. assuming mrjeffs laptop' )
         gannettpath = join(expanduser('~'), 'Software', 'Gannet2.0')
     return gannettpath
+
+def getbctpath():
+    hostlist = ['redshirt.ilabs.uw.edu', 'scotty.ilabs.uw.edu', 'sulu.ilabs.uw.edu']
+    hostname = socket.gethostname()
+    if hostname in hostlist:
+        bctpath = join(expanduser('~'), 'Software', 'BCT', '2017_01_15_BCT')
+    if any(x in hostname for x in ['Jeffs-MacBook-Pro-3.local', 'Jeffs-MBP-3', '.dhcp4.washington.edu']):
+        print('found dhcp hostname. assuming mrjeffs laptop' )
+        bctpath = join(expanduser('~'), 'Software', 'BCT', '2017_01_15_BCT')
+    return bctpath
+
+def test4working_gpu():
+    hostname = socket.gethostname()
+    if hostname in working_gpus:
+        return
+    else:
+        raise ValueError('current hostname not in working gpu list in pylabs.utils.paths.')
+        return

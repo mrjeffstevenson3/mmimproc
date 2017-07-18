@@ -92,4 +92,4 @@ source $FREESURFER_HOME/SetUpFreeSurfer.sh`
             export PATH MNE_ROOT MATLAB_ROOT
             . $MNE_ROOT/bin/mne_setup_sh
 
-
+26. Download and install the brain connectivity toolkit from https://sites.google.com/site/bctnet in ~/Software
