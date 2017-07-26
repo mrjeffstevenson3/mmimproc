@@ -77,7 +77,7 @@ def getbctpath():
 def test4working_gpu():
     hostname = socket.gethostname()
     if hostname in working_gpus:
-        return
+        return True
     else:
-        raise ValueError('current hostname not in working gpu list in pylabs.utils.paths.')
-        return
+        print('current hostname not in working gpu list in pylabs.utils.paths. using un-accelerated methods.')
+        return False
