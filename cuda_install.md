@@ -2,7 +2,8 @@
 on ubuntu 14.04 use std repos, 16.04 has hack at `https://www.pugetsystems.com/labs/hpc/Install-Ubuntu-16-04-or-14-04-and-CUDA-8-and-7-5-for-NVIDIA-Pascal-GPU-825/`**
 if you need the make/model of your Graphics card do one of either:
 `sudo lshw -C video` or `sudo lspci | grep -i nvidia` then check that you have the appropriate driver installed by going to `http://www.nvidia.com/Download/index.aspx` and filling in info. download run file if on 16.04 until stock cuda7.5 available.
-
+redshirt=GK110B [GeForce GTX TITAN Black] or 700 series GTX titan black
+latest driver as of 7-18-2017 is 375.66
 
 #recover from bad install: deinstall everything
 sudo apt-get remove --purge nvidia*
