@@ -6,6 +6,7 @@ import nibabel as nib
 import numpy as np
 from dipy.io import read_bvals_bvecs
 from dipy.core.gradients import gradient_table
+import shutil
 from datetime import datetime
 from cloud.serialization.cloudpickle import dumps
 from scipy.ndimage.filters import median_filter as medianf
@@ -17,10 +18,11 @@ from pylabs.io.images import loadStack
 from pylabs.io.images import savenii
 from pylabs.utils import run_subprocess, WorkingContext
 from pylabs.utils.paths import getnetworkdataroot
-
+from pylabs.correlation.atlas import mori_network_regions
 from pylabs.utils.provenance import ProvenanceWrapper
 prov = ProvenanceWrapper()
 fs = Path(getnetworkdataroot())
+#  define hostnames with working gpus for processing
 flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo', output_type='NIFTI_GZ')
 applyxfm = fsl.ApplyXFM(output_type='NIFTI_GZ')
 print(os.environ['FSLOUTPUTTYPE'])
@@ -43,8 +45,11 @@ templating = False
 # project and subjects and files to run on
 from pylabs.projects.nbwr.file_names import project, topup_fnames, topdn_fnames, dwi_fnames
 # testing and selecting
-picks = -1
-topup_fnames, topdn_fnames, dwi_fnames = [topup_fnames[picks]], [topdn_fnames[picks]], [dwi_fnames[picks]]
+start_pick = 2
+end_pick = 3
+assert start_pick < end_pick
+topup_fnames, topdn_fnames, dwi_fnames = [topup_fnames[start_pick:end_pick]], [topdn_fnames[start_pick:end_pick]], [dwi_fnames[start_pick:end_pick]]
+
 def default_to_regular(d):
     if isinstance(d, defaultdict):
         d = {k: default_to_regular(v) for k, v in d.iteritems()}
@@ -154,5 +159,17 @@ if run_topup:
             ec_data[ec_data <= 1] = 0
             savenii(ec_data, ec_data_affine, str(ec_dwi_name)+filterS0_string+'_clamp1.nii.gz')
             nii2nrrd(str(ec_dwi_name)+filterS0_string+'_clamp1.nii.gz', str(ec_dwi_name)+filterS0_string+'_clamp1.nhdr', bvalsf=str(dwi_bvals_fname), bvecsf=str(dwi_bvecs_ec_rot_fname))
+            # use ec to make bedpost file, populate input files and execute on cluster
+            bedpost_dir = dwipath/'bedpost'
+            savenii(ec_data, ec_data_affine, str(bedpost_dir/'data.nii.gz'))
+            shutil.copy(str(dwi_bvecs_ec_rot_fname), str(bedpost_dir))
+            os.rename(str(bedpost_dir/dwi_bvecs_ec_rot_fname.name), str(bedpost_dir/'bvecs'))
+            shutil.copy(str(dwi_bvals_fname), str(bedpost_dir))
+            os.rename(str(bedpost_dir/dwi_bvals_fname.name), str(bedpost_dir/'bvals'))
+            shutil.copy(str(dwipath/str(topup + '_topdn_concat_unwarped_mean_brain_mask.nii.gz')), str(bedpost_dir))
+            os.rename(str(bedpost_dir/str(topup + '_topdn_concat_unwarped_mean_brain_mask.nii.gz')), str(bedpost_dir/'nodif_brain_mask.nii.gz'))
+            run_subprocess('bedpostx_gpu bedpost -n 3 --model=2')
+
+
 
 
