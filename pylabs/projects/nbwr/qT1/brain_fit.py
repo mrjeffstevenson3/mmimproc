@@ -13,13 +13,13 @@ from pylabs.alignment.ants_reg import subj2templ_applywarp
 from pylabs.structural.brain_extraction import extract_brain
 from pylabs.qt1.fitting import t1fit
 from pylabs.io.images import savenii
-from pylabs.projects.nbwr.file_names import project, spgr_fa5_fnames, spgr_fa15_fnames, spgr_fa30_fnames, b1map_fnames
-from pylabs.projects.nbwr.file_names import spgr5_fa5_fnames,spgr5_fa10_fnames, spgr5_fa15_fnames, spgr5_fa20_fnames, spgr5_fa30_fnames, b1map5_fnames
+from pylabs.projects.nbwr.file_names import project, SubjIdPicks, get_5spgr_names
+# from pylabs.projects.nbwr.file_names import spgr5_fa5_fnames,spgr5_fa10_fnames, spgr5_fa15_fnames, spgr5_fa20_fnames, spgr5_fa30_fnames, b1map5_fnames
 from pylabs.utils.provenance import ProvenanceWrapper
 prov = ProvenanceWrapper()
 
 fs = Path(getnetworkdataroot())
-if os.environ['FSLOUTPUTTYPE'] == 'NIFTI':
+if os.environ['FSLOUTPUTTYPE'] != 'NIFTI_GZ':
     os.environ['FSLOUTPUTTYPE'] = 'NIFTI_GZ'
 
 flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo', output_type='NIFTI_GZ')
@@ -40,16 +40,32 @@ else:
 async = False
 pool = Pool(20)
 # testing
-picks = -1
-b1map_fnames, spgr_fa5_fnames, spgr_fa15_fnames, spgr_fa30_fnames = [b1map_fnames[picks]], [spgr_fa5_fnames[picks]], [spgr_fa15_fnames[picks]], [spgr_fa30_fnames[picks]]
-picks5 = -1
-b1map5_fnames, spgr5_fa5_fnames, spgr5_fa10_fnames, spgr_fa15_fnames, \
-    spgr5_fa20_fnames, spgr_fa30_fnames = [b1map5_fnames[picks5]], [spgr5_fa5_fnames[picks5]], [spgr5_fa10_fnames[picks5]], \
-                                        [spgr_fa15_fnames[picks5]], [spgr5_fa20_fnames[picks5]], [spgr_fa30_fnames[picks5]]
+# picks = [-1]
+# for p in picks:
+#
+#     b1map_fnames, spgr_fa5_fnames, spgr_fa15_fnames, spgr_fa30_fnames = [b1map_fnames[picks]], [spgr_fa5_fnames[picks]], [spgr_fa15_fnames[picks]], [spgr_fa30_fnames[picks]]
+# picks5 = -1
+# b1map5_fnames, spgr5_fa5_fnames, spgr5_fa10_fnames, spgr_fa15_fnames, \
+#     spgr5_fa20_fnames, spgr_fa30_fnames = [b1map5_fnames[picks5]], [spgr5_fa5_fnames[picks5]], [spgr5_fa10_fnames[picks5]], \
+#                                         [spgr_fa15_fnames[picks5]], [spgr5_fa20_fnames[picks5]], [spgr_fa30_fnames[picks5]]
 
-TR = float(spgr_fa5_fnames[0].split('_')[3].split('-')[-1].replace('p','.'))
+subjids_picks = SubjIdPicks()
 flip5 = True
 overwrite = False
+picks = ['144']
+
+setattr(subjids_picks, 'subjids', picks)
+
+if flip5:
+    b1map_fnames, spgr5_fa5_fnames, spgr5_fa10_fnames, spgr5_fa15_fnames, spgr5_fa20_fnames, spgr5_fa30_fnames = get_5spgr_names(subjids_picks)
+    assert len(b1map_fnames) == len(spgr5_fa5_fnames) == len(spgr5_fa10_fnames) == len(spgr5_fa15_fnames) == len(spgr5_fa20_fnames) == len(spgr5_fa30_fnames)
+    spgrs = [spgr5_fa5_fnames, spgr5_fa10_fnames, spgr5_fa15_fnames, spgr5_fa20_fnames, spgr5_fa30_fnames]
+else:
+    b1map_fnames, spgr_fa5_fnames, spgr_fa15_fnames, spgr_fa30_fnames = get_3spgr_names(subjids_picks)
+    assert len(b1map_fnames) == len(spgr_fa5_fnames) == len(spgr_fa15_fnames) == len(spgr_fa30_fnames)
+    spgrs = [spgr_fa5_fnames, spgr_fa15_fnames, spgr_fa30_fnames]
+
+TR = float(spgr_fa5_fnames[0].split('_')[3].split('-')[-1].replace('p','.'))
 
 #for b1map, spgr05, spgr15, spgr30 in zip(b1map_fnames, spgr_fa5_fnames, spgr_fa15_fnames, spgr_fa30_fnames):
 for b1map, spgr05, spgr10, spgr15, spgr20, spgr30 in zip(b1map5_fnames, spgr5_fa5_fnames, spgr5_fa10_fnames, spgr5_fa15_fnames, spgr5_fa20_fnames, spgr5_fa30_fnames):
@@ -60,24 +76,17 @@ for b1map, spgr05, spgr10, spgr15, spgr20, spgr30 in zip(b1map5_fnames, spgr5_fa
     b1tospgr30antscmd = [ str(antsRegistrationSyN), '-d 3 -m', str(appendposix(b1map_dir/b1map, '_mag.nii.gz')), '-f',
                 str(spgr_dir/str(spgr30+'.nii')), '-o', str(appendposix(b1map_dir/b1map, '_mag_reg2spgr30_')),
                 '-n 30 -t s -p f -j 1 -s 10 -r 1']
-    #b1tospgr30antscmd = ' '.join(b1tospgr30antscmd)
-
     spgr05tospgr30antscmd = [ str(antsRegistrationSyN), '-d 3 -m', str(spgr_dir/str(spgr05+'.nii')), '-f',
                 str(spgr_dir/str(spgr30+'.nii')), '-o', str(spgr_dir/str(spgr05 + '_reg2spgr30_')),
                 '-n 30 -t s -p f -j 1 -s 10 -r 1']
-    #spgr05tospgr30antscmd = ' '.join(spgr05tospgr30antscmd)
-
     spgr15tospgr30antscmd = [ str(antsRegistrationSyN), '-d 3 -m', str(spgr_dir/str(spgr15+'.nii')), '-f',
                 str(spgr_dir/str(spgr30+'.nii')), '-o', str(spgr_dir/str(spgr15 + '_reg2spgr30_')),
                 '-n 30 -t s -p f -j 1 -s 10 -r 1']
-    #spgr15tospgr30antscmd = ' '.join(spgr15tospgr30antscmd)
     if flip5:
         spgr10tospgr30antscmd = [str(antsRegistrationSyN), '-d 3 -m', str(spgr_dir / str(spgr10 + '.nii')), '-f',
                                  str(spgr_dir / str(spgr30 + '.nii')), '-o',
                                  str(spgr_dir / str(spgr10 + '_reg2spgr30_')),
                                  '-n 30 -t s -p f -j 1 -s 10 -r 1']
-        #spgr10tospgr30antscmd = ' '.join(spgr15tospgr30antscmd)
-
         spgr20tospgr30antscmd = [str(antsRegistrationSyN), '-d 3 -m', str(spgr_dir / str(spgr20 + '.nii')), '-f',
                                  str(spgr_dir / str(spgr30 + '.nii')), '-o',
                                  str(spgr_dir / str(spgr20 + '_reg2spgr30_')),

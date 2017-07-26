@@ -25,3 +25,4 @@ latex
 dateutil
 IPython
 statsmodels
+
