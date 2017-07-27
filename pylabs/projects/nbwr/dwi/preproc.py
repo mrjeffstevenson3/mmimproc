@@ -17,7 +17,8 @@ from pylabs.conversion.nifti2nrrd import nii2nrrd
 from pylabs.io.images import loadStack
 from pylabs.io.images import savenii
 from pylabs.utils import run_subprocess, WorkingContext, appendposix
-from pylabs.utils.paths import getnetworkdataroot, test4working_gpu, get_antsregsyn_cmd, moriMNIatlas
+from pylabs.utils.paths import getnetworkdataroot, test4working_gpu, get_antsregsyn_cmd, MNI1mm_T2_brain
+
 from pylabs.correlation.atlas import mori_network_regions
 from pylabs.utils.provenance import ProvenanceWrapper
 prov = ProvenanceWrapper()
@@ -198,7 +199,7 @@ if run_topup:
                 run_subprocess('bedpostx bedpost -n 3 --model=2')
 
             MNI2b0_brain_antscmd = [str(antsRegistrationSyN), '-d 3 -m',
-                                 str(moriMNIatlas), '-f',
+                                 str(MNI1mm_T2_brain), '-f',
                                  str(b0_brain_fname), '-o',
                                  str(dwipath/str(topup + '_topdn_concat_unwarped_mean_brain.nii.gz')_reg2spgr30_')),
                                  '-n 30 -t s -p f -j 1 -s 10 -r 1']
