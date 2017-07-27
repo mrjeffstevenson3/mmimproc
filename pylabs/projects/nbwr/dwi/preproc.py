@@ -26,6 +26,10 @@ fs = Path(getnetworkdataroot())
 flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo', output_type='NIFTI_GZ')
 applyxfm = fsl.ApplyXFM(output_type='NIFTI_GZ')
 print(os.environ['FSLOUTPUTTYPE'])
+
+# project and subjects and files to run on
+from pylabs.projects.nbwr.file_names import project, SubjIdPicks, get_dwi_names
+
 eddy_corr_dir = 'eddy_cuda_repol_v2'
 filterS0_string = '_mf'
 niipickle = fs / project / 'nbwrniftiDict_201706221132.pickle'
@@ -42,13 +46,19 @@ bet = False
 prefilter = False
 templating = False
 
-# project and subjects and files to run on
-from pylabs.projects.nbwr.file_names import project, topup_fnames, topdn_fnames, dwi_fnames
-# testing and selecting
-start_pick = 2
-end_pick = 3
-assert start_pick < end_pick
-topup_fnames, topdn_fnames, dwi_fnames = [topup_fnames[start_pick:end_pick]], [topdn_fnames[start_pick:end_pick]], [dwi_fnames[start_pick:end_pick]]
+
+# instantiate subject container
+subjids_picks = SubjIdPicks()
+# list of subject ids to operate on
+picks = ['401', '132', '317']
+setattr(subjids_picks, 'subjids', picks)
+topup_fnames, topdn_fnames, dwi_fnames = get_dwi_names(subjids_picks)
+
+# # testing and selecting
+# start_pick = 2
+# end_pick = 3
+# assert start_pick < end_pick
+# topup_fnames, topdn_fnames, dwi_fnames = [topup_fnames[start_pick:end_pick]], [topdn_fnames[start_pick:end_pick]], [dwi_fnames[start_pick:end_pick]]
 
 def default_to_regular(d):
     if isinstance(d, defaultdict):
@@ -159,7 +169,7 @@ if run_topup:
             ec_data[ec_data <= 1] = 0
             savenii(ec_data, ec_data_affine, str(ec_dwi_name)+filterS0_string+'_clamp1.nii.gz')
             nii2nrrd(str(ec_dwi_name)+filterS0_string+'_clamp1.nii.gz', str(ec_dwi_name)+filterS0_string+'_clamp1.nhdr', bvalsf=str(dwi_bvals_fname), bvecsf=str(dwi_bvecs_ec_rot_fname))
-            # use ec to make bedpost file, populate input files and execute on cluster
+            # use ec to make bedpost file, populate input files and execute on gpu
             bedpost_dir = dwipath/'bedpost'
             savenii(ec_data, ec_data_affine, str(bedpost_dir/'data.nii.gz'))
             shutil.copy(str(dwi_bvecs_ec_rot_fname), str(bedpost_dir))
@@ -169,6 +179,7 @@ if run_topup:
             shutil.copy(str(dwipath/str(topup + '_topdn_concat_unwarped_mean_brain_mask.nii.gz')), str(bedpost_dir))
             os.rename(str(bedpost_dir/str(topup + '_topdn_concat_unwarped_mean_brain_mask.nii.gz')), str(bedpost_dir/'nodif_brain_mask.nii.gz'))
             run_subprocess('bedpostx_gpu bedpost -n 3 --model=2')
+            # run UKF, NODDI, and DKI here
 
 
 
