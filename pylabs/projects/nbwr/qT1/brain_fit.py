@@ -7,7 +7,7 @@ import nipype.interfaces.fsl as fsl
 from dipy.segment.mask import applymask
 from scipy.ndimage.morphology import binary_erosion as ero
 from scipy.ndimage.filters import median_filter as medianf
-from pylabs.utils.paths import getnetworkdataroot
+from pylabs.utils.paths import getnetworkdataroot, get_antsregsyn_cmd
 from pylabs.utils import run_subprocess, WorkingContext, appendposix, replacesuffix
 from pylabs.alignment.ants_reg import subj2templ_applywarp
 from pylabs.structural.brain_extraction import extract_brain
@@ -28,15 +28,7 @@ if nipype.__version__ >= '0.12.0':
 else:
     applyxfm = fsl.ApplyXFM(interp='nearestneighbour', output_type='NIFTI_GZ')
 
-if not Path(os.environ.get('ANTSPATH'), 'WarpImageMultiTransform').is_file():
-    raise ValueError('must have ants installed with WarpImageMultiTransform in $ANTSPATH directory.')
-if not Path(os.environ.get('ANTSPATH'), 'WarpTimeSeriesImageMultiTransform').is_file():
-    raise ValueError('must have ants installed with WarpTimeSeriesImageMultiTransform in $ANTSPATH directory.')
-if not (Path(os.environ.get('ANTSPATH')) / 'antsRegistrationSyN.sh').is_file():
-    raise ValueError('must have ants installed with antsRegistrationSyN.sh in $ANTSPATH directory.')
-else:
-    antsRegistrationSyN = Path(os.environ.get('ANTSPATH') , 'antsRegistrationSyN.sh')
-
+antsRegistrationSyN = get_antsregsyn_cmd()
 async = False
 pool = Pool(20)
 # testing
