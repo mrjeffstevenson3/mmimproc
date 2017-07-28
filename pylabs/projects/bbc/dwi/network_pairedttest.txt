@@ -1,0 +1,10 @@
+for i in `seq 1 69`;
+do
+echo line in network file $i
+
+
+cp networkvalue${i}.txt networkvalues.txt
+./test_network_pairttest
+done
+
+
