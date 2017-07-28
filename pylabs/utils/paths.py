@@ -4,13 +4,18 @@ from os.path import expanduser, join
 from pathlib import *
 
 # hostnames with functioning gpus
-working_gpus = ['redshirt.ilabs.uw.edu',]
+working_gpus = ['redshirt.ilabs.uw.edu', 'scotty.ilabs.uw.edu']
 
 pylabs_dir = Path(*Path(inspect.getabsfile(pylabs)).parts[:-2])
 pylabs_datadir = pylabs_dir / 'data'
 pylabs_atlasdir = pylabs_datadir / 'atlases'
 moriMNIatlas = pylabs_atlasdir/'mori1_atlas.nii.gz'
 JHUMNIatlas = pylabs_atlasdir/'ilabsJHUtracts0_atlas.nii.gz'
+MNI1mm_T1 = pylabs_atlasdir/'MNI152_T1_1mm.nii.gz'
+MNI1mm_T1_brain = pylabs_atlasdir/'MNI152_T1_1mm_brain.nii.gz'
+MNI1mm_T1_brain_mask = pylabs_atlasdir/'MNI152_T1_1mm_brain_mask.nii.gz'
+MNI1mm_T2 = pylabs_atlasdir/'MNI152_T2_1mm.nii.gz'
+MNI1mm_T2_brain = pylabs_atlasdir/'MNI152_T2_1mm_brain.nii.gz'
 
 def getlocaldataroot():
     hostname = socket.gethostname()
@@ -81,3 +86,14 @@ def test4working_gpu():
     else:
         print('current hostname not in working gpu list in pylabs.utils.paths. using un-accelerated methods.')
         return False
+
+def get_antsregsyn_cmd():
+    if not Path(os.environ.get('ANTSPATH'), 'WarpImageMultiTransform').is_file():
+        raise ValueError('must have ants installed with WarpImageMultiTransform in $ANTSPATH directory.')
+    if not Path(os.environ.get('ANTSPATH'), 'WarpTimeSeriesImageMultiTransform').is_file():
+        raise ValueError('must have ants installed with WarpTimeSeriesImageMultiTransform in $ANTSPATH directory.')
+    if not (Path(os.environ.get('ANTSPATH')) / 'antsRegistrationSyN.sh').is_file():
+        raise ValueError('must have ants installed with antsRegistrationSyN.sh in $ANTSPATH directory.')
+    else:
+        antsRegistrationSyN = Path(os.environ.get('ANTSPATH'), 'antsRegistrationSyN.sh')
+        return antsRegistrationSyN
