@@ -3,13 +3,18 @@
 # topup_dwi_6S0 and topdn_dwi_6S0 are inputs to topup along with dwell time
 # topup_unwarped is the output from topup and input to eddy
 
-# class object to pass list of subject ids
+# here there are no subj ids, those are called out by the picks list and and
+
+# class object to pass list of subject ids and passed to functions here using the SubjIdPicks class object.
+# defaults for session and run numbers are set here as  well as exceptions to those defaults called out by subject and modality.
+
 class SubjIdPicks(object):
     pass
 
 project = 'nbwr'
 ftempl = 'sub-nbwr{}_ses-{}_{}_{}'
 # freesurfer, VBM, T2 file name lists
+b1map_fs_fnames = []
 vbm_fnames = []
 freesurf_fnames = []
 t2_fnames = []
@@ -34,12 +39,12 @@ vbm_rms = [
     ('998', 1, 'vbmmempr_ti850_rms', 1),
     ]
 freesurf_rms = [
-    ('999b', 1, 'vbmmempr_rms', 1),
-    ('998', 1, 'vbmmempr_ti1100_rms', 1),
-    ('144', 1, 'fsmempr_ti1100_rms', 1),
-    ('401', 1, 'fsmempr_ti1100_rms', 1),
-    ('317', 1, 'fsmempr_ti1100_rms', 1),
-    ('132', 1, 'fsmempr_ti1100_rms', 1),
+    (('999b', 1, 'b1map', 1), ('999b', 1, 'vbmmempr_rms', 1)),
+    (('998', 1, 'dwi-topup_6S0', 1), ('998', 1, 'vbmmempr_ti1100_rms', 1)),
+    (('144', 1, 'dwi-topup_6S0', 1), ('144', 1, 'fsmempr_ti1100_rms', 1)),
+    (('401', 1, 'dwi-topup_6S0', 1), ('401', 1, 'fsmempr_ti1100_rms', 1)),
+    (('317', 1, 'dwi-topup_6S0', 1), ('317', 1, 'fsmempr_ti1100_rms', 1)),
+    (('132', 1, 'dwi-topup_6S0', 1), ('132', 1, 'fsmempr_ti1100_rms', 1)),
         ]
 
 orig_dwi = [
@@ -51,19 +56,19 @@ orig_dwi = [
     (('132', 1, 'dwi-topup_6S0', 1), ('132', 1, 'dwi-topdn_6S0', 1), ('132', 1,'dwi-topup_64dir-3sh-800-2000', 1)),
     ]
 orig_spgr = [
-    (('999b', 1, 'spgr_fa-05-tr-15p0', 1), ('999b', 1, 'spgr_fa-15-tr-15p0', 1), ('999b', 1,'spgr_fa-30-tr-15p0', 1), ('999b', 1,'b1map', 1)),
-    (('998', 1, 'spgr_fa-05-tr-12p0', 1), ('998', 1, 'spgr_fa-15-tr-12p0', 1), ('998', 1, 'spgr_fa-30-tr-12p0', 1), ('998', 1, 'b1map', 1)),
-    (('144', 1, 'spgr_fa-05-tr-12p0', 1), ('144', 1, 'spgr_fa-15-tr-12p0', 1), ('144', 1, 'spgr_fa-30-tr-12p0', 1), ('144', 1, 'b1map', 1)),
-    (('401', 1, 'spgr_fa-05-tr-12p0', 1), ('401', 1, 'spgr_fa-15-tr-12p0', 1), ('401', 1, 'spgr_fa-30-tr-12p0', 1), ('401', 1, 'b1map', 1)),
-    (('317', 1, 'spgr_fa-05-tr-12p0', 1), ('317', 1, 'spgr_fa-15-tr-12p0', 1), ('317', 1, 'spgr_fa-30-tr-12p0', 1), ('317', 1, 'b1map', 1)),
-    (('132', 1, 'spgr_fa-05-tr-12p0', 1), ('132', 1, 'spgr_fa-15-tr-12p0', 1), ('132', 1, 'spgr_fa-30-tr-12p0', 1), ('132', 1, 'b1map', 1)),
+    (('999b', 1, 'b1map', 1), ('999b', 1, 'spgr_fa-05-tr-15p0', 1), ('999b', 1, 'spgr_fa-15-tr-15p0', 1), ('999b', 1,'spgr_fa-30-tr-15p0', 1)),
+    (('998', 1, 'b1map', 1), ('998', 1, 'spgr_fa-05-tr-12p0', 1), ('998', 1, 'spgr_fa-15-tr-12p0', 1), ('998', 1, 'spgr_fa-30-tr-12p0', 1)),
+    (('144', 1, 'b1map', 1), ('144', 1, 'spgr_fa-05-tr-12p0', 1), ('144', 1, 'spgr_fa-15-tr-12p0', 1), ('144', 1, 'spgr_fa-30-tr-12p0', 1)),
+    (('401', 1, 'b1map', 1), ('401', 1, 'spgr_fa-05-tr-12p0', 1), ('401', 1, 'spgr_fa-15-tr-12p0', 1), ('401', 1, 'spgr_fa-30-tr-12p0', 1)),
+    (('317', 1, 'b1map', 1), ('317', 1, 'spgr_fa-05-tr-12p0', 1), ('317', 1, 'spgr_fa-15-tr-12p0', 1), ('317', 1, 'spgr_fa-30-tr-12p0', 1)),
+    (('132', 1, 'b1map', 1), ('132', 1, 'spgr_fa-05-tr-12p0', 1), ('132', 1, 'spgr_fa-15-tr-12p0', 1), ('132', 1, 'spgr_fa-30-tr-12p0', 1)),
     ]
 orig_5spgr = [
-    (('998', 1, 'spgr_fa-05-tr-12p0', 1), ('998', 1, 'spgr_fa-10-tr-12p0', 1), ('998', 1, 'spgr_fa-15-tr-12p0', 1), ('998', 1, 'spgr_fa-20-tr-12p0', 1), ('998', 1,'spgr_fa-30-tr-12p0', 1), ('998', 1,'b1map', 1)),
-    (('144', 1, 'spgr_fa-05-tr-12p0', 1), ('144', 1, 'spgr_fa-10-tr-12p0', 1), ('144', 1, 'spgr_fa-15-tr-12p0', 1), ('144', 1, 'spgr_fa-20-tr-12p0', 1), ('144', 1, 'spgr_fa-30-tr-12p0', 1), ('144', 1, 'b1map', 1)),
-    (('401', 1, 'spgr_fa-05-tr-12p0', 1), ('401', 1, 'spgr_fa-10-tr-12p0', 1), ('401', 1, 'spgr_fa-15-tr-12p0', 1), ('401', 1, 'spgr_fa-20-tr-12p0', 1), ('401', 1, 'spgr_fa-30-tr-12p0', 1), ('401', 1, 'b1map', 1)),
-    (('317', 1, 'spgr_fa-05-tr-12p0', 1), ('317', 1, 'spgr_fa-10-tr-12p0', 1), ('317', 1, 'spgr_fa-15-tr-12p0', 1), ('317', 1, 'spgr_fa-20-tr-12p0', 1), ('317', 1, 'spgr_fa-30-tr-12p0', 1), ('317', 1, 'b1map', 1)),
-    (('132', 1, 'spgr_fa-05-tr-12p0', 1), ('132', 1, 'spgr_fa-10-tr-12p0', 1), ('132', 1, 'spgr_fa-15-tr-12p0', 1), ('132', 1, 'spgr_fa-20-tr-12p0', 1), ('132', 1, 'spgr_fa-30-tr-12p0', 1), ('132', 1, 'b1map', 1)),
+    (('998', 1, 'b1map', 1), ('998', 1, 'spgr_fa-05-tr-12p0', 1), ('998', 1, 'spgr_fa-10-tr-12p0', 1), ('998', 1, 'spgr_fa-15-tr-12p0', 1), ('998', 1, 'spgr_fa-20-tr-12p0', 1), ('998', 1, 'spgr_fa-30-tr-12p0', 1)),
+    (('144', 1, 'b1map', 1), ('144', 1, 'spgr_fa-05-tr-12p0', 1), ('144', 1, 'spgr_fa-10-tr-12p0', 1), ('144', 1, 'spgr_fa-15-tr-12p0', 1), ('144', 1, 'spgr_fa-20-tr-12p0', 1), ('144', 1, 'spgr_fa-30-tr-12p0', 1)),
+    (('401', 1, 'b1map', 1), ('401', 1, 'spgr_fa-05-tr-12p0', 1), ('401', 1, 'spgr_fa-10-tr-12p0', 1), ('401', 1, 'spgr_fa-15-tr-12p0', 1), ('401', 1, 'spgr_fa-20-tr-12p0', 1), ('401', 1, 'spgr_fa-30-tr-12p0', 1)),
+    (('317', 1, 'b1map', 1), ('317', 1, 'spgr_fa-05-tr-12p0', 1), ('317', 1, 'spgr_fa-10-tr-12p0', 1), ('317', 1, 'spgr_fa-15-tr-12p0', 1), ('317', 1, 'spgr_fa-20-tr-12p0', 1), ('317', 1, 'spgr_fa-30-tr-12p0', 1)),
+    (('132', 1, 'b1map', 1), ('132', 1, 'spgr_fa-05-tr-12p0', 1), ('132', 1, 'spgr_fa-10-tr-12p0', 1), ('132', 1, 'spgr_fa-15-tr-12p0', 1), ('132', 1, 'spgr_fa-20-tr-12p0', 1), ('132', 1, 'spgr_fa-30-tr-12p0', 1)),
     ]
 
 orig_b1map = [('999b', 1,'b1map', 1), ('998', 1, 'b1map', 1), ('144', 1, 'b1map', 1),
@@ -81,9 +86,10 @@ def get_vbm_names(subjids_picks):
     return vbm_fnames
 
 def get_freesurf_names(subjids_picks):
-    for freesurf in freesurf_rms:
+    for b1map, freesurf in freesurf_rms:
         if freesurf[0] in subjids_picks.subjids:
             freesurf_fnames.append(ftempl.format(*freesurf))
+            b1map_fs_fnames.append(ftempl.format(*b1map))
     return freesurf_fnames
 
 def get_dwi_names(subjids_picks):

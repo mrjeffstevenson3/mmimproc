@@ -284,7 +284,7 @@ def brain_proc_file(opts, scandict):
             nhdr.extensions.append(dump_ext)
             if opts.rms:
                 rmshdr.extensions.append(dump_ext)
-        np.testing.assert_almost_equal(affine, nhdr.get_qform(), 3,
+        np.testing.assert_almost_equal(affine, nhdr.get_qform(), 2,
                                        err_msg='output qform in header does not match input qform')
         setattr(opts, 'qform', nhdr.get_qform())
         verbose('Writing %s' % outfilename)

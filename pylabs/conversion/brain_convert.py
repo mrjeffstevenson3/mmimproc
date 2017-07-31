@@ -16,7 +16,7 @@ from pylabs.utils.provenance import ProvenanceWrapper
 provenance = ProvenanceWrapper()
 fs = getnetworkdataroot()
 flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo', output_type='NIFTI')
-applyxfm = fsl.ApplyXFM(output_type='NIFTI')
+applyxfm = fsl.ApplyXfm(output_type='NIFTI')
 
 #individual project parameters to be set once here. keys are immutable or code will break.
 slu_phant_conv = pd.DataFrame({

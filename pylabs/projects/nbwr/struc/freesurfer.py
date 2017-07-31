@@ -3,39 +3,36 @@ import os, copy
 from pathlib import *
 import datetime
 import mne, json
-from pylabs.projects.nbwr.file_names import project, freesurf_fnames, b1map_fnames
-from pylabs.utils.paths import getnetworkdataroot
+from pylabs.projects.nbwr.file_names import project, SubjIdPicks, get_freesurf_names
+from pylabs.utils.paths import getnetworkdataroot, get_antsregsyn_cmd
 from pylabs.fmap_correction.b1_map_corr import correct4b1
 from pylabs.utils import run_subprocess, WorkingContext, appendposix, replacesuffix
 #set up provenance
 from pylabs.utils.provenance import ProvenanceWrapper
 prov = ProvenanceWrapper()
 #setup paths and file names to process
-fs = Path(getnetworkdataroot())
+fs = Path(getnetworkdataroot(target='jaba'))
+antsRegistrationSyN = get_antsregsyn_cmd()
+
+# instantiate subject id list container
+subjids_picks = SubjIdPicks()
+# list of subject ids to operate on
+picks = ['132', '317', '401', '404']
+
+setattr(subjids_picks, 'subjids', picks)
+
+
 # string defining reg directory and appended to file name
-reg_dir_name = 'reg_b1map2fsrms'
+reg_dir_name = 'b1map2fsrms'
 overwrite = True
 hires = True
 b1corr = True
 noise_filter = True
 noise_thresh = -1
 noise_kernel = 1
-picks = -1
 
-freesurf_fnames = [freesurf_fnames[picks]]
-b1map_fnames = [b1map_fnames[picks]]
 
-if len(freesurf_fnames) != len(b1map_fnames):
-    raise ValueError('must have same number of b1maps as mempr rms')
-
-if not Path(os.environ.get('ANTSPATH'), 'WarpImageMultiTransform').is_file():
-    raise ValueError('must have ants installed with WarpImageMultiTransform in $ANTSPATH directory.')
-if not Path(os.environ.get('ANTSPATH'), 'WarpTimeSeriesImageMultiTransform').is_file():
-    raise ValueError('must have ants installed with WarpTimeSeriesImageMultiTransform in $ANTSPATH directory.')
-if not (Path(os.environ.get('ANTSPATH')) / 'antsRegistrationSyN.sh').is_file():
-    raise ValueError('must have ants installed with antsRegistrationSyN.sh in $ANTSPATH directory.')
-else:
-    antsRegistrationSyN = Path(os.environ.get('ANTSPATH') , 'antsRegistrationSyN.sh')
+b1map_fnames, freesurf_fnames = get_freesurf_names(subjids_picks)
 
 
 if not (fs/project/'freesurf_subjs').is_dir():
@@ -70,9 +67,9 @@ for fsf, b1map in zip(freesurf_fnames, b1map_fnames):
             fs_sid += '_hires'
             with open('freesurf_expert_opts.txt', mode='w') as optsf:
                 optsf.write('mris_inflate -n 15\n')
-            results += run_subprocess(['recon-all -parallel -hires -all -subjid '+fs_sid+' -i '+str(subjects_dir / 'anat'/ appendposix(fs_fname, '.nii.gz'))+' -expert freesurf_expert_opts.txt'])
+            results += run_subprocess(['recon-all -hires -all -subjid '+fs_sid+' -i '+str(subjects_dir / 'anat'/ appendposix(fs_fname, '.nii.gz'))+' -expert freesurf_expert_opts.txt -parallel -openmp 8'])
         else:
-            results += run_subprocess(['recon-all -parallel -all -subjid '+fs_sid+' -i '+str(subjects_dir / 'anat'/ appendposix(fs_fname, '.nii.gz'))])
+            results += run_subprocess(['recon-all -all -subjid '+fs_sid+' -i '+str(subjects_dir / 'anat'/ appendposix(fs_fname, '.nii.gz'))+' -parallel -openmp 8'])
         with open(fs_sid+'/'+fs_sid+'_log{:%Y%m%d%H%M}.json'.format(datetime.datetime.now()), mode='a') as logr:
             json.dump(results, logr, indent=2)
     fs_subj_ln = fs/project/'freesurf_subjs'/fs_sid

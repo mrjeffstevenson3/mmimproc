@@ -8,11 +8,11 @@ prov = ProvenanceWrapper()
 
 fs = Path(getnetworkdataroot())
 project = 'nbwr'
-subject = 'sub-nbwr401'
-rt_actfname = 'sub-nbwr401_WIP_RTGABAMM_TE80_120DYN_8_2_raw_act.SDAT'
-rt_reffname = 'sub-nbwr401_WIP_RTGABAMM_TE80_120DYN_8_2_raw_ref.SDAT'
-lt_actfname = 'sub-nbwr401_WIP_LTGABAMM_TE80_120DYN_7_2_raw_act.SDAT'
-lt_reffname = 'sub-nbwr401_WIP_LTGABAMM_TE80_120DYN_7_2_raw_ref.SDAT'
+subject = 'sub-nbwr404'
+rt_actfname = 'sub-nbwr404c_WIP_RTGABAMM_TE80_120DYN_8_2_raw_act.SDAT'
+rt_reffname = 'sub-nbwr404c_WIP_RTGABAMM_TE80_120DYN_8_2_raw_ref.SDAT'
+lt_actfname = 'sub-nbwr404c_WIP_LTGABAMM_TE80_120DYN_7_2_raw_act.SDAT'
+lt_reffname = 'sub-nbwr404c_WIP_LTGABAMM_TE80_120DYN_7_2_raw_ref.SDAT'
 source_path = fs / project / subject / 'ses-1' / 'source_sparsdat'
 results_dir = fs / project / subject / 'ses-1' / 'mrs'
 

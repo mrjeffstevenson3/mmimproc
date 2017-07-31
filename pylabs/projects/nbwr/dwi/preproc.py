@@ -11,13 +11,13 @@ from datetime import datetime
 from cloud.serialization.cloudpickle import dumps
 from scipy.ndimage.filters import median_filter as medianf
 from pylabs.structural.brain_extraction import extract_brain
-from pylabs.structural.brain_extraction import struc_bet
 from pylabs.conversion.brain_convert import conv_subjs
 from pylabs.conversion.nifti2nrrd import nii2nrrd
-from pylabs.io.images import loadStack
+from pylabs.alignment.ants_reg import subj2templ_applywarp
 from pylabs.io.images import savenii
-from pylabs.utils import run_subprocess, WorkingContext, appendposix
-from pylabs.utils.paths import getnetworkdataroot, test4working_gpu, get_antsregsyn_cmd, MNI1mm_T2_brain
+from pylabs.utils import run_subprocess, WorkingContext, appendposix, replacesuffix
+from pylabs.utils.paths import getnetworkdataroot, test4working_gpu, get_antsregsyn_cmd, MNI1mm_T2_brain, getslicercmd, \
+        moriMNIatlas
 
 from pylabs.correlation.atlas import mori_network_regions
 from pylabs.utils.provenance import ProvenanceWrapper
@@ -29,9 +29,18 @@ applyxfm = fsl.ApplyXFM(output_type='NIFTI_GZ')
 print(os.environ['FSLOUTPUTTYPE'])
 
 antsRegistrationSyN = get_antsregsyn_cmd()
+slicer_path = getslicercmd()
 
 # project and subjects and files to run on
-from pylabs.projects.nbwr.file_names import project, topup_fnames, topdn_fnames, dwi_fnames
+from pylabs.projects.nbwr.file_names import project, SubjIdPicks, get_dwi_names
+# instantiate subject id list container
+subjids_picks = SubjIdPicks()
+# list of subject ids to operate on
+picks = ['132', '317', '401', '404']
+
+setattr(subjids_picks, 'subjids', picks)
+
+topup_fnames, topdn_fnames, dwi_fnames = get_dwi_names(subjids_picks)
 
 eddy_corr_dir = 'eddy_cuda_repol_v2'
 filterS0_string = '_mf'
@@ -49,25 +58,19 @@ bet = False
 prefilter = False
 templating = False
 
-
-# instantiate subject container
-subjids_picks = SubjIdPicks()
-# list of subject ids to operate on
-picks = ['401', '132', '317']
-setattr(subjids_picks, 'subjids', picks)
-topup_fnames, topdn_fnames, dwi_fnames = get_dwi_names(subjids_picks)
-
-# # testing and selecting
-# start_pick = 2
-# end_pick = 3
-# assert start_pick < end_pick
-# topup_fnames, topdn_fnames, dwi_fnames = [topup_fnames[start_pick:end_pick]], [topdn_fnames[start_pick:end_pick]], [dwi_fnames[start_pick:end_pick]]
 '''
 to do:
 UKF command to modify 
-/home/toddr/.config/NA-MIC/Extensions-26072/UKFTractography/lib/Slicer-4.7/cli-modules/UKFTractography --dwiFile /tmp/Slicer/CGGHB_vtkMRMLDiffusionWeightedVolumeNodeB.nhdr --seedsFile /tmp/Slicer/CGGHB_vtkMRMLLabelMapVolumeNodeB.nhdr --labels 1 --maskFile /tmp/Slicer/CGGHB_vtkMRMLLabelMapVolumeNodeB.nhdr --tracts /tmp/Slicer/CGGHB_vtkMRMLFiberBundleNodeB.vtp --seedsPerVoxel 1 --seedFALimit 0.18 --minFA 0.15 --minGA 0.1 --numThreads -1 --numTensor 2 --stepLength 0.3 --Qm 0 --recordLength 1.8 --maxHalfFiberLength 250 --recordNMSE --freeWater --recordFA --recordTrace --recordFreeWater --recordTensors --Ql 0 --Qw 0 --Qkappa 0.01 --Qvic 0.004 --Rs 0 --sigmaSignal 0 --maxBranchingAngle 0 --minBranchingAngle 0 
+/home/toddr/.config/NA-MIC/Extensions-26072/UKFTractography/lib/Slicer-4.7/cli-modules/UKFTractography 
+--dwiFile /tmp/Slicer/CGGHB_vtkMRMLDiffusionWeightedVolumeNodeB.nhdr --seedsFile /tmp/Slicer/CGGHB_vtkMRMLLabelMapVolumeNodeB.nhdr --labels 1 --maskFile /tmp/Slicer/CGGHB_vtkMRMLLabelMapVolumeNodeB.nhdr --tracts /tmp/Slicer/CGGHB_vtkMRMLFiberBundleNodeB.vtp --seedsPerVoxel 1 --seedFALimit 0.18 --minFA 0.15 --minGA 0.1 --numThreads -1 --numTensor 2 --stepLength 0.3 --Qm 0 --recordLength 1.8 --maxHalfFiberLength 250 --recordNMSE --freeWater --recordFA --recordTrace --recordFreeWater --recordTensors --Ql 0 --Qw 0 --Qkappa 0.01 --Qvic 0.004 --Rs 0 --sigmaSignal 0 --maxBranchingAngle 0 --minBranchingAngle 0 
 NODDI Command to modify
 /home/toddr/.config/NA-MIC/Extensions-26072/UKFTractography/lib/Slicer-4.7/cli-modules/UKFTractography --dwiFile /tmp/Slicer/CECH_vtkMRMLDiffusionWeightedVolumeNodeB.nhdr --seedsFile /tmp/Slicer/CECH_vtkMRMLLabelMapVolumeNodeB.nhdr --labels 1 --maskFile /tmp/Slicer/CECH_vtkMRMLLabelMapVolumeNodeB.nhdr --tracts /tmp/Slicer/CECH_vtkMRMLFiberBundleNodeB.vtp --seedsPerVoxel 1 --seedFALimit 0.18 --minFA 0.15 --minGA 0.1 --numThreads -1 --numTensor 1 --stepLength 0.3 --Qm 0 --recordLength 1.8 --maxHalfFiberLength 250 --Ql 0 --Qw 0 --noddi --recordVic --recordKappa --recordViso --Qkappa 0.01 --Qvic 0.004 --Rs 0 --sigmaSignal 0 --maxBranchingAngle 0 --minBranchingAngle 0 
+
+'UKF':  {'slicerpart1': str(slicer_path) + 'UKFTractography '
+    '--dwiFile %(fdwinrrd)s --seedsFile %(mask_fnamenrrd)s --labels 1 --maskFile %(mask_fnamenrrd)s --tracts %(dwif)s_UKF_whbr.vtk '
+    '--seedsPerVoxel 1 --seedFALimit 0.18 --minFA 0.15 --minGA 0.2 --numThreads -1 --numTensor 2 --stepLength 0.3 --Qm 0 --recordLength 1.8 --maxHalfFiberLength 250 --recordNMSE --freeWater '
+    '--recordFA --recordTrace --recordFreeWater --recordTensors --Ql 0 --Qw 0 --Qkappa 0.01 --Qvic 0.004 --Rs 0 --sigmaSignal 0 --maxBranchingAngle 0 --minBranchingAngle 0'
+
 '''
 
 def default_to_regular(d):
@@ -97,7 +100,7 @@ def test4file(file):
 if run_topup:
     for i, (topup, topdn, dwif) in enumerate(zip(topup_fnames, topdn_fnames, dwi_fnames)):
         dwipath = fs / project / dwif.split('_')[0] / dwif.split('_')[1] / 'dwi'
-        regpath = fs / project / dwif.split('_')[0] / dwif.split('_')[1] / 'reg' / 'reg_MNI2dwi'
+        regpath = fs / project / dwif.split('_')[0] / dwif.split('_')[1] / 'reg' / 'MNI2dwi'
         ec_dir = dwipath / eddy_corr_dir
         if not ec_dir.is_dir():
             ec_dir.mkdir(parents=True)
@@ -194,15 +197,16 @@ if run_topup:
             os.rename(str(bedpost_dir/str(topup + '_topdn_concat_unwarped_mean_brain_mask.nii.gz')), str(bedpost_dir/'nodif_brain_mask.nii.gz'))
             # run bedpost, probtracks, network, UKF, NODDI, and DKI here
             if test4working_gpu():
-                run_subprocess('bedpostx_gpu bedpost -n 3 --model=2')
+                result += run_subprocess('bedpostx_gpu bedpost -n 3 --model=2')
             else:
-                run_subprocess('bedpostx bedpost -n 3 --model=2')
+                result += run_subprocess('bedpostx bedpost -n 3 --model=2')
 
-            MNI2b0_brain_antscmd = [str(antsRegistrationSyN), '-d 3 -m',
-                                 str(MNI1mm_T2_brain), '-f',
-                                 str(b0_brain_fname), '-o',
-                                 str(dwipath/str(topup + '_topdn_concat_unwarped_mean_brain.nii.gz')_reg2spgr30_')),
-                                 '-n 30 -t s -p f -j 1 -s 10 -r 1']
+            MNI2b0_brain_antscmd = [str(antsRegistrationSyN), '-d 3 -m', str(MNI1mm_T2_brain), '-f', str(b0_brain_fname), '-o',
+                                 str(regpath/replacesuffix(MNI1mm_T2_brain, '_reg2dwi_').name), '-n 30 -t s -p f -j 1 -s 10 -r 1']
+
+            with WorkingContext(regpath):
+                result += run_subprocess(' '.join(MNI2b0_brain_antscmd))
+                subj2templ_applywarp(str(moriMNIatlas), str(b0_brain_fname), str(regpath/replacesuffix(moriMNIatlas, '_reg2dwi_').name))
 
 
 
