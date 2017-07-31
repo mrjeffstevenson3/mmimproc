@@ -18,7 +18,7 @@ from pylabs.projects.nbwr.file_names import project, SubjIdPicks, get_5spgr_name
 from pylabs.utils.provenance import ProvenanceWrapper
 prov = ProvenanceWrapper()
 
-fs = Path(getnetworkdataroot())
+fs = Path(getnetworkdataroot(target='jaba'))
 if os.environ['FSLOUTPUTTYPE'] != 'NIFTI_GZ':
     os.environ['FSLOUTPUTTYPE'] = 'NIFTI_GZ'
 

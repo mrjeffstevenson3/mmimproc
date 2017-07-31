@@ -22,7 +22,7 @@ from pylabs.utils.paths import getnetworkdataroot, test4working_gpu, get_antsreg
 from pylabs.correlation.atlas import mori_network_regions
 from pylabs.utils.provenance import ProvenanceWrapper
 prov = ProvenanceWrapper()
-fs = Path(getnetworkdataroot())
+fs = Path(getnetworkdataroot(target='jaba'))
 #  define hostnames with working gpus for processing
 flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo', output_type='NIFTI_GZ')
 applyxfm = fsl.ApplyXFM(output_type='NIFTI_GZ')
