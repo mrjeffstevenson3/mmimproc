@@ -1,6 +1,7 @@
 from pylabs.conversion.parrec2nii_convert import BrainOpts
 import pandas as pd
 import nibabel
+import nipype
 from nipype.interfaces import fsl
 from pylabs.conversion.parrec2nii_convert import brain_proc_file
 from pylabs.utils.sessions import make_sessions_fm_dict
@@ -16,7 +17,10 @@ from pylabs.utils.provenance import ProvenanceWrapper
 provenance = ProvenanceWrapper()
 fs = getnetworkdataroot()
 flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo', output_type='NIFTI')
-applyxfm = fsl.ApplyXfm(output_type='NIFTI')
+if nipype.__version__ == '0.12.0':
+    applyxfm = fsl.ApplyXfm(interp='nearestneighbour', output_type='NIFTI_GZ')
+else:
+    applyxfm = fsl.ApplyXFM(interp='nearestneighbour', output_type='NIFTI_GZ')
 
 #individual project parameters to be set once here. keys are immutable or code will break.
 slu_phant_conv = pd.DataFrame({
