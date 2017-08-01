@@ -40,11 +40,12 @@ vbm_rms = [
     ]
 freesurf_rms = [
     (('999b', 1, 'b1map', 1), ('999b', 1, 'vbmmempr_rms', 1)),
-    (('998', 1, 'dwi-topup_6S0', 1), ('998', 1, 'vbmmempr_ti1100_rms', 1)),
-    (('144', 1, 'dwi-topup_6S0', 1), ('144', 1, 'fsmempr_ti1100_rms', 1)),
-    (('401', 1, 'dwi-topup_6S0', 1), ('401', 1, 'fsmempr_ti1100_rms', 1)),
-    (('317', 1, 'dwi-topup_6S0', 1), ('317', 1, 'fsmempr_ti1100_rms', 1)),
-    (('132', 1, 'dwi-topup_6S0', 1), ('132', 1, 'fsmempr_ti1100_rms', 1)),
+    (('998', 1, 'b1map', 1), ('998', 1, 'vbmmempr_ti1100_rms', 1)),
+    (('144', 1, 'b1map', 1), ('144', 1, 'fsmempr_ti1100_rms', 1)),
+    (('401', 1, 'b1map', 1), ('401', 1, 'fsmempr_ti1100_rms', 1)),
+    (('317', 1, 'b1map', 1), ('317', 1, 'fsmempr_ti1100_rms', 1)),
+    (('132', 1, 'b1map', 1), ('132', 1, 'fsmempr_ti1100_rms', 1)),
+    (('404', 1, 'b1map', 1), ('132', 1, 'fsmempr_ti1100_rms', 1)),
         ]
 
 orig_dwi = [
@@ -54,6 +55,7 @@ orig_dwi = [
     (('401', 1, 'dwi-topup_6S0', 1), ('401', 1, 'dwi-topdn_6S0', 1), ('401', 1,'dwi-topup_64dir-3sh-800-2000', 1)),
     (('317', 1, 'dwi-topup_6S0', 1), ('317', 1, 'dwi-topdn_6S0', 1), ('317', 1,'dwi-topup_64dir-3sh-800-2000', 1)),
     (('132', 1, 'dwi-topup_6S0', 1), ('132', 1, 'dwi-topdn_6S0', 1), ('132', 1,'dwi-topup_64dir-3sh-800-2000', 1)),
+    (('404', 1, 'dwi-topup_6S0', 1), ('404', 1, 'dwi-topdn_6S0', 1), ('404', 1,'dwi-topup_64dir-3sh-800-2000', 1)),
     ]
 orig_spgr = [
     (('999b', 1, 'b1map', 1), ('999b', 1, 'spgr_fa-05-tr-15p0', 1), ('999b', 1, 'spgr_fa-15-tr-15p0', 1), ('999b', 1,'spgr_fa-30-tr-15p0', 1)),
@@ -62,6 +64,7 @@ orig_spgr = [
     (('401', 1, 'b1map', 1), ('401', 1, 'spgr_fa-05-tr-12p0', 1), ('401', 1, 'spgr_fa-15-tr-12p0', 1), ('401', 1, 'spgr_fa-30-tr-12p0', 1)),
     (('317', 1, 'b1map', 1), ('317', 1, 'spgr_fa-05-tr-12p0', 1), ('317', 1, 'spgr_fa-15-tr-12p0', 1), ('317', 1, 'spgr_fa-30-tr-12p0', 1)),
     (('132', 1, 'b1map', 1), ('132', 1, 'spgr_fa-05-tr-12p0', 1), ('132', 1, 'spgr_fa-15-tr-12p0', 1), ('132', 1, 'spgr_fa-30-tr-12p0', 1)),
+    (('404', 1, 'b1map', 1), ('404', 1, 'spgr_fa-05-tr-12p0', 1), ('404', 1, 'spgr_fa-15-tr-12p0', 1), ('404', 1, 'spgr_fa-30-tr-12p0', 1)),
     ]
 orig_5spgr = [
     (('998', 1, 'b1map', 1), ('998', 1, 'spgr_fa-05-tr-12p0', 1), ('998', 1, 'spgr_fa-10-tr-12p0', 1), ('998', 1, 'spgr_fa-15-tr-12p0', 1), ('998', 1, 'spgr_fa-20-tr-12p0', 1), ('998', 1, 'spgr_fa-30-tr-12p0', 1)),
@@ -69,14 +72,15 @@ orig_5spgr = [
     (('401', 1, 'b1map', 1), ('401', 1, 'spgr_fa-05-tr-12p0', 1), ('401', 1, 'spgr_fa-10-tr-12p0', 1), ('401', 1, 'spgr_fa-15-tr-12p0', 1), ('401', 1, 'spgr_fa-20-tr-12p0', 1), ('401', 1, 'spgr_fa-30-tr-12p0', 1)),
     (('317', 1, 'b1map', 1), ('317', 1, 'spgr_fa-05-tr-12p0', 1), ('317', 1, 'spgr_fa-10-tr-12p0', 1), ('317', 1, 'spgr_fa-15-tr-12p0', 1), ('317', 1, 'spgr_fa-20-tr-12p0', 1), ('317', 1, 'spgr_fa-30-tr-12p0', 1)),
     (('132', 1, 'b1map', 1), ('132', 1, 'spgr_fa-05-tr-12p0', 1), ('132', 1, 'spgr_fa-10-tr-12p0', 1), ('132', 1, 'spgr_fa-15-tr-12p0', 1), ('132', 1, 'spgr_fa-20-tr-12p0', 1), ('132', 1, 'spgr_fa-30-tr-12p0', 1)),
+    (('404', 1, 'b1map', 1), ('404', 1, 'spgr_fa-05-tr-12p0', 1), ('404', 1, 'spgr_fa-10-tr-12p0', 1), ('404', 1, 'spgr_fa-15-tr-12p0', 1), ('404', 1, 'spgr_fa-20-tr-12p0', 1), ('404', 1, 'spgr_fa-30-tr-12p0', 1)),
     ]
 
 orig_b1map = [('999b', 1,'b1map', 1), ('998', 1, 'b1map', 1), ('144', 1, 'b1map', 1),
-            ('401', 1, 'b1map', 1),('317', 1, 'b1map', 1),('132', 1, 'b1map', 1),
+            ('401', 1, 'b1map', 1),('317', 1, 'b1map', 1),('132', 1, 'b1map', 1), ('404', 1, 'b1map', 1),
             ]
 
 orig_t2 = [('999b', 1,'3dt2', 1), ('998', 1, '3dt2', 1), ('144', 1, '3dt2', 1),
-            ('401', 1, '3dt2', 1),('317', 1, '3dt2', 1),('132', 1, '3dt2', 1),
+            ('401', 1, '3dt2', 1),('317', 1, '3dt2', 1),('132', 1, '3dt2', 1), ('404', 1, '3dt2', 1),
             ]
 
 def get_vbm_names(subjids_picks):
@@ -88,9 +92,9 @@ def get_vbm_names(subjids_picks):
 def get_freesurf_names(subjids_picks):
     for b1map, freesurf in freesurf_rms:
         if freesurf[0] in subjids_picks.subjids:
-            freesurf_fnames.append(ftempl.format(*freesurf))
             b1map_fs_fnames.append(ftempl.format(*b1map))
-    return freesurf_fnames
+            freesurf_fnames.append(ftempl.format(*freesurf))
+    return b1map_fs_fnames, freesurf_fnames
 
 def get_dwi_names(subjids_picks):
     for topup, topdn, dwi in orig_dwi:

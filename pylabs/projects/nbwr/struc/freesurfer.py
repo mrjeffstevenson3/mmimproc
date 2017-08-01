@@ -46,20 +46,20 @@ for fsf, b1map in zip(freesurf_fnames, b1map_fnames):
     b1map_file = subjects_dir/'fmap'/str(b1map+'.nii')
     mne.set_config('SUBJECTS_DIR', str(subjects_dir))
     curr_env = copy.copy(os.environ)
-    target = subjects_dir / 'anat' /str(fsf+'.nii')
+    rms_fname = subjects_dir / 'anat' /str(fsf+'.nii')
     fs_fname = fsf
 
-    if target.is_file() and overwrite:
+    if rms_fname.is_file() and overwrite:
         if b1corr:
             results += ('starting b1 correction at {:%H:%M on %M %d %Y}.'.format(datetime.datetime.now()),)
-            results += correct4b1(project, subject, session, b1map_file, target, reg_dir_name)
+            results += correct4b1(project, subject, session, b1map_file, rms_fname, reg_dir_name)
             results += ('finished b1 correction at {:%H:%M on %M %d %Y}.'.format(datetime.datetime.now()),)
             fs_fname += '_b1corr'
 
     if noise_filter:
         with WorkingContext(str(subjects_dir / 'anat')):
             results += ('starting susan noise filtering at {:%H:%M on %M %d %Y}.'.format(datetime.datetime.now()),)
-            results += run_subprocess(['susan '+str(replacesuffix(target, '_b1corr.nii.gz'))+' '+str(noise_thresh)+' '+str(noise_kernel)+' 3 1 0 '+str(replacesuffix(fs_fname, '_susan.nii.gz'))])
+            results += run_subprocess(['susan '+str(replacesuffix(rms_fname, '_b1corr.nii.gz'))+' '+str(noise_thresh)+' '+str(noise_kernel)+' 3 1 0 '+str(replacesuffix(fs_fname, '_susan.nii.gz'))])
             fs_fname += '_susan'
             results += ('finished susan noise filtering at {:%H:%M on %M %d %Y}.'.format(datetime.datetime.now()),)
             prov.log(str(replacesuffix(fs_fname, '_susan.nii.gz')), 'fs mempr rms with susan noise filtering', script=__file__,

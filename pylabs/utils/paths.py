@@ -46,7 +46,7 @@ def getnetworkdataroot(target='scotty'):
             raise ValueError('Dont know where scotty network data root is on this computer.')
     if target == 'jaba':
         if hostname in ['scotty.ilabs.uw.edu', 'scotty', 'redshirt.ilabs.uw.edu', 'redshirt', 'uhora.ilabs.uw.edu', 'uhora', 'sulu.ilabs.uw.edu', 'sulu', 'JVDB']:
-            return '/mnt/brainstudio/MRI/data'
+            return '/mnt/brainstudio/data'
         elif any(x in hostname for x in ['Jeffs-MacBook-Pro-3.local', 'Jeffs-MBP-3', '.dhcp4.washington.edu']):
             return '/Users/mrjeffs/Documents/Research/data'
         else:
