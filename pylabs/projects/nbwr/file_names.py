@@ -11,6 +11,7 @@
 class SubjIdPicks(object):
     pass
 
+
 project = 'nbwr'
 ftempl = 'sub-nbwr{}_ses-{}_{}_{}'
 # freesurfer, VBM, T2 file name lists

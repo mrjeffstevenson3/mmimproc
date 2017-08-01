@@ -60,9 +60,9 @@ for fsf, b1map in zip(freesurf_fnames, b1map_fnames):
         with WorkingContext(str(subjects_dir / 'anat')):
             results += ('starting susan noise filtering at {:%H:%M on %M %d %Y}.'.format(datetime.datetime.now()),)
             results += run_subprocess(['susan '+str(replacesuffix(rms_fname, '_b1corr.nii.gz'))+' '+str(noise_thresh)+' '+str(noise_kernel)+' 3 1 0 '+str(replacesuffix(fs_fname, '_susan.nii.gz'))])
-            fs_fname += '_susan'
+            fs_fname += '_susanf'
             results += ('finished susan noise filtering at {:%H:%M on %M %d %Y}.'.format(datetime.datetime.now()),)
-            prov.log(str(replacesuffix(fs_fname, '_susan.nii.gz')), 'fs mempr rms with susan noise filtering', script=__file__,
+            prov.log(str(replacesuffix(fs_fname, '_susan.nii.gz')), 'fs mempr rms with susan noise filtering', rms_fname, script=__file__,
                      provenance={'filter': 'susan noise filter', 'filter size': '1mm', 'noise level': 'auto', 'results': results})
     fs_sid = fsf+'_freesurf'
 
