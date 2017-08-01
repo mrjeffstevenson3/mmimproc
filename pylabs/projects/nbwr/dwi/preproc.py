@@ -42,8 +42,8 @@ setattr(subjids_picks, 'subjids', picks)
 
 topup_fnames, topdn_fnames, dwi_fnames = get_dwi_names(subjids_picks)
 
-eddy_corr_dir = 'eddy_cuda_repol_v2'   # output for eddy
-fits_dir_label = 'fits_v1'    # dir for all fitting methods
+eddy_corr_dir = 'eddy_cuda_repol_v2'   # output dir for eddy
+fits_dir_name = 'fits_v1'    # dir for all fitting methods
 filterS0_string = '_mf'
 niipickle = fs / project / 'nbwrniftiDict_{:%Y%M%d%H%M}.pickle'.format(datetime.datetime.now())
 #stages to run
@@ -81,14 +81,11 @@ def default_to_regular(d):
     return d
 
 def test4file(file):
-    if isinstance(file, PurePath):
-        if file.is_file():
-            return True
-        else:
-            raise ValueError(str(file) + ' not found.')
+    file = Path(file)
+    if file.is_file():
+        return True
     else:
-        raise ValueError(str(file) + ' is not a pathlib PosixPath object.')
-
+        raise ValueError(str(file) + ' not found.')
 
 
 #run conversion if needed
@@ -104,7 +101,7 @@ if run_topup:
         dwipath = fs / project / dwif.split('_')[0] / dwif.split('_')[1] / 'dwi'
         regpath = fs / project / dwif.split('_')[0] / dwif.split('_')[1] / 'reg' / 'MNI2dwi'
         ec_dir = dwipath / eddy_corr_dir
-        fits_dir = dwipath / fits_dir_label
+        fits_dir = dwipath / fits_dir_name
         if not ec_dir.is_dir():
             ec_dir.mkdir(parents=True)
         if not regpath.is_dir():
