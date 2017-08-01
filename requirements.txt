@@ -22,7 +22,7 @@ shell
 seaborn
 dill
 latex
-dateutil
+python-dateutil
 IPython
 statsmodels
 

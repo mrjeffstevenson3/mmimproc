@@ -51,13 +51,17 @@ for fsf, b1map in zip(freesurf_fnames, b1map_fnames):
 
     if target.is_file() and overwrite:
         if b1corr:
+            results += ('starting b1 correction at {:%H:%M on %M %d %Y}.'.format(datetime.datetime.now()),)
             results += correct4b1(project, subject, session, b1map_file, target, reg_dir_name)
+            results += ('finished b1 correction at {:%H:%M on %M %d %Y}.'.format(datetime.datetime.now()),)
             fs_fname += '_b1corr'
 
     if noise_filter:
         with WorkingContext(str(subjects_dir / 'anat')):
+            results += ('starting susan noise filtering at {:%H:%M on %M %d %Y}.'.format(datetime.datetime.now()),)
             results += run_subprocess(['susan '+str(replacesuffix(target, '_b1corr.nii.gz'))+' '+str(noise_thresh)+' '+str(noise_kernel)+' 3 1 0 '+str(replacesuffix(fs_fname, '_susan.nii.gz'))])
             fs_fname += '_susan'
+            results += ('finished susan noise filtering at {:%H:%M on %M %d %Y}.'.format(datetime.datetime.now()),)
             prov.log(str(replacesuffix(fs_fname, '_susan.nii.gz')), 'fs mempr rms with susan noise filtering', script=__file__,
                      provenance={'filter': 'susan noise filter', 'filter size': '1mm', 'noise level': 'auto', 'results': results})
     fs_sid = fsf+'_freesurf'
@@ -67,11 +71,22 @@ for fsf, b1map in zip(freesurf_fnames, b1map_fnames):
             fs_sid += '_hires'
             with open('freesurf_expert_opts.txt', mode='w') as optsf:
                 optsf.write('mris_inflate -n 15\n')
+            print('starting hi resolution freesurfer run for ' + fs_sid + ' at {:%H:%M on %M %d %Y}.'.format(datetime.datetime.now()))
+            results += ('starting hi resolution freesurfer run for '+fs_sid+' at {:%H:%M on %M %d %Y}.'.format(datetime.datetime.now()),)
             results += run_subprocess(['recon-all -hires -all -subjid '+fs_sid+' -i '+str(subjects_dir / 'anat'/ appendposix(fs_fname, '.nii.gz'))+' -expert freesurf_expert_opts.txt -parallel -openmp 8'])
+            print('hi resolution freesurfer run finished for ' + fs_sid + ' at {:%H:%M on %M %d %Y}.'.format(datetime.datetime.now()))
+            results += ('hi resolution freesurfer run finished for ' + fs_sid + ' at {:%H:%M on %M %d %Y}.'.format(
+                datetime.datetime.now()),)
         else:
+            print('starting 1mm3 freesurfer run for ' + fs_sid + ' at {:%H:%M on %M %d %Y}.'.format(datetime.datetime.now()))
+            results += ('starting 1mm3 freesurfer run for ' + fs_sid + ' at {:%H:%M on %M %d %Y}.'.format(datetime.datetime.now()),)
             results += run_subprocess(['recon-all -all -subjid '+fs_sid+' -i '+str(subjects_dir / 'anat'/ appendposix(fs_fname, '.nii.gz'))+' -parallel -openmp 8'])
+            results += ('finished 1mm3 freesurfer run for ' + fs_sid + ' at {:%H:%M on %M %d %Y}.'.format(
+                datetime.datetime.now()),)
+            print('finished 1mm3 freesurfer run for ' + fs_sid + ' at {:%H:%M on %M %d %Y}.'.format(datetime.datetime.now()))
         with open(fs_sid+'/'+fs_sid+'_log{:%Y%m%d%H%M}.json'.format(datetime.datetime.now()), mode='a') as logr:
             json.dump(results, logr, indent=2)
     fs_subj_ln = fs/project/'freesurf_subjs'/fs_sid
     if not fs_subj_ln.is_symlink():
         fs_subj_ln.symlink_to(subjects_dir/fs_sid, target_is_directory=True)
+
