@@ -42,9 +42,10 @@ setattr(subjids_picks, 'subjids', picks)
 
 topup_fnames, topdn_fnames, dwi_fnames = get_dwi_names(subjids_picks)
 
-eddy_corr_dir = 'eddy_cuda_repol_v2'
+eddy_corr_dir = 'eddy_cuda_repol_v2'   # output for eddy
+fits_dir_label = 'fits_v1'    # dir for all fitting methods
 filterS0_string = '_mf'
-niipickle = fs / project / 'nbwrniftiDict_201706221132.pickle'
+niipickle = fs / project / 'nbwrniftiDict_{:%Y%M%d%H%M}.pickle'.format(datetime.datetime.now())
 #stages to run
 overwrite = True
 convert = False
@@ -65,13 +66,14 @@ UKF command to modify
 --dwiFile /tmp/Slicer/CGGHB_vtkMRMLDiffusionWeightedVolumeNodeB.nhdr --seedsFile /tmp/Slicer/CGGHB_vtkMRMLLabelMapVolumeNodeB.nhdr --labels 1 --maskFile /tmp/Slicer/CGGHB_vtkMRMLLabelMapVolumeNodeB.nhdr --tracts /tmp/Slicer/CGGHB_vtkMRMLFiberBundleNodeB.vtp --seedsPerVoxel 1 --seedFALimit 0.18 --minFA 0.15 --minGA 0.1 --numThreads -1 --numTensor 2 --stepLength 0.3 --Qm 0 --recordLength 1.8 --maxHalfFiberLength 250 --recordNMSE --freeWater --recordFA --recordTrace --recordFreeWater --recordTensors --Ql 0 --Qw 0 --Qkappa 0.01 --Qvic 0.004 --Rs 0 --sigmaSignal 0 --maxBranchingAngle 0 --minBranchingAngle 0 
 NODDI Command to modify
 /home/toddr/.config/NA-MIC/Extensions-26072/UKFTractography/lib/Slicer-4.7/cli-modules/UKFTractography --dwiFile /tmp/Slicer/CECH_vtkMRMLDiffusionWeightedVolumeNodeB.nhdr --seedsFile /tmp/Slicer/CECH_vtkMRMLLabelMapVolumeNodeB.nhdr --labels 1 --maskFile /tmp/Slicer/CECH_vtkMRMLLabelMapVolumeNodeB.nhdr --tracts /tmp/Slicer/CECH_vtkMRMLFiberBundleNodeB.vtp --seedsPerVoxel 1 --seedFALimit 0.18 --minFA 0.15 --minGA 0.1 --numThreads -1 --numTensor 1 --stepLength 0.3 --Qm 0 --recordLength 1.8 --maxHalfFiberLength 250 --Ql 0 --Qw 0 --noddi --recordVic --recordKappa --recordViso --Qkappa 0.01 --Qvic 0.004 --Rs 0 --sigmaSignal 0 --maxBranchingAngle 0 --minBranchingAngle 0 
-
-'UKF':  {'slicerpart1': str(slicer_path) + 'UKFTractography '
-    '--dwiFile %(fdwinrrd)s --seedsFile %(mask_fnamenrrd)s --labels 1 --maskFile %(mask_fnamenrrd)s --tracts %(dwif)s_UKF_whbr.vtk '
-    '--seedsPerVoxel 1 --seedFALimit 0.18 --minFA 0.15 --minGA 0.2 --numThreads -1 --numTensor 2 --stepLength 0.3 --Qm 0 --recordLength 1.8 --maxHalfFiberLength 250 --recordNMSE --freeWater '
-    '--recordFA --recordTrace --recordFreeWater --recordTensors --Ql 0 --Qw 0 --Qkappa 0.01 --Qvic 0.004 --Rs 0 --sigmaSignal 0 --maxBranchingAngle 0 --minBranchingAngle 0'
-
 '''
+# slicer UKF commands and default parameters to run
+ukfcmds =  {'UKF_whbr': str(slicer_path) + 'UKFTractography --dwiFile %(fdwinrrd)s --seedsFile %(mask_fnamenrrd)s --labels 1 --maskFile %(mask_fnamenrrd)s --tracts %(dwif)s_UKF_whbr.vtk '
+                    '--seedsPerVoxel 1 --seedFALimit 0.18 --minFA 0.15 --minGA 0.2 --numThreads -1 --numTensor 2 --stepLength 0.3 --Qm 0 --recordLength 1.8 --maxHalfFiberLength 250 --recordNMSE --freeWater '
+                    '--recordFA --recordTrace --recordFreeWater --recordTensors --Ql 0 --Qw 0 --Qkappa 0.01 --Qvic 0.004 --Rs 0 --sigmaSignal 0 --maxBranchingAngle 0 --minBranchingAngle 0',
+            'NODDI': str(slicer_path) + 'UKFTractography --dwiFile %(fdwinrrd)s --seedsFile %(mask_fnamenrrd)s --labels 1 --maskFile %(mask_fnamenrrd)s --tracts %(dwif)s_whbr_1tensor_noddi.vtk '
+                    '--seedsPerVoxel 1 --seedFALimit 0.18 --minFA 0.15 --minGA 0.1 --numThreads -1 --numTensor 1 --stepLength 0.3 --Qm 0 --recordLength 1.8 --maxHalfFiberLength 250 --Ql 0 --Qw 0 --noddi --recordVic --recordKappa --recordViso --Qkappa 0.01 --Qvic 0.004 --Rs 0 --sigmaSignal 0 --maxBranchingAngle 0 --minBranchingAngle 0'
+            }
 
 def default_to_regular(d):
     if isinstance(d, defaultdict):
@@ -102,6 +104,7 @@ if run_topup:
         dwipath = fs / project / dwif.split('_')[0] / dwif.split('_')[1] / 'dwi'
         regpath = fs / project / dwif.split('_')[0] / dwif.split('_')[1] / 'reg' / 'MNI2dwi'
         ec_dir = dwipath / eddy_corr_dir
+        fits_dir = dwipath / fits_dir_label
         if not ec_dir.is_dir():
             ec_dir.mkdir(parents=True)
         if not regpath.is_dir():
@@ -206,7 +209,10 @@ if run_topup:
 
             with WorkingContext(regpath):
                 result += run_subprocess(' '.join(MNI2b0_brain_antscmd))
-                subj2templ_applywarp(str(moriMNIatlas), str(b0_brain_fname), str(regpath/replacesuffix(moriMNIatlas, '_reg2dwi_').name))
+                subj2templ_applywarp(str(moriMNIatlas), str(b0_brain_fname), str(regpath/replacesuffix(moriMNIatlas, '_reg2dwi_').name), )
 
 
+            cmdvars = {'fdwinrrd': str(ec_dwi_name)+filterS0_string+'_clamp1.nhdr',
+                       'mask_fnamenrrd': str(dwipath/str(topup + '_topdn_concat_unwarped_mean_brain_mask.nii.gz')),
+                       'dwif': str(fits_dir/dwif)}
 
