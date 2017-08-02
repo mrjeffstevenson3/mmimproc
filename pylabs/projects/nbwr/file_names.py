@@ -46,7 +46,7 @@ freesurf_rms = [
     (('401', 1, 'b1map', 1), ('401', 1, 'fsmempr_ti1100_rms', 1)),
     (('317', 1, 'b1map', 1), ('317', 1, 'fsmempr_ti1100_rms', 1)),
     (('132', 1, 'b1map', 1), ('132', 1, 'fsmempr_ti1100_rms', 1)),
-    (('404', 1, 'b1map', 1), ('132', 1, 'fsmempr_ti1100_rms', 1)),
+    (('404', 1, 'b1map', 1), ('404', 1, 'fsmempr_ti1100_rms', 1)),
         ]
 
 orig_dwi = [
