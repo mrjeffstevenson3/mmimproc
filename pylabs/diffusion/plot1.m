@@ -42,7 +42,7 @@ text(20+30,(k*4)+50,"Control",'Color',[R, G, B],'fontsize',20)
 
 
 hold on;
-plot([1 10],[(k*4)+50 (k*4)+50],'--','Linewidth', 4, 'color',[R, G, B],"markersize", 50);
+plot([1 10],[(k*4)+50 (k*4)+50],'--;R;','Linewidth', 4, 'color',[R, G, B],"markersize", 50);
 hold on;
 end;
 for k = [4:9]

@@ -1,0 +1,15 @@
+rm behav_correlation.txt
+for i in `seq 1 69`;
+do
+
+cp networkvalue${i}.txt networkvalues.txt
+
+for icut in `seq 21 32`;
+do 
+echo network file $i behav $icut >> behav_correlation.txt
+cut -f${icut} -d"," bbc_behav_7-12-2017_rawsub.csv > behav.txt
+./test_network_correlation >> behav_correlation.txt
+done
+done
+
+

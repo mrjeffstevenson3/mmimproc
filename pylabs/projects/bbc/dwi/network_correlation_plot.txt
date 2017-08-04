@@ -1,0 +1,20 @@
+
+name1='behav25region36'
+echo $name > name.txt
+
+
+for i in `seq 36 36`;
+do
+
+cp networkvalue${i}.txt networkvalues.txt
+
+for icut in `seq 25 25`;
+do 
+echo network file $i behav $icut >> behav_correlation.txt
+cut -f${icut} -d"," bbc_behav_7-12-2017_rawsub.csv > behav.txt
+./test_network_prepareplot
+done
+done
+octave plot1_network.m
+
+
