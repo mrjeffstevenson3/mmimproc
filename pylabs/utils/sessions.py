@@ -1,8 +1,8 @@
 import pandas as pd
 import os
 from os.path import join
-from pylabs.utils.paths import getlocaldataroot
-fs = getlocaldataroot()
+from pylabs.utils.paths import getnetworkdataroot
+fs = getnetworkdataroot()
 
 
 def make_sessions_fm_dict(niidict, project, subject):
