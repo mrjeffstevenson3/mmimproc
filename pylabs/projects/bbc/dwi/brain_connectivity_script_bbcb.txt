@@ -1,0 +1,7 @@
+
+list=`ls -d *101*measures.txt *105*measures.txt *106*measures.txt *108*measures.txt *113*measures.txt *116*measures.txt *118*measures.txt *119*measures.txt *120*measures.txt *202*measures.txt *208*measures.txt *209*measures.txt *211*measures.txt *231*measures.txt *236*measures.txt *241*measures.txt *243*measures.txt *249*measures.txt *253*measures.txt`
+list2=`python -c "from pylabs.projects.bbc.pairing import dwipairing; \
+    print(' '.join(['sub-bbc{sid}'.format(sid=str(s)) for s, ses, m, r in dwipairing]))"`
+
+echo list $list
+echo list2 $list2
