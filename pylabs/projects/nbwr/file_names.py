@@ -16,6 +16,11 @@ class SubjIdPicks(object):
 
 
 project = 'nbwr'
+# known from protocol
+spgr_tr = 12
+spgr_fa = ['05', '10', '15', '20', '30']
+
+# old method of creating file names
 ftempl = 'sub-nbwr{}_ses-{}_{}_{}'
 
 
@@ -25,6 +30,7 @@ topup_fname_dd = defaultdict()
 topdn_fname_dd = defaultdict()
 dwi_fname_dd = defaultdict()
 t2_fname_dd = defaultdict()
+spgr_fname_dd = defaultdict()
 # freesurfer, VBM, T2 file name lists
 b1map_fs_fnames = []
 vbm_fnames = []
@@ -54,54 +60,11 @@ topup_fname_tail = ('ses-1', 'dwi-topup', '6S0', 1)
 topdn_fname_tail = ('ses-1', 'dwi-topdn', '6S0', 1)
 dwi_fname_tail = ('ses-1', 'dwi-topup', '64dir-3sh-800-2000', 1)
 t2_fname_tail = (1, '3dt2', '', 1)
+spgr5_fname_tail = (1, 'spgr', '%(fa)s', '%(tr)sp0', 1)
 
 vbm_rms = [
     ('998', 1, 'vbmmempr_ti850_rms', 1),
     ]
-freesurf_rms = [
-    (('999b', 1, 'b1map', 1), ('999b', 1, 'vbmmempr_rms', 1)),
-    (('998', 1, 'b1map', 1), ('998', 1, 'vbmmempr_ti1100_rms', 1)),
-    (('144', 1, 'b1map', 1), ('144', 1, 'fsmempr_ti1100_rms', 1)),
-    (('401', 1, 'b1map', 1), ('401', 1, 'fsmempr_ti1100_rms', 1)),
-    (('317', 1, 'b1map', 1), ('317', 1, 'fsmempr_ti1100_rms', 1)),
-    (('132', 1, 'b1map', 1), ('132', 1, 'fsmempr_ti1100_rms', 1)),
-    (('404', 1, 'b1map', 1), ('404', 1, 'fsmempr_ti1100_rms', 1)),
-        ]
-
-orig_dwi = [
-    (('999b', 1, 'dwi-topup_6S0', 1), ('999b', 1, 'dwi-topdn_6S0', 1), ('999b', 1,'dwi-topup_64dir-3sh-800-2000', 1)),
-    (('998', 1, 'dwi-topup_6S0', 1), ('998', 1, 'dwi-topdn_6S0', 1), ('998', 1,'dwi-topup_64dir-3sh-800-2000', 1)),
-    (('144', 1, 'dwi-topup_6S0', 1), ('144', 1, 'dwi-topdn_6S0', 1), ('144', 1,'dwi-topup_64dir-3sh-800-2000', 1)),
-    (('401', 1, 'dwi-topup_6S0', 1), ('401', 1, 'dwi-topdn_6S0', 1), ('401', 1,'dwi-topup_64dir-3sh-800-2000', 1)),
-    (('317', 1, 'dwi-topup_6S0', 1), ('317', 1, 'dwi-topdn_6S0', 1), ('317', 1,'dwi-topup_64dir-3sh-800-2000', 1)),
-    (('132', 1, 'dwi-topup_6S0', 1), ('132', 1, 'dwi-topdn_6S0', 1), ('132', 1,'dwi-topup_64dir-3sh-800-2000', 1)),
-    (('404', 1, 'dwi-topup_6S0', 1), ('404', 1, 'dwi-topdn_6S0', 1), ('404', 1,'dwi-topup_64dir-3sh-800-2000', 1)),
-    ]
-orig_spgr = [
-    (('999b', 1, 'b1map', 1), ('999b', 1, 'spgr_fa-05-tr-15p0', 1), ('999b', 1, 'spgr_fa-15-tr-15p0', 1), ('999b', 1,'spgr_fa-30-tr-15p0', 1)),
-    (('998', 1, 'b1map', 1), ('998', 1, 'spgr_fa-05-tr-12p0', 1), ('998', 1, 'spgr_fa-15-tr-12p0', 1), ('998', 1, 'spgr_fa-30-tr-12p0', 1)),
-    (('144', 1, 'b1map', 1), ('144', 1, 'spgr_fa-05-tr-12p0', 1), ('144', 1, 'spgr_fa-15-tr-12p0', 1), ('144', 1, 'spgr_fa-30-tr-12p0', 1)),
-    (('401', 1, 'b1map', 1), ('401', 1, 'spgr_fa-05-tr-12p0', 1), ('401', 1, 'spgr_fa-15-tr-12p0', 1), ('401', 1, 'spgr_fa-30-tr-12p0', 1)),
-    (('317', 1, 'b1map', 1), ('317', 1, 'spgr_fa-05-tr-12p0', 1), ('317', 1, 'spgr_fa-15-tr-12p0', 1), ('317', 1, 'spgr_fa-30-tr-12p0', 1)),
-    (('132', 1, 'b1map', 1), ('132', 1, 'spgr_fa-05-tr-12p0', 1), ('132', 1, 'spgr_fa-15-tr-12p0', 1), ('132', 1, 'spgr_fa-30-tr-12p0', 1)),
-    (('404', 1, 'b1map', 1), ('404', 1, 'spgr_fa-05-tr-12p0', 1), ('404', 1, 'spgr_fa-15-tr-12p0', 1), ('404', 1, 'spgr_fa-30-tr-12p0', 1)),
-    ]
-orig_5spgr = [
-    (('998', 1, 'b1map', 1), ('998', 1, 'spgr_fa-05-tr-12p0', 1), ('998', 1, 'spgr_fa-10-tr-12p0', 1), ('998', 1, 'spgr_fa-15-tr-12p0', 1), ('998', 1, 'spgr_fa-20-tr-12p0', 1), ('998', 1, 'spgr_fa-30-tr-12p0', 1)),
-    (('144', 1, 'b1map', 1), ('144', 1, 'spgr_fa-05-tr-12p0', 1), ('144', 1, 'spgr_fa-10-tr-12p0', 1), ('144', 1, 'spgr_fa-15-tr-12p0', 1), ('144', 1, 'spgr_fa-20-tr-12p0', 1), ('144', 1, 'spgr_fa-30-tr-12p0', 1)),
-    (('401', 1, 'b1map', 1), ('401', 1, 'spgr_fa-05-tr-12p0', 1), ('401', 1, 'spgr_fa-10-tr-12p0', 1), ('401', 1, 'spgr_fa-15-tr-12p0', 1), ('401', 1, 'spgr_fa-20-tr-12p0', 1), ('401', 1, 'spgr_fa-30-tr-12p0', 1)),
-    (('317', 1, 'b1map', 1), ('317', 1, 'spgr_fa-05-tr-12p0', 1), ('317', 1, 'spgr_fa-10-tr-12p0', 1), ('317', 1, 'spgr_fa-15-tr-12p0', 1), ('317', 1, 'spgr_fa-20-tr-12p0', 1), ('317', 1, 'spgr_fa-30-tr-12p0', 1)),
-    (('132', 1, 'b1map', 1), ('132', 1, 'spgr_fa-05-tr-12p0', 1), ('132', 1, 'spgr_fa-10-tr-12p0', 1), ('132', 1, 'spgr_fa-15-tr-12p0', 1), ('132', 1, 'spgr_fa-20-tr-12p0', 1), ('132', 1, 'spgr_fa-30-tr-12p0', 1)),
-    (('404', 1, 'b1map', 1), ('404', 1, 'spgr_fa-05-tr-12p0', 1), ('404', 1, 'spgr_fa-10-tr-12p0', 1), ('404', 1, 'spgr_fa-15-tr-12p0', 1), ('404', 1, 'spgr_fa-20-tr-12p0', 1), ('404', 1, 'spgr_fa-30-tr-12p0', 1)),
-    ]
-
-orig_b1map = [('999b', 1,'b1map', 1), ('998', 1, 'b1map', 1), ('144', 1, 'b1map', 1),
-            ('401', 1, 'b1map', 1),('317', 1, 'b1map', 1),('132', 1, 'b1map', 1), ('404', 1, 'b1map', 1),
-            ]
-
-orig_t2 = [('999b', 1,'3dt2', 1), ('998', 1, '3dt2', 1), ('144', 1, '3dt2', 1),
-            ('401', 1, '3dt2', 1),('317', 1, '3dt2', 1),('132', 1, '3dt2', 1), ('404', 1, '3dt2', 1),
-            ]
 
 def get_vbm_names(subjids_picks):
     for vbm in vbm_rms:
@@ -133,24 +96,25 @@ def get_dwi_names(subjids_picks):
     return topup_fnames, topdn_fnames, dwi_fnames
 
 def get_5spgr_names(subjids_picks):
-    for b1map, spgr5_fa5, spgr5_fa10, spgr5_fa15, spgr5_fa20, spgr5_fa30 in orig_5spgr:
-        if all(x in subjids_picks.subjids for x in [spgr5_fa5[0], spgr5_fa10[0], spgr5_fa15[0], spgr5_fa20[0], spgr5_fa30[0], b1map[0]]):
-            b1map5_fnames.append(ftempl.format(*b1map))
-            spgr5_fa5_fnames.append(ftempl.format(*spgr5_fa5))
-            spgr5_fa10_fnames.append(ftempl.format(*spgr5_fa10))
-            spgr5_fa15_fnames.append(ftempl.format(*spgr5_fa15))
-            spgr5_fa20_fnames.append(ftempl.format(*spgr5_fa20))
-            spgr5_fa30_fnames.append(ftempl.format(*spgr5_fa30))
+    b1_ftempl = removesuffix(str(nbwr_conv['_B1MAP_']['fname_template']))
+    spgr_ftempl = removesuffix(str(nbwr_conv['_T1_MAP_']['fname_template']))
+    for subjid in subjids_picks.subjids:
+        b1map_fname_dd['subj'], b1map_fname_dd['session'], b1map_fname_dd['scan_name'], b1map_fname_dd['scan_info'], b1map_fname_dd['run'] = ('sub-' + project + subjid,) + b1map_fname_tail
+        b1map5_fnames.append(str(b1_ftempl).format(**b1map_fname_dd))
+        fa_list_fnames = defaultdict()
+        for fa in spgr_fa:
+            fad = {'fa': fa, 'tr': spgr_tr}
+            spgr_fname_dd['subj'], spgr_fname_dd['session'], spgr_fname_dd['scan_name'], spgr_fname_dd['fa'], spgr_fname_dd['tr'],\
+            spgr_fname_dd['run'] = ('sub-' + project + subjid,) + spgr5_fname_tail
+            spgr_fname_dd['fa'] = spgr_fname_dd['fa'] % fad
+            spgr_fname_dd['tr'] = spgr_fname_dd['tr'] % fad
+            fa_list_fnames['fa_%(fa)s' % fad] = str(spgr_ftempl).format(**spgr_fname_dd)
+        spgr5_fa5_fnames.append(fa_list_fnames['fa_05'])
+        spgr5_fa10_fnames.append(fa_list_fnames['fa_10'])
+        spgr5_fa15_fnames.append(fa_list_fnames['fa_15'])
+        spgr5_fa20_fnames.append(fa_list_fnames['fa_20'])
+        spgr5_fa30_fnames.append(fa_list_fnames['fa_30'])
     return b1map5_fnames, spgr5_fa5_fnames, spgr5_fa10_fnames, spgr5_fa15_fnames, spgr5_fa20_fnames, spgr5_fa30_fnames
-
-def get_3spgr_names(subjids_picks):
-    for b1map, spgr_fa5, spgr_fa15, spgr_fa30 in orig_spgr:
-        if all(x in subjids_picks.subjids for x in [spgr_fa5[0], spgr_fa15[0], spgr_fa30[0], b1map[0]]):
-            b1map_fnames.append(ftempl.format(*b1map))
-            spgr_fa5_fnames.append(ftempl.format(*spgr_fa5))
-            spgr_fa15_fnames.append(ftempl.format(*spgr_fa15))
-            spgr_fa30_fnames.append(ftempl.format(*spgr_fa30))
-    return b1map_fnames, spgr_fa5_fnames, spgr_fa15_fnames, spgr_fa30_fnames
 
 
 def get_3dt2_names(subjids_picks):
