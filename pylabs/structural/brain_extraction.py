@@ -100,7 +100,7 @@ def extract_brain(file, f_factor=0.3):
     betres = bet.run()
     prov.log(brain_outfname+'.nii.gz', 'generic fsl bet brain', str(file), script=__file__, provenance={'f factor': f_factor, 'com': list(bet_com)})
     prov.log(str(replacesuffix(file, '_mask.nii.gz')), 'generic fsl bet brain mask', str(file), script=__file__, provenance={'f factor': f_factor, 'com': list(bet_com)})
-    return
+    return replacesuffix(file, '_brain.nii.gz'), replacesuffix(file, '_brain_mask.nii.gz')
 
 
 # old method with manual neck removal and center of mass

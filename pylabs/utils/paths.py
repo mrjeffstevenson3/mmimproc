@@ -3,6 +3,10 @@ import petname
 from os.path import expanduser, join
 from pathlib import *
 
+class RootDataDir(object):
+    target = None
+    pass
+
 # hostnames with functioning gpus
 working_gpus = ['redshirt.ilabs.uw.edu', 'scotty.ilabs.uw.edu']
 
@@ -33,9 +37,9 @@ def getlocaldataroot():
     else:
         raise ValueError('Don''t know where data root is on this computer.')
 
-def getnetworkdataroot(target='scotty'):
+def getnetworkdataroot(datadir=RootDataDir()):
     hostname = socket.gethostname()
-    if target == 'scotty':
+    if datadir.target == None:
         if hostname == 'scotty.ilabs.uw.edu':
             return '/media/DiskArray/shared_data/js/'
         elif hostname in ['redshirt.ilabs.uw.edu', 'redshirt', 'uhora.ilabs.uw.edu', 'uhora', 'sulu.ilabs.uw.edu', 'sulu', 'JVDB']:
@@ -44,7 +48,7 @@ def getnetworkdataroot(target='scotty'):
             return '/Users/mrjeffs/Documents/Research/data'
         else:
             raise ValueError('Dont know where scotty network data root is on this computer.')
-    if target == 'jaba':
+    if datadir.target == 'jaba':
         if hostname in ['scotty.ilabs.uw.edu', 'scotty', 'redshirt.ilabs.uw.edu', 'redshirt', 'uhora.ilabs.uw.edu', 'uhora', 'sulu.ilabs.uw.edu', 'sulu', 'JVDB']:
             return '/mnt/brainstudio/data'
         elif any(x in hostname for x in ['Jeffs-MacBook-Pro-3.local', 'Jeffs-MBP-3', '.dhcp4.washington.edu']):

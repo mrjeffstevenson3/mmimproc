@@ -11731,9 +11731,7 @@ body {
 div#notebook {
   overflow: visible;
   border-top: none;
-}
-
-@media print {
+}@media print {
   div.cell {
     display: block;
     page-break-inside: avoid;
@@ -11754,7 +11752,7 @@ div#notebook {
 
 <!-- Loading mathjax macro -->
 <!-- Load mathjax -->
-    <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS_HTML"></script>
     <!-- MathJax configuration -->
     <script type="text/x-mathjax-config">
     MathJax.Hub.Config({
@@ -11873,7 +11871,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[7]:</div>
+<div class="prompt input_prompt">In&nbsp;[5]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="n">lh_paired_sub</span><span class="p">[</span><span class="s1">&#39;lh_S_precentral-inf-part_thickness&#39;</span><span class="p">]</span>
@@ -11888,7 +11886,9 @@ div#notebook {
 
 
 <div class="output_area">
-<div class="prompt output_prompt">Out[7]:</div>
+
+<div class="prompt output_prompt">Out[5]:</div>
+
 
 
 
@@ -11914,7 +11914,7 @@ Name: lh_S_precentral-inf-part_thickness, dtype: float64</pre>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[7]:</div>
+<div class="prompt input_prompt">In&nbsp;[6]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="n">lh_ct_stats</span> <span class="o">=</span> <span class="n">lh_paired_sub</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">ss</span><span class="o">.</span><span class="n">ttest_1samp</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,))</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">)</span>
@@ -11934,11 +11934,26 @@ Name: lh_S_precentral-inf-part_thickness, dtype: float64</pre>
 
 
 <div class="output_area">
-<div class="prompt output_prompt">Out[7]:</div>
+
+<div class="prompt output_prompt">Out[6]:</div>
+
 
 
 <div class="output_html rendered_html output_subarea output_execute_result">
 <div>
+<style>
+    .dataframe thead tr:only-child th {
+        text-align: right;
+    }
+
+    .dataframe thead th {
+        text-align: left;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+</style>
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
@@ -11996,10 +12011,12 @@ Name: lh_S_precentral-inf-part_thickness, dtype: float64</pre>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[8]:</div>
+<div class="prompt input_prompt">In&nbsp;[27]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="n">rh_ct</span><span class="p">[</span><span class="s1">&#39;209-101&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rh_ct</span><span class="p">[</span><span class="s1">&#39;sub-bbc209&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">rh_ct</span><span class="p">[</span><span class="s1">&#39;sub-bbc101&#39;</span><span class="p">]</span>
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">rh_ct_ctrl</span> <span class="o">=</span> <span class="n">rh_ct</span><span class="p">[</span><span class="n">contrl_sid</span><span class="p">]</span>
+<span class="n">rh_ct_fost</span> <span class="o">=</span> <span class="n">rh_ct</span><span class="p">[</span><span class="n">foster_sid</span><span class="p">]</span>
+<span class="n">rh_ct</span><span class="p">[</span><span class="s1">&#39;209-101&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rh_ct</span><span class="p">[</span><span class="s1">&#39;sub-bbc209&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">rh_ct</span><span class="p">[</span><span class="s1">&#39;sub-bbc101&#39;</span><span class="p">]</span>
 <span class="n">rh_ct</span><span class="p">[</span><span class="s1">&#39;211-105&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rh_ct</span><span class="p">[</span><span class="s1">&#39;sub-bbc211&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">rh_ct</span><span class="p">[</span><span class="s1">&#39;sub-bbc105&#39;</span><span class="p">]</span>
 <span class="n">rh_ct</span><span class="p">[</span><span class="s1">&#39;208-106&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rh_ct</span><span class="p">[</span><span class="s1">&#39;sub-bbc208&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">rh_ct</span><span class="p">[</span><span class="s1">&#39;sub-bbc106&#39;</span><span class="p">]</span>
 <span class="n">rh_ct</span><span class="p">[</span><span class="s1">&#39;202-108&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rh_ct</span><span class="p">[</span><span class="s1">&#39;sub-bbc202&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">rh_ct</span><span class="p">[</span><span class="s1">&#39;sub-bbc108&#39;</span><span class="p">]</span>
@@ -12019,7 +12036,7 @@ Name: lh_S_precentral-inf-part_thickness, dtype: float64</pre>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[9]:</div>
+<div class="prompt input_prompt">In&nbsp;[8]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="n">rh_ct_stats</span> <span class="o">=</span> <span class="n">rh_paired_sub</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">ss</span><span class="o">.</span><span class="n">ttest_1samp</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,))</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">)</span>
@@ -12039,11 +12056,26 @@ Name: lh_S_precentral-inf-part_thickness, dtype: float64</pre>
 
 
 <div class="output_area">
-<div class="prompt output_prompt">Out[9]:</div>
+
+<div class="prompt output_prompt">Out[8]:</div>
+
 
 
 <div class="output_html rendered_html output_subarea output_execute_result">
 <div>
+<style>
+    .dataframe thead tr:only-child th {
+        text-align: right;
+    }
+
+    .dataframe thead th {
+        text-align: left;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+</style>
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
@@ -12116,7 +12148,7 @@ Name: lh_S_precentral-inf-part_thickness, dtype: float64</pre>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[10]:</div>
+<div class="prompt input_prompt">In&nbsp;[9]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="n">rh_sig_results</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">lh_sig_results</span><span class="p">,</span> <span class="n">left_on</span><span class="o">=</span><span class="s1">&#39;Region&#39;</span><span class="p">,</span> <span class="n">right_on</span><span class="o">=</span><span class="s1">&#39;Region&#39;</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s1">&#39;outer&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s1">&#39;Region&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">sort_values</span><span class="p">([</span><span class="s1">&#39;rh-p-value&#39;</span><span class="p">,</span> <span class="s1">&#39;lh-p-value&#39;</span><span class="p">])</span>
@@ -12131,11 +12163,26 @@ Name: lh_S_precentral-inf-part_thickness, dtype: float64</pre>
 
 
 <div class="output_area">
-<div class="prompt output_prompt">Out[10]:</div>
+
+<div class="prompt output_prompt">Out[9]:</div>
+
 
 
 <div class="output_html rendered_html output_subarea output_execute_result">
 <div>
+<style>
+    .dataframe thead tr:only-child th {
+        text-align: right;
+    }
+
+    .dataframe thead th {
+        text-align: left;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+</style>
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
@@ -12258,6 +12305,1511 @@ Name: lh_S_precentral-inf-part_thickness, dtype: float64</pre>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
+<div class="prompt input_prompt">In&nbsp;[40]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">sublist</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;209-101&#39;</span><span class="p">,</span> <span class="s1">&#39;211-105&#39;</span><span class="p">,</span> <span class="s1">&#39;208-106&#39;</span><span class="p">,</span> <span class="s1">&#39;202-108&#39;</span><span class="p">,</span> <span class="s1">&#39;249-113&#39;</span><span class="p">,</span> <span class="s1">&#39;241-116&#39;</span><span class="p">,</span> <span class="s1">&#39;243-118&#39;</span><span class="p">,</span> <span class="s1">&#39;231-119&#39;</span><span class="p">,</span> <span class="s1">&#39;253-120&#39;</span><span class="p">]</span>
+<span class="n">bfile</span> <span class="o">=</span> <span class="n">fs</span> <span class="o">/</span> <span class="s1">&#39;bbc&#39;</span> <span class="o">/</span> <span class="s1">&#39;behavior&#39;</span> <span class="o">/</span> <span class="s1">&#39;Behavior_for_MRI_2_22_17_jsedits.csv&#39;</span>
+<span class="n">bdata</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">bfile</span><span class="p">),</span> <span class="n">header</span><span class="o">=</span><span class="mi">1</span> <span class="p">,</span><span class="n">index_col</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">usecols</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="nb">range</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">29</span><span class="p">))</span>
+<span class="n">bdata</span> <span class="o">=</span> <span class="n">bdata</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">sublist</span><span class="p">:</span>
+    <span class="n">bdata</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="n">bdata</span><span class="p">[</span><span class="s1">&#39;BBC&#39;</span><span class="o">+</span><span class="n">s</span><span class="p">[:</span><span class="mi">3</span><span class="p">]]</span> <span class="o">-</span> <span class="n">bdata</span><span class="p">[</span><span class="s1">&#39;BBC&#39;</span><span class="o">+</span><span class="n">s</span><span class="p">[</span><span class="mi">4</span><span class="p">:</span><span class="mi">7</span><span class="p">]]</span>
+<span class="n">bdata_sub</span> <span class="o">=</span> <span class="n">bdata</span><span class="p">[</span><span class="n">sublist</span><span class="p">]</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
+<span class="n">bcontrl_sid</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;sub-&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">contrl_sid</span><span class="p">]</span>
+<span class="n">bfoster_sid</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;sub-&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">foster_sid</span><span class="p">]</span>
+<span class="n">bdata_foster</span> <span class="o">=</span> <span class="n">bdata</span><span class="p">[</span><span class="n">bfoster_sid</span><span class="p">]</span>
+<span class="n">bdata_contrl</span> <span class="o">=</span> <span class="n">bdata</span><span class="p">[</span><span class="n">bcontrl_sid</span><span class="p">]</span>
+<span class="n">bdata_foster</span> <span class="o">=</span> <span class="n">bdata_foster</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
+<span class="n">bdata_contrl</span> <span class="o">=</span> <span class="n">bdata_contrl</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
+<span class="n">bdata_foster</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">9</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt output_prompt">Out[40]:</div>
+
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style>
+    .dataframe thead tr:only-child th {
+        text-align: right;
+    }
+
+    .dataframe thead th {
+        text-align: left;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>subjnum</th>
+      <th>PATrhyTotSS</th>
+      <th>PATsegTotSS</th>
+      <th>CTOPPphoaCS</th>
+      <th>CTOPPrnCS</th>
+      <th>CTOPPphomCS</th>
+      <th>PPVTSS</th>
+      <th>TOPELeliSS</th>
+      <th>STIMQ-PSDSscaleScore1-to-15-SUM</th>
+      <th>self-esteem-IAT</th>
+    </tr>
+    <tr>
+      <th>SubjID</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>BBC101</th>
+      <td>101.0</td>
+      <td>82.0</td>
+      <td>110.0</td>
+      <td>79.0</td>
+      <td>70.0</td>
+      <td>85.0</td>
+      <td>88.0</td>
+      <td>77.0</td>
+      <td>12.0</td>
+      <td>0.22</td>
+    </tr>
+    <tr>
+      <th>BBC105</th>
+      <td>105.0</td>
+      <td>118.0</td>
+      <td>103.0</td>
+      <td>106.0</td>
+      <td>88.0</td>
+      <td>106.0</td>
+      <td>109.0</td>
+      <td>110.0</td>
+      <td>14.0</td>
+      <td>0.45</td>
+    </tr>
+    <tr>
+      <th>BBC106</th>
+      <td>106.0</td>
+      <td>118.0</td>
+      <td>93.0</td>
+      <td>106.0</td>
+      <td>106.0</td>
+      <td>109.0</td>
+      <td>120.0</td>
+      <td>110.0</td>
+      <td>10.0</td>
+      <td>0.82</td>
+    </tr>
+    <tr>
+      <th>BBC108</th>
+      <td>108.0</td>
+      <td>118.0</td>
+      <td>119.0</td>
+      <td>128.0</td>
+      <td>109.0</td>
+      <td>103.0</td>
+      <td>106.0</td>
+      <td>121.0</td>
+      <td>12.0</td>
+      <td>-0.09</td>
+    </tr>
+    <tr>
+      <th>BBC113</th>
+      <td>113.0</td>
+      <td>113.0</td>
+      <td>103.0</td>
+      <td>104.0</td>
+      <td>85.0</td>
+      <td>103.0</td>
+      <td>109.0</td>
+      <td>110.0</td>
+      <td>10.0</td>
+      <td>-0.12</td>
+    </tr>
+    <tr>
+      <th>BBC116</th>
+      <td>116.0</td>
+      <td>84.0</td>
+      <td>84.0</td>
+      <td>87.0</td>
+      <td>97.0</td>
+      <td>91.0</td>
+      <td>92.0</td>
+      <td>97.0</td>
+      <td>13.0</td>
+      <td>0.29</td>
+    </tr>
+    <tr>
+      <th>BBC118</th>
+      <td>118.0</td>
+      <td>74.0</td>
+      <td>96.0</td>
+      <td>98.0</td>
+      <td>88.0</td>
+      <td>88.0</td>
+      <td>88.0</td>
+      <td>94.0</td>
+      <td>10.0</td>
+      <td>0.19</td>
+    </tr>
+    <tr>
+      <th>BBC119</th>
+      <td>119.0</td>
+      <td>87.0</td>
+      <td>73.0</td>
+      <td>109.0</td>
+      <td>88.0</td>
+      <td>115.0</td>
+      <td>108.0</td>
+      <td>116.0</td>
+      <td>9.0</td>
+      <td>0.07</td>
+    </tr>
+    <tr>
+      <th>BBC120</th>
+      <td>120.0</td>
+      <td>103.0</td>
+      <td>83.0</td>
+      <td>98.0</td>
+      <td>91.0</td>
+      <td>100.0</td>
+      <td>104.0</td>
+      <td>94.0</td>
+      <td>8.0</td>
+      <td>-0.26</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[52]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">bdata_foster</span><span class="p">[</span><span class="n">bdata_foster</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="mi">1</span><span class="p">:]]</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt output_prompt">Out[52]:</div>
+
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style>
+    .dataframe thead tr:only-child th {
+        text-align: right;
+    }
+
+    .dataframe thead th {
+        text-align: left;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>PATrhyTotSS</th>
+      <th>PATsegTotSS</th>
+      <th>CTOPPphoaCS</th>
+      <th>CTOPPrnCS</th>
+      <th>CTOPPphomCS</th>
+      <th>PPVTSS</th>
+      <th>TOPELeliSS</th>
+      <th>STIMQ-PSDSscaleScore1-to-15-SUM</th>
+      <th>self-esteem-IAT</th>
+    </tr>
+    <tr>
+      <th>SubjID</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>BBC101</th>
+      <td>82.0</td>
+      <td>110.0</td>
+      <td>79.0</td>
+      <td>70.0</td>
+      <td>85.0</td>
+      <td>88.0</td>
+      <td>77.0</td>
+      <td>12.0</td>
+      <td>0.22</td>
+    </tr>
+    <tr>
+      <th>BBC105</th>
+      <td>118.0</td>
+      <td>103.0</td>
+      <td>106.0</td>
+      <td>88.0</td>
+      <td>106.0</td>
+      <td>109.0</td>
+      <td>110.0</td>
+      <td>14.0</td>
+      <td>0.45</td>
+    </tr>
+    <tr>
+      <th>BBC106</th>
+      <td>118.0</td>
+      <td>93.0</td>
+      <td>106.0</td>
+      <td>106.0</td>
+      <td>109.0</td>
+      <td>120.0</td>
+      <td>110.0</td>
+      <td>10.0</td>
+      <td>0.82</td>
+    </tr>
+    <tr>
+      <th>BBC108</th>
+      <td>118.0</td>
+      <td>119.0</td>
+      <td>128.0</td>
+      <td>109.0</td>
+      <td>103.0</td>
+      <td>106.0</td>
+      <td>121.0</td>
+      <td>12.0</td>
+      <td>-0.09</td>
+    </tr>
+    <tr>
+      <th>BBC113</th>
+      <td>113.0</td>
+      <td>103.0</td>
+      <td>104.0</td>
+      <td>85.0</td>
+      <td>103.0</td>
+      <td>109.0</td>
+      <td>110.0</td>
+      <td>10.0</td>
+      <td>-0.12</td>
+    </tr>
+    <tr>
+      <th>BBC116</th>
+      <td>84.0</td>
+      <td>84.0</td>
+      <td>87.0</td>
+      <td>97.0</td>
+      <td>91.0</td>
+      <td>92.0</td>
+      <td>97.0</td>
+      <td>13.0</td>
+      <td>0.29</td>
+    </tr>
+    <tr>
+      <th>BBC118</th>
+      <td>74.0</td>
+      <td>96.0</td>
+      <td>98.0</td>
+      <td>88.0</td>
+      <td>88.0</td>
+      <td>88.0</td>
+      <td>94.0</td>
+      <td>10.0</td>
+      <td>0.19</td>
+    </tr>
+    <tr>
+      <th>BBC119</th>
+      <td>87.0</td>
+      <td>73.0</td>
+      <td>109.0</td>
+      <td>88.0</td>
+      <td>115.0</td>
+      <td>108.0</td>
+      <td>116.0</td>
+      <td>9.0</td>
+      <td>0.07</td>
+    </tr>
+    <tr>
+      <th>BBC120</th>
+      <td>103.0</td>
+      <td>83.0</td>
+      <td>98.0</td>
+      <td>91.0</td>
+      <td>100.0</td>
+      <td>104.0</td>
+      <td>94.0</td>
+      <td>8.0</td>
+      <td>-0.26</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[59]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">lh_ct_fost</span><span class="o">.</span><span class="n">corrwith</span><span class="p">(</span><span class="n">bdata_foster</span><span class="o">.</span><span class="n">TOPELeliSS</span><span class="p">)</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">ascending</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt output_prompt">Out[59]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>Region
+lh_G_temporal_inf_thickness           0.73984
+lh_S_temporal_inf_thickness           0.72121
+lh_G_temp_sup-Lateral_thickness       0.66166
+lh_G_front_inf-Opercular_thickness    0.57960
+lh_S_orbital_lateral_thickness        0.55789
+lh_S_collat_transv_ant_thickness      0.52508
+lh_G_temporal_middle_thickness        0.46487
+lh_G_precentral_thickness             0.46240
+lh_S_temporal_sup_thickness           0.45405
+lh_S_precentral-inf-part_thickness    0.44158
+lh_G_pariet_inf-Supramar_thickness    0.41402
+lh_S_intrapariet&amp;P_trans_thickness    0.39340
+lh_S_front_middle_thickness           0.38741
+lh_S_oc-temp_lat_thickness            0.38458
+lh_Pole_temporal_thickness            0.37979
+lh_S_precentral-sup-part_thickness    0.37885
+lh_G_temp_sup-Plan_tempo_thickness    0.35883
+lh_Lat_Fis-post_thickness             0.33874
+lh_S_postcentral_thickness            0.33767
+lh_G_parietal_sup_thickness           0.33451
+lh_G_front_inf-Triangul_thickness     0.33132
+lh_G_front_middle_thickness           0.31454
+lh_S_oc-temp_med&amp;Lingual_thickness    0.30216
+lh_S_interm_prim-Jensen_thickness     0.28649
+lh_G_temp_sup-Plan_polar_thickness    0.28335
+lh_MeanThickness_thickness            0.26613
+lh_S_temporal_transverse_thickness    0.25751
+lh_G&amp;S_occipital_inf_thickness        0.22785
+lh_G_front_sup_thickness              0.22758
+BrainSegVolNotVent                    0.21053
+lh_S_front_sup_thickness              0.20565
+lh_G_postcentral_thickness            0.19631
+lh_S_circular_insula_inf_thickness    0.18482
+lh_G_precuneus_thickness              0.16632
+lh_S_occipital_ant_thickness          0.16419
+lh_G_Ins_lg&amp;S_cent_ins_thickness      0.16075
+lh_G&amp;S_subcentral_thickness           0.11800
+lh_G_oc-temp_med-Lingual_thickness    0.11260
+lh_G_pariet_inf-Angular_thickness     0.09790
+lh_S_oc_sup&amp;transversal_thickness     0.05581
+lh_S_front_inf_thickness              0.05448
+lh_S_central_thickness                0.05008
+lh_G_oc-temp_med-Parahip_thickness    0.01674
+lh_S_orbital_med-olfact_thickness     0.01576
+lh_G_front_inf-Orbital_thickness      0.00933
+lh_G_occipital_middle_thickness      -0.00431
+lh_G&amp;S_paracentral_thickness         -0.01867
+lh_G_oc-temp_lat-fusifor_thickness   -0.03423
+lh_Lat_Fis-ant-Horizont_thickness    -0.07305
+lh_G_occipital_sup_thickness         -0.07597
+lh_G&amp;S_cingul-Ant_thickness          -0.07621
+lh_S_collat_transv_post_thickness    -0.10087
+lh_S_orbital-H_Shaped_thickness      -0.11427
+lh_S_parieto_occipital_thickness     -0.11731
+lh_Lat_Fis-ant-Vertical_thickness    -0.12143
+lh_S_calcarine_thickness             -0.13050
+lh_S_oc_middle&amp;Lunatus_thickness     -0.13395
+lh_S_subparietal_thickness           -0.13421
+lh_G_rectus_thickness                -0.13636
+lh_G_insular_short_thickness         -0.17341
+lh_G&amp;S_cingul-Mid-Ant_thickness      -0.19824
+lh_G_cingul-Post-dorsal_thickness    -0.20504
+lh_G_orbital_thickness               -0.21030
+lh_S_circular_insula_sup_thickness   -0.21463
+lh_G&amp;S_frontomargin_thickness        -0.21881
+lh_G_cingul-Post-ventral_thickness   -0.22441
+eTIV                                 -0.24513
+lh_G&amp;S_cingul-Mid-Post_thickness     -0.31697
+lh_G_cuneus_thickness                -0.34736
+lh_G&amp;S_transv_frontopol_thickness    -0.40792
+lh_S_cingul-Marginalis_thickness     -0.40997
+lh_G_subcallosal_thickness           -0.48365
+lh_G_temp_sup-G_T_transv_thickness   -0.50217
+lh_S_suborbital_thickness            -0.51961
+lh_S_circular_insula_ant_thickness   -0.55735
+lh_S_pericallosal_thickness          -0.61478
+lh_Pole_occipital_thickness          -0.66620
+dtype: float64</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[76]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="c1">#lh_ct_fost</span>
+<span class="n">bdata_foster</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt output_prompt">Out[76]:</div>
+
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style>
+    .dataframe thead tr:only-child th {
+        text-align: right;
+    }
+
+    .dataframe thead th {
+        text-align: left;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>subjnum</th>
+      <th>PATrhyTotSS</th>
+      <th>PATsegTotSS</th>
+      <th>CTOPPphoaCS</th>
+      <th>CTOPPrnCS</th>
+      <th>CTOPPphomCS</th>
+      <th>PPVTSS</th>
+      <th>TOPELeliSS</th>
+      <th>STIMQ-PSDSscaleScore1-to-15-SUM</th>
+      <th>self-esteem-IAT</th>
+    </tr>
+    <tr>
+      <th>SubjID</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>BBC101</th>
+      <td>101.0</td>
+      <td>82.0</td>
+      <td>110.0</td>
+      <td>79.0</td>
+      <td>70.0</td>
+      <td>85.0</td>
+      <td>88.0</td>
+      <td>77.0</td>
+      <td>12.0</td>
+      <td>0.22</td>
+    </tr>
+    <tr>
+      <th>BBC105</th>
+      <td>105.0</td>
+      <td>118.0</td>
+      <td>103.0</td>
+      <td>106.0</td>
+      <td>88.0</td>
+      <td>106.0</td>
+      <td>109.0</td>
+      <td>110.0</td>
+      <td>14.0</td>
+      <td>0.45</td>
+    </tr>
+    <tr>
+      <th>BBC106</th>
+      <td>106.0</td>
+      <td>118.0</td>
+      <td>93.0</td>
+      <td>106.0</td>
+      <td>106.0</td>
+      <td>109.0</td>
+      <td>120.0</td>
+      <td>110.0</td>
+      <td>10.0</td>
+      <td>0.82</td>
+    </tr>
+    <tr>
+      <th>BBC108</th>
+      <td>108.0</td>
+      <td>118.0</td>
+      <td>119.0</td>
+      <td>128.0</td>
+      <td>109.0</td>
+      <td>103.0</td>
+      <td>106.0</td>
+      <td>121.0</td>
+      <td>12.0</td>
+      <td>-0.09</td>
+    </tr>
+    <tr>
+      <th>BBC113</th>
+      <td>113.0</td>
+      <td>113.0</td>
+      <td>103.0</td>
+      <td>104.0</td>
+      <td>85.0</td>
+      <td>103.0</td>
+      <td>109.0</td>
+      <td>110.0</td>
+      <td>10.0</td>
+      <td>-0.12</td>
+    </tr>
+    <tr>
+      <th>BBC116</th>
+      <td>116.0</td>
+      <td>84.0</td>
+      <td>84.0</td>
+      <td>87.0</td>
+      <td>97.0</td>
+      <td>91.0</td>
+      <td>92.0</td>
+      <td>97.0</td>
+      <td>13.0</td>
+      <td>0.29</td>
+    </tr>
+    <tr>
+      <th>BBC118</th>
+      <td>118.0</td>
+      <td>74.0</td>
+      <td>96.0</td>
+      <td>98.0</td>
+      <td>88.0</td>
+      <td>88.0</td>
+      <td>88.0</td>
+      <td>94.0</td>
+      <td>10.0</td>
+      <td>0.19</td>
+    </tr>
+    <tr>
+      <th>BBC119</th>
+      <td>119.0</td>
+      <td>87.0</td>
+      <td>73.0</td>
+      <td>109.0</td>
+      <td>88.0</td>
+      <td>115.0</td>
+      <td>108.0</td>
+      <td>116.0</td>
+      <td>9.0</td>
+      <td>0.07</td>
+    </tr>
+    <tr>
+      <th>BBC120</th>
+      <td>120.0</td>
+      <td>103.0</td>
+      <td>83.0</td>
+      <td>98.0</td>
+      <td>91.0</td>
+      <td>100.0</td>
+      <td>104.0</td>
+      <td>94.0</td>
+      <td>8.0</td>
+      <td>-0.26</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[80]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="c1">#corr, p = </span>
+<span class="n">ss</span><span class="o">.</span><span class="n">spearmanr</span><span class="p">(</span><span class="n">bdata_foster</span><span class="p">[</span><span class="n">bdata_foster</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="mi">1</span><span class="p">:]],</span> <span class="n">lh_ct_fost</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+<div class="output_subarea output_text output_error">
+<pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">TypeError</span>                                 Traceback (most recent call last)
+<span class="ansi-green-fg">&lt;ipython-input-80-c4fda6cc28b8&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span><span class="ansi-blue-fg">()</span>
+<span class="ansi-green-fg">----&gt; 1</span><span class="ansi-red-fg"> </span>bdata_foster<span class="ansi-blue-fg">.</span>apply<span class="ansi-blue-fg">(</span>ss<span class="ansi-blue-fg">.</span>spearmanr<span class="ansi-blue-fg">,</span> axix<span class="ansi-blue-fg">=</span><span class="ansi-cyan-fg">0</span><span class="ansi-blue-fg">,</span> args<span class="ansi-blue-fg">=</span>lh_ct_fost<span class="ansi-blue-fg">)</span>
+
+<span class="ansi-green-fg">/Users/mrjeffs/Software/anaconda2/lib/python2.7/site-packages/pandas/core/frame.pyc</span> in <span class="ansi-cyan-fg">apply</span><span class="ansi-blue-fg">(self, func, axis, broadcast, raw, reduce, args, **kwds)</span>
+<span class="ansi-green-intense-fg ansi-bold">   4358</span>                         f<span class="ansi-blue-fg">,</span> axis<span class="ansi-blue-fg">,</span>
+<span class="ansi-green-intense-fg ansi-bold">   4359</span>                         reduce<span class="ansi-blue-fg">=</span>reduce<span class="ansi-blue-fg">,</span>
+<span class="ansi-green-fg">-&gt; 4360</span><span class="ansi-red-fg">                         ignore_failures=ignore_failures)
+</span><span class="ansi-green-intense-fg ansi-bold">   4361</span>             <span class="ansi-green-fg">else</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">   4362</span>                 <span class="ansi-green-fg">return</span> self<span class="ansi-blue-fg">.</span>_apply_broadcast<span class="ansi-blue-fg">(</span>f<span class="ansi-blue-fg">,</span> axis<span class="ansi-blue-fg">)</span>
+
+<span class="ansi-green-fg">/Users/mrjeffs/Software/anaconda2/lib/python2.7/site-packages/pandas/core/frame.pyc</span> in <span class="ansi-cyan-fg">_apply_standard</span><span class="ansi-blue-fg">(self, func, axis, ignore_failures, reduce)</span>
+<span class="ansi-green-intense-fg ansi-bold">   4454</span>             <span class="ansi-green-fg">try</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">   4455</span>                 <span class="ansi-green-fg">for</span> i<span class="ansi-blue-fg">,</span> v <span class="ansi-green-fg">in</span> enumerate<span class="ansi-blue-fg">(</span>series_gen<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">-&gt; 4456</span><span class="ansi-red-fg">                     </span>results<span class="ansi-blue-fg">[</span>i<span class="ansi-blue-fg">]</span> <span class="ansi-blue-fg">=</span> func<span class="ansi-blue-fg">(</span>v<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">   4457</span>                     keys<span class="ansi-blue-fg">.</span>append<span class="ansi-blue-fg">(</span>v<span class="ansi-blue-fg">.</span>name<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">   4458</span>             <span class="ansi-green-fg">except</span> Exception <span class="ansi-green-fg">as</span> e<span class="ansi-blue-fg">:</span>
+
+<span class="ansi-green-fg">/Users/mrjeffs/Software/anaconda2/lib/python2.7/site-packages/pandas/core/frame.pyc</span> in <span class="ansi-cyan-fg">f</span><span class="ansi-blue-fg">(x)</span>
+<span class="ansi-green-intense-fg ansi-bold">   4335</span>         <span class="ansi-green-fg">if</span> kwds <span class="ansi-green-fg">or</span> args <span class="ansi-green-fg">and</span> <span class="ansi-green-fg">not</span> isinstance<span class="ansi-blue-fg">(</span>func<span class="ansi-blue-fg">,</span> np<span class="ansi-blue-fg">.</span>ufunc<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">   4336</span>             <span class="ansi-green-fg">def</span> f<span class="ansi-blue-fg">(</span>x<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">-&gt; 4337</span><span class="ansi-red-fg">                 </span><span class="ansi-green-fg">return</span> func<span class="ansi-blue-fg">(</span>x<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">*</span>args<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">**</span>kwds<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">   4338</span>         <span class="ansi-green-fg">else</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">   4339</span>             f <span class="ansi-blue-fg">=</span> func
+
+<span class="ansi-red-fg">TypeError</span>: (&#39;spearmanr() takes at most 4 arguments (79 given)&#39;, u&#39;occurred at index subjnum&#39;)</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[25]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">lh_ct_fost</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">lh_ct_fost</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;sub-&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt output_prompt">Out[25]:</div>
+
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style>
+    .dataframe thead tr:only-child th {
+        text-align: right;
+    }
+
+    .dataframe thead th {
+        text-align: left;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Subjid</th>
+      <th>BBC101</th>
+      <th>BBC105</th>
+      <th>BBC106</th>
+      <th>BBC108</th>
+      <th>BBC113</th>
+      <th>BBC116</th>
+      <th>BBC118</th>
+      <th>BBC119</th>
+      <th>BBC120</th>
+    </tr>
+    <tr>
+      <th>Region</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>lh_G&amp;S_frontomargin_thickness</th>
+      <td>2.910</td>
+      <td>2.368</td>
+      <td>2.949</td>
+      <td>2.818</td>
+      <td>2.656</td>
+      <td>2.610</td>
+      <td>2.810</td>
+      <td>2.895</td>
+      <td>2.974</td>
+    </tr>
+    <tr>
+      <th>lh_G&amp;S_occipital_inf_thickness</th>
+      <td>2.395</td>
+      <td>2.327</td>
+      <td>2.580</td>
+      <td>2.393</td>
+      <td>2.643</td>
+      <td>2.445</td>
+      <td>2.373</td>
+      <td>2.663</td>
+      <td>2.650</td>
+    </tr>
+    <tr>
+      <th>lh_G&amp;S_paracentral_thickness</th>
+      <td>2.120</td>
+      <td>2.129</td>
+      <td>2.414</td>
+      <td>2.168</td>
+      <td>2.483</td>
+      <td>2.322</td>
+      <td>2.599</td>
+      <td>2.672</td>
+      <td>2.912</td>
+    </tr>
+    <tr>
+      <th>lh_G&amp;S_subcentral_thickness</th>
+      <td>2.810</td>
+      <td>2.665</td>
+      <td>2.966</td>
+      <td>3.092</td>
+      <td>3.232</td>
+      <td>2.787</td>
+      <td>3.041</td>
+      <td>2.839</td>
+      <td>3.216</td>
+    </tr>
+    <tr>
+      <th>lh_G&amp;S_transv_frontopol_thickness</th>
+      <td>3.759</td>
+      <td>2.683</td>
+      <td>3.163</td>
+      <td>2.805</td>
+      <td>3.262</td>
+      <td>2.931</td>
+      <td>2.756</td>
+      <td>3.420</td>
+      <td>3.117</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[33]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">lh_ct_fost</span> <span class="o">=</span> <span class="n">lh_ct_fost</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
+<span class="n">bdata</span> <span class="o">=</span> <span class="n">bdata</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[36]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">bdata</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">9</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt output_prompt">Out[36]:</div>
+
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style>
+    .dataframe thead tr:only-child th {
+        text-align: right;
+    }
+
+    .dataframe thead th {
+        text-align: left;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>subjnum</th>
+      <th>PATrhyTotSS</th>
+      <th>PATsegTotSS</th>
+      <th>CTOPPphoaCS</th>
+      <th>CTOPPrnCS</th>
+      <th>CTOPPphomCS</th>
+      <th>PPVTSS</th>
+      <th>TOPELeliSS</th>
+      <th>STIMQ-PSDSscaleScore1-to-15-SUM</th>
+      <th>self-esteem-IAT</th>
+    </tr>
+    <tr>
+      <th>SubjID</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>BBC101</th>
+      <td>101.0</td>
+      <td>82.0</td>
+      <td>110.0</td>
+      <td>79.0</td>
+      <td>70.0</td>
+      <td>85.0</td>
+      <td>88.0</td>
+      <td>77.0</td>
+      <td>12.0</td>
+      <td>0.22</td>
+    </tr>
+    <tr>
+      <th>BBC105</th>
+      <td>105.0</td>
+      <td>118.0</td>
+      <td>103.0</td>
+      <td>106.0</td>
+      <td>88.0</td>
+      <td>106.0</td>
+      <td>109.0</td>
+      <td>110.0</td>
+      <td>14.0</td>
+      <td>0.45</td>
+    </tr>
+    <tr>
+      <th>BBC106</th>
+      <td>106.0</td>
+      <td>118.0</td>
+      <td>93.0</td>
+      <td>106.0</td>
+      <td>106.0</td>
+      <td>109.0</td>
+      <td>120.0</td>
+      <td>110.0</td>
+      <td>10.0</td>
+      <td>0.82</td>
+    </tr>
+    <tr>
+      <th>BBC108</th>
+      <td>108.0</td>
+      <td>118.0</td>
+      <td>119.0</td>
+      <td>128.0</td>
+      <td>109.0</td>
+      <td>103.0</td>
+      <td>106.0</td>
+      <td>121.0</td>
+      <td>12.0</td>
+      <td>-0.09</td>
+    </tr>
+    <tr>
+      <th>BBC109</th>
+      <td>109.0</td>
+      <td>83.0</td>
+      <td>83.0</td>
+      <td>85.0</td>
+      <td>82.0</td>
+      <td>97.0</td>
+      <td>88.0</td>
+      <td>79.0</td>
+      <td>10.0</td>
+      <td>0.07</td>
+    </tr>
+    <tr>
+      <th>BBC113</th>
+      <td>113.0</td>
+      <td>113.0</td>
+      <td>103.0</td>
+      <td>104.0</td>
+      <td>85.0</td>
+      <td>103.0</td>
+      <td>109.0</td>
+      <td>110.0</td>
+      <td>10.0</td>
+      <td>-0.12</td>
+    </tr>
+    <tr>
+      <th>BBC114</th>
+      <td>114.0</td>
+      <td>95.0</td>
+      <td>88.0</td>
+      <td>94.0</td>
+      <td>94.0</td>
+      <td>82.0</td>
+      <td>103.0</td>
+      <td>110.0</td>
+      <td>11.0</td>
+      <td>-0.02</td>
+    </tr>
+    <tr>
+      <th>BBC115</th>
+      <td>115.0</td>
+      <td>118.0</td>
+      <td>106.0</td>
+      <td>121.0</td>
+      <td>88.0</td>
+      <td>100.0</td>
+      <td>109.0</td>
+      <td>120.0</td>
+      <td>11.0</td>
+      <td>0.26</td>
+    </tr>
+    <tr>
+      <th>BBC116</th>
+      <td>116.0</td>
+      <td>84.0</td>
+      <td>84.0</td>
+      <td>87.0</td>
+      <td>97.0</td>
+      <td>91.0</td>
+      <td>92.0</td>
+      <td>97.0</td>
+      <td>13.0</td>
+      <td>0.29</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[37]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">lh_ct_fost</span><span class="o">.</span><span class="n">corrwith</span><span class="p">(</span><span class="n">bdata</span><span class="o">.</span><span class="n">transpose</span><span class="p">(),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">drop</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt output_prompt">Out[37]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>Series([], dtype: float64)</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[28]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">rh_ct_fost</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">rh_ct_fost</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;sub-&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+<span class="n">rh_ct_fost</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">9</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt output_prompt">Out[28]:</div>
+
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style>
+    .dataframe thead tr:only-child th {
+        text-align: right;
+    }
+
+    .dataframe thead th {
+        text-align: left;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Region</th>
+      <th>rh_G&amp;S_frontomargin_thickness</th>
+      <th>rh_G&amp;S_occipital_inf_thickness</th>
+      <th>rh_G&amp;S_paracentral_thickness</th>
+      <th>rh_G&amp;S_subcentral_thickness</th>
+      <th>rh_G&amp;S_transv_frontopol_thickness</th>
+      <th>rh_G&amp;S_cingul-Ant_thickness</th>
+      <th>rh_G&amp;S_cingul-Mid-Ant_thickness</th>
+      <th>rh_G&amp;S_cingul-Mid-Post_thickness</th>
+      <th>rh_G_cingul-Post-dorsal_thickness</th>
+      <th>rh_G_cingul-Post-ventral_thickness</th>
+      <th>...</th>
+      <th>rh_S_precentral-inf-part_thickness</th>
+      <th>rh_S_precentral-sup-part_thickness</th>
+      <th>rh_S_suborbital_thickness</th>
+      <th>rh_S_subparietal_thickness</th>
+      <th>rh_S_temporal_inf_thickness</th>
+      <th>rh_S_temporal_sup_thickness</th>
+      <th>rh_S_temporal_transverse_thickness</th>
+      <th>rh_MeanThickness_thickness</th>
+      <th>BrainSegVolNotVent</th>
+      <th>eTIV</th>
+    </tr>
+    <tr>
+      <th>Subjid</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>BBC101</th>
+      <td>3.288</td>
+      <td>2.669</td>
+      <td>2.251</td>
+      <td>3.138</td>
+      <td>3.521</td>
+      <td>3.287</td>
+      <td>2.901</td>
+      <td>2.998</td>
+      <td>3.468</td>
+      <td>3.281</td>
+      <td>...</td>
+      <td>2.545</td>
+      <td>2.048</td>
+      <td>3.981</td>
+      <td>2.883</td>
+      <td>2.737</td>
+      <td>2.686</td>
+      <td>2.882</td>
+      <td>2.65125</td>
+      <td>1099321.0</td>
+      <td>1.484344e+06</td>
+    </tr>
+    <tr>
+      <th>BBC105</th>
+      <td>2.190</td>
+      <td>2.306</td>
+      <td>2.088</td>
+      <td>2.719</td>
+      <td>2.662</td>
+      <td>2.938</td>
+      <td>2.923</td>
+      <td>2.654</td>
+      <td>3.549</td>
+      <td>3.278</td>
+      <td>...</td>
+      <td>2.657</td>
+      <td>2.465</td>
+      <td>2.316</td>
+      <td>2.568</td>
+      <td>2.902</td>
+      <td>2.874</td>
+      <td>2.744</td>
+      <td>2.53425</td>
+      <td>1248229.0</td>
+      <td>1.449118e+06</td>
+    </tr>
+    <tr>
+      <th>BBC106</th>
+      <td>2.772</td>
+      <td>2.420</td>
+      <td>2.237</td>
+      <td>2.849</td>
+      <td>3.090</td>
+      <td>3.041</td>
+      <td>3.014</td>
+      <td>3.002</td>
+      <td>3.455</td>
+      <td>3.404</td>
+      <td>...</td>
+      <td>2.772</td>
+      <td>2.824</td>
+      <td>3.156</td>
+      <td>2.653</td>
+      <td>2.925</td>
+      <td>3.013</td>
+      <td>2.940</td>
+      <td>2.78190</td>
+      <td>1296888.0</td>
+      <td>1.488775e+06</td>
+    </tr>
+    <tr>
+      <th>BBC108</th>
+      <td>2.678</td>
+      <td>2.389</td>
+      <td>2.387</td>
+      <td>3.053</td>
+      <td>2.642</td>
+      <td>2.789</td>
+      <td>2.839</td>
+      <td>2.910</td>
+      <td>3.173</td>
+      <td>3.003</td>
+      <td>...</td>
+      <td>2.498</td>
+      <td>2.278</td>
+      <td>2.306</td>
+      <td>2.564</td>
+      <td>2.720</td>
+      <td>2.855</td>
+      <td>2.564</td>
+      <td>2.63248</td>
+      <td>1197334.0</td>
+      <td>1.322380e+06</td>
+    </tr>
+    <tr>
+      <th>BBC113</th>
+      <td>2.704</td>
+      <td>2.792</td>
+      <td>2.826</td>
+      <td>2.841</td>
+      <td>3.145</td>
+      <td>3.246</td>
+      <td>2.959</td>
+      <td>3.032</td>
+      <td>3.460</td>
+      <td>3.056</td>
+      <td>...</td>
+      <td>2.957</td>
+      <td>2.810</td>
+      <td>3.109</td>
+      <td>3.061</td>
+      <td>2.817</td>
+      <td>2.893</td>
+      <td>2.591</td>
+      <td>2.82454</td>
+      <td>1090392.0</td>
+      <td>1.161943e+06</td>
+    </tr>
+    <tr>
+      <th>BBC116</th>
+      <td>2.227</td>
+      <td>2.718</td>
+      <td>2.134</td>
+      <td>2.307</td>
+      <td>2.813</td>
+      <td>3.005</td>
+      <td>2.888</td>
+      <td>2.844</td>
+      <td>3.216</td>
+      <td>3.114</td>
+      <td>...</td>
+      <td>2.714</td>
+      <td>2.459</td>
+      <td>2.369</td>
+      <td>2.587</td>
+      <td>2.333</td>
+      <td>2.793</td>
+      <td>2.460</td>
+      <td>2.34036</td>
+      <td>1047074.0</td>
+      <td>1.307455e+06</td>
+    </tr>
+    <tr>
+      <th>BBC118</th>
+      <td>2.908</td>
+      <td>2.823</td>
+      <td>2.513</td>
+      <td>2.642</td>
+      <td>3.040</td>
+      <td>3.042</td>
+      <td>3.129</td>
+      <td>3.033</td>
+      <td>3.547</td>
+      <td>3.089</td>
+      <td>...</td>
+      <td>2.605</td>
+      <td>2.600</td>
+      <td>3.009</td>
+      <td>2.776</td>
+      <td>2.582</td>
+      <td>2.969</td>
+      <td>3.027</td>
+      <td>2.78402</td>
+      <td>1247183.0</td>
+      <td>1.321123e+06</td>
+    </tr>
+    <tr>
+      <th>BBC119</th>
+      <td>3.605</td>
+      <td>2.796</td>
+      <td>2.635</td>
+      <td>2.895</td>
+      <td>3.222</td>
+      <td>3.371</td>
+      <td>3.332</td>
+      <td>3.245</td>
+      <td>3.634</td>
+      <td>3.173</td>
+      <td>...</td>
+      <td>3.094</td>
+      <td>2.955</td>
+      <td>3.046</td>
+      <td>3.108</td>
+      <td>2.945</td>
+      <td>3.105</td>
+      <td>3.313</td>
+      <td>2.94941</td>
+      <td>1058595.0</td>
+      <td>1.193980e+06</td>
+    </tr>
+    <tr>
+      <th>BBC120</th>
+      <td>3.012</td>
+      <td>2.895</td>
+      <td>2.768</td>
+      <td>2.881</td>
+      <td>3.071</td>
+      <td>3.236</td>
+      <td>3.047</td>
+      <td>3.127</td>
+      <td>3.468</td>
+      <td>3.198</td>
+      <td>...</td>
+      <td>2.788</td>
+      <td>2.683</td>
+      <td>3.282</td>
+      <td>2.789</td>
+      <td>2.767</td>
+      <td>3.158</td>
+      <td>3.548</td>
+      <td>2.86515</td>
+      <td>1136382.0</td>
+      <td>1.172573e+06</td>
+    </tr>
+  </tbody>
+</table>
+<p>9 rows × 77 columns</p>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span> 
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span> 
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span> 
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span> 
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
 <div class="prompt input_prompt">In&nbsp;[4]:</div>
 <div class="inner_cell">
     <div class="input_area">
@@ -12275,7 +13827,7 @@ Name: lh_S_precentral-inf-part_thickness, dtype: float64</pre>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;SUBJECTS_DIR&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">fs</span> <span class="o">/</span> <span class="s1">&#39;bbc&#39;</span> <span class="o">/</span> <span class="s1">&#39;reg&#39;</span> <span class="o">/</span> <span class="s1">&#39;ants_vbm_pairedLH_in_template_space&#39;</span><span class="p">)</span>
-<span class="n">templ</span> <span class="o">=</span> <span class="n">Brain</span><span class="p">(</span><span class="s2">&quot;template_hires_br_freesurf_v6&quot;</span><span class="p">,</span> <span class="s1">&#39;lh&#39;</span><span class="p">,</span> <span class="s1">&#39;white&#39;</span><span class="p">)</span>
+<span class="c1">#templ = Brain(&quot;template_hires_br_freesurf_v6&quot;, &#39;lh&#39;, &#39;white&#39;)</span>
 </pre></div>
 
 </div>
@@ -12287,7 +13839,9 @@ Name: lh_S_precentral-inf-part_thickness, dtype: float64</pre>
 
 
 <div class="output_area">
+
 <div class="prompt"></div>
+
 
 <div class="output_subarea output_stream output_stderr output_text">
 <pre>ERROR:root:An unexpected error occurred while tokenizing input
@@ -12299,7 +13853,9 @@ The error message is: (&#39;EOF in multi-line string&#39;, (1, 0))
 </div>
 
 <div class="output_area">
+
 <div class="prompt"></div>
+
 
 <div class="output_subarea output_text output_error">
 <pre>
@@ -12390,7 +13946,9 @@ PyQT: http://www.riverbankcomputing.co.uk/software/pyqt/intro
 
 
 <div class="output_area">
+
 <div class="prompt"></div>
+
 
 <div class="output_subarea output_stream output_stdout output_text">
 <pre>Reading labels from parcellation..
@@ -12401,7 +13959,9 @@ PyQT: http://www.riverbankcomputing.co.uk/software/pyqt/intro
 </div>
 
 <div class="output_area">
+
 <div class="prompt output_prompt">Out[34]:</div>
+
 
 
 
@@ -12506,7 +14066,9 @@ PyQT: http://www.riverbankcomputing.co.uk/software/pyqt/intro
 
 
 <div class="output_area">
+
 <div class="prompt output_prompt">Out[25]:</div>
+
 
 
 
@@ -12537,7 +14099,9 @@ PyQT: http://www.riverbankcomputing.co.uk/software/pyqt/intro
 
 
 <div class="output_area">
+
 <div class="prompt output_prompt">Out[33]:</div>
+
 
 
 

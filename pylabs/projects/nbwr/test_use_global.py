@@ -1,6 +1,35 @@
+import os, socket, inspect, pylabs, platform
+import petname
+from os.path import expanduser, join
 
 class SubjIdPicks(object):
+    subjids = None
     pass
+
+class RootDataDir(object):
+    target = None
+    pass
+
+datadir = RootDataDir()
+
+def testgetnetworkdataroot(datadir=RootDataDir()):
+    hostname = socket.gethostname()
+    if datadir.target == None:
+        if hostname == 'scotty.ilabs.uw.edu':
+            return '/media/DiskArray/shared_data/js/'
+        elif hostname in ['redshirt.ilabs.uw.edu', 'redshirt', 'uhora.ilabs.uw.edu', 'uhora', 'sulu.ilabs.uw.edu', 'sulu', 'JVDB']:
+            return '/mnt/users/js/'
+        elif any(x in hostname for x in ['Jeffs-MacBook-Pro-3.local', 'Jeffs-MBP-3', '.dhcp4.washington.edu']):
+            return '/Users/mrjeffs/Documents/Research/data'
+        else:
+            raise ValueError('Dont know where scotty network data root is on this computer.')
+    if datadir.target == 'jaba':
+        if hostname in ['scotty.ilabs.uw.edu', 'scotty', 'redshirt.ilabs.uw.edu', 'redshirt', 'uhora.ilabs.uw.edu', 'uhora', 'sulu.ilabs.uw.edu', 'sulu', 'JVDB']:
+            return '/mnt/brainstudio/data'
+        elif any(x in hostname for x in ['Jeffs-MacBook-Pro-3.local', 'Jeffs-MBP-3', '.dhcp4.washington.edu']):
+            return '/Users/mrjeffs/Documents/Research/data'
+        else:
+            raise ValueError('Dont know where jaba network data root is on this computer.')
 
 
 global subjids
@@ -20,6 +49,7 @@ freesurf_fnames = []
 topup_fnames = []
 topdn_fnames= []
 dwi_fnames = []
+
 
 
 def get_vbm_names(subjids_picks):

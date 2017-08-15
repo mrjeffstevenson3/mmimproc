@@ -1,31 +1,42 @@
 import os, cPickle
 from pathlib import *
 from collections import defaultdict
+import nipype
 from nipype.interfaces import fsl
 import nibabel as nib
 import numpy as np
 from dipy.io import read_bvals_bvecs
 from dipy.core.gradients import gradient_table
 import shutil
-from datetime import datetime
+import datetime
 from cloud.serialization.cloudpickle import dumps
 from scipy.ndimage.filters import median_filter as medianf
 from pylabs.structural.brain_extraction import extract_brain
 from pylabs.conversion.brain_convert import conv_subjs
 from pylabs.conversion.nifti2nrrd import nii2nrrd
 from pylabs.alignment.ants_reg import subj2templ_applywarp
+from pylabs.correlation.atlas import mori_network_regions
 from pylabs.io.images import savenii
 from pylabs.utils import run_subprocess, WorkingContext, appendposix, replacesuffix
 from pylabs.utils.paths import getnetworkdataroot, test4working_gpu, get_antsregsyn_cmd, MNI1mm_T2_brain, getslicercmd, \
-        moriMNIatlas
+        moriMNIatlas, MNI1mm_T1_brain
 
-from pylabs.correlation.atlas import mori_network_regions
 from pylabs.utils.provenance import ProvenanceWrapper
 prov = ProvenanceWrapper()
-fs = Path(getnetworkdataroot(target='jaba'))
+
+from pylabs.utils.paths import RootDataDir
+datadir = RootDataDir()
+setattr(datadir, 'target', 'jaba')
+
+fs = Path(getnetworkdataroot(datadir))
+
 #  define hostnames with working gpus for processing
 flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo', output_type='NIFTI_GZ')
-applyxfm = fsl.ApplyXFM(output_type='NIFTI_GZ')
+if nipype.__version__ == '0.12.0':
+    applyxfm = fsl.ApplyXfm(interp='nearestneighbour', output_type='NIFTI_GZ')
+else:
+    applyxfm = fsl.ApplyXFM(interp='nearestneighbour', output_type='NIFTI_GZ')
+
 print(os.environ['FSLOUTPUTTYPE'])
 
 antsRegistrationSyN = get_antsregsyn_cmd()
@@ -36,7 +47,7 @@ from pylabs.projects.nbwr.file_names import project, SubjIdPicks, get_dwi_names
 # instantiate subject id list container
 subjids_picks = SubjIdPicks()
 # list of subject ids to operate on
-picks = ['132', '317', '401', '404']
+picks = ['132', '317', '401', '404', '107']
 
 setattr(subjids_picks, 'subjids', picks)
 
@@ -96,50 +107,54 @@ def test4file(file):
 #     with open(niipickle, 'rb') as f:
 #         niftiDict = cPickle.load(f)
 
-if run_topup:
-    for i, (topup, topdn, dwif) in enumerate(zip(topup_fnames, topdn_fnames, dwi_fnames)):
-        dwipath = fs / project / dwif.split('_')[0] / dwif.split('_')[1] / 'dwi'
-        regpath = fs / project / dwif.split('_')[0] / dwif.split('_')[1] / 'reg' / 'MNI2dwi'
-        ec_dir = dwipath / eddy_corr_dir
-        fits_dir = dwipath / fits_dir_name
-        if not ec_dir.is_dir():
-            ec_dir.mkdir(parents=True)
-        if not regpath.is_dir():
-            regpath.mkdir(parents=True)
-        orig_dwif_fname = dwipath / str(dwif + '.nii')
-        dwi_bvals_fname = dwipath / str(dwif + '.bvals')
-        dwi_bvecs_fname = dwipath / str(dwif + '.bvecs')
-        dwi_dwellt_fname = dwipath / str(dwif + '.dwell_time')
-        topup_fname = dwipath / str(topup + '.nii')
-        topup_bvals_fname = dwipath / str(topup + '.bvals')
-        topup_bvecs_fname = dwipath / str(topup + '.bvecs')
-        topup_dwellt_fname = dwipath / str(topup + '.dwell_time')
-        topdn_fname = dwipath / str(topdn + '.nii')
-        topdn_bvals_fname = dwipath / str(topdn + '.bvals')
-        topdn_bvecs_fname = dwipath / str(topdn + '.bvecs')
-        topdn_dwellt_fname = dwipath / str(topdn + '.dwell_time')
 
-        for f in [orig_dwif_fname, dwi_bvals_fname, dwi_bvecs_fname, dwi_dwellt_fname, topup_fname, topup_bvals_fname, \
-                  topup_bvecs_fname, topup_dwellt_fname, topdn_fname, topdn_bvals_fname, topdn_bvecs_fname, topdn_dwellt_fname]:
-            test4file(f)
+for i, (topup, topdn, dwif) in enumerate(zip(topup_fnames, topdn_fnames, dwi_fnames)):
+    result = ()
+    dwipath = fs / project / dwif.split('_')[0] / dwif.split('_')[1] / 'dwi'
+    regpath = fs / project / dwif.split('_')[0] / dwif.split('_')[1] / 'reg' / 'MNI2dwi'
+    ec_dir = dwipath / eddy_corr_dir
+    bedpost_dir = dwipath / 'bedpost'
+    fits_dir = dwipath / fits_dir_name
+    if not ec_dir.is_dir():
+        ec_dir.mkdir(parents=True)
+    if not regpath.is_dir():
+        regpath.mkdir(parents=True)
+    orig_dwif_fname = dwipath / str(dwif + '.nii')
+    dwi_bvals_fname = dwipath / str(dwif + '.bvals')
+    dwi_bvecs_fname = dwipath / str(dwif + '.bvecs')
+    dwi_dwellt_fname = dwipath / str(dwif + '.dwell_time')
+    topup_fname = dwipath / str(topup + '.nii')
+    topup_bvals_fname = dwipath / str(topup + '.bvals')
+    topup_bvecs_fname = dwipath / str(topup + '.bvecs')
+    topup_dwellt_fname = dwipath / str(topup + '.dwell_time')
+    topdn_fname = dwipath / str(topdn + '.nii')
+    topdn_bvals_fname = dwipath / str(topdn + '.bvals')
+    topdn_bvecs_fname = dwipath / str(topdn + '.bvecs')
+    topdn_dwellt_fname = dwipath / str(topdn + '.dwell_time')
 
-        with open(str(topup_dwellt_fname), 'r') as tud:
-            topup_dwellt = tud.read().replace('\n', '')
+    for f in [orig_dwif_fname, dwi_bvals_fname, dwi_bvecs_fname, dwi_dwellt_fname, topup_fname, topup_bvals_fname, \
+              topup_bvecs_fname, topup_dwellt_fname, topdn_fname, topdn_bvals_fname, topdn_bvecs_fname, topdn_dwellt_fname]:
+        test4file(f)
 
-        with open(str(topdn_dwellt_fname), 'r') as tdd:
-            topdn_dwellt = tdd.read().replace('\n', '')
+    with open(str(topup_dwellt_fname), 'r') as tud:
+        topup_dwellt = tud.read().replace('\n', '')
 
-        topup_numlines = (nib.load(str(topup_fname))).header['dim'][4]
-        topdn_numlines = (nib.load(str(topdn_fname))).header['dim'][4]
+    with open(str(topdn_dwellt_fname), 'r') as tdd:
+        topdn_dwellt = tdd.read().replace('\n', '')
 
-        with open(str(dwipath / 'acq_params.txt'), 'w') as ap:
-            for x in range(topup_numlines):
-                ap.write('0 1 0 ' + topup_dwellt + '\n')
-            for x in range(topdn_numlines):
-                ap.write('0 -1 0 ' + topdn_dwellt + '\n')
+    topup_numlines = (nib.load(str(topup_fname))).header['dim'][4]
+    topdn_numlines = (nib.load(str(topdn_fname))).header['dim'][4]
 
-        bvals, bvecs = read_bvals_bvecs(str(dwi_bvals_fname), str(dwi_bvecs_fname))
-        gtab = gradient_table(bvals, bvecs)
+    with open(str(dwipath / 'acq_params.txt'), 'w') as ap:
+        for x in range(topup_numlines):
+            ap.write('0 1 0 ' + topup_dwellt + '\n')
+        for x in range(topdn_numlines):
+            ap.write('0 -1 0 ' + topdn_dwellt + '\n')
+
+    bvals, bvecs = read_bvals_bvecs(str(dwi_bvals_fname), str(dwi_bvecs_fname))
+    gtab = gradient_table(bvals, bvecs)
+    # topup distortion correction
+    if not test4file(dwipath / str(topup + '_topdn_concat_unwarped_mean.nii.gz')) or (test4file(dwipath / str(topup + '_topdn_concat_unwarped_mean.nii.gz')) & overwrite):
         topup_img = nib.load(str(topup_fname))
         topup_data = topup_img.get_data()
         topup_affine = topup_img.affine
@@ -152,7 +167,7 @@ if run_topup:
         topup_dn_concat_img.set_qform(topup_affine, code=1)
         nib.save(topup_dn_concat_img, str(dwipath / str(topup + '_topdn_concat.nii.gz')))
         prov.log(str(dwipath / str(topup + '_topdn_concat.nii.gz')), 'concatenated topup-dn S0 vols', [str(topup_fname), str(topdn_fname)])
-        result = ()
+
         with WorkingContext(str(dwipath)):
             with open('index.txt', 'w') as f:
                 f.write('1 ' * len(gtab.bvals))
@@ -165,15 +180,17 @@ if run_topup:
                 result += run_subprocess(cmd)
                 result += run_subprocess('fslmaths '+topup + '_topdn_concat_unwarped'+' -Tmean '+topup + '_topdn_concat_unwarped_mean.nii.gz')
 
-            ec_dwi_name = ec_dir/str(dwif + '_topdn_unwarped_ec')
-            extract_brain(dwipath/str(topup + '_topdn_concat_unwarped_mean.nii.gz'))
-            b0_brain_fname = dwipath/str(topup + '_topdn_concat_unwarped_mean_brain.nii.gz')
-            eddy_cmd = 'eddy_cuda7.5 --imain='+str(orig_dwif_fname)+' --mask='+str(appendposix(b0_brain_fname, '_mask'))
+    # eddy current correction
+    ec_dwi_name = ec_dir / str(dwif + '_topdn_unwarped_ec')
+    dwi_bvecs_ec_rot_fname = str(ec_dwi_name) + '.eddy_rotated_bvecs'
+    if not test4file(replacesuffix(ec_dwi_name, filterS0_string+'_clamp1.nii.gz')) or (test4file(replacesuffix(ec_dwi_name, filterS0_string+'_clamp1.nii.gz')) & overwrite):
+        with WorkingContext(str(ec_dir)):
+            b0_brain_fname, b0_brain_mask_fname = extract_brain(dwipath/str(topup + '_topdn_concat_unwarped_mean.nii.gz'))
+            eddy_cmd = 'eddy_cuda7.5 --imain='+str(orig_dwif_fname)+' --mask='+str(b0_brain_mask_fname)
             eddy_cmd += ' --acqp=acq_params.txt  --index=index.txt --bvecs='+str(dwi_bvecs_fname)
             eddy_cmd += ' --bvals='+str(dwi_bvals_fname)+' --topup='+str(dwipath / str(topup + '_topdn_concat'))
             eddy_cmd += '  --repol --out='+str(ec_dwi_name)
             result += run_subprocess(eddy_cmd)
-            dwi_bvecs_ec_rot_fname = str(ec_dwi_name)+'.eddy_rotated_bvecs'
             # clamp, filter, and make nrrd
             ec_data = nib.load(str(ec_dwi_name)+'.nii.gz').get_data()
             ec_data_affine = nib.load(str(ec_dwi_name)+'.nii.gz').affine
@@ -186,9 +203,12 @@ if run_topup:
             ec_data[ec_data <= 1] = 0
             savenii(ec_data, ec_data_affine, str(ec_dwi_name)+filterS0_string+'_clamp1.nii.gz')
             nii2nrrd(str(ec_dwi_name)+filterS0_string+'_clamp1.nii.gz', str(ec_dwi_name)+filterS0_string+'_clamp1.nhdr', bvalsf=str(dwi_bvals_fname), bvecsf=str(dwi_bvecs_ec_rot_fname))
-            # use ec to make bedpost file, populate input files and execute on gpu
-            bedpost_dir = dwipath/'bedpost'
-            savenii(ec_data, ec_data_affine, str(bedpost_dir/'data.nii.gz'))
+
+    # bedpost input files and execute (hopefully) on gpu
+    if not test4file(appendposix(bedpost_dir, '.bedpostX') / 'mean_S0samples.nii.gz') or (test4file(appendposix(bedpost_dir, '.bedpostX') / 'mean_S0samples.nii.gz') & overwrite):
+        with WorkingContext(str(bedpost_dir)):
+            shutil.copy(str(ec_dir/ec_dwi_name) + filterS0_string + '_clamp1.nii.gz', str(bedpost_dir))
+            os.rename(str(ec_dwi_name) + filterS0_string + '_clamp1.nii.gz', str(bedpost_dir/'data.nii.gz'))
             shutil.copy(str(dwi_bvecs_ec_rot_fname), str(bedpost_dir))
             os.rename(str(bedpost_dir/dwi_bvecs_ec_rot_fname.name), str(bedpost_dir/'bvecs'))
             shutil.copy(str(dwi_bvals_fname), str(bedpost_dir))
@@ -198,18 +218,39 @@ if run_topup:
             # run bedpost, probtracks, network, UKF, NODDI, and DKI here
             if test4working_gpu():
                 result += run_subprocess('bedpostx_gpu bedpost -n 3 --model=2')
+                # what cleanup is required?
             else:
                 result += run_subprocess('bedpostx bedpost -n 3 --model=2')
 
-            MNI2b0_brain_antscmd = [str(antsRegistrationSyN), '-d 3 -m', str(MNI1mm_T2_brain), '-f', str(b0_brain_fname), '-o',
-                                 str(regpath/replacesuffix(MNI1mm_T2_brain, '_reg2dwi_').name), '-n 30 -t s -p f -j 1 -s 10 -r 1']
+    # use ants to warp mori atlas into subj space
+    if not test4file(regpath/replacesuffix(moriMNIatlas.name, '_reg2dwi.nii.gz')) or (test4file(regpath/replacesuffix(moriMNIatlas.name, '_reg2dwi.nii.gz')) & overwrite):
+        with WorkingContext(regpath):
+            MNI2b0_brain_antscmd = [str(antsRegistrationSyN), '-d 3 -m', str(MNI1mm_T2_brain), '-f',str(b0_brain_fname), '-o',
+                                    str(regpath / replacesuffix(MNI1mm_T2_brain, '_reg2dwi_').name),'-n 30 -t s -p f -j 1 -s 10 -r 1']
+            result += run_subprocess(' '.join(MNI2b0_brain_antscmd))
+            warpfiles = [regpath/replacesuffix(moriMNIatlas, '_reg2dwi_1Warp.nii.gz'),]
+            affines = [regpath/replacesuffix(moriMNIatlas, '_reg2dwi_0GenericAffine.mat'),]
+            subj2templ_applywarp(str(moriMNIatlas), str(b0_brain_fname), str(regpath/replacesuffix(moriMNIatlas.name, '_reg2dwi.nii.gz')), warpfiles=warpfiles, regpath, affine_xform=affines)
+            subj2templ_applywarp(str(MNI1mm_T1_brain), str(b0_brain_fname), str(regpath/replacesuffix(MNI1mm_T1_brain.name, '_reg2dwi.nii.gz')), warpfiles=warpfiles, regpath, affine_xform=affines)
 
-            with WorkingContext(regpath):
-                result += run_subprocess(' '.join(MNI2b0_brain_antscmd))
-                subj2templ_applywarp(str(moriMNIatlas), str(b0_brain_fname), str(regpath/replacesuffix(moriMNIatlas, '_reg2dwi_').name), )
 
 
-            cmdvars = {'fdwinrrd': str(ec_dwi_name)+filterS0_string+'_clamp1.nhdr',
-                       'mask_fnamenrrd': str(dwipath/str(topup + '_topdn_concat_unwarped_mean_brain_mask.nii.gz')),
-                       'dwif': str(fits_dir/dwif)}
 
+    cmdvars = {'fdwinrrd': str(ec_dwi_name)+filterS0_string+'_clamp1.nhdr',
+               'mask_fnamenrrd': str(dwipath/str(topup + '_topdn_concat_unwarped_mean_brain_mask.nii.gz')),
+               'dwif': str(fits_dir/dwif)}
+
+
+
+'''
+warp MNI_T1 to dwi for mricros :done
+loop over mori to gen seed bin mask and dilate and get com coord and put subject.node 
+probtracts cmd:
+probtrackx2 --network -x listseeds.txt  -l --onewaycondition --omatrix1 -c 0.2 -S 1000 --steplength=0.5 -P 1000 --fibthresh=0.01 --distthresh=0.0 --sampvox=0.0 --forcedir --opd -s bedpost.bedpostX/merged -m bedpost.bedpostX/nodif_brain_mask  --dir=probtrackoutput
+
+
+subject.node is row by row x y z center of mass coordinate for each seed plus 3 3 3 (space separated
+150 130 48 3 3 3\n # for seed001.nii.gz
+matrix2 = for loop by row matrix / waytotal to normalise and rename to .edge
+this is the input for mricros 
+'''

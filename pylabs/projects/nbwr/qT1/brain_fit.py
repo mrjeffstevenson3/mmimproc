@@ -13,12 +13,18 @@ from pylabs.alignment.ants_reg import subj2templ_applywarp
 from pylabs.structural.brain_extraction import extract_brain
 from pylabs.qt1.fitting import t1fit
 from pylabs.io.images import savenii
+from pylabs.utils.paths import RootDataDir
 from pylabs.projects.nbwr.file_names import project, SubjIdPicks, get_5spgr_names
 # from pylabs.projects.nbwr.file_names import spgr5_fa5_fnames,spgr5_fa10_fnames, spgr5_fa15_fnames, spgr5_fa20_fnames, spgr5_fa30_fnames, b1map5_fnames
 from pylabs.utils.provenance import ProvenanceWrapper
 prov = ProvenanceWrapper()
 
-fs = Path(getnetworkdataroot(target='jaba'))
+from pylabs.utils.paths import RootDataDir
+datadir = RootDataDir()
+setattr(datadir, 'target', 'jaba')
+
+fs = Path(getnetworkdataroot(datadir))
+
 if os.environ['FSLOUTPUTTYPE'] != 'NIFTI_GZ':
     os.environ['FSLOUTPUTTYPE'] = 'NIFTI_GZ'
 

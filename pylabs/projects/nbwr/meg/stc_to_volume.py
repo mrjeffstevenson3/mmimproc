@@ -6,9 +6,14 @@ import numpy as np
 import nibabel as nib
 import mne
 from pylabs.utils import getnetworkdataroot
-# from pylabs.projects.nbwr.file_names import project
-fs = Path(getnetworkdataroot())
-project = 'bbc'
+from pylabs.projects.nbwr.file_names import project
+from pylabs.utils.paths import RootDataDir
+datadir = RootDataDir()
+setattr(datadir, 'target', 'jaba')
+
+fs = Path(getnetworkdataroot(datadir))
+
+#project = 'bbc'
 hemis = ['lh', 'rh']
 step = 5  # in ms
 
