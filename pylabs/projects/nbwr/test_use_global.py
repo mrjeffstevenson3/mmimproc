@@ -7,14 +7,14 @@ class SubjIdPicks(object):
     pass
 
 class RootDataDir(object):
-    target = None
+    target = 'scotty'
     pass
 
 datadir = RootDataDir()
 
 def testgetnetworkdataroot(datadir=RootDataDir()):
     hostname = socket.gethostname()
-    if datadir.target == None:
+    if datadir.target == 'scotty':
         if hostname == 'scotty.ilabs.uw.edu':
             return '/media/DiskArray/shared_data/js/'
         elif hostname in ['redshirt.ilabs.uw.edu', 'redshirt', 'uhora.ilabs.uw.edu', 'uhora', 'sulu.ilabs.uw.edu', 'sulu', 'JVDB']:

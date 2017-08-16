@@ -1,10 +1,11 @@
-import os, socket, inspect, pylabs, platform
+import pylabs
+import os, socket, inspect, platform
 import petname
 from os.path import expanduser, join
 from pathlib import *
 
 class RootDataDir(object):
-    target = None
+    target = 'scotty'
     pass
 
 # hostnames with functioning gpus
@@ -37,9 +38,10 @@ def getlocaldataroot():
     else:
         raise ValueError('Don''t know where data root is on this computer.')
 
-def getnetworkdataroot(datadir=RootDataDir()):
+def getnetworkdataroot():
     hostname = socket.gethostname()
-    if datadir.target == None:
+    if pylabs.datadir.target == 'scotty':
+        print('setting root data directory to scotty.')
         if hostname == 'scotty.ilabs.uw.edu':
             return '/media/DiskArray/shared_data/js/'
         elif hostname in ['redshirt.ilabs.uw.edu', 'redshirt', 'uhora.ilabs.uw.edu', 'uhora', 'sulu.ilabs.uw.edu', 'sulu', 'JVDB']:
@@ -47,14 +49,16 @@ def getnetworkdataroot(datadir=RootDataDir()):
         elif any(x in hostname for x in ['Jeffs-MacBook-Pro-3.local', 'Jeffs-MBP-3', '.dhcp4.washington.edu']):
             return '/Users/mrjeffs/Documents/Research/data'
         else:
-            raise ValueError('Dont know where scotty network data root is on this computer.')
-    if datadir.target == 'jaba':
+            raise ValueError('Dont know where scotty network root data dir is on this computer.')
+    if pylabs.datadir.target == 'jaba':
+        print('setting root data directory to jaba.')
         if hostname in ['scotty.ilabs.uw.edu', 'scotty', 'redshirt.ilabs.uw.edu', 'redshirt', 'uhora.ilabs.uw.edu', 'uhora', 'sulu.ilabs.uw.edu', 'sulu', 'JVDB']:
             return '/mnt/brainstudio/data'
         elif any(x in hostname for x in ['Jeffs-MacBook-Pro-3.local', 'Jeffs-MBP-3', '.dhcp4.washington.edu']):
+            print('found mrjeffs laptop. using local datadir. datadir= ', pylabs.datadir.target)
             return '/Users/mrjeffs/Documents/Research/data'
         else:
-            raise ValueError('Dont know where jaba network data root is on this computer.')
+            raise ValueError('Dont know where jaba network root data dir is on this computer.')
 
 
 def tempfile(extension='.tmp'):
