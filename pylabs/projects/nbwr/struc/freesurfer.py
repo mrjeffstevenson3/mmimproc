@@ -1,4 +1,5 @@
 # half baked untested nbwr freesurf script
+import pylabs
 import os, copy
 from pathlib import *
 import datetime
@@ -12,11 +13,8 @@ from pylabs.utils.provenance import ProvenanceWrapper
 prov = ProvenanceWrapper()
 #setup paths and file names to process
 
-from pylabs.utils.paths import RootDataDir
-datadir = RootDataDir()
-setattr(datadir, 'target', 'jaba')
-
-fs = Path(getnetworkdataroot(datadir))
+pylabs.datadir.target = 'jaba'
+fs = Path(getnetworkdataroot())
 
 antsRegistrationSyN = get_antsregsyn_cmd()
 
