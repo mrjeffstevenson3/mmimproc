@@ -24,9 +24,6 @@ from pylabs.utils.paths import getnetworkdataroot, test4working_gpu, get_antsreg
 from pylabs.utils.provenance import ProvenanceWrapper
 prov = ProvenanceWrapper()
 
-from pylabs.utils.paths import RootDataDir
-datadir = RootDataDir()
-setattr(datadir, 'target', 'jaba')
 
 fs = Path(getnetworkdataroot(datadir))
 

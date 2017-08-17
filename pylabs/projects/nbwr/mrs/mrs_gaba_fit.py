@@ -5,13 +5,29 @@ from pylabs.utils import run_subprocess, WorkingContext
 from pathlib import *
 from pylabs.utils.paths import getnetworkdataroot
 from pylabs.utils.provenance import ProvenanceWrapper
+from pylabs.projects.nbwr.file_names import project, SubjIdPicks #, get_gaba_names
 prov = ProvenanceWrapper()
-
+# set root data directory to jaba.
 pylabs.datadir.target = 'jaba'
 fs = Path(getnetworkdataroot())
 
-project = 'nbwr'
+
+# instantiate subject id list container
+subjids_picks = SubjIdPicks()
+# list of subject ids to operate on
+picks = ['132', '317', '401', '404', '107']
+setattr(subjids_picks, 'subjids', picks)
+setattr(subjids_picks, 'project', project)
+
+rt_actfnames, rt_reffnames, lt_actfnames, lt_reffnames = get_gaba_names(subjids_picks)
+
+
+for rt_actfname, rt_reffname, lt_actfname, lt_reffname in zip(rt_actfnames, rt_reffnames, lt_actfnames, lt_reffnames):
+
 subject = 'sub-nbwr404'
+
+
+
 rt_actfname = 'sub-nbwr404c_WIP_RTGABAMM_TE80_120DYN_8_2_raw_act.SDAT'
 rt_reffname = 'sub-nbwr404c_WIP_RTGABAMM_TE80_120DYN_8_2_raw_ref.SDAT'
 lt_actfname = 'sub-nbwr404c_WIP_LTGABAMM_TE80_120DYN_7_2_raw_act.SDAT'

@@ -22,6 +22,11 @@ spgr_fa = ['05', '10', '15', '20', '30']
 
 # old method of creating file names
 ftempl = 'sub-nbwr{}_ses-{}_{}_{}'
+'''
+sub-nbwr407_WIP_LTGABAMM_TE80_120DYN_7_2_raw_act.SDAT
+sub-nbwr407_WIP_RTGABAMM_TE80_120DYN_8_2_raw_act.SDAT
+
+'''
 
 
 b1map_fname_dd = defaultdict()
@@ -123,3 +128,5 @@ def get_3dt2_names(subjids_picks):
         t2_fname_dd['subj'], t2_fname_dd['session'], t2_fname_dd['scan_name'], t2_fname_dd['scan_info'], t2_fname_dd['run'] =  ('sub-' + project + subjid,) + t2_fname_tail
         t2_fnames.append(str(t2_ftempl).format(**t2_fname_dd))
     return t2_fnames
+
+def get_gaba_names(subjids_picks):
