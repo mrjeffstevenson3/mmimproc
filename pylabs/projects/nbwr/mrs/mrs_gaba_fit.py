@@ -3,12 +3,9 @@
 # first set global root data directory
 import pylabs
 pylabs.datadir.target = 'jaba'
-
-import datetime, json
-from pylabs.utils import paths
-from pylabs.utils import run_subprocess, WorkingContext
 from pathlib import *
-from pylabs.utils.paths import getnetworkdataroot
+import datetime, json
+from pylabs.utils import run_subprocess, WorkingContext, getnetworkdataroot, appendposix
 from pylabs.utils.provenance import ProvenanceWrapper
 from pylabs.projects.nbwr.file_names import project, SubjIdPicks, get_gaba_names
 prov = ProvenanceWrapper()
@@ -47,6 +44,11 @@ for rt_act, rt_ref, lt_act, lt_ref in zip(rt_actfnames, rt_reffnames, lt_actfnam
     output =()
     with WorkingContext(str(results_dir)):
         try:
+            p = Path('.')
+            old_dirs = [x for x in p.iterdir() if x.is_dir() and ('MRSfit' in str(x) or 'MRSload' in str(x))]
+            if len(old_dirs) != 0:
+                for d in old_dirs:
+                    d.rename(appendposix(d, '_old'))
             output += run_subprocess(rt_cmd)
             output += run_subprocess(lt_cmd)
         except:
@@ -56,18 +58,19 @@ for rt_act, rt_ref, lt_act, lt_ref in zip(rt_actfnames, rt_reffnames, lt_actfnam
                 json.dump(output, logr, indent=2)
         else:
             for x in results_dir.rglob("MRS*"):
-                for f in x.glob("*.pdf"):
-                    if 'fit' in str(x):
-                        f.rename(Path(str(f).replace('.pdf', '_fit.pdf')))
-                    if 'output' in str(x):
-                        f.rename(Path(str(f).replace('.pdf', '_output.pdf')))
+                if '_old' not in str(x):
+                    for f in x.glob("*.pdf"):
+                        if 'fit' in str(x):
+                            appendposix(f, '_fit')))
+                        if 'output' in str(x):
+                            appendposix(f, '_output')
             print("({})".format(", ".join(output)))
             print('GABA fits completed normally.')
             with open(str(results_dir/'mrs_gaba_log{:%Y%m%d%H%M}.json'.format(datetime.datetime.now())), mode='a') as logr:
                 json.dump(output, logr, indent=2)
             for p in results_dir.rglob("*.pdf"):
                 if '_RT' in str(p.stem):
-                    prov.log(str(p), 'gannet gaba fit for right side', str(rt_act), providence={'log': output})
+                    prov.log(str(p), 'gannet gaba fit for right side', str(rt_act), script=__file__, provenance={'log': output})
                 if '_LT' in str(p.stem):
-                    prov.log(str(p), 'gannet gaba fit for left side', str(lt_act), providence={'log': output})
+                    prov.log(str(p), 'gannet gaba fit for left side', str(lt_act), script=__file__, provenance={'log': output})
 
