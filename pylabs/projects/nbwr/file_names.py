@@ -7,6 +7,7 @@
 
 # class object to pass list of subject ids and passed to functions here using the SubjIdPicks class object.
 # defaults for session and run numbers are set here as  well as exceptions to those defaults called out by subject and modality.
+from pathlib import *
 from collections import defaultdict
 from pylabs.utils import removesuffix
 from pylabs.conversion.brain_convert import nbwr_conv
@@ -17,11 +18,16 @@ class SubjIdPicks(object):
 
 project = 'nbwr'
 # known from protocol
-spgr_tr = 12
+spgr_tr = '12p0'
 spgr_fa = ['05', '10', '15', '20', '30']
+gaba_te = 80
+gaba_dyn = 120
+
 
 # old method of creating file names
 ftempl = 'sub-nbwr{}_ses-{}_{}_{}'
+gaba_ftempl = 'sub-{proj}{sid}_WIP_{side}GABAMM_TE{te}_{dyn}DYN_{wild}_raw_{type}.SDAT'
+
 '''
 sub-nbwr407_WIP_LTGABAMM_TE80_120DYN_7_2_raw_act.SDAT
 sub-nbwr407_WIP_RTGABAMM_TE80_120DYN_8_2_raw_act.SDAT
@@ -36,6 +42,8 @@ topdn_fname_dd = defaultdict()
 dwi_fname_dd = defaultdict()
 t2_fname_dd = defaultdict()
 spgr_fname_dd = defaultdict()
+gaba_fname_dd = defaultdict()
+
 # freesurfer, VBM, T2 file name lists
 b1map_fs_fnames = []
 vbm_fnames = []
@@ -58,6 +66,13 @@ spgr5_fa20_fnames = []
 spgr5_fa30_fnames = []
 b1map5_fnames = []
 
+# gaba spectroscopy file lists
+rt_act = []
+rt_ref = []
+lt_act = []
+lt_ref = []
+
+
 # default file name endings
 b1map_fname_tail = ('ses-1', 'b1map', '', 1)
 fs_rms_fname_tail = ('ses-1', 'fsmempr_ti1100', 'rms', 1)
@@ -65,7 +80,10 @@ topup_fname_tail = ('ses-1', 'dwi-topup', '6S0', 1)
 topdn_fname_tail = ('ses-1', 'dwi-topdn', '6S0', 1)
 dwi_fname_tail = ('ses-1', 'dwi-topup', '64dir-3sh-800-2000', 1)
 t2_fname_tail = (1, '3dt2', '', 1)
-spgr5_fname_tail = (1, 'spgr', '%(fa)s', '%(tr)sp0', 1)
+spgr5_fname_tail = (1, 'spgr', '%(fa)s', '%(tr)s', 1)
+
+gaba_fname_dd = {'proj': project, 'wild': '*', 'te': gaba_te, 'dyn': gaba_dyn, 'side': 'RT', 'type': 'act', 'sid': ''}
+
 
 vbm_rms = [
     ('998', 1, 'vbmmempr_ti850_rms', 1),
@@ -130,3 +148,18 @@ def get_3dt2_names(subjids_picks):
     return t2_fnames
 
 def get_gaba_names(subjids_picks):
+    for subjid in subjids_picks.subjids:
+        gaba_fname_dd['sid'] = subjid
+        gaba_fname_dd['side'] = 'RT'
+        gaba_fname_dd['type'] = 'act'
+        source_path = Path(str(subjids_picks.source_path) % gaba_fname_dd)
+        if not source_path.is_dir():
+            raise ValueError('source_parrec dir with mrs SDAT not found. ' + str(source_path))
+        rt_act.append(list(source_path.glob(gaba_ftempl.format(**gaba_fname_dd)))[0])
+        gaba_fname_dd['side'] = 'LT'
+        lt_act.append(list(source_path.glob(gaba_ftempl.format(**gaba_fname_dd)))[0])
+        gaba_fname_dd['type'] = 'ref'
+        lt_ref.append(list(source_path.glob(gaba_ftempl.format(**gaba_fname_dd)))[0])
+        gaba_fname_dd['side'] = 'RT'
+        rt_ref.append(list(source_path.glob(gaba_ftempl.format(**gaba_fname_dd)))[0])
+    return rt_act, rt_ref, lt_act, lt_ref
