@@ -5,14 +5,14 @@ import pylabs
 pylabs.datadir.target = 'jaba'
 from pathlib import *
 import datetime, json
+
 from pylabs.utils import run_subprocess, WorkingContext, getnetworkdataroot, appendposix
 from pylabs.utils.provenance import ProvenanceWrapper
 from pylabs.projects.nbwr.file_names import project, SubjIdPicks, get_gaba_names
 prov = ProvenanceWrapper()
-# set root data directory to jaba.
 
 fs = Path(getnetworkdataroot())
-gannettpath = paths.getgannettpath()
+gannettpath = pylabs.utils.paths.getgannettpath()
 
 # instantiate subject id list container
 subjids_picks = SubjIdPicks()
@@ -61,7 +61,7 @@ for rt_act, rt_ref, lt_act, lt_ref in zip(rt_actfnames, rt_reffnames, lt_actfnam
                 if '_old' not in str(x):
                     for f in x.glob("*.pdf"):
                         if 'fit' in str(x):
-                            appendposix(f, '_fit')))
+                            appendposix(f, '_fit')
                         if 'output' in str(x):
                             appendposix(f, '_output')
             print("({})".format(", ".join(output)))
