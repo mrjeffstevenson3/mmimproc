@@ -13,7 +13,7 @@ from pylabs.utils.paths import getpylabspath
 from pylabs.utils import InDir
 from pylabs.io.spar import load as readspar
 from pylabs.utils.paths import getnetworkdataroot
-fs = getnetworkdataroot()
+fs = getnetworkdataroot(target='jaba')
 prov = ProvenanceWrapper()
 flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo', output_type='NIFTI_GZ')
 applyxfm = fsl.ApplyXfm(interp='nearestneighbour', output_type='NIFTI_GZ')
