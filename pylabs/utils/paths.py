@@ -68,7 +68,7 @@ def getpylabspath():
     return os.path.split(os.path.split(inspect.getabsfile(pylabs))[0])[0]
 
 def getgannettpath():
-    hostlist = ['redshirt.ilabs.uw.edu', 'scotty.ilabs.uw.edu', 'sulu.ilabs.uw.edu', 'redshirt']
+    hostlist = ['redshirt.ilabs.uw.edu', 'scotty.ilabs.uw.edu', 'sulu.ilabs.uw.edu', 'redshirt', 'uhora']
     hostname = socket.gethostname()
     if hostname in hostlist:
         gannettpath = join(expanduser('~'), 'Software', 'Gannet2.0')
