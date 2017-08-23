@@ -3,17 +3,21 @@
 import pylabs
 pylabs.datadir.target = 'jaba'
 from pathlib import *
+import nibabel as nib
+import numpy as np
 import nipype.interfaces.spm as spm
 from nipype.interfaces import fsl
 import datetime, json
 from pylabs.io.spar import load as readspar
+from pylabs.io.images import savenii
 from pylabs.structural.brain_extraction import extract_brain
 from pylabs.utils import ProvenanceWrapper, run_subprocess, WorkingContext, getnetworkdataroot, appendposix, replacesuffix
 from pylabs.projects.nbwr.file_names import project, SubjIdPicks, get_matching_voi_names, get_gaba_names
 prov = ProvenanceWrapper()
 
 fs = Path(getnetworkdataroot())
-
+seg = spm.Segment()
+fast = fsl.FAST()
 
 # instantiate subject id list container
 subjids_picks = SubjIdPicks()
@@ -34,9 +38,8 @@ for rt_matchfname, lt_matchfname, rt_actfname, lt_actfname in zip(rt_matchfnames
     results = ()
     if not rt_matchfname.split('_')[0] == lt_matchfname.split('_')[0]:
         raise ValueError('subject id does not match between right and left side.')
-    else:
-        subject = rt_matchfname.split('_')[0]
-        session = rt_matchfname.split('_')[1]
+    subject = rt_matchfname.split('_')[0]
+    session = rt_matchfname.split('_')[1]
     mrs_dir = fs / project / subject / session / 'mrs'
     if not mrs_dir.is_dir():
         raise ValueError('cant find mrs directory '+str(mrs_dir))
@@ -46,10 +49,57 @@ for rt_matchfname, lt_matchfname, rt_actfname, lt_actfname in zip(rt_matchfnames
             rt_match_pfname = mrs_dir / appendposix(rt_matchfname, '.nii')
             rt_match_brain, rt_match_mask = extract_brain(str(rt_match_pfname))
             results += run_subprocess(['susan ' + str(rt_match_brain) + ' -1 1 3 1 0 ' + str(replacesuffix(rt_match_brain, '_susanf.nii.gz'))])
+            rt_spar = readspar(str(replacesuffix(rt_actfname, '.SPAR')))
 
+            rt_match_img = nib.load(str(replacesuffix(rt_match_brain, '_susanf.nii.gz')))
+            rt_match_img_data = rt_match_img.get_data()
+            rt_affine = rt_match_img.affine
+            rt_mask_img = np.zeros(rt_match_img_data.shape)
+            lr_diff = round((rt_spar['lr_size'] / 2.) / rt_match_img.header.get_zooms()[0])
+            ap_diff = round((rt_spar['ap_size'] / 2.) / rt_match_img.header.get_zooms()[1])
+            cc_diff = round((rt_spar['cc_size'] / 2.) / rt_match_img.header.get_zooms()[2])
+            startx = int((rt_match_img_data.shape[0] / 2.0) - lr_diff)
+            endx = int((rt_match_img_data.shape[0] / 2.0) + lr_diff)
+            starty = int((rt_match_img_data.shape[1] / 2.0) - ap_diff)
+            endy = int((rt_match_img_data.shape[1] / 2.0) + ap_diff)
+            startz = int((rt_match_img_data.shape[2] / 2.0) - cc_diff)
+            endz = int((rt_match_img_data.shape[2] / 2.0) + cc_diff)
+            rt_mask_img[startx:endx, starty:endy, startz:endz] = 1
+            savenii(rt_mask_img, rt_affine, str(mrs_dir / appendposix(rt_matchfname, '_mrs_roi_mask.nii.gz')), header=rt_match_img.header)
+            #prov.log(str(mrs_dir / appendposix(rt_matchfname, '_mrs_roi_mask.nii.gz')), 'rt sv mrs voi mask file created for csf fraction', str(replacesuffix(rt_actfname, '.SPAR')), script=__file__)
+            # run spm segmentation
+            #seg.inputs.data = str(replacesuffix(rt_match_brain, '_susanf.nii.gz'))
+            #seg.run()
+            fast.inputs.in_files = str(replacesuffix(rt_match_brain, '_susanf.nii.gz'))
+            fast.inputs.out_basename = str(replacesuffix(rt_match_brain, '_susanf_fslfast'))
+            fast.inputs.number_classes = 3
+            fast.inputs.segments = True
+            fast.inputs.img_type = 1
+            fast.inputs.hyper = 0.1
+            fast.inputs.bias_iters = 4
+            fast.inputs.bias_lowpass = 20
+            fast.inputs.output_biascorrected = True
+            fast.inputs.output_biasfield = True
+            fast.inputs.probability_maps = True
+            fast.run()
 
+            rt_GM_seg_data = nib.load(str(mrs_dir / str(replacesuffix(rt_match_brain, '_susanf_fslfast_seg_1.nii.gz')))).get_data()
+            rt_GM_voi = rt_GM_seg_data * rt_mask_img
+            rt_GM_num_vox = np.count_nonzero(rt_GM_voi)
+            rt_WM_seg_data = nib.load(str(mrs_dir / str(replacesuffix(rt_match_brain, '_susanf_fslfast_seg_2.nii.gz')))).get_data()
+            rt_WM_voi = rt_WM_seg_data * rt_mask_img
+            rt_WM_num_vox = np.count_nonzero(rt_WM_voi)
+            rt_CSF_seg_data = nib.load(str(mrs_dir / str(replacesuffix(rt_match_brain, '_susanf_fslfast_seg_0.nii.gz')))).get_data()
+            rt_CSF_voi = rt_CSF_seg_data * rt_mask_img
+            rt_CSF_num_vox = np.count_nonzero(rt_CSF_voi)
+            rt_mask_num_vox = np.count_nonzero(rt_mask_img)
 
-
+            with open(str(mrs_dir / str(subject + '_right_sv_voi_tissue_proportions.txt')), "w") as f:
+                f.write('CSF: {0}\nGM: {1}\nWM: {2}\n'.format('{:.3%}'.format(rt_CSF_num_vox / float(rt_mask_num_vox)),
+                                                              '{:.3%}'.format(rt_GM_num_vox / float(rt_mask_num_vox)),
+                                                              '{:.3%}'.format(rt_WM_num_vox / float(rt_mask_num_vox))))
+        except:
+            raise
 
 
 
