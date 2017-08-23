@@ -31,6 +31,7 @@ gaba_ftempl = 'sub-{proj}{sid}_WIP_{side}GABAMM_TE{te}_{dyn}DYN_{wild}_raw_{type
 '''
 sub-nbwr407_WIP_LTGABAMM_TE80_120DYN_7_2_raw_act.SDAT
 sub-nbwr407_WIP_RTGABAMM_TE80_120DYN_8_2_raw_act.SDAT
+sub-nbwr144_ses-1_right_match_mrs_ti1100_1.nii
 
 '''
 
@@ -71,7 +72,8 @@ rt_act = []
 rt_ref = []
 lt_act = []
 lt_ref = []
-
+rt_matching = []
+lt_matching = []
 
 # default file name endings
 b1map_fname_tail = ('ses-1', 'b1map', '', 1)
@@ -81,6 +83,7 @@ topdn_fname_tail = ('ses-1', 'dwi-topdn', '6S0', 1)
 dwi_fname_tail = ('ses-1', 'dwi-topup', '64dir-3sh-800-2000', 1)
 t2_fname_tail = (1, '3dt2', '', 1)
 spgr5_fname_tail = (1, 'spgr', '%(fa)s', '%(tr)s', 1)
+mrs_matching_voi_tail = ('ses-1', '%(side)s_match_mrs', 'ti1100', 1)
 
 gaba_fname_dd = {'proj': project, 'wild': '*', 'te': gaba_te, 'dyn': gaba_dyn, 'side': 'RT', 'type': 'act', 'sid': ''}
 
@@ -163,3 +166,18 @@ def get_gaba_names(subjids_picks):
         gaba_fname_dd['side'] = 'RT'
         rt_ref.append(list(source_path.glob(gaba_ftempl.format(**gaba_fname_dd)))[0])
     return rt_act, rt_ref, lt_act, lt_ref
+
+def get_matching_voi_names(subjids_picks):
+    lt_match_ftempl = removesuffix(str(nbwr_conv['_AX_MATCH_LEFT_MEMP_VBM_TI1100_']['fname_template']))
+    rt_match_ftempl = removesuffix(str(nbwr_conv['_AX_MATCH_RIGHT_MEMP_VBM_TI1100_']['fname_template']))
+    for subjid in subjids_picks.subjids:
+        gaba_fname_dd['sid'] = subjid
+        gaba_fname_dd['side'] = 'right'
+        gaba_fname_dd['subj'], gaba_fname_dd['session'], gaba_fname_dd['scan_name'], gaba_fname_dd['scan_info'], gaba_fname_dd['run'] =  ('sub-' + project + subjid,) + mrs_matching_voi_tail
+        gaba_fname_dd['scan_name'] = gaba_fname_dd['scan_name'] % gaba_fname_dd
+        rt_matching.append(str(rt_match_ftempl).format(**gaba_fname_dd))
+        gaba_fname_dd['side'] = 'left'
+        gaba_fname_dd['subj'], gaba_fname_dd['session'], gaba_fname_dd['scan_name'], gaba_fname_dd['scan_info'], gaba_fname_dd['run'] =  ('sub-' + project + subjid,) + mrs_matching_voi_tail
+        gaba_fname_dd['scan_name'] = gaba_fname_dd['scan_name'] % gaba_fname_dd
+        lt_matching.append(str(lt_match_ftempl).format(**gaba_fname_dd))
+    return rt_matching, lt_matching

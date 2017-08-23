@@ -1,4 +1,58 @@
 # needs to be made into callable function using extract_brain and spm for segs as death match
+# first set global root data directory
+import pylabs
+pylabs.datadir.target = 'jaba'
+from pathlib import *
+import nipype.interfaces.spm as spm
+from nipype.interfaces import fsl
+import datetime, json
+from pylabs.io.spar import load as readspar
+from pylabs.structural.brain_extraction import extract_brain
+from pylabs.utils import ProvenanceWrapper, run_subprocess, WorkingContext, getnetworkdataroot, appendposix, replacesuffix
+from pylabs.projects.nbwr.file_names import project, SubjIdPicks, get_matching_voi_names, get_gaba_names
+prov = ProvenanceWrapper()
+
+fs = Path(getnetworkdataroot())
+
+
+# instantiate subject id list container
+subjids_picks = SubjIdPicks()
+# list of subject ids to operate on
+picks = ['404'] # only does one subj until bug fix
+setattr(subjids_picks, 'subjids', picks)
+setattr(subjids_picks, 'source_path', fs / project / 'sub-nbwr%(sid)s' / 'ses-1' / 'source_sparsdat')
+
+rt_actfnames, rt_reffnames, lt_actfnames, lt_reffnames = get_gaba_names(subjids_picks)
+
+rt_matchfnames, lt_matchfnames = get_matching_voi_names(subjids_picks)
+
+test_l = map(len, (rt_actfnames, lt_actfnames, rt_matchfnames, lt_matchfnames))
+if not all(test_l[0] == l for l in test_l):
+    raise ValueError('lists lengths do not all match. cannot zip '+str(test_l))
+
+for rt_matchfname, lt_matchfname, rt_actfname, lt_actfname in zip(rt_matchfnames, lt_matchfnames, rt_actfnames, lt_actfnames):
+    results = ()
+    if not rt_matchfname.split('_')[0] == lt_matchfname.split('_')[0]:
+        raise ValueError('subject id does not match between right and left side.')
+    else:
+        subject = rt_matchfname.split('_')[0]
+        session = rt_matchfname.split('_')[1]
+    mrs_dir = fs / project / subject / session / 'mrs'
+    if not mrs_dir.is_dir():
+        raise ValueError('cant find mrs directory '+str(mrs_dir))
+    # first do right side
+    with WorkingContext(str(mrs_dir)):
+        try:
+            rt_match_pfname = mrs_dir / appendposix(rt_matchfname, '.nii')
+            rt_match_brain, rt_match_mask = extract_brain(str(rt_match_pfname))
+            results += run_subprocess(['susan ' + str(rt_match_brain) + ' -1 1 3 1 0 ' + str(replacesuffix(rt_match_brain, '_susanf.nii.gz'))])
+
+
+
+
+
+
+
 from __future__ import division
 from pathlib import *
 import numpy as np
