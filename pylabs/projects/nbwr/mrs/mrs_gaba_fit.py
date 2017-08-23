@@ -5,9 +5,7 @@ import pylabs
 pylabs.datadir.target = 'jaba'
 from pathlib import *
 import datetime, json
-
-from pylabs.utils import run_subprocess, WorkingContext, getnetworkdataroot, appendposix
-from pylabs.utils.provenance import ProvenanceWrapper
+from pylabs.utils import ProvenanceWrapper, run_subprocess, WorkingContext, getnetworkdataroot, appendposix
 from pylabs.projects.nbwr.file_names import project, SubjIdPicks, get_gaba_names
 prov = ProvenanceWrapper()
 
@@ -16,8 +14,8 @@ gannettpath = pylabs.utils.paths.getgannettpath()
 
 # instantiate subject id list container
 subjids_picks = SubjIdPicks()
-# list of subject ids to operate on        
-picks = ['404', '317']
+# list of subject ids to operate on
+picks = ['404'] # only does one subj until bug fix
 setattr(subjids_picks, 'subjids', picks)
 setattr(subjids_picks, 'source_path', fs / project / 'sub-nbwr%(sid)s' / 'ses-1' / 'source_sparsdat')
 
@@ -46,13 +44,15 @@ for rt_act, rt_ref, lt_act, lt_ref in zip(rt_actfnames, rt_reffnames, lt_actfnam
         try:
             p = Path('.')
             old_dirs = [x for x in p.iterdir() if x.is_dir() and ('MRSfit' in str(x) or 'MRSload' in str(x))]
+            print (results_dir, p, old_dirs)
             if len(old_dirs) != 0:
                 for d in old_dirs:
                     d.rename(appendposix(d, '_old'))
+            print ('starting gaba fits for '+ results_dir.parts[-3])
             output += run_subprocess(rt_cmd)
             output += run_subprocess(lt_cmd)
         except:
-            print('an exception has occured.')
+            print('an exception has occured during fit of '+ results_dir.parts[-3])
             print("({})".format(", ".join(output)))
             with open(str(results_dir/'mrs_gaba_error{:%Y%m%d%H%M}.json'.format(datetime.datetime.now())), mode='a') as logr:
                 json.dump(output, logr, indent=2)
@@ -65,7 +65,7 @@ for rt_act, rt_ref, lt_act, lt_ref in zip(rt_actfnames, rt_reffnames, lt_actfnam
                         if 'output' in str(x):
                             appendposix(f, '_output')
             print("({})".format(", ".join(output)))
-            print('GABA fits completed normally.')
+            print('GABA fits completed normally for ' + results_dir.parts[-3])
             with open(str(results_dir/'mrs_gaba_log{:%Y%m%d%H%M}.json'.format(datetime.datetime.now())), mode='a') as logr:
                 json.dump(output, logr, indent=2)
             for p in results_dir.rglob("*.pdf"):
