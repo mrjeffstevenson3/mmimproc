@@ -15,7 +15,7 @@ from pylabs.projects.nbwr.file_names import project, SubjIdPicks, get_matching_v
 prov = ProvenanceWrapper()
 
 fs = Path(getnetworkdataroot())
-seg = spm.Segment()
+#seg = spm.Segment()
 fast = fsl.FAST()
 
 # instantiate subject id list container
