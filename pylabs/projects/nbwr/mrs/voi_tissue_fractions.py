@@ -54,7 +54,7 @@ for rt_matchfname, lt_matchfname, rt_actfname, lt_actfname in zip(rt_matchfnames
             rt_match_img = nib.load(str(replacesuffix(rt_match_brain, '_susanf.nii.gz')))
             rt_match_img_data = rt_match_img.get_data()
             rt_affine = rt_match_img.affine
-            rt_mask_img = np.zeros(rt_match_img_data.shape)
+            rt_mask_img = np.zeros(rt_match_img_data.shape, dtype='int32')
             lr_diff = round((rt_spar['lr_size'] / 2.) / rt_match_img.header.get_zooms()[0])
             ap_diff = round((rt_spar['ap_size'] / 2.) / rt_match_img.header.get_zooms()[1])
             cc_diff = round((rt_spar['cc_size'] / 2.) / rt_match_img.header.get_zooms()[2])
@@ -66,10 +66,10 @@ for rt_matchfname, lt_matchfname, rt_actfname, lt_actfname in zip(rt_matchfnames
             endz = int((rt_match_img_data.shape[2] / 2.0) + cc_diff)
             rt_mask_img[startx:endx, starty:endy, startz:endz] = 1
             savenii(rt_mask_img, rt_affine, str(mrs_dir / appendposix(rt_matchfname, '_mrs_roi_mask.nii.gz')), header=rt_match_img.header)
-            #prov.log(str(mrs_dir / appendposix(rt_matchfname, '_mrs_roi_mask.nii.gz')), 'rt sv mrs voi mask file created for csf fraction', str(replacesuffix(rt_actfname, '.SPAR')), script=__file__)
+            prov.log(str(mrs_dir / appendposix(rt_matchfname, '_mrs_roi_mask.nii.gz')), 'rt sv mrs voi mask file created for csf fraction', str(replacesuffix(rt_actfname, '.SPAR')), script=__file__)
             # run spm segmentation
-            #seg.inputs.data = str(replacesuffix(rt_match_brain, '_susanf.nii.gz'))
-            #seg.run()
+            seg.inputs.data = str(replacesuffix(rt_match_brain, '_susanf.nii.gz'))
+            seg.run()
             fast.inputs.in_files = str(replacesuffix(rt_match_brain, '_susanf.nii.gz'))
             fast.inputs.out_basename = str(replacesuffix(rt_match_brain, '_susanf_fslfast'))
             fast.inputs.number_classes = 3
@@ -92,12 +92,12 @@ for rt_matchfname, lt_matchfname, rt_actfname, lt_actfname in zip(rt_matchfnames
             rt_CSF_seg_data = nib.load(str(mrs_dir / str(replacesuffix(rt_match_brain, '_susanf_fslfast_seg_0.nii.gz')))).get_data()
             rt_CSF_voi = rt_CSF_seg_data * rt_mask_img
             rt_CSF_num_vox = np.count_nonzero(rt_CSF_voi)
-            rt_mask_num_vox = np.count_nonzero(rt_mask_img)
+            rt_mask_num_vox = float(np.count_nonzero(rt_mask_img))
 
             with open(str(mrs_dir / str(subject + '_right_sv_voi_tissue_proportions.txt')), "w") as f:
-                f.write('CSF: {0}\nGM: {1}\nWM: {2}\n'.format('{:.3%}'.format(rt_CSF_num_vox / float(rt_mask_num_vox)),
-                                                              '{:.3%}'.format(rt_GM_num_vox / float(rt_mask_num_vox)),
-                                                              '{:.3%}'.format(rt_WM_num_vox / float(rt_mask_num_vox))))
+                f.write('CSF: {0}\nGM: {1}\nWM: {2}\n'.format('{:.3%}'.format(rt_CSF_num_vox / rt_mask_num_vox),
+                                                              '{:.3%}'.format(rt_GM_num_vox / rt_mask_num_vox),
+                                                              '{:.3%}'.format(rt_WM_num_vox / rt_mask_num_vox)))
         except:
             raise
 
