@@ -1,6 +1,7 @@
 from pathlib import *
 import nibabel as nib
 import numpy as np
+import pandas as pd
 from pylabs.io.spar import load as readspar
 from pylabs.io.images import savenii
 from pylabs.utils import ProvenanceWrapper, run_subprocess, WorkingContext, getnetworkdataroot, appendposix, replacesuffix
@@ -24,10 +25,12 @@ def make_voi_mask(spar_fname, matching_image_fname, out_voi_mask_fname):
     endz = int((match_img_data.shape[2] / 2.0) + cc_diff)
     mask_img[startx:endx, starty:endy, startz:endz] = 1
     savenii(mask_img, affine, str(out_voi_mask_fname))
-    prov.log(str(out_voi_mask_fname), 'voi mask file created for tissue fractions by make_voi_mask fn', str(spar_fname), script=__file__)
+    prov.log(str(out_voi_mask_fname), 'binary voi mask file created for tissue fractions by make_voi_mask fn', str(spar_fname), script=__file__)
     return mask_img
 
-def calc_tissue_frqactions(voi_mask_fname, gm_seg_fname, wm_seg_fname, csf_seg_fname):
+def calc_tissue_fractions(voi_mask_fname, gm_seg_fname, wm_seg_fname, csf_seg_fname, side, method='SPM'):
+    subj = voi_mask_fname.parts[-4]
+    results = pd.DataFrame(columns=['subject', 'side', 'frac_GM', 'frac_WM', 'frac_CSF', 'method'])
     mask_img_data = nib.load(str(voi_mask_fname)).get_data()
     gm_seg_data = nib.load(str(gm_seg_fname)).get_data()
     gm_voi = gm_seg_data * mask_img_data
@@ -39,4 +42,10 @@ def calc_tissue_frqactions(voi_mask_fname, gm_seg_fname, wm_seg_fname, csf_seg_f
     csf_voi = csf_seg_data * mask_img_data
     csf_num_vox = np.count_nonzero(csf_voi)
     mask_num_vox = float(np.count_nonzero(mask_img_data))
-    return gm_num_vox/mask_num_vox, wm_num_vox/mask_num_vox, csf_num_vox/mask_num_vox
+    results['subject'] = subj
+    results['frac_GM'] = gm_num_vox/mask_num_vox
+    results['frac_WM'] = wm_num_vox/mask_num_vox
+    results['frac_CSF'] = csf_num_vox/mask_num_vox
+    results['method'] = method
+    results.set_index('subject', inplace=True)
+    return results
