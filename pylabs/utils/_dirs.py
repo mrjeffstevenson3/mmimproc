@@ -83,3 +83,13 @@ def removesuffix(file):
     elif len(file.suffixes) > 3:
         raise ValueError('more than 3 extensions. this function not set up to handle more than 3.')
 
+def prependposix(file, prefix):
+    '''
+    Adds prefix to beginning of file basename, then puts path back on.
+    :param file: pathlib path and file name with ext (ext optional)
+    :param prefix:  string to prepend at beginning of file name.
+    :return: returns reformed posix path with string added at beginning of file name and extension.
+    '''
+    file = Path(file)
+    new_name = str(prefix) + file.name
+    return Path(file.parent/new_name)

@@ -10,7 +10,7 @@ from nipype.interfaces import fsl
 from pylabs.mrs.tissue_fractions import make_voi_mask, calc_tissue_fractions
 from pylabs.io.images import savenii
 from pylabs.structural.brain_extraction import extract_brain
-from pylabs.utils import ProvenanceWrapper, run_subprocess, WorkingContext, getnetworkdataroot, appendposix, replacesuffix
+from pylabs.utils import ProvenanceWrapper, run_subprocess, WorkingContext, getnetworkdataroot, appendposix, replacesuffix, prependposix
 from pylabs.projects.nbwr.file_names import project, SubjIdPicks, get_matching_voi_names, get_gaba_names
 prov = ProvenanceWrapper()
 
@@ -52,9 +52,9 @@ for rt_matchfname, lt_matchfname, rt_actfname, lt_actfname in zip(rt_matchfnames
             results += run_subprocess(['fslchfiletype NIFTI ' + str(replacesuffix(rt_match_brain, '_susanf.nii.gz'))])
             results += run_subprocess(['fslchfiletype NIFTI ' + str(rt_match_mask)])
 
-            rt_mask_img = make_voi_mask(replacesuffix(rt_actfname, '.SPAR'), replacesuffix(rt_match_brain, '_susanf.nii'), mrs_dir / appendposix(rt_matchfname, '_mrs_roi_mask.nii.gz'))
+            rt_mask_img = make_voi_mask(replacesuffix(rt_actfname, '.SPAR'), replacesuffix(rt_match_brain, '_susanf.nii'), replacesuffix(rt_match_pfname, '_mrs_roi_mask.nii.gz'))
 
-            # run spm segmentation
+            # run SPM segmentation on right matching
             seg.inputs.data = str(replacesuffix(rt_match_brain, '_susanf.nii'))
             seg.inputs.mask_image = str(replacesuffix(rt_match_mask, '.nii'))
             seg.inputs.ignore_exception = True
@@ -63,7 +63,7 @@ for rt_matchfname, lt_matchfname, rt_actfname, lt_actfname in zip(rt_matchfnames
             seg.inputs.gm_output_type = [True, True, True]
             seg.inputs.wm_output_type = [True, True, True]
             rt_out = seg.run()
-
+            # run FSL segmentation on right matching
             fast.inputs.in_files = str(replacesuffix(rt_match_brain, '_susanf.nii'))
             fast.inputs.out_basename = str(replacesuffix(rt_match_brain, '_susanf_fslfast'))
             fast.inputs.number_classes = 3
@@ -76,22 +76,30 @@ for rt_matchfname, lt_matchfname, rt_actfname, lt_actfname in zip(rt_matchfnames
             fast.inputs.output_biasfield = True
             fast.inputs.probability_maps = True
             fast.run()
-            # calculate right fsl tissue fractions
+            # calculate right FSL tissue fractions
             rt_fsl_fractions = calc_tissue_fractions(mrs_dir / appendposix(rt_matchfname, '_mrs_roi_mask.nii.gz'),
                                                      mrs_dir / str(replacesuffix(rt_match_brain, '_susanf_fslfast_seg_1.nii.gz')),
                                                      mrs_dir / str(replacesuffix(rt_match_brain, '_susanf_fslfast_seg_2.nii.gz')),
                                                      mrs_dir / str(replacesuffix(rt_match_brain, '_susanf_fslfast_seg_0.nii.gz')),
                                                      'right', method='FSL')
+            # calculate right SPM tissue fractions
+            rt_spm_fractions = calc_tissue_fractions(mrs_dir / appendposix(rt_matchfname, '_mrs_roi_mask.nii.gz'),
+                                                     mrs_dir / str(
+                                                         replacesuffix(rt_match_brain, '_susanf_fslfast_seg_1.nii.gz')),
+                                                     mrs_dir / str(
+                                                         replacesuffix(rt_match_brain, '_susanf_fslfast_seg_2.nii.gz')),
+                                                     mrs_dir / str(
+                                                         replacesuffix(rt_match_brain, '_susanf_fslfast_seg_0.nii.gz')),
+                                                     'right', method='FSL')
 
-            
             lt_match_pfname = mrs_dir / appendposix(lt_matchfname, '.nii')
             lt_match_brain, lt_match_mask = extract_brain(str(lt_match_pfname))
             results += run_subprocess(['susan ' + str(lt_match_brain) + ' -1 1 3 1 0 ' + str(replacesuffix(lt_match_brain, '_susanf.nii.gz'))])
             results += run_subprocess(['fslchfiletype NIFTI ' + str(replacesuffix(lt_match_brain, '_susanf.nii.gz'))])
             results += run_subprocess(['fslchfiletype NIFTI ' + str(lt_match_mask)])
 
+            lt_mask_img = make_voi_mask(replacesuffix(lt_actfname, '.SPAR'), replacesuffix(lt_match_brain, '_susanf.nii'), replacesuffix(lt_match_pfname, '_mrs_roi_mask.nii.gz'))
 
-            lt_spar = readspar(str(replacesuffix(lt_actfname, '.SPAR')))
 
             lt_match_img = nib.load(str(replacesuffix(lt_match_brain, '_susanf.nii')))
             lt_match_img_data = lt_match_img.get_data()
