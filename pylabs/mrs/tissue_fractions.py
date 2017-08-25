@@ -28,17 +28,20 @@ def make_voi_mask(spar_fname, matching_image_fname, out_voi_mask_fname):
     prov.log(str(out_voi_mask_fname), 'binary voi mask file created for tissue fractions by make_voi_mask fn', str(spar_fname), script=__file__)
     return mask_img
 
-def calc_tissue_fractions(voi_mask_fname, gm_seg_fname, wm_seg_fname, csf_seg_fname, side, method='SPM'):
+def calc_tissue_fractions(voi_mask_fname, gm_seg_fname, wm_seg_fname, csf_seg_fname, side, method='SPM', thresh=0.0):
     subj = voi_mask_fname.parts[-4]
     results = pd.DataFrame(columns=['subject', 'side', 'frac_GM', 'frac_WM', 'frac_CSF', 'method'])
     mask_img_data = nib.load(str(voi_mask_fname)).get_data()
     gm_seg_data = nib.load(str(gm_seg_fname)).get_data()
+    gm_seg_data = gm_seg_data[gm_seg_data > thresh]
     gm_voi = gm_seg_data * mask_img_data
     gm_num_vox = np.count_nonzero(gm_voi)
     wm_seg_data = nib.load(str(wm_seg_fname)).get_data()
+    wm_seg_data = wm_seg_data[wm_seg_data > thresh]
     wm_voi = wm_seg_data * mask_img_data
     wm_num_vox = np.count_nonzero(wm_voi)
     csf_seg_data = nib.load(str(csf_seg_fname)).get_data()
+    csf_seg_data = csf_seg_data[csf_seg_data > thresh]
     csf_voi = csf_seg_data * mask_img_data
     csf_num_vox = np.count_nonzero(csf_voi)
     mask_num_vox = float(np.count_nonzero(mask_img_data))

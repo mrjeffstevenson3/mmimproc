@@ -16,6 +16,7 @@ prov = ProvenanceWrapper()
 
 fs = Path(getnetworkdataroot())
 seg = spm.Segment()
+thresh = 0.19
 fast = fsl.FAST()
 
 # instantiate subject id list container
