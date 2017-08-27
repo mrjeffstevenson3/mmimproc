@@ -1,4 +1,5 @@
-# needs to be made into callable function using extract_brain and spm for segs as death match
+# needs to be made into callable functions using extract_brain and spm for segs as death match
+# done on mrs.tissue_fractions.py
 from __future__ import division
 from pathlib import *
 import numpy as np

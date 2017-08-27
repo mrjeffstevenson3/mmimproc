@@ -10,7 +10,8 @@ from nipype.interfaces import fsl
 from pylabs.mrs.tissue_fractions import make_voi_mask, calc_tissue_fractions
 from pylabs.io.images import savenii
 from pylabs.structural.brain_extraction import extract_brain
-from pylabs.utils import ProvenanceWrapper, run_subprocess, WorkingContext, getnetworkdataroot, appendposix, replacesuffix, prependposix
+from pylabs.utils import ProvenanceWrapper, run_subprocess, WorkingContext, getnetworkdataroot, appendposix, replacesuffix, \
+    prependposix, removesuffix
 from pylabs.projects.nbwr.file_names import project, SubjIdPicks, get_matching_voi_names, get_gaba_names
 prov = ProvenanceWrapper()
 
@@ -52,21 +53,21 @@ for rt_matchfname, lt_matchfname, rt_actfname, lt_actfname in zip(rt_matchfnames
             # uncompress for spm
             results += run_subprocess(['fslchfiletype NIFTI ' + str(replacesuffix(rt_match_brain, '_susanf.nii.gz'))])
             results += run_subprocess(['fslchfiletype NIFTI ' + str(rt_match_mask)])
-
-            rt_mask_img = make_voi_mask(replacesuffix(rt_actfname, '.SPAR'), replacesuffix(rt_match_brain, '_susanf.nii'), replacesuffix(rt_match_pfname, '_mrs_roi_mask.nii.gz'))
+            rt_match_brain, rt_match_mask = replacesuffix(rt_match_brain, '_susanf.nii'), replacesuffix(rt_match_mask, '.nii')
+            rt_mask_img = make_voi_mask(replacesuffix(rt_actfname, '.SPAR'), rt_match_brain, replacesuffix(rt_match_pfname, '_mrs_roi_mask.nii.gz'))
 
             # run SPM segmentation on right matching
-            seg.inputs.data = str(replacesuffix(rt_match_brain, '_susanf.nii'))
-            seg.inputs.mask_image = str(replacesuffix(rt_match_mask, '.nii'))
+            seg.inputs.data = str(rt_match_brain)
+            seg.inputs.mask_image = str(rt_match_mask)
             seg.inputs.ignore_exception = True
-            seg.inputs.save_bias_corrected = True
-            seg.inputs.csf_output_type = [True, True, True]
-            seg.inputs.gm_output_type = [True, True, True]
-            seg.inputs.wm_output_type = [True, True, True]
+            seg.inputs.save_bias_corrected = False
+            seg.inputs.csf_output_type = [False, False, True]
+            seg.inputs.gm_output_type = [False, False, True]
+            seg.inputs.wm_output_type = [False, False, True]
             rt_out = seg.run()
             # run FSL segmentation on right matching
-            fast.inputs.in_files = str(replacesuffix(rt_match_brain, '_susanf.nii'))
-            fast.inputs.out_basename = str(replacesuffix(rt_match_brain, '_susanf_fslfast'))
+            fast.inputs.in_files = str(rt_match_brain)
+            fast.inputs.out_basename = str(replacesuffix(rt_match_brain, '_fslfast'))
             fast.inputs.number_classes = 3
             fast.inputs.segments = True
             fast.inputs.img_type = 1
@@ -78,58 +79,39 @@ for rt_matchfname, lt_matchfname, rt_actfname, lt_actfname in zip(rt_matchfnames
             fast.inputs.probability_maps = True
             fast.run()
             # calculate right FSL tissue fractions
-            rt_fsl_fractions = calc_tissue_fractions(mrs_dir / appendposix(rt_matchfname, '_mrs_roi_mask.nii.gz'),
-                                                     mrs_dir / str(replacesuffix(rt_match_brain, '_susanf_fslfast_seg_1.nii.gz')),
-                                                     mrs_dir / str(replacesuffix(rt_match_brain, '_susanf_fslfast_seg_2.nii.gz')),
-                                                     mrs_dir / str(replacesuffix(rt_match_brain, '_susanf_fslfast_seg_0.nii.gz')),
+            rt_fsl_fractions = calc_tissue_fractions(replacesuffix(rt_match_pfname, '_mrs_roi_mask.nii.gz'),
+                                                     str(replacesuffix(rt_match_brain, '_fslfast_seg_1.nii.gz')),
+                                                     str(replacesuffix(rt_match_brain, '_fslfast_seg_2.nii.gz')),
+                                                     str(replacesuffix(rt_match_brain, '_fslfast_seg_0.nii.gz')),
                                                      'right', method='FSL')
             # calculate right SPM tissue fractions
-            rt_spm_fractions = calc_tissue_fractions(mrs_dir / appendposix(rt_matchfname, '_mrs_roi_mask.nii.gz'),
-                                                     mrs_dir / str(
-                                                         replacesuffix(rt_match_brain, '_susanf_fslfast_seg_1.nii.gz')),
-                                                     mrs_dir / str(
-                                                         replacesuffix(rt_match_brain, '_susanf_fslfast_seg_2.nii.gz')),
-                                                     mrs_dir / str(
-                                                         replacesuffix(rt_match_brain, '_susanf_fslfast_seg_0.nii.gz')),
-                                                     'right', method='FSL')
+            rt_spm_fractions = calc_tissue_fractions(replacesuffix(rt_match_pfname, '_mrs_roi_mask.nii.gz'),
+                                                     str(prependposix(rt_match_brain, 'c1')),
+                                                     str(prependposix(rt_match_brain, 'c2')),
+                                                     str(prependposix(rt_match_brain, 'c3')),
+                                                     'right', method='SPM', thresh=thresh)
 
             lt_match_pfname = mrs_dir / appendposix(lt_matchfname, '.nii')
             lt_match_brain, lt_match_mask = extract_brain(str(lt_match_pfname))
             results += run_subprocess(['susan ' + str(lt_match_brain) + ' -1 1 3 1 0 ' + str(replacesuffix(lt_match_brain, '_susanf.nii.gz'))])
+            # uncompress for spm
             results += run_subprocess(['fslchfiletype NIFTI ' + str(replacesuffix(lt_match_brain, '_susanf.nii.gz'))])
             results += run_subprocess(['fslchfiletype NIFTI ' + str(lt_match_mask)])
+            lt_match_brain, lt_match_mask = replacesuffix(lt_match_brain, '_susanf.nii'), replacesuffix(lt_match_mask, '_susanf.nii')
+            lt_mask_img = make_voi_mask(replacesuffix(lt_actfname, '.SPAR'), lt_match_brain, replacesuffix(lt_match_pfname, '_mrs_roi_mask.nii.gz'))
 
-            lt_mask_img = make_voi_mask(replacesuffix(lt_actfname, '.SPAR'), replacesuffix(lt_match_brain, '_susanf.nii'), replacesuffix(lt_match_pfname, '_mrs_roi_mask.nii.gz'))
-
-
-            lt_match_img = nib.load(str(replacesuffix(lt_match_brain, '_susanf.nii')))
-            lt_match_img_data = lt_match_img.get_data()
-            lt_affine = lt_match_img.affine
-            lt_mask_img = np.zeros(lt_match_img_data.shape, dtype='int32')
-            lt_lr_diff = round((lt_spar['lr_size'] / 2.) / lt_match_img.header.get_zooms()[0])
-            lt_ap_diff = round((lt_spar['ap_size'] / 2.) / lt_match_img.header.get_zooms()[1])
-            lt_cc_diff = round((lt_spar['cc_size'] / 2.) / lt_match_img.header.get_zooms()[2])
-            lt_startx = int((lt_match_img_data.shape[0] / 2.0) - lt_lr_diff)
-            lt_endx = int((lt_match_img_data.shape[0] / 2.0) + lt_lr_diff)
-            lt_starty = int((lt_match_img_data.shape[1] / 2.0) - lt_ap_diff)
-            lt_endy = int((lt_match_img_data.shape[1] / 2.0) + lt_ap_diff)
-            lt_startz = int((lt_match_img_data.shape[2] / 2.0) - lt_cc_diff)
-            lt_endz = int((lt_match_img_data.shape[2] / 2.0) + lt_cc_diff)
-            lt_mask_img[lt_startx:lt_endx, lt_starty:lt_endy, lt_startz:lt_endz] = 1
-            savenii(lt_mask_img, lt_affine, str(mrs_dir / appendposix(lt_matchfname, '_mrs_roi_mask.nii.gz')))
-            prov.log(str(mrs_dir / appendposix(lt_matchfname, '_mrs_roi_mask.nii.gz')), 'rt sv mrs voi mask file created for csf fraction', str(replacesuffix(lt_actfname, '.SPAR')), script=__file__)
-            # run spm segmentation
-            seg.inputs.data = str(replacesuffix(lt_match_brain, '_susanf.nii'))
-            seg.inputs.mask_image = str(replacesuffix(lt_match_mask, '.nii'))
+            # run SPM segmentation on right matching
+            seg.inputs.data = str(lt_match_brain)
+            seg.inputs.mask_image = str(lt_match_mask)
             seg.inputs.ignore_exception = True
-            seg.inputs.save_bias_corrected = True
-            seg.inputs.csf_output_type = [True, True, True]
-            seg.inputs.gm_output_type = [True, True, True]
-            seg.inputs.wm_output_type = [True, True, True]
+            seg.inputs.save_bias_corrected = False
+            seg.inputs.csf_output_type = [False, False, True]
+            seg.inputs.gm_output_type = [False, False, True]
+            seg.inputs.wm_output_type = [False, False, True]
             lt_out = seg.run()
-            #run fsl fast segmentation
-            fast.inputs.in_files = str(replacesuffix(lt_match_brain, '_susanf.nii.gz'))
-            fast.inputs.out_basename = str(replacesuffix(lt_match_brain, '_susanf_fslfast'))
+            # run FSL segmentation on right matching
+            fast.inputs.in_files = str(lt_match_brain)
+            fast.inputs.out_basename = str(replacesuffix(lt_match_brain, '_fslfast'))
             fast.inputs.number_classes = 3
             fast.inputs.segments = True
             fast.inputs.img_type = 1
@@ -140,17 +122,18 @@ for rt_matchfname, lt_matchfname, rt_actfname, lt_actfname in zip(rt_matchfnames
             fast.inputs.output_biasfield = True
             fast.inputs.probability_maps = True
             fast.run()
-            # calculate left fsl tissue fractions
-            lt_GM_seg_data = nib.load(str(mrs_dir / str(replacesuffix(lt_match_brain, '_susanf_fslfast_seg_1.nii.gz')))).get_data()
-            lt_GM_voi = lt_GM_seg_data * lt_mask_img
-            lt_GM_num_vox = np.count_nonzero(lt_GM_voi)
-            lt_WM_seg_data = nib.load(str(mrs_dir / str(replacesuffix(lt_match_brain, '_susanf_fslfast_seg_2.nii.gz')))).get_data()
-            lt_WM_voi = lt_WM_seg_data * lt_mask_img
-            lt_WM_num_vox = np.count_nonzero(lt_WM_voi)
-            lt_CSF_seg_data = nib.load(str(mrs_dir / str(replacesuffix(lt_match_brain, '_susanf_fslfast_seg_0.nii.gz')))).get_data()
-            lt_CSF_voi = lt_CSF_seg_data * lt_mask_img
-            lt_CSF_num_vox = np.count_nonzero(lt_CSF_voi)
-            lt_mask_num_vox = float(np.count_nonzero(lt_mask_img))
+            # calculate right FSL tissue fractions
+            lt_fsl_fractions = calc_tissue_fractions(replacesuffix(lt_match_pfname, '_mrs_roi_mask.nii.gz'),
+                                                     str(replacesuffix(lt_match_brain, '_fslfast_seg_1.nii.gz')),
+                                                     str(replacesuffix(lt_match_brain, '_fslfast_seg_2.nii.gz')),
+                                                     str(replacesuffix(lt_match_brain, '_fslfast_seg_0.nii.gz')),
+                                                     'left', method='FSL')
+            # calculate right SPM tissue fractions
+            lt_spm_fractions = calc_tissue_fractions(replacesuffix(lt_match_pfname, '_mrs_roi_mask.nii.gz'),
+                                                     str(prependposix(lt_match_brain, 'c1')),
+                                                     str(prependposix(lt_match_brain, 'c2')),
+                                                     str(prependposix(lt_match_brain, 'c3')),
+                                                     'left', method='SPM', thresh=thresh)
 
             with open(str(mrs_dir / str(subject + '_sv_voi_tissue_proportions.txt')), "w") as f:
                 f.write('FSL fast segmentations:\nrt_CSF: {0}\nrt_GM: {1}\nrt_WM: {2}\n'.format(
