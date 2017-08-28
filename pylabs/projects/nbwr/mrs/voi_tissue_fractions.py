@@ -6,6 +6,7 @@ import os
 from pathlib import *
 import nibabel as nib
 import numpy as np
+import pandas as pd
 import nipype.interfaces.spm as spm
 from nipype.interfaces import fsl
 from pylabs.mrs.tissue_fractions import make_voi_mask, calc_tissue_fractions
@@ -142,6 +143,12 @@ for rt_matchfname, lt_matchfname, rt_actfname, lt_actfname in zip(rt_matchfnames
 
             fractions = pd.Dataframe({'right_SPM': rt_spm_fractions, 'right_FSL': rt_fsl_fractions, 'left_SPM': lt_spm_fractions, 'left_FSL': lt_fsl_fractions})
             fractions.to_csv(str(mrs_dir / str(subject + '_sv_voi_tissue_proportions.txt')), sep=',', columns=['left_SPM', 'right_SPM', 'left_FSL', 'right_FSL'])
+            prov.log(str(prependposix(lt_match_brain, 'c1')), 'grey matter SPM segmentation of matching left mrs voi', str(lt_match_brain), provenance={'thresh': thresh, 'side': 'left', 'method': 'SPM', 'tissue': 'GM'}, script=__file__)
+            prov.log(str(prependposix(lt_match_brain, 'c2')), 'white matter SPM segmentation of matching left mrs voi', str(lt_match_brain), provenance={'thresh': thresh, 'side': 'left', 'method': 'SPM', 'tissue': 'WM'}, script=__file__)
+            prov.log(str(prependposix(lt_match_brain, 'c3')), 'CSF SPM segmentation of matching left mrs voi', str(lt_match_brain), provenance={'thresh': thresh, 'side': 'left', 'method': 'SPM', 'tissue': 'CSF'}, script=__file__)
+            prov.log(str(prependposix(rt_match_brain, 'c1')), 'grey matter SPM segmentation of matching right mrs voi', str(rt_match_brain), provenance={'thresh': thresh, 'side': 'right', 'method': 'SPM', 'tissue': 'GM'}, script=__file__)
+            prov.log(str(prependposix(rt_match_brain, 'c2')), 'white matter SPM segmentation of matching right mrs voi', str(rt_match_brain), provenance={'thresh': thresh, 'side': 'right', 'method': 'SPM', 'tissue': 'WM'}, script=__file__)
+            prov.log(str(prependposix(rt_match_brain, 'c3')), 'CSF SPM segmentation of matching right mrs voi', str(rt_match_brain), provenance={'thresh': thresh, 'side': 'right', 'method': 'SPM', 'tissue': 'CSF'}, script=__file__)
 
         except:
             raise
