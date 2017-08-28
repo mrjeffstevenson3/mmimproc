@@ -23,7 +23,7 @@ fs = Path(getnetworkdataroot())
 seg = spm.Segment()
 thresh = 0.19
 fast = fsl.FAST(output_type='NIFTI')
-fast.inputs.environ[u'FSLMULTIFILEQUIT'] = 'FALSE'
+fast.inputs.environ['FSLMULTIFILEQUIT'] = 'FALSE'
 
 # instantiate subject id list container
 subjids_picks = SubjIdPicks()
@@ -98,11 +98,11 @@ for rt_matchfname, lt_matchfname, rt_actfname, lt_actfname in zip(rt_matchfnames
 
             lt_match_pfname = mrs_dir / appendposix(lt_matchfname, '.nii')
             lt_match_brain, lt_match_mask = extract_brain(str(lt_match_pfname))
-            results += run_subprocess(['susan ' + str(lt_match_brain) + ' -1 1 3 1 0 ' + str(replacesuffix(lt_match_brain, '_susanf.nii.gz'))])
+            results += run_subprocess(['susan ' + str(lt_match_brain) + ' -1 1 3 1 0 ' + str(replacesuffix(lt_match_brain, '_susanf.nii'))])
             # uncompress for spm
-            results += run_subprocess(['fslchfiletype NIFTI ' + str(replacesuffix(lt_match_brain, '_susanf.nii.gz'))])
+            #results += run_subprocess(['fslchfiletype NIFTI ' + str(replacesuffix(lt_match_brain, '_susanf.nii.gz'))])
             results += run_subprocess(['fslchfiletype NIFTI ' + str(lt_match_mask)])
-            lt_match_brain, lt_match_mask = replacesuffix(lt_match_brain, '_susanf.nii'), replacesuffix(lt_match_mask, '_susanf.nii')
+            lt_match_brain, lt_match_mask = replacesuffix(lt_match_brain, '_susanf.nii'), replacesuffix(lt_match_mask, '.nii')
             lt_mask_img = make_voi_mask(replacesuffix(lt_actfname, '.SPAR'), lt_match_brain, replacesuffix(lt_match_pfname, '_mrs_roi_mask.nii.gz'))
 
             # run SPM segmentation on right matching
@@ -129,26 +129,20 @@ for rt_matchfname, lt_matchfname, rt_actfname, lt_actfname in zip(rt_matchfnames
             fast.run()
             # calculate right FSL tissue fractions
             lt_fsl_fractions = calc_tissue_fractions(replacesuffix(lt_match_pfname, '_mrs_roi_mask.nii.gz'),
-                                                     str(replacesuffix(lt_match_brain, '_fslfast_seg_1.nii.gz')),
-                                                     str(replacesuffix(lt_match_brain, '_fslfast_seg_2.nii.gz')),
-                                                     str(replacesuffix(lt_match_brain, '_fslfast_seg_0.nii.gz')),
-                                                     'left', method='FSL')
+                                                     str(replacesuffix(lt_match_brain, '_fslfast_seg_1.nii')),
+                                                     str(replacesuffix(lt_match_brain, '_fslfast_seg_2.nii')),
+                                                     str(replacesuffix(lt_match_brain, '_fslfast_seg_0.nii')),
+                                                     'right', method='FSL')
             # calculate right SPM tissue fractions
             lt_spm_fractions = calc_tissue_fractions(replacesuffix(lt_match_pfname, '_mrs_roi_mask.nii.gz'),
                                                      str(prependposix(lt_match_brain, 'c1')),
                                                      str(prependposix(lt_match_brain, 'c2')),
                                                      str(prependposix(lt_match_brain, 'c3')),
-                                                     'left', method='SPM', thresh=thresh)
+                                                     'right', method='SPM', thresh=thresh)
 
-            with open(str(mrs_dir / str(subject + '_sv_voi_tissue_proportions.txt')), "w") as f:
-                f.write('FSL fast segmentations:\nrt_CSF: {0}\nrt_GM: {1}\nrt_WM: {2}\n'.format(
-                                                            '{:.3%}'.format(rt_CSF_num_vox / rt_mask_num_vox),
-                                                            '{:.3%}'.format(rt_GM_num_vox / rt_mask_num_vox),
-                                                            '{:.3%}'.format(rt_WM_num_vox / rt_mask_num_vox)))
-                f.write('lt_CSF: {0}\nlt_GM: {1}\nlt_WM: {2}\n'.format('{:.3%}'.format(lt_CSF_num_vox / lt_mask_num_vox),
-                                                              '{:.3%}'.format(lt_GM_num_vox / lt_mask_num_vox),
-                                                              '{:.3%}'.format(lt_WM_num_vox / lt_mask_num_vox)))
-                
+            fractions = pd.Dataframe({'right_SPM': rt_spm_fractions, 'right_FSL': rt_fsl_fractions, 'left_SPM': lt_spm_fractions, 'left_FSL': lt_fsl_fractions})
+            fractions.to_csv(str(mrs_dir / str(subject + '_sv_voi_tissue_proportions.txt')), sep=',', columns=['left_SPM', 'right_SPM', 'left_FSL', 'right_FSL'])
+
         except:
             raise
 
