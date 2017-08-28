@@ -2,6 +2,7 @@
 # first set global root data directory
 import pylabs
 pylabs.datadir.target = 'jaba'
+import os
 from pathlib import *
 import nibabel as nib
 import numpy as np
@@ -15,10 +16,14 @@ from pylabs.utils import ProvenanceWrapper, run_subprocess, WorkingContext, getn
 from pylabs.projects.nbwr.file_names import project, SubjIdPicks, get_matching_voi_names, get_gaba_names
 prov = ProvenanceWrapper()
 
+os.environ['FSLOUTPUTTYPE'] = 'NIFTI'
+os.environ["FSLMULTIFILEQUIT"] = "FALSE"
+
 fs = Path(getnetworkdataroot())
 seg = spm.Segment()
 thresh = 0.19
-fast = fsl.FAST()
+fast = fsl.FAST(output_type='NIFTI')
+fast.inputs.environ[u'FSLMULTIFILEQUIT'] = 'FALSE'
 
 # instantiate subject id list container
 subjids_picks = SubjIdPicks()
@@ -49,9 +54,9 @@ for rt_matchfname, lt_matchfname, rt_actfname, lt_actfname in zip(rt_matchfnames
         try:
             rt_match_pfname = mrs_dir / appendposix(rt_matchfname, '.nii')
             rt_match_brain, rt_match_mask = extract_brain(str(rt_match_pfname))
-            results += run_subprocess(['susan ' + str(rt_match_brain) + ' -1 1 3 1 0 ' + str(replacesuffix(rt_match_brain, '_susanf.nii.gz'))])
+            results += run_subprocess(['susan ' + str(rt_match_brain) + ' -1 1 3 1 0 ' + str(replacesuffix(rt_match_brain, '_susanf.nii'))])
             # uncompress for spm
-            results += run_subprocess(['fslchfiletype NIFTI ' + str(replacesuffix(rt_match_brain, '_susanf.nii.gz'))])
+            #results += run_subprocess(['fslchfiletype NIFTI ' + str(replacesuffix(rt_match_brain, '_susanf.nii.gz'))])
             results += run_subprocess(['fslchfiletype NIFTI ' + str(rt_match_mask)])
             rt_match_brain, rt_match_mask = replacesuffix(rt_match_brain, '_susanf.nii'), replacesuffix(rt_match_mask, '.nii')
             rt_mask_img = make_voi_mask(replacesuffix(rt_actfname, '.SPAR'), rt_match_brain, replacesuffix(rt_match_pfname, '_mrs_roi_mask.nii.gz'))
@@ -80,9 +85,9 @@ for rt_matchfname, lt_matchfname, rt_actfname, lt_actfname in zip(rt_matchfnames
             fast.run()
             # calculate right FSL tissue fractions
             rt_fsl_fractions = calc_tissue_fractions(replacesuffix(rt_match_pfname, '_mrs_roi_mask.nii.gz'),
-                                                     str(replacesuffix(rt_match_brain, '_fslfast_seg_1.nii.gz')),
-                                                     str(replacesuffix(rt_match_brain, '_fslfast_seg_2.nii.gz')),
-                                                     str(replacesuffix(rt_match_brain, '_fslfast_seg_0.nii.gz')),
+                                                     str(replacesuffix(rt_match_brain, '_fslfast_seg_1.nii')),
+                                                     str(replacesuffix(rt_match_brain, '_fslfast_seg_2.nii')),
+                                                     str(replacesuffix(rt_match_brain, '_fslfast_seg_0.nii')),
                                                      'right', method='FSL')
             # calculate right SPM tissue fractions
             rt_spm_fractions = calc_tissue_fractions(replacesuffix(rt_match_pfname, '_mrs_roi_mask.nii.gz'),
