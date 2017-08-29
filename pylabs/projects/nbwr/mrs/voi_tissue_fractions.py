@@ -162,7 +162,7 @@ for rt_matchfname, lt_matchfname, rt_actfname, lt_actfname in zip(rt_matchfnames
                                                      str(prependposix(lt_match_brain, 'c3')),
                                                      'left', method='SPM', thresh=thresh)
 
-            fractions = pd.DataFrame({'right_SPM': rt_spm_fractions, 'right_FSL': rt_fsl_fractions, 'left_SPM': lt_spm_fractions, 'left_FSL': lt_fsl_fractions})
+            fractions = pd.DataFrame(lt_spm_fractions, columns=['left_SPM']).join(pd.DataFrame(rt_spm_fractions, columns=['right_SPM'])).join(pd.DataFrame(lt_fsl_fractions, columns=['left_FSL'])).join(pd.DataFrame(rt_fsl_fractions, columns=['right_FSL']))
             fractions.to_csv(str(mrs_dir / str(subject + '_sv_voi_tissue_proportions.csv')), sep=',', columns=['left_SPM', 'right_SPM', 'left_FSL', 'right_FSL'])
             store[subject] = fractions
             prov.log(str(mrs_dir / str(subject + '_sv_voi_tissue_proportions.csv')), 'csv text file containing percent CSF, GM, WM', str(lt_match_brain), provenance={'thresh': thresh, 'side': 'left', 'method': 'SPM', 'tissue': 'GM'}, script=__file__)
