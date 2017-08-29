@@ -1,3 +1,4 @@
+import pylabs
 import nibabel, numpy
 from pylabs.utils import run_subprocess
 from pathlib import *

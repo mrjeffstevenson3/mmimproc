@@ -3,19 +3,18 @@
 import pylabs
 pylabs.datadir.target = 'jaba'
 pylabs.opts.nii_ftype = 'NIFTI'
+pylabs.opts.nii_fext = '.nii'
 pylabs.opts.fslmultifilequit = 'FALSE'
+pylabs.opts.overwrite = False
 import os
 from pathlib import *
-import nibabel as nib
-import numpy as np
 import pandas as pd
 import nipype.interfaces.spm as spm
 from nipype.interfaces import fsl
 from pylabs.mrs.tissue_fractions import make_voi_mask, calc_tissue_fractions
-from pylabs.io.images import savenii
 from pylabs.structural.brain_extraction import extract_brain
 from pylabs.utils import ProvenanceWrapper, run_subprocess, WorkingContext, getnetworkdataroot, appendposix, replacesuffix, \
-    prependposix, removesuffix
+    prependposix
 from pylabs.projects.nbwr.file_names import project, SubjIdPicks, get_matching_voi_names, get_gaba_names
 prov = ProvenanceWrapper()
 
@@ -27,7 +26,7 @@ seg = spm.Segment()
 thresh = pylabs.opts.spm_seg_thr
 fast = fsl.FAST(output_type=pylabs.opts.nii_ftype)
 fast.inputs.environ['FSLMULTIFILEQUIT'] = pylabs.opts.fslmultifilequit
-pylabs.opts.overwrite = False
+ext = pylabs.opts.nii_fext
 # instantiate subject id list container
 subjids_picks = SubjIdPicks()
 # list of subject ids to operate on
@@ -55,16 +54,16 @@ for rt_matchfname, lt_matchfname, rt_actfname, lt_actfname in zip(rt_matchfnames
     # first do right side
     with WorkingContext(str(mrs_dir)):
         try:
-            rt_match_pfname = mrs_dir / appendposix(rt_matchfname, '.nii')
-            if pylabs.opts.overwrite or not Path(replacesuffix(rt_match_pfname, '_brain.nii.gz')).is_file():
+            rt_match_pfname = mrs_dir / appendposix(rt_matchfname, ext)
+            if pylabs.opts.overwrite or not Path(replacesuffix(rt_match_pfname, '_brain'+ext)).is_file():
                 rt_match_brain, rt_match_mask = extract_brain(str(rt_match_pfname))
             else:
-                rt_match_brain, rt_match_mask = replacesuffix(rt_match_pfname, '_brain.nii.gz'), replacesuffix(rt_match_pfname, '_brain_mask.nii.gz')
-            if pylabs.opts.overwrite or not Path(replacesuffix(rt_match_pfname, '_brain_susanf.nii')).is_file():
-                results += run_subprocess(['susan ' + str(rt_match_brain) + ' -1 1 3 1 0 ' + str(replacesuffix(rt_match_brain, '_susanf.nii'))])
-            results += run_subprocess(['fslchfiletype NIFTI ' + str(rt_match_mask)])
-            rt_match_brain, rt_match_mask = replacesuffix(rt_match_brain, '_susanf.nii'), replacesuffix(rt_match_mask, '.nii')
-            rt_mask_img = make_voi_mask(replacesuffix(rt_actfname, '.SPAR'), rt_match_brain, replacesuffix(rt_match_pfname, '_mrs_roi_mask.nii.gz'))
+                rt_match_brain, rt_match_mask = replacesuffix(rt_match_pfname, '_brain'+ext), replacesuffix(rt_match_pfname, '_brain_mask'+ext)
+            if pylabs.opts.overwrite or not Path(replacesuffix(rt_match_pfname, '_brain_susanf'+ext)).is_file():
+                results += run_subprocess(['susan ' + str(rt_match_brain) + ' -1 1 3 1 0 ' + str(replacesuffix(rt_match_brain, '_susanf'+ext))])
+            #results += run_subprocess(['fslchfiletype NIFTI ' + str(rt_match_mask)])
+            #rt_match_brain, rt_match_mask = replacesuffix(rt_match_brain, '_susanf.nii'), replacesuffix(rt_match_mask, '.nii')
+            rt_mask_img = make_voi_mask(replacesuffix(rt_actfname, '.SPAR'), rt_match_brain, replacesuffix(rt_match_pfname, '_mrs_roi_mask'+ext))
 
             # run SPM segmentation on right matching
             seg.inputs.data = str(rt_match_brain)

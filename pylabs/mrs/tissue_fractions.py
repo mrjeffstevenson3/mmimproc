@@ -1,3 +1,5 @@
+import pylabs
+
 from pathlib import *
 import nibabel as nib
 import numpy as np

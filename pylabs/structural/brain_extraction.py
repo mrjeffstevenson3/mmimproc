@@ -1,8 +1,8 @@
 # extract brain and mask function. now uses pylabs.opts to set file ext
+import pylabs
 from pathlib import *
 from collections import defaultdict
 import subprocess
-import pylabs
 import inspect
 import niprov
 import nipype
