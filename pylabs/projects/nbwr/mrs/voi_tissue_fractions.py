@@ -2,6 +2,8 @@
 # first set global root data directory
 import pylabs
 pylabs.datadir.target = 'jaba'
+pylabs.opts.nii_ftype = 'NIFTI'
+pylabs.opts.fslmultifilequit = 'FALSE'
 import os
 from pathlib import *
 import nibabel as nib
@@ -17,15 +19,15 @@ from pylabs.utils import ProvenanceWrapper, run_subprocess, WorkingContext, getn
 from pylabs.projects.nbwr.file_names import project, SubjIdPicks, get_matching_voi_names, get_gaba_names
 prov = ProvenanceWrapper()
 
-os.environ['FSLOUTPUTTYPE'] = 'NIFTI'
-os.environ["FSLMULTIFILEQUIT"] = "FALSE"
+os.environ['FSLOUTPUTTYPE'] = pylabs.opts.nii_ftype
+os.environ["FSLMULTIFILEQUIT"] = pylabs.opts.fslmultifilequit
 
 fs = Path(getnetworkdataroot())
 seg = spm.Segment()
-thresh = 0.19
-fast = fsl.FAST(output_type='NIFTI')
-fast.inputs.environ['FSLMULTIFILEQUIT'] = 'FALSE'
-
+thresh = pylabs.opts.spm_seg_thr
+fast = fsl.FAST(output_type=pylabs.opts.nii_ftype)
+fast.inputs.environ['FSLMULTIFILEQUIT'] = pylabs.opts.fslmultifilequit
+pylabs.opts.overwrite = False
 # instantiate subject id list container
 subjids_picks = SubjIdPicks()
 # list of subject ids to operate on
@@ -54,10 +56,12 @@ for rt_matchfname, lt_matchfname, rt_actfname, lt_actfname in zip(rt_matchfnames
     with WorkingContext(str(mrs_dir)):
         try:
             rt_match_pfname = mrs_dir / appendposix(rt_matchfname, '.nii')
-            rt_match_brain, rt_match_mask = extract_brain(str(rt_match_pfname))
-            results += run_subprocess(['susan ' + str(rt_match_brain) + ' -1 1 3 1 0 ' + str(replacesuffix(rt_match_brain, '_susanf.nii'))])
-            # uncompress for spm
-            #results += run_subprocess(['fslchfiletype NIFTI ' + str(replacesuffix(rt_match_brain, '_susanf.nii.gz'))])
+            if pylabs.opts.overwrite or not Path(replacesuffix(rt_match_pfname, '_brain.nii.gz')).is_file():
+                rt_match_brain, rt_match_mask = extract_brain(str(rt_match_pfname))
+            else:
+                rt_match_brain, rt_match_mask = replacesuffix(rt_match_pfname, '_brain.nii.gz'), replacesuffix(rt_match_pfname, '_brain_mask.nii.gz')
+            if pylabs.opts.overwrite or not Path(replacesuffix(rt_match_pfname, '_brain_susanf.nii')).is_file():
+                results += run_subprocess(['susan ' + str(rt_match_brain) + ' -1 1 3 1 0 ' + str(replacesuffix(rt_match_brain, '_susanf.nii'))])
             results += run_subprocess(['fslchfiletype NIFTI ' + str(rt_match_mask)])
             rt_match_brain, rt_match_mask = replacesuffix(rt_match_brain, '_susanf.nii'), replacesuffix(rt_match_mask, '.nii')
             rt_mask_img = make_voi_mask(replacesuffix(rt_actfname, '.SPAR'), rt_match_brain, replacesuffix(rt_match_pfname, '_mrs_roi_mask.nii.gz'))
@@ -142,7 +146,7 @@ for rt_matchfname, lt_matchfname, rt_actfname, lt_actfname in zip(rt_matchfnames
                                                      'right', method='SPM', thresh=thresh)
 
             fractions = pd.DataFrame({'right_SPM': rt_spm_fractions, 'right_FSL': rt_fsl_fractions, 'left_SPM': lt_spm_fractions, 'left_FSL': lt_fsl_fractions})
-            fractions.to_csv(str(mrs_dir / str(subject + '_sv_voi_tissue_proportions.txt')), sep=',', columns=['left_SPM', 'right_SPM', 'left_FSL', 'right_FSL'])
+            fractions.to_csv(str(mrs_dir / str(subject + '_sv_voi_tissue_proportions.csv')), sep=',', columns=['left_SPM', 'right_SPM', 'left_FSL', 'right_FSL'])
             prov.log(str(mrs_dir / str(subject + '_sv_voi_tissue_proportions.txt')), 'csv text file containing percent CSF, GM, WM', str(lt_match_brain), provenance={'thresh': thresh, 'side': 'left', 'method': 'SPM', 'tissue': 'GM'}, script=__file__)
             prov.log(str(prependposix(lt_match_brain, 'c1')), 'grey matter SPM segmentation of matching left mrs voi', str(lt_match_brain), provenance={'thresh': thresh, 'side': 'left', 'method': 'SPM', 'tissue': 'GM'}, script=__file__)
             prov.log(str(prependposix(lt_match_brain, 'c2')), 'white matter SPM segmentation of matching left mrs voi', str(lt_match_brain), provenance={'thresh': thresh, 'side': 'left', 'method': 'SPM', 'tissue': 'WM'}, script=__file__)

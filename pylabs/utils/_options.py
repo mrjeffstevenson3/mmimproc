@@ -10,9 +10,18 @@ class PylabsOptions(object):
         rthreshpos (float): minimum positive r value for plot display. Default=0.7
         rthreshneg (float): minimum negative r value for plot display. Default=-0.7
     """
-    pthresh = 0.95
-    rthreshpos = 0.7
-    rthreshneg = -0.7
-    niifiletype = '.nii.gz'
+    p_thresh = 0.95
+    r_thresh_pos = 0.7
+    r_thresh_neg = -0.7
+    spm_seg_thr = 0.19
+    nii_ftype = 'NIFTI_GZ'
+    if nii_ftype == 'NIFTI_GZ':
+        nii_fext = '.nii.gz'
+    elif nii_ftype == 'NIFTI':
+        nii_fext = '.nii'
+    else:
+        nii_fext = None
+    fslmultifilequit = 'TRUE'
     orientation = 'LAS+'
+    overwrite = False
     fsldir = str(os.environ.get('FSLDIR'))

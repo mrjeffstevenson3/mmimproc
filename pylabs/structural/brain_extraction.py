@@ -1,39 +1,30 @@
-from pylabs.utils.__init__ import *
-
+# extract brain and mask function. now uses pylabs.opts to set file ext
 from pathlib import *
 from collections import defaultdict
 import subprocess
-from nipype.interfaces import fsl
-fslbet = fsl.BET(output_type='NIFTI_GZ')
-
 import pylabs
 import inspect
 import niprov
 import nipype
-
 import numpy as np
 import nibabel as nib
 from scipy.ndimage.measurements import center_of_mass as com
 from dipy.segment.mask import applymask
 from pylabs.utils._dirs import appendposix, replacesuffix
 from pylabs.utils.paths import getnetworkdataroot
-fs = getnetworkdataroot()
-from nipype.interfaces.fsl import Eddy
-eddy = Eddy(num_threads=24, output_type='NIFTI_GZ')
+from nipype.interfaces.fsl import Eddy  ## ?? why eddy
+eddy = Eddy(num_threads=24, output_type=pylabs.opts.nii_ftype) ## ?? why eddy
 from nipype.interfaces import fsl
-flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo', output_type='NIFTI_GZ')
+flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo', output_type=pylabs.opts.nii_ftype)
 if nipype.__version__ == '0.12.0':
-    applyxfm = fsl.ApplyXfm(interp='nearestneighbour', output_type='NIFTI_GZ')
+    applyxfm = fsl.ApplyXfm(interp='nearestneighbour', output_type=pylabs.opts.nii_ftype)
 else:
-    applyxfm = fsl.ApplyXFM(interp='nearestneighbour', output_type='NIFTI_GZ')
+    applyxfm = fsl.ApplyXFM(interp='nearestneighbour', output_type=pylabs.opts.nii_ftype)
 
-bet = fsl.BET(output_type='NIFTI_GZ')
+bet = fsl.BET(output_type=pylabs.opts.nii_ftype)
 prov = niprov.ProvenanceContext()
-
-
-import pylabs, os, inspect
-from os.path import split
-from os.path import join
+fs = getnetworkdataroot()  # should pick up datadir.target
+ext = pylabs.opts.nii_fext
 
 pylabs_basepath = Path(*Path(inspect.getabsfile(pylabs)).parts[:-2])
 mnicom = pylabs_basepath/'data'/'atlases'/'MNI152_T1_1mm_8kcomroi.nii'
@@ -50,14 +41,14 @@ def extract_brain(file, f_factor=0.3):
     :param f_factor: threshold factor for brain extraction
     :return: 
     '''
-    # remove ext if .nii or .nii.gz
+    # remove ext if .nii or .nii.gz output_type='NIFTI_GZ'
     file = Path(file)
     if not file.is_file():
         raise ValueError(str(file)+' file is not found. please check')
     if not any(ex in ['.nii', '.nii.gz'] for ex in file.suffixes):
         raise ValueError(str(file) + ' file is not nifti with .nii or .nii.gz ext. please check')
     else:
-        if ''.join(file.suffixes) == '.nii':
+        if ''.join(file.suffixes) == '.nii' and ext == '.nii':
             nifti = True  # uncompressed original
         else:
             nifti = False   # compressed original
@@ -65,19 +56,19 @@ def extract_brain(file, f_factor=0.3):
     flt.inputs.in_file = str(mnicom)
     flt.inputs.reference = str(file)
     flt.inputs.out_matrix_file = str(file.parent/appendposix(Path(file.stem).stem, '_comroi.mat'))
-    flt.inputs.out_file = str(replacesuffix(file, '_comroi.nii.gz'))
+    flt.inputs.out_file = str(replacesuffix(file, '_comroi'+ext))
     res = flt.run()
     # apply mat file to MNI mask file to cut off neck
     applyxfm.inputs.in_matrix_file = str(file.parent/appendposix(Path(file.stem).stem, '_comroi.mat'))
     applyxfm.inputs.in_file = str(mnimask)
-    applyxfm.inputs.out_file = str(replacesuffix(file, '_mask.nii.gz'))
+    applyxfm.inputs.out_file = str(replacesuffix(file, '_mask'+ext))
     applyxfm.inputs.reference = str(file)
     applyxfm.inputs.apply_xfm = True
     result = applyxfm.run()
     # crop neck with warped MNI mask
     file_data = nib.load(str(file)).get_data()
-    com_data = nib.load(str(replacesuffix(file, '_comroi.nii.gz'))).get_data()
-    mask_data = nib.load(str(replacesuffix(file, '_mask.nii.gz'))).get_data().astype(int)
+    com_data = nib.load(str(replacesuffix(file, '_comroi'+ext))).get_data()
+    mask_data = nib.load(str(replacesuffix(file, '_mask'+ext))).get_data().astype(int)
     crop_file_data = applymask(file_data, mask_data)
     # get com for fsl bet
     com_data_bmask = com_data > 2500
@@ -88,18 +79,18 @@ def extract_brain(file, f_factor=0.3):
     crop_img = nib.Nifti1Image(crop_file_data, nib.load(str(file)).affine)
     crop_img.set_qform(crop_img.affine, code=1)
     crop_img.set_sform(crop_img.affine, code=1)
-    nib.save(crop_img, str(replacesuffix(file, '_cropped.nii.gz')))
+    nib.save(crop_img, str(replacesuffix(file, '_cropped'+ext)))
     # extract brain and make fsl brain mask
     brain_outfname = str(replacesuffix(file, '_brain'))
-    bet.inputs.in_file = str(replacesuffix(file, '_cropped.nii.gz'))
+    bet.inputs.in_file = str(replacesuffix(file, '_cropped'+ext))
     bet.inputs.center = list(bet_com)
     bet.inputs.frac = f_factor
     bet.inputs.mask = True
     bet.inputs.skull = True
     bet.inputs.out_file = brain_outfname
     betres = bet.run()
-    prov.log(brain_outfname+'.nii.gz', 'generic fsl bet brain', str(file), script=__file__, provenance={'f factor': f_factor, 'com': list(bet_com)})
-    prov.log(str(replacesuffix(file, '_brain_mask.nii.gz')), 'generic fsl bet brain mask', str(file), script=__file__, provenance={'f factor': f_factor, 'com': list(bet_com)})
+    prov.log(brain_outfname+ext, 'generic fsl bet brain', str(file), script=__file__, provenance={'f factor': f_factor, 'com': list(bet_com), })
+    prov.log(str(replacesuffix(file, '_brain_mask'+ext)), 'generic fsl bet brain mask', str(file), script=__file__, provenance={'f factor': f_factor, 'com': list(bet_com)})
     return replacesuffix(file, '_brain.nii.gz'), replacesuffix(file, '_brain_mask.nii.gz')
 
 
