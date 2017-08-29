@@ -137,13 +137,13 @@ for rt_matchfname, lt_matchfname, rt_actfname, lt_actfname in zip(rt_matchfnames
                                                      str(replacesuffix(lt_match_brain, '_fslfast_seg_1.nii')),
                                                      str(replacesuffix(lt_match_brain, '_fslfast_seg_2.nii')),
                                                      str(replacesuffix(lt_match_brain, '_fslfast_seg_0.nii')),
-                                                     'right', method='FSL')
+                                                     'left', method='FSL')
             # calculate right SPM tissue fractions
             lt_spm_fractions = calc_tissue_fractions(replacesuffix(lt_match_pfname, '_mrs_roi_mask.nii.gz'),
                                                      str(prependposix(lt_match_brain, 'c1')),
                                                      str(prependposix(lt_match_brain, 'c2')),
                                                      str(prependposix(lt_match_brain, 'c3')),
-                                                     'right', method='SPM', thresh=thresh)
+                                                     'left', method='SPM', thresh=thresh)
 
             fractions = pd.DataFrame({'right_SPM': rt_spm_fractions, 'right_FSL': rt_fsl_fractions, 'left_SPM': lt_spm_fractions, 'left_FSL': lt_fsl_fractions})
             fractions.to_csv(str(mrs_dir / str(subject + '_sv_voi_tissue_proportions.csv')), sep=',', columns=['left_SPM', 'right_SPM', 'left_FSL', 'right_FSL'])
