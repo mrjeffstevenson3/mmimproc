@@ -88,13 +88,13 @@ for rt_matchfname, lt_matchfname, rt_actfname, lt_actfname in zip(rt_matchfnames
             fast.inputs.probability_maps = True
             fast.run()
             # calculate right FSL tissue fractions
-            rt_fsl_fractions = calc_tissue_fractions(replacesuffix(rt_match_pfname, '_mrs_roi_mask.nii.gz'),
-                                                     str(replacesuffix(rt_match_brain, '_fslfast_seg_1.nii')),
-                                                     str(replacesuffix(rt_match_brain, '_fslfast_seg_2.nii')),
-                                                     str(replacesuffix(rt_match_brain, '_fslfast_seg_0.nii')),
+            rt_fsl_fractions = calc_tissue_fractions(replacesuffix(rt_match_pfname, '_mrs_roi_mask'+ext),
+                                                     str(replacesuffix(rt_match_brain, '_fslfast_seg_1'+ext)),
+                                                     str(replacesuffix(rt_match_brain, '_fslfast_seg_2'+ext)),
+                                                     str(replacesuffix(rt_match_brain, '_fslfast_seg_0'+ext)),
                                                      'right', method='FSL')
             # calculate right SPM tissue fractions
-            rt_spm_fractions = calc_tissue_fractions(replacesuffix(rt_match_pfname, '_mrs_roi_mask.nii.gz'),
+            rt_spm_fractions = calc_tissue_fractions(replacesuffix(rt_match_pfname, '_mrs_roi_mask'+ext),
                                                      str(prependposix(rt_match_brain, 'c1')),
                                                      str(prependposix(rt_match_brain, 'c2')),
                                                      str(prependposix(rt_match_brain, 'c3')),
@@ -132,13 +132,13 @@ for rt_matchfname, lt_matchfname, rt_actfname, lt_actfname in zip(rt_matchfnames
             fast.inputs.probability_maps = True
             fast.run()
             # calculate right FSL tissue fractions
-            lt_fsl_fractions = calc_tissue_fractions(replacesuffix(lt_match_pfname, '_mrs_roi_mask.nii.gz'),
-                                                     str(replacesuffix(lt_match_brain, '_fslfast_seg_1.nii')),
-                                                     str(replacesuffix(lt_match_brain, '_fslfast_seg_2.nii')),
-                                                     str(replacesuffix(lt_match_brain, '_fslfast_seg_0.nii')),
+            lt_fsl_fractions = calc_tissue_fractions(replacesuffix(lt_match_pfname, '_mrs_roi_mask'+ext),
+                                                     str(replacesuffix(lt_match_brain, '_fslfast_seg_1'+ext)),
+                                                     str(replacesuffix(lt_match_brain, '_fslfast_seg_2'+ext)),
+                                                     str(replacesuffix(lt_match_brain, '_fslfast_seg_0'+ext)),
                                                      'left', method='FSL')
             # calculate right SPM tissue fractions
-            lt_spm_fractions = calc_tissue_fractions(replacesuffix(lt_match_pfname, '_mrs_roi_mask.nii.gz'),
+            lt_spm_fractions = calc_tissue_fractions(replacesuffix(lt_match_pfname, '_mrs_roi_mask'+ext),
                                                      str(prependposix(lt_match_brain, 'c1')),
                                                      str(prependposix(lt_match_brain, 'c2')),
                                                      str(prependposix(lt_match_brain, 'c3')),
@@ -146,7 +146,7 @@ for rt_matchfname, lt_matchfname, rt_actfname, lt_actfname in zip(rt_matchfnames
 
             fractions = pd.DataFrame({'right_SPM': rt_spm_fractions, 'right_FSL': rt_fsl_fractions, 'left_SPM': lt_spm_fractions, 'left_FSL': lt_fsl_fractions})
             fractions.to_csv(str(mrs_dir / str(subject + '_sv_voi_tissue_proportions.csv')), sep=',', columns=['left_SPM', 'right_SPM', 'left_FSL', 'right_FSL'])
-            prov.log(str(mrs_dir / str(subject + '_sv_voi_tissue_proportions.txt')), 'csv text file containing percent CSF, GM, WM', str(lt_match_brain), provenance={'thresh': thresh, 'side': 'left', 'method': 'SPM', 'tissue': 'GM'}, script=__file__)
+            prov.log(str(mrs_dir / str(subject + '_sv_voi_tissue_proportions.csv')), 'csv text file containing percent CSF, GM, WM', str(lt_match_brain), provenance={'thresh': thresh, 'side': 'left', 'method': 'SPM', 'tissue': 'GM'}, script=__file__)
             prov.log(str(prependposix(lt_match_brain, 'c1')), 'grey matter SPM segmentation of matching left mrs voi', str(lt_match_brain), provenance={'thresh': thresh, 'side': 'left', 'method': 'SPM', 'tissue': 'GM'}, script=__file__)
             prov.log(str(prependposix(lt_match_brain, 'c2')), 'white matter SPM segmentation of matching left mrs voi', str(lt_match_brain), provenance={'thresh': thresh, 'side': 'left', 'method': 'SPM', 'tissue': 'WM'}, script=__file__)
             prov.log(str(prependposix(lt_match_brain, 'c3')), 'CSF SPM segmentation of matching left mrs voi', str(lt_match_brain), provenance={'thresh': thresh, 'side': 'left', 'method': 'SPM', 'tissue': 'CSF'}, script=__file__)
