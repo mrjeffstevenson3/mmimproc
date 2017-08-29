@@ -27,11 +27,11 @@ thresh = pylabs.opts.spm_seg_thr
 fast = fsl.FAST(output_type=pylabs.opts.nii_ftype)
 fast.inputs.environ['FSLMULTIFILEQUIT'] = pylabs.opts.fslmultifilequit
 ext = pylabs.opts.nii_fext
-store = pd.HDFStore(str(fs/project/'mrs_tissue_fractions.h5')) # results of segmentation
+results_file = fs/project/'mrs_tissue_fractions.h5' # results of segmentation
 # instantiate subject id list container
 subjids_picks = SubjIdPicks()
 # list of subject ids to operate on
-picks = ['404'] # only does one subj until bug fix
+picks = ['997'] # only does one subj until bug fix
 setattr(subjids_picks, 'subjids', picks)
 setattr(subjids_picks, 'source_path', fs / project / 'sub-nbwr%(sid)s' / 'ses-1' / 'source_sparsdat')
 
@@ -55,6 +55,7 @@ for rt_matchfname, lt_matchfname, rt_actfname, lt_actfname in zip(rt_matchfnames
     # first do right side
     with WorkingContext(str(mrs_dir)):
         try:
+            # start with right side
             rt_match_pfname = mrs_dir / appendposix(rt_matchfname, ext)
             if pylabs.opts.overwrite or not Path(replacesuffix(rt_match_pfname, '_brain'+ext)).is_file():
                 rt_match_brain, rt_match_mask = extract_brain(str(rt_match_pfname))
@@ -64,11 +65,8 @@ for rt_matchfname, lt_matchfname, rt_actfname, lt_actfname in zip(rt_matchfnames
                 results += run_subprocess(['susan ' + str(rt_match_brain) + ' -1 1 3 1 0 ' + str(replacesuffix(rt_match_brain, '_susanf'+ext))])
             else:
                 rt_match_brain = replacesuffix(rt_match_brain, '_susanf'+ext)
-            #results += run_subprocess(['fslchfiletype NIFTI ' + str(rt_match_mask)])
-            #rt_match_brain, rt_match_mask = replacesuffix(rt_match_brain, '_susanf.nii'), replacesuffix(rt_match_mask, '.nii')
             if pylabs.opts.overwrite or not Path(replacesuffix(rt_match_pfname, '_mrs_roi_mask'+ext)).is_file():
                 rt_mask_img = make_voi_mask(replacesuffix(rt_actfname, '.SPAR'), rt_match_brain, replacesuffix(rt_match_pfname, '_mrs_roi_mask'+ext))
-
             # run SPM segmentation on right matching
             if pylabs.opts.overwrite or not (Path(prependposix(rt_match_brain, 'c1')).is_file() & Path(prependposix(rt_match_brain, 'c2')).is_file() & Path(prependposix(rt_match_brain, 'c3')).is_file()):
                 seg.inputs.data = str(rt_match_brain)
@@ -104,8 +102,7 @@ for rt_matchfname, lt_matchfname, rt_actfname, lt_actfname in zip(rt_matchfnames
                 results += run_subprocess(['susan ' + str(lt_match_brain) + ' -1 1 3 1 0 ' + str(replacesuffix(lt_match_brain, '_susanf'+ext))])
             else:
                 lt_match_brain = replacesuffix(lt_match_brain, '_susanf'+ext)
-            #results += run_subprocess(['fslchfiletype NIFTI ' + str(lt_match_mask)])
-            #lt_match_brain, lt_match_mask = replacesuffix(lt_match_brain, '_susanf.nii'), replacesuffix(lt_match_mask, '.nii')
+
             if pylabs.opts.overwrite or not Path(replacesuffix(lt_match_pfname, '_mrs_roi_mask'+ext)).is_file():
                 lt_mask_img = make_voi_mask(replacesuffix(lt_actfname, '.SPAR'), lt_match_brain, replacesuffix(lt_match_pfname, '_mrs_roi_mask'+ext))
 
@@ -162,9 +159,12 @@ for rt_matchfname, lt_matchfname, rt_actfname, lt_actfname in zip(rt_matchfnames
                                                      str(prependposix(lt_match_brain, 'c3')),
                                                      'left', method='SPM', thresh=thresh)
 
-            fractions = pd.DataFrame(lt_spm_fractions, columns=['left_SPM']).join(pd.DataFrame(rt_spm_fractions, columns=['right_SPM'])).join(pd.DataFrame(lt_fsl_fractions, columns=['left_FSL'])).join(pd.DataFrame(rt_fsl_fractions, columns=['right_FSL']))
+            try:
+                fractions = pd.DataFrame(lt_spm_fractions, columns=['left_SPM']).join(pd.DataFrame(rt_spm_fractions, columns=['right_SPM'])).join(pd.DataFrame(lt_fsl_fractions, columns=['left_FSL'])).join(pd.DataFrame(rt_fsl_fractions, columns=['right_FSL']))
+            except:
+                fractions = pd.DataFrame({'left_SPM': lt_spm_fractions, 'right_SPM': rt_spm_fractions, 'left_FSL': lt_fsl_fractions, 'right_FSL': rt_fsl_fractions})
             fractions.to_csv(str(mrs_dir / str(subject + '_sv_voi_tissue_proportions.csv')), sep=',', columns=['left_SPM', 'right_SPM', 'left_FSL', 'right_FSL'])
-            store[subject] = fractions
+            fractions.to_hdf(str(results_file), subject, append=True, format = 'table')
             prov.log(str(mrs_dir / str(subject + '_sv_voi_tissue_proportions.csv')), 'csv text file containing percent CSF, GM, WM', str(lt_match_brain), provenance={'thresh': thresh, 'side': 'left', 'method': 'SPM', 'tissue': 'GM'}, script=__file__)
             prov.log(str(prependposix(lt_match_brain, 'c1')), 'grey matter SPM segmentation of matching left mrs voi', str(lt_match_brain), provenance={'thresh': thresh, 'side': 'left', 'method': 'SPM', 'tissue': 'GM'}, script=__file__)
             prov.log(str(prependposix(lt_match_brain, 'c2')), 'white matter SPM segmentation of matching left mrs voi', str(lt_match_brain), provenance={'thresh': thresh, 'side': 'left', 'method': 'SPM', 'tissue': 'WM'}, script=__file__)

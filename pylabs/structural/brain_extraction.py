@@ -10,10 +10,8 @@ import numpy as np
 import nibabel as nib
 from scipy.ndimage.measurements import center_of_mass as com
 from dipy.segment.mask import applymask
-from pylabs.utils._dirs import appendposix, replacesuffix
+from pylabs.utils import appendposix, replacesuffix
 from pylabs.utils.paths import getnetworkdataroot
-from nipype.interfaces.fsl import Eddy  ## ?? why eddy
-eddy = Eddy(num_threads=24, output_type=pylabs.opts.nii_ftype) ## ?? why eddy
 from nipype.interfaces import fsl
 flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo', output_type=pylabs.opts.nii_ftype)
 if nipype.__version__ == '0.12.0':
@@ -91,7 +89,7 @@ def extract_brain(file, f_factor=0.3):
     betres = bet.run()
     prov.log(brain_outfname+ext, 'generic fsl bet brain', str(file), script=__file__, provenance={'f factor': f_factor, 'com': list(bet_com), })
     prov.log(str(replacesuffix(file, '_brain_mask'+ext)), 'generic fsl bet brain mask', str(file), script=__file__, provenance={'f factor': f_factor, 'com': list(bet_com)})
-    return replacesuffix(file, '_brain.nii.gz'), replacesuffix(file, '_brain_mask.nii.gz')
+    return replacesuffix(file, '_brain'+ext), replacesuffix(file, '_brain_mask'+ext)
 
 
 # old method with manual neck removal and center of mass

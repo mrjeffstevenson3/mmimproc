@@ -16,6 +16,7 @@ from pylabs.utils.paths import getnetworkdataroot
 from pylabs.utils.provenance import ProvenanceWrapper
 provenance = ProvenanceWrapper()
 fs = getnetworkdataroot()
+print(fs)
 flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo', output_type='NIFTI')
 if nipype.__version__ == '0.12.0':
     applyxfm = fsl.ApplyXfm(interp='nearestneighbour', output_type='NIFTI_GZ')

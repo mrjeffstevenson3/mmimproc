@@ -3,6 +3,7 @@ import os
 from os.path import join
 from pylabs.utils.paths import getnetworkdataroot
 fs = getnetworkdataroot()
+print (fs)
 
 
 def make_sessions_fm_dict(niidict, project, subject):
