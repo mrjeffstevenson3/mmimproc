@@ -80,7 +80,7 @@ for rt_matchfname, lt_matchfname, rt_actfname, lt_actfname in zip(rt_matchfnames
                 seg.inputs.wm_output_type = [False, False, True]
                 rt_out = seg.run()
             # run FSL segmentation on right matching
-            if pylabs.opts.overwrite or not (Path(replacesuffix(rt_match_brain, '_fslfast_seg_1'+ext)).is_file() & Path(replacesuffix(rt_match_brain, '_fslfast_seg_2'+ext).is_file()) & Path(replacesuffix(rt_match_brain, '_fslfast_seg_0'+ext))):                
+            if pylabs.opts.overwrite or not (Path(replacesuffix(rt_match_brain, '_fslfast_seg_1'+ext)).is_file() & Path(replacesuffix(rt_match_brain, '_fslfast_seg_2'+ext)).is_file() & Path(replacesuffix(rt_match_brain, '_fslfast_seg_0'+ext)).is_file()):                
                 fast.inputs.in_files = str(rt_match_brain)
                 fast.inputs.out_basename = str(replacesuffix(rt_match_brain, '_fslfast'))
                 fast.inputs.number_classes = 3
@@ -120,7 +120,7 @@ for rt_matchfname, lt_matchfname, rt_actfname, lt_actfname in zip(rt_matchfnames
                 seg.inputs.wm_output_type = [False, False, True]
                 lt_out = seg.run()
             # run FSL segmentation on left matching
-            if pylabs.opts.overwrite or not (Path(replacesuffix(lt_match_brain, '_fslfast_seg_1'+ext)).is_file() & Path(replacesuffix(lt_match_brain, '_fslfast_seg_2'+ext).is_file()) & Path(replacesuffix(lt_match_brain, '_fslfast_seg_0'+ext))):                
+            if pylabs.opts.overwrite or not (Path(replacesuffix(lt_match_brain, '_fslfast_seg_1'+ext)).is_file() & Path(replacesuffix(lt_match_brain, '_fslfast_seg_2'+ext)).is_file() & Path(replacesuffix(lt_match_brain, '_fslfast_seg_0'+ext)).is_file()):
                 fast.inputs.in_files = str(lt_match_brain)
                 fast.inputs.out_basename = str(replacesuffix(lt_match_brain, '_fslfast'))
                 fast.inputs.number_classes = 3
