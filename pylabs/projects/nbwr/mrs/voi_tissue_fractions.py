@@ -5,7 +5,7 @@ pylabs.datadir.target = 'jaba'
 pylabs.opts.nii_ftype = 'NIFTI'
 pylabs.opts.nii_fext = '.nii'
 pylabs.opts.fslmultifilequit = 'FALSE'
-pylabs.opts.overwrite = False
+pylabs.opts.overwrite = True
 import os
 from pathlib import *
 import pandas as pd
@@ -31,7 +31,7 @@ results_file = fs/project/'mrs_tissue_fractions.h5' # results of segmentation
 # instantiate subject id list container
 subjids_picks = SubjIdPicks()
 # list of subject ids to operate on
-picks = ['997'] # only does one subj until bug fix
+picks = ['401'] # only does one subj until bug fix
 setattr(subjids_picks, 'subjids', picks)
 setattr(subjids_picks, 'source_path', fs / project / 'sub-nbwr%(sid)s' / 'ses-1' / 'source_sparsdat')
 
@@ -69,7 +69,7 @@ for rt_matchfname, lt_matchfname, rt_actfname, lt_actfname in zip(rt_matchfnames
             else:
                 rt_match_brain = replacesuffix(rt_match_brain, '_susanf'+ext)
             if pylabs.opts.overwrite or not Path(replacesuffix(rt_match_pfname, '_mrs_roi_mask'+ext)).is_file():
-                print('running make mask voi on ' +replacesuffix(rt_actfname, '.SPAR')+' and '+ str(rt_match_brain))
+                print('running make mask voi on ' +str(replacesuffix(rt_actfname, '.SPAR'))+' and '+ str(rt_match_brain))
                 rt_mask_img = make_voi_mask(replacesuffix(rt_actfname, '.SPAR'), rt_match_brain, replacesuffix(rt_match_pfname, '_mrs_roi_mask'+ext))
             # run SPM segmentation on right matching
             if pylabs.opts.overwrite or not (Path(prependposix(rt_match_brain, 'c1')).is_file() & Path(prependposix(rt_match_brain, 'c2')).is_file() & Path(prependposix(rt_match_brain, 'c3')).is_file()):
@@ -113,7 +113,7 @@ for rt_matchfname, lt_matchfname, rt_actfname, lt_actfname in zip(rt_matchfnames
                 lt_match_brain = replacesuffix(lt_match_brain, '_susanf'+ext)
 
             if pylabs.opts.overwrite or not Path(replacesuffix(lt_match_pfname, '_mrs_roi_mask'+ext)).is_file():
-                print('running make mask voi on ' + replacesuffix(lt_actfname, '.SPAR') + ' and ' + str(lt_match_brain))
+                print('running make mask voi on ' + str(replacesuffix(lt_actfname, '.SPAR')) + ' and ' + str(lt_match_brain))
                 lt_mask_img = make_voi_mask(replacesuffix(lt_actfname, '.SPAR'), lt_match_brain, replacesuffix(lt_match_pfname, '_mrs_roi_mask'+ext))
 
             # run SPM segmentation on left matching
@@ -177,6 +177,8 @@ for rt_matchfname, lt_matchfname, rt_actfname, lt_actfname in zip(rt_matchfnames
                 fractions = pd.DataFrame({'left_SPM': lt_spm_fractions, 'right_SPM': rt_spm_fractions, 'left_FSL': lt_fsl_fractions, 'right_FSL': rt_fsl_fractions})
             fractions.to_csv(str(mrs_dir / str(subject + '_sv_voi_tissue_proportions.csv')), sep=',', columns=['left_SPM', 'right_SPM', 'left_FSL', 'right_FSL'])
             fractions.to_hdf(str(results_file), subject, append=True, format = 'table')
+            print ('results for tissue fractions for subject '+str(subject))
+            print(fractions)
             prov.log(str(mrs_dir / str(subject + '_sv_voi_tissue_proportions.csv')), 'csv text file containing percent CSF, GM, WM', str(lt_match_brain), provenance={'thresh': thresh, 'side': 'left', 'method': 'SPM', 'tissue': 'GM'}, script=__file__)
             prov.log(str(prependposix(lt_match_brain, 'c1')), 'grey matter SPM segmentation of matching left mrs voi', str(lt_match_brain), provenance={'thresh': thresh, 'side': 'left', 'method': 'SPM', 'tissue': 'GM'}, script=__file__)
             prov.log(str(prependposix(lt_match_brain, 'c2')), 'white matter SPM segmentation of matching left mrs voi', str(lt_match_brain), provenance={'thresh': thresh, 'side': 'left', 'method': 'SPM', 'tissue': 'WM'}, script=__file__)
