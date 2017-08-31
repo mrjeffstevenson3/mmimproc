@@ -31,7 +31,7 @@ results_file = fs/project/'mrs_tissue_fractions.h5' # results of segmentation
 # instantiate subject id list container
 subjids_picks = SubjIdPicks()
 # list of subject ids to operate on
-picks = ['401'] # only does one subj until bug fix
+picks = ['404'] # only does one subj until bug fix
 setattr(subjids_picks, 'subjids', picks)
 setattr(subjids_picks, 'source_path', fs / project / 'sub-nbwr%(sid)s' / 'ses-1' / 'source_sparsdat')
 

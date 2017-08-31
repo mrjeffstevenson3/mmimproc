@@ -15,7 +15,7 @@ gannettpath = pylabs.utils.paths.getgannettpath()
 # instantiate subject id list container
 subjids_picks = SubjIdPicks()
 # list of subject ids to operate on
-picks = ['307'] # only does one subj until bug fix
+picks = ['405'] # only does one subj until bug fix
 setattr(subjids_picks, 'subjids', picks)
 setattr(subjids_picks, 'source_path', fs / project / 'sub-nbwr%(sid)s' / 'ses-1' / 'source_sparsdat')
 
@@ -60,10 +60,10 @@ for rt_act, rt_ref, lt_act, lt_ref in zip(rt_actfnames, rt_reffnames, lt_actfnam
             for x in results_dir.rglob("MRS*"):
                 if '_old' not in str(x):
                     for f in x.glob("*.pdf"):
-                        if 'fit' in str(x):
-                            appendposix(f, '_fit')
-                        if 'output' in str(x):
-                            appendposix(f, '_output')
+                        if 'fit' in str(f.parts[-2]):
+                            f.rename(appendposix(f, '_fit'))
+                        if 'output' in str(f.parts[-2]):
+                            f.rename(appendposix(f, '_output'))
             print("({})".format(", ".join(output)))
             print('GABA fits completed normally for ' + results_dir.parts[-3])
             with open(str(results_dir/'mrs_gaba_log{:%Y%m%d%H%M}.json'.format(datetime.datetime.now())), mode='a') as logr:
