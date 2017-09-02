@@ -14,7 +14,7 @@ from nipype.interfaces import fsl
 from pylabs.mrs.tissue_fractions import make_voi_mask, calc_tissue_fractions
 from pylabs.structural.brain_extraction import extract_brain
 from pylabs.utils import ProvenanceWrapper, run_subprocess, WorkingContext, getnetworkdataroot, appendposix, replacesuffix, \
-    prependposix
+    prependposix, getspmpath
 from pylabs.projects.nbwr.file_names import project, SubjIdPicks, get_matching_voi_names, get_gaba_names
 prov = ProvenanceWrapper()
 
@@ -22,6 +22,7 @@ os.environ['FSLOUTPUTTYPE'] = pylabs.opts.nii_ftype
 os.environ["FSLMULTIFILEQUIT"] = pylabs.opts.fslmultifilequit
 
 fs = Path(getnetworkdataroot())
+spm_dir = getspmpath()
 seg = spm.Segment()
 thresh = pylabs.opts.spm_seg_thr
 fast = fsl.FAST(output_type=pylabs.opts.nii_ftype)
@@ -31,7 +32,7 @@ results_file = fs/project/'mrs_tissue_fractions.h5' # results of segmentation
 # instantiate subject id list container
 subjids_picks = SubjIdPicks()
 # list of subject ids to operate on
-picks = ['404'] # only does one subj until bug fix
+picks = ['401'] # only does one subj until bug fix
 setattr(subjids_picks, 'subjids', picks)
 setattr(subjids_picks, 'source_path', fs / project / 'sub-nbwr%(sid)s' / 'ses-1' / 'source_sparsdat')
 
@@ -75,12 +76,20 @@ for rt_matchfname, lt_matchfname, rt_actfname, lt_actfname in zip(rt_matchfnames
             if pylabs.opts.overwrite or not (Path(prependposix(rt_match_brain, 'c1')).is_file() & Path(prependposix(rt_match_brain, 'c2')).is_file() & Path(prependposix(rt_match_brain, 'c3')).is_file()):
                 print('running SPM Segmentation on ' + str(rt_match_brain)+' and '+str(rt_match_mask))
                 seg.inputs.data = str(rt_match_brain)
-                seg.inputs.mask_image = str(rt_match_mask)
+                #seg.inputs.mask_image = str(rt_match_mask)
                 seg.inputs.ignore_exception = True
                 seg.inputs.save_bias_corrected = False
                 seg.inputs.csf_output_type = [False, False, True]
                 seg.inputs.gm_output_type = [False, False, True]
                 seg.inputs.wm_output_type = [False, False, True]
+                seg.inputs.affine_regularization = 'mni'
+                seg.inputs.warping_regularization = 0.3
+                seg.inputs.gaussians_per_class = [1, 2, 3]
+                seg.inputs.tissue_prob_maps = [str(spm_dir/'tpm'/'TPM.nii'), str(spm_dir/'tpm'/'TPM.nii'), str(spm_dir/'tpm'/'TPM.nii')]
+                seg.inputs.paths = str(spm_dir)
+                seg.inputs.bias_fwhm = 60
+                seg.inputs.bias_regularization = 0.001
+                seg.inputs.sampling_distance = 3
                 rt_out = seg.run()
             # run FSL segmentation on right matching
             if pylabs.opts.overwrite or not (Path(replacesuffix(rt_match_brain, '_fslfast_seg_1'+ext)).is_file() & Path(replacesuffix(rt_match_brain, '_fslfast_seg_2'+ext)).is_file() & Path(replacesuffix(rt_match_brain, '_fslfast_seg_0'+ext)).is_file()):
@@ -120,13 +129,21 @@ for rt_matchfname, lt_matchfname, rt_actfname, lt_actfname in zip(rt_matchfnames
             if pylabs.opts.overwrite or not (Path(prependposix(lt_match_brain, 'c1')).is_file() & Path(prependposix(lt_match_brain, 'c2')).is_file() & Path(prependposix(lt_match_brain, 'c3')).is_file()):
                 print('running SPM Segmentation on ' + str(lt_match_brain) + ' and ' + str(lt_match_mask))
                 seg.inputs.data = str(lt_match_brain)
-                seg.inputs.mask_image = str(lt_match_mask)
+                #seg.inputs.mask_image = str(lt_match_mask)
                 seg.inputs.ignore_exception = True
                 seg.inputs.save_bias_corrected = False
                 seg.inputs.csf_output_type = [False, False, True]
                 seg.inputs.gm_output_type = [False, False, True]
                 seg.inputs.wm_output_type = [False, False, True]
-                lt_out = seg.run()
+                seg.inputs.affine_regularization = 'mni'
+                seg.inputs.warping_regularization = 0.3
+                seg.inputs.gaussians_per_class = [1, 2, 3]
+                seg.inputs.tissue_prob_maps = [str(spm_dir/'tpm'/'TPM.nii'), str(spm_dir/'tpm'/'TPM.nii'), str(spm_dir/'tpm'/'TPM.nii')]
+                seg.inputs.paths = str(spm_dir)
+                seg.inputs.bias_fwhm = 60
+                seg.inputs.bias_regularization = 0.001
+                seg.inputs.sampling_distance = 3
+                rt_out = seg.run()
             # run FSL segmentation on left matching
             if pylabs.opts.overwrite or not (Path(replacesuffix(lt_match_brain, '_fslfast_seg_1'+ext)).is_file() & Path(replacesuffix(lt_match_brain, '_fslfast_seg_2'+ext)).is_file() & Path(replacesuffix(lt_match_brain, '_fslfast_seg_0'+ext)).is_file()):
                 print('running FSL Segmentation on ' + str(lt_match_brain))

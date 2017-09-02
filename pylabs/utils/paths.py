@@ -114,3 +114,11 @@ def getslicercmd(linux_ver='Slicer-4.7.0-2017-03-12-linux-amd64', mac_ver='Slice
     if not slicer_path.parent.is_dir():
         raise ValueError('Slicer path not found for ' + str(slicer_path))
     return slicer_path
+
+def getspmpath():
+    hostname = socket.gethostname()
+    if platform.system() == 'Darwin' and any(x in hostname for x in ['Jeffs-MacBook-Pro-3.local', 'Jeffs-MBP-3', '.dhcp4.washington.edu']):
+        spm_path = Path(pylabs_dir.parent, 'spm12b')
+    elif platform.system() == 'Linux' and hostname in ['scotty', 'scotty.ilabs.uw.edu', 'redshirt.ilabs.uw.edu', 'redshirt']:
+        spm_path = Path(pylabs_dir.parent, 'spm12')
+    return spm_path
