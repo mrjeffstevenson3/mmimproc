@@ -5,7 +5,7 @@ pylabs.datadir.target = 'scotty'
 pylabs.opts.nii_ftype = 'NIFTI'
 pylabs.opts.nii_fext = '.nii'
 pylabs.opts.fslmultifilequit = 'FALSE'
-pylabs.opts.overwrite = False
+pylabs.opts.overwrite = True
 thresh = pylabs.opts.spm_seg_thr
 import os
 from pathlib import *
