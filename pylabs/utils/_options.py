@@ -13,7 +13,7 @@ class PylabsOptions(object):
     p_thresh = 0.95
     r_thresh_pos = 0.7
     r_thresh_neg = -0.7
-    spm_seg_thr = 0.19
+    spm_seg_thr = 0.5
     nii_ftype = 'NIFTI_GZ'
     if nii_ftype == 'NIFTI_GZ':
         nii_fext = '.nii.gz'
