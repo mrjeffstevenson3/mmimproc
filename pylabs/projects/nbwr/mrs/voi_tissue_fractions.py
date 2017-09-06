@@ -76,20 +76,23 @@ for rt_matchfname, lt_matchfname, rt_actfname, lt_actfname in zip(rt_matchfnames
             if pylabs.opts.overwrite or not (Path(prependposix(rt_match_brain, 'c1')).is_file() & Path(prependposix(rt_match_brain, 'c2')).is_file() & Path(prependposix(rt_match_brain, 'c3')).is_file()):
                 print('running SPM Segmentation on ' + str(rt_match_brain)+' and '+str(rt_match_mask))
                 seg.inputs.data = str(rt_match_brain)
-                #seg.inputs.mask_image = str(rt_match_mask)
-                seg.inputs.ignore_exception = True
-                seg.inputs.save_bias_corrected = False
-                seg.inputs.csf_output_type = [False, False, True]
-                seg.inputs.gm_output_type = [False, False, True]
-                seg.inputs.wm_output_type = [False, False, True]
-                seg.inputs.affine_regularization = 'mni'
-                seg.inputs.warping_regularization = 0.001
-                seg.inputs.gaussians_per_class = [1, 2, 3]
+                #seg.inputs.mask_image = str  ##
+                seg.inputs.clean_masks = 'no'  ##
+                seg.inputs.ignore_exception = True  ##
+                seg.inputs.mfile = True  ##
+                seg.inputs.save_bias_corrected = False  ##
+                seg.inputs.csf_output_type = [False, False, True]  ##
+                seg.inputs.gm_output_type = [False, False, True]   ##
+                seg.inputs.wm_output_type = [False, False, True]   ##
+                seg.inputs.affine_regularization = 'mni'  ##
+                seg.inputs.warping_regularization = 0.001  ##
+                #seg.inputs.warp_frequency_cutoff =
+                seg.inputs.gaussians_per_class = [1, 2, 3]  ##
                 seg.inputs.tissue_prob_maps = [str(spm_dir/'tpm'/'TPM.nii'), str(spm_dir/'tpm'/'TPM.nii'), str(spm_dir/'tpm'/'TPM.nii')]
-                seg.inputs.paths = str(spm_dir)
-                seg.inputs.bias_fwhm = 60
-                seg.inputs.bias_regularization = 0.001
-                seg.inputs.sampling_distance = 3
+                seg.inputs.paths = str(spm_dir)  ##
+                seg.inputs.bias_fwhm = 60  ##
+                seg.inputs.bias_regularization = 0.001  ##
+                seg.inputs.sampling_distance = 3  ##
                 rt_out = seg.run()
             # run FSL segmentation on right matching
             if pylabs.opts.overwrite or not (Path(replacesuffix(rt_match_brain, '_fslfast_seg_1'+ext)).is_file() & Path(replacesuffix(rt_match_brain, '_fslfast_seg_2'+ext)).is_file() & Path(replacesuffix(rt_match_brain, '_fslfast_seg_0'+ext)).is_file()):
@@ -136,12 +139,12 @@ for rt_matchfname, lt_matchfname, rt_actfname, lt_actfname in zip(rt_matchfnames
                 seg.inputs.gm_output_type = [False, False, True]
                 seg.inputs.wm_output_type = [False, False, True]
                 seg.inputs.affine_regularization = 'mni'
-                seg.inputs.warping_regularization = 0.01
+                seg.inputs.warping_regularization = 0.0001
                 seg.inputs.gaussians_per_class = [1, 2, 3]
                 seg.inputs.tissue_prob_maps = [str(spm_dir/'tpm'/'TPM.nii'), str(spm_dir/'tpm'/'TPM.nii'), str(spm_dir/'tpm'/'TPM.nii')]
                 seg.inputs.paths = str(spm_dir)
                 seg.inputs.bias_fwhm = 60
-                seg.inputs.bias_regularization = 0.0001
+                seg.inputs.bias_regularization = 0.001
                 seg.inputs.sampling_distance = 3
                 rt_out = seg.run()
             # run FSL segmentation on left matching
@@ -189,6 +192,7 @@ for rt_matchfname, lt_matchfname, rt_actfname, lt_actfname in zip(rt_matchfnames
                                                      'left', method='SPM', thresh=thresh)
 
             #try:
+            # use merge df
             fractions = pd.DataFrame({'left_SPM': lt_spm_fractions, 'right_SPM': rt_spm_fractions, 'left_FSL': lt_fsl_fractions, 'right_FSL': rt_fsl_fractions})
             fractions.to_csv(str(mrs_dir / str(subject + '_sv_voi_tissue_proportions.csv')), sep=',', columns=['left_SPM', 'right_SPM', 'left_FSL', 'right_FSL'])
             # fractions.to_hdf(str(results_file), subject, append=True, format = 'table')
