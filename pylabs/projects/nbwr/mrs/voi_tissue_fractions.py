@@ -1,11 +1,11 @@
 # needs to be made into callable function using extract_brain and spm for segs as death match
 # first set global root data directory
 import pylabs
-pylabs.datadir.target = 'jaba'
+pylabs.datadir.target = 'scotty'
 pylabs.opts.nii_ftype = 'NIFTI'
 pylabs.opts.nii_fext = '.nii'
 pylabs.opts.fslmultifilequit = 'FALSE'
-pylabs.opts.overwrite = True
+pylabs.opts.overwrite = False
 import os
 from pathlib import *
 import pandas as pd
@@ -32,7 +32,7 @@ results_file = fs/project/'mrs_tissue_fractions.h5' # results of segmentation
 # instantiate subject id list container
 subjids_picks = SubjIdPicks()
 # list of subject ids to operate on
-picks = ['401'] # only does one subj until bug fix
+picks = ['401', '404', '405', '407', '409'] # only does one subj until bug fix
 setattr(subjids_picks, 'subjids', picks)
 setattr(subjids_picks, 'source_path', fs / project / 'sub-nbwr%(sid)s' / 'ses-1' / 'source_sparsdat')
 
@@ -83,7 +83,7 @@ for rt_matchfname, lt_matchfname, rt_actfname, lt_actfname in zip(rt_matchfnames
                 seg.inputs.gm_output_type = [False, False, True]
                 seg.inputs.wm_output_type = [False, False, True]
                 seg.inputs.affine_regularization = 'mni'
-                seg.inputs.warping_regularization = 0.3
+                seg.inputs.warping_regularization = 0.001
                 seg.inputs.gaussians_per_class = [1, 2, 3]
                 seg.inputs.tissue_prob_maps = [str(spm_dir/'tpm'/'TPM.nii'), str(spm_dir/'tpm'/'TPM.nii'), str(spm_dir/'tpm'/'TPM.nii')]
                 seg.inputs.paths = str(spm_dir)
@@ -136,12 +136,12 @@ for rt_matchfname, lt_matchfname, rt_actfname, lt_actfname in zip(rt_matchfnames
                 seg.inputs.gm_output_type = [False, False, True]
                 seg.inputs.wm_output_type = [False, False, True]
                 seg.inputs.affine_regularization = 'mni'
-                seg.inputs.warping_regularization = 0.3
+                seg.inputs.warping_regularization = 0.01
                 seg.inputs.gaussians_per_class = [1, 2, 3]
                 seg.inputs.tissue_prob_maps = [str(spm_dir/'tpm'/'TPM.nii'), str(spm_dir/'tpm'/'TPM.nii'), str(spm_dir/'tpm'/'TPM.nii')]
                 seg.inputs.paths = str(spm_dir)
                 seg.inputs.bias_fwhm = 60
-                seg.inputs.bias_regularization = 0.001
+                seg.inputs.bias_regularization = 0.0001
                 seg.inputs.sampling_distance = 3
                 rt_out = seg.run()
             # run FSL segmentation on left matching
@@ -188,12 +188,10 @@ for rt_matchfname, lt_matchfname, rt_actfname, lt_actfname in zip(rt_matchfnames
                                                      str(prependposix(lt_match_brain, 'c3')),
                                                      'left', method='SPM', thresh=thresh)
 
-            try:
-                fractions = pd.DataFrame(lt_spm_fractions, columns=['left_SPM']).join(pd.DataFrame(rt_spm_fractions, columns=['right_SPM'])).join(pd.DataFrame(lt_fsl_fractions, columns=['left_FSL'])).join(pd.DataFrame(rt_fsl_fractions, columns=['right_FSL']))
-            except:
-                fractions = pd.DataFrame({'left_SPM': lt_spm_fractions, 'right_SPM': rt_spm_fractions, 'left_FSL': lt_fsl_fractions, 'right_FSL': rt_fsl_fractions})
+            #try:
+            fractions = pd.DataFrame({'left_SPM': lt_spm_fractions, 'right_SPM': rt_spm_fractions, 'left_FSL': lt_fsl_fractions, 'right_FSL': rt_fsl_fractions})
             fractions.to_csv(str(mrs_dir / str(subject + '_sv_voi_tissue_proportions.csv')), sep=',', columns=['left_SPM', 'right_SPM', 'left_FSL', 'right_FSL'])
-            fractions.to_hdf(str(results_file), subject, append=True, format = 'table')
+            # fractions.to_hdf(str(results_file), subject, append=True, format = 'table')
             print ('results for tissue fractions for subject '+str(subject))
             print(fractions)
             prov.log(str(mrs_dir / str(subject + '_sv_voi_tissue_proportions.csv')), 'csv text file containing percent CSF, GM, WM', str(lt_match_brain), provenance={'thresh': thresh, 'side': 'left', 'method': 'SPM', 'tissue': 'GM'}, script=__file__)
