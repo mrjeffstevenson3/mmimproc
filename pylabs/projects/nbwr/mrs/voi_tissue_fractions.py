@@ -62,7 +62,7 @@ results_file = fs/project/'mrs_tissue_fractions.h5' # results of segmentation
 subjids_picks = SubjIdPicks()
 # list of subject ids to operate on
 #picks = ['007', '088', '107', '132', '144', '226', '307', '317'] # only does one subj until bug fix
-picks = ['409']
+picks = ['405']
 setattr(subjids_picks, 'subjids', picks)
 setattr(subjids_picks, 'source_path', fs / project / 'sub-nbwr%(sid)s' / 'ses-1' / 'source_sparsdat')
 
