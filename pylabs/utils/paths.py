@@ -38,10 +38,11 @@ def getlocaldataroot():
     else:
         raise ValueError('Don''t know where data root is on this computer.')
 
-def getnetworkdataroot():
+def getnetworkdataroot(verbose=True):
     hostname = socket.gethostname()
     if pylabs.datadir.target == 'scotty':
-        print('setting root data directory to scotty.')
+        if verbose:
+            print('setting root data directory to scotty.')
         if hostname == 'scotty.ilabs.uw.edu':
             return '/media/DiskArray/shared_data/js/'
         elif hostname in ['redshirt.ilabs.uw.edu', 'redshirt', 'uhora.ilabs.uw.edu', 'uhora', 'sulu.ilabs.uw.edu', 'sulu', 'JVDB']:
@@ -51,7 +52,8 @@ def getnetworkdataroot():
         else:
             raise ValueError('Dont know where scotty network root data dir is on this computer.')
     if pylabs.datadir.target == 'jaba':
-        print('setting root data directory to jaba.')
+        if verbose:
+            print('setting root data directory to jaba.')
         if hostname in ['scotty.ilabs.uw.edu', 'scotty', 'redshirt.ilabs.uw.edu', 'redshirt', 'uhora.ilabs.uw.edu', 'uhora', 'sulu.ilabs.uw.edu', 'sulu', 'JVDB']:
             return '/mnt/brainstudio/data'
         elif any(x in hostname for x in ['Jeffs-MacBook-Pro-3.local', 'Jeffs-MBP-3', '.dhcp4.washington.edu']):
