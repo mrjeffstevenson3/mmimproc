@@ -119,6 +119,9 @@ def getspmpath():
     hostname = socket.gethostname()
     if platform.system() == 'Darwin' and any(x in hostname for x in ['Jeffs-MacBook-Pro-3.local', 'Jeffs-MBP-3', '.dhcp4.washington.edu']):
         spm_path = Path(pylabs_dir.parent, 'spm12b')
+
     elif platform.system() == 'Linux' and hostname in ['scotty', 'scotty.ilabs.uw.edu', 'redshirt.ilabs.uw.edu', 'redshirt']:
         spm_path = Path(pylabs_dir.parent, 'spm12')
-    return spm_path
+
+    tpm_path = spm_path / 'tpm' / 'TPM.nii'
+    return spm_path, tpm_path
