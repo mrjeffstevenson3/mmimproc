@@ -93,3 +93,21 @@ source $FREESURFER_HOME/SetUpFreeSurfer.sh`
             . $MNE_ROOT/bin/mne_setup_sh
 
 26. Download and install the brain connectivity toolkit from https://sites.google.com/site/bctnet in ~/Software
+
+27. Download and install rclone for linux google drive and dropbox comand line execution from https://rclone.org/downloads/ or see below:
+        **Fetch and unpack** 
+        curl -O https://downloads.rclone.org/rclone-current-linux-amd64.zip
+        unzip rclone-current-linux-amd64.zip
+        cd rclone-*-linux-amd64 
+        **Copy binary file**
+        sudo cp rclone /usr/bin/
+        sudo chown root:root /usr/bin/rclone
+        sudo chmod 755 /usr/bin/rclone
+        **Install manpage**
+        sudo mkdir -p /usr/local/share/man/man1
+        sudo cp rclone.1 /usr/local/share/man/man1/
+        sudo mandb 
+        **Run rclone config to setup. See rclone config docs for more details.**
+        rclone config
+            set up as teamdrive using existing google drive hierarchy eg ${HOME}/Software/gdrive/NBWR/subject_scans/results
+
