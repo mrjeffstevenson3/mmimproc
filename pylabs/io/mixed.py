@@ -63,7 +63,7 @@ def getgabavalue(fitpdf):
     pdf_text = pdftotxt(str(fitpdf))
     for line in pdf_text.splitlines():
         if 'inst. units.' in line:
-            gaba_val = line.split(' ')[3]
+            gaba_val = line.split()[4]
     if gaba_val == None:
-        raise ValueError('could not fing a gaba valur in '+str(fitpdf))
+        raise ValueError('could not find a gaba value in '+str(fitpdf))
     return float(gaba_val)

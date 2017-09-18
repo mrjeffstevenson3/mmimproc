@@ -4,10 +4,10 @@
 import pylabs
 pylabs.datadir.target = 'scotty'
 from pathlib import *
-import datetime, json, platform
-from pylabs.io.mixed import getgabavalue
-from pylabs.utils import ProvenanceWrapper, run_subprocess, WorkingContext, getnetworkdataroot, appendposix, replacesuffix
+import datetime, json
+from pylabs.utils import ProvenanceWrapper, run_subprocess, WorkingContext, getnetworkdataroot, appendposix
 from pylabs.projects.nbwr.file_names import project, SubjIdPicks, get_gaba_names
+from pylabs.io.mixed import getgabavalue
 prov = ProvenanceWrapper()
 
 fs = Path(getnetworkdataroot())
@@ -45,9 +45,8 @@ for rt_act, rt_ref, lt_act, lt_ref in zip(rt_actfnames, rt_reffnames, lt_actfnam
         try:
             p = Path('.')
             old_dirs = [x for x in p.iterdir() if x.is_dir() and ('MRSfit' in str(x) or 'MRSload' in str(x))]
-            print (results_dir, p, old_dirs)
             if len(old_dirs) != 0:
-                for d in old_dirs:
+                for d in sorted(old_dirs, reverse=True):
                     d.rename(appendposix(d, '_old'))
             print ('starting gaba fits for '+ results_dir.parts[-3])
             output += run_subprocess(rt_cmd)
@@ -58,16 +57,17 @@ for rt_act, rt_ref, lt_act, lt_ref in zip(rt_actfnames, rt_reffnames, lt_actfnam
             with open(str(results_dir/'mrs_gaba_error{:%Y%m%d%H%M}.json'.format(datetime.datetime.now())), mode='a') as logr:
                 json.dump(output, logr, indent=2)
         else:
-            for x in results_dir.rglob("MRS*"):
+            for x in results_dir.glob("MRS*"):
                 if '_old' not in str(x):
                     for f in x.glob("*.pdf"):
                         if 'fit' in str(f.parts[-2]):
                             f.rename(appendposix(f, '_fit'))
                             if '_RT' in str(f.stem):
-                                rt_gaba_value = getgabavalue(f)
+                                print (appendposix(f, '_fit'), appendposix(f, '_fit').is_file())
+                                rt_gaba_value = getgabavalue(appendposix(f, '_fit'))
                                 output += ('Right gaba results', str(rt_gaba_value),)
                             elif '_LT' in str(f.stem):
-                                lt_gaba_value = getgabavalue(f)
+                                lt_gaba_value = getgabavalue(appendposix(f, '_fit'))
                                 output += ('Left gaba results', str(lt_gaba_value),)
                         if 'output' in str(f.parts[-2]):
                             f.rename(appendposix(f, '_output'))
