@@ -5,6 +5,7 @@ import pylabs
 pylabs.datadir.target = 'scotty'
 from pathlib import *
 import datetime, json, platform
+from pylabs.io.mixed import getgabavalue
 from pylabs.utils import ProvenanceWrapper, run_subprocess, WorkingContext, getnetworkdataroot, appendposix, replacesuffix
 from pylabs.projects.nbwr.file_names import project, SubjIdPicks, get_gaba_names
 prov = ProvenanceWrapper()
@@ -15,7 +16,7 @@ gannettpath = pylabs.utils.paths.getgannettpath()
 # instantiate subject id list container
 subjids_picks = SubjIdPicks()
 # list of subject ids to operate on
-picks = ['135'] # only does one subj until bug fix
+picks = ['401'] # only does one subj until bug fix
 setattr(subjids_picks, 'subjids', picks)
 setattr(subjids_picks, 'source_path', fs / project / 'sub-nbwr%(sid)s' / 'ses-1' / 'source_sparsdat')
 
@@ -62,22 +63,17 @@ for rt_act, rt_ref, lt_act, lt_ref in zip(rt_actfnames, rt_reffnames, lt_actfnam
                     for f in x.glob("*.pdf"):
                         if 'fit' in str(f.parts[-2]):
                             f.rename(appendposix(f, '_fit'))
-                            if platform.system() == 'Linux':
-                                output += run_subprocess('pdftotext ' + str(appendposix(f, '_fit')))
-                                with open(str(replacesuffix(f, '_fit.txt')), 'r') as ft:
-                                    for line in ft:
-                                        if 'inst. units.' in line:
-                                            if '_RT' in str(f.stem):
-                                                gaba_rt = float(line.split(' ')[2])
-                                                output += ('Right gaba results', str(gaba_rt),)
-                                            elif '_LT' in str(f.stem):
-                                                gaba_lt = float(line.split(' ')[2])
-                                                output += ('Left gaba results', str(gaba_lt),)
+                            if '_RT' in str(f.stem):
+                                rt_gaba_value = getgabavalue(f)
+                                output += ('Right gaba results', str(rt_gaba_value),)
+                            elif '_LT' in str(f.stem):
+                                lt_gaba_value = getgabavalue(f)
+                                output += ('Left gaba results', str(lt_gaba_value),)
                         if 'output' in str(f.parts[-2]):
                             f.rename(appendposix(f, '_output'))
             print("({})".format(", ".join(output)))
             print('GABA fits completed normally for ' + results_dir.parts[-3])
-            print ('Left gaba results = ' + str(gaba_lt) + ' and right side gaba = ' + str(gaba_rt))
+            print ('Left gaba results = ' + str(lt_gaba_value) + ' and right side gaba = ' + str(rt_gaba_value))
             with open(str(results_dir/'mrs_gaba_log{:%Y%m%d%H%M}.json'.format(datetime.datetime.now())), mode='a') as logr:
                 json.dump(output, logr, indent=2)
             for p in results_dir.rglob("*.pdf"):

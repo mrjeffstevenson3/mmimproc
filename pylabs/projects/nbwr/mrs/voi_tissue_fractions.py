@@ -7,11 +7,10 @@ pylabs.opts.nii_fext = '.nii'
 pylabs.opts.fslmultifilequit = 'FALSE'
 pylabs.opts.overwrite = True
 thresh = pylabs.opts.spm_seg_thr
-import os
+import os, json
 from pathlib import *
 import pandas as pd
 import matlab.engine
-import nipype.interfaces.spm as spm
 from nipype.interfaces import fsl
 from pylabs.mrs.tissue_fractions import make_voi_mask, calc_tissue_fractions
 from pylabs.structural.brain_extraction import extract_brain
@@ -29,27 +28,6 @@ spm_dir, tpm_path = getspmpath()
 eng = matlab.engine.start_matlab()
 eng.addpath(eng.genpath(str(pylabs_dir)))
 
-
-
-seg = spm.Segment(
-                clean_masks='no',
-                ignore_exception=True,
-                mfile=True,
-                save_bias_corrected=True,
-                csf_output_type=[False, False, True],
-                gm_output_type=[False, False, True],
-                wm_output_type=[False, False, True],
-                affine_regularization='mni',
-                warping_regularization=1,
-                warp_frequency_cutoff=25,
-                gaussians_per_class=[2, 2, 2],
-                tissue_prob_maps=[str(spm_dir/'tpm'/'TPM.nii'), str(spm_dir/'tpm'/'TPM.nii'), str(spm_dir/'tpm'/'TPM.nii')],
-                paths=str(spm_dir),
-                bias_fwhm=60,
-                bias_regularization=0.0001,
-                sampling_distance=3,
-            )
-
 fast = fsl.FAST(
                 output_type=pylabs.opts.nii_ftype,
                 number_classes=3,
@@ -64,13 +42,13 @@ fast = fsl.FAST(
             )
 fast.inputs.environ['FSLMULTIFILEQUIT'] = pylabs.opts.fslmultifilequit
 ext = pylabs.opts.nii_fext
-results_file = fs/project/'mrs_tissue_fractions.h5' # results of segmentation
-only_spm = True
+results_file = fs/project/'test_mrs_tissue_fractions.h5' # results of segmentation
+only_spm = False
 # instantiate subject id list container
 subjids_picks = SubjIdPicks()
 # list of subject ids to operate on
 #picks = ['007', '088', '107', '132', '144', '226', '307', '317'] # only does one subj until bug fix
-picks = ['409']
+picks = ['401']
 setattr(subjids_picks, 'subjids', picks)
 setattr(subjids_picks, 'source_path', fs / project / 'sub-nbwr%(sid)s' / 'ses-1' / 'source_sparsdat')
 
@@ -91,6 +69,8 @@ for rt_matchfname, lt_matchfname, rt_actfname, lt_actfname in zip(rt_matchfnames
     mrs_dir = fs / project / subject / session / 'mrs'
     if not mrs_dir.is_dir():
         raise ValueError('cant find mrs directory '+str(mrs_dir))
+    # get gaba data from gannett fits json
+    gaba_fits_logf = sorted(list(mrs_dir.glob('mrs_gaba_log*.json')), key=lambda date: int(date.stem.split('_')[-1].replace('log','')))[-1]
     # first do right side
     with WorkingContext(str(mrs_dir)):
         try:
@@ -114,8 +94,6 @@ for rt_matchfname, lt_matchfname, rt_actfname, lt_actfname in zip(rt_matchfnames
             if pylabs.opts.overwrite and only_spm:   ## or not (Path(prependposix(rt_match_brain, 'c1')).is_file() & Path(prependposix(rt_match_brain, 'c2')).is_file() & Path(prependposix(rt_match_brain, 'c3')).is_file()):
                 print('running SPM Segmentation on ' + str(rt_match_brain)+' and '+str(rt_match_mask))
                 eng.spm_seg(str(rt_match_brain), str(tpm_path), nargout=0)
-                # seg.inputs.data = str(rt_match_brain)
-                # rt_out = seg.run()
             # run FSL segmentation on right matching
             if pylabs.opts.overwrite and not only_spm:   ## or not (Path(replacesuffix(rt_match_brain, '_fslfast_seg_1'+ext)).is_file() & Path(replacesuffix(rt_match_brain, '_fslfast_seg_2'+ext)).is_file() & Path(replacesuffix(rt_match_brain, '_fslfast_seg_0'+ext)).is_file()):
                 print('running FSL Segmentation on ' + str(rt_match_brain))
@@ -145,8 +123,6 @@ for rt_matchfname, lt_matchfname, rt_actfname, lt_actfname in zip(rt_matchfnames
             if pylabs.opts.overwrite and only_spm:   ## or not (Path(prependposix(lt_match_brain, 'c1')).is_file() & Path(prependposix(lt_match_brain, 'c2')).is_file() & Path(prependposix(lt_match_brain, 'c3')).is_file()):
                 print('running SPM Segmentation on ' + str(lt_match_brain) + ' and ' + str(lt_match_mask))
                 eng.spm_seg(str(lt_match_brain), str(tpm_path), nargout=0)
-                # seg.inputs.data = str(lt_match_brain)
-                # rt_out = seg.run()
             # run FSL segmentation on left matching
             if pylabs.opts.overwrite and not only_spm:   ## or not (Path(replacesuffix(lt_match_brain, '_fslfast_seg_1'+ext)).is_file() & Path(replacesuffix(lt_match_brain, '_fslfast_seg_2'+ext)).is_file() & Path(replacesuffix(lt_match_brain, '_fslfast_seg_0'+ext)).is_file()):
                 print('running FSL Segmentation on ' + str(lt_match_brain))
