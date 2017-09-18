@@ -44,7 +44,7 @@ source $FREESURFER_HOME/SetUpFreeSurfer.sh`
     on scotty set up /etc/exports add to /exports AND /exports/users lines ` <your_new_ip_addr>(rw,nohide,insecure,no_subtree_check,async)` - pls include leading space.
 22. copy scotty .bashrc appropriate elements to ${HOME}/.bashrc (hint use pycharm compare file fn)  
 23. install and start condor: `sudo apt install htcondor && sudo service condor start`
-24. install sip, pyqt4, mayavi, pysurfer:
+24. _--- wait on this one-bugs! ----install sip, pyqt4, mayavi, pysurfer:_ 
         cd ${HOME}/Software
         https://riverbankcomputing.com/software/sip/download
         example docs:
