@@ -111,3 +111,9 @@ source $FREESURFER_HOME/SetUpFreeSurfer.sh`
         rclone config
             set up as teamdrive using existing google drive hierarchy eg ${HOME}/Software/gdrive/NBWR/subject_scans/results
 
+28. install into ${HOME}/Software pdfminer:
+        cd ${HOME}/Software
+        git clone https://github.com/euske/pdfminer.git
+        cd pdfminer/
+        python setup.py install
+        
