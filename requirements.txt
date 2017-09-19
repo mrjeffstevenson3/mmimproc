@@ -25,4 +25,7 @@ latex
 python-dateutil
 IPython
 statsmodels
+pytables
+pdfminer
+
 
