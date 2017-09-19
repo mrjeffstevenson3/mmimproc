@@ -27,6 +27,12 @@ c	write(6,*)dmnmr(i),dmnmr2(i)
 	close(11)
 
 	call correlation(dnmr,behav1,rcorr,itsize)
+	open(11,file = 'correlation.txt')
+	rsize = isize1
+	rdenom = sqrt((1-(rcorr*rcorr))/(rsize-2))
+	rt = rcorr/rdenom
+	write(11,*)rt
+	close(11)
 
 
 c	write(6,*)'correlation result ',rcorr

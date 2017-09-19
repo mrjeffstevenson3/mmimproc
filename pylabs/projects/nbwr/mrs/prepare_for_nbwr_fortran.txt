@@ -1,0 +1,9 @@
+cp ${DATADIR}nbwr/stats/mrs/all* .
+cp all_nbwr_mrs_uncorr_fits_test1.csv all_nbwr_mrs_uncorr_fits.csv
+numcol=`head -n1 all_nbwr_mrs_uncorr_fits.csv | grep -o "," | wc -l`
+numrow=`wc -l all_nbwr_mrs_uncorr_fits.csv`
+echo $numcol > numcol.txt
+echo $numrow > numrow.txt
+
+
+
