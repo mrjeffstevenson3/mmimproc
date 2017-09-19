@@ -5,12 +5,12 @@ pylabs.datadir.target = 'scotty'
 pylabs.opts.nii_ftype = 'NIFTI'
 pylabs.opts.nii_fext = '.nii'
 pylabs.opts.fslmultifilequit = 'FALSE'
-pylabs.opts.overwrite = True
+pylabs.opts.overwrite = False
 thresh = pylabs.opts.spm_seg_thr
 import os, json
 from pathlib import *
 import pandas as pd
-import matlab.engine
+#import matlab.engine
 from nipype.interfaces import fsl
 from pylabs.mrs.tissue_fractions import make_voi_mask, calc_tissue_fractions
 from pylabs.structural.brain_extraction import extract_brain
@@ -25,8 +25,8 @@ os.environ["FSLMULTIFILEQUIT"] = pylabs.opts.fslmultifilequit
 fs = Path(getnetworkdataroot())
 spm_dir, tpm_path = getspmpath()
 
-eng = matlab.engine.start_matlab()
-eng.addpath(eng.genpath(str(pylabs_dir)))
+#eng = matlab.engine.start_matlab()
+#eng.addpath(eng.genpath(str(pylabs_dir)))
 
 fast = fsl.FAST(
                 output_type=pylabs.opts.nii_ftype,
@@ -158,6 +158,12 @@ for rt_matchfname, lt_matchfname, rt_actfname, lt_actfname in zip(rt_matchfnames
             # use merge df
             fractions = pd.DataFrame({'left_SPM': lt_spm_fractions, 'right_SPM': rt_spm_fractions, 'left_FSL': lt_fsl_fractions, 'right_FSL': rt_fsl_fractions})
             fractions.to_csv(str(mrs_dir / str(subject + '_sv_voi_tissue_proportions.csv')), sep=',', columns=['left_SPM', 'right_SPM', 'left_FSL', 'right_FSL'])
+            # temp solution to get data out
+            indx = [subject, 'left-percCSF', 'right-percCSF', ]
+            data = {'subject': subject, 'left-percCSF': fractions.loc['frac_CSF', 'left_SPM'],
+                    'right-percCSF': fractions.loc['frac_CSF', 'right_SPM']}
+            csf_data = pd.Series(data, index=indx, name=data['subject'])
+            csf_data.to_csv(str(mrs_dir / str(subject + '_csf_fractions.csv')))
             # fractions.to_hdf(str(results_file), subject, append=True, format = 'table')
             prov.log(str(mrs_dir / str(subject + '_sv_voi_tissue_proportions.csv')),
                      'csv text file containing percent CSF, GM, WM', str(lt_match_brain),

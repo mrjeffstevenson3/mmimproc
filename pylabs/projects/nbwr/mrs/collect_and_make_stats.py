@@ -58,3 +58,10 @@ for s in onerowpersubj.columns:
 
     onerowpersubj.loc['left-GABA', s] = lt_gaba_val
     onerowpersubj.loc['right-GABA', s] = rt_gaba_val
+    csf_frac = pd.read_csv(str(mrs_dir / str(s + '_csf_fractions.csv')))
+    csf_frac.set_index(csf_frac.subject, inplace=True)
+    csf_frac.drop(['subject'], axis=1, inplace=True)
+    onerowpersubj.loc['left-percCSF', s] = csf_frac.loc['left-percCSF', s]
+    onerowpersubj.loc['right-percCSF', s] = csf_frac.loc['right-percCSF', s]
+
+
