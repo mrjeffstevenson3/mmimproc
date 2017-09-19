@@ -64,4 +64,5 @@ for s in onerowpersubj.columns:
     onerowpersubj.loc['left-percCSF', s] = csf_frac.loc['left-percCSF', s]
     onerowpersubj.loc['right-percCSF', s] = csf_frac.loc['right-percCSF', s]
 
+onerowpersubj.to_csv(str(fs / project / 'stats' / 'mrs' / 'all_nbwr_mrs_uncorr_fits_test1.csv'), header=True, index=True)
 

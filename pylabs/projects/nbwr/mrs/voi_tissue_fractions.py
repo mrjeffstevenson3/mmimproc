@@ -5,12 +5,12 @@ pylabs.datadir.target = 'scotty'
 pylabs.opts.nii_ftype = 'NIFTI'
 pylabs.opts.nii_fext = '.nii'
 pylabs.opts.fslmultifilequit = 'FALSE'
-pylabs.opts.overwrite = False
+pylabs.opts.overwrite = True
 thresh = pylabs.opts.spm_seg_thr
 import os, json
 from pathlib import *
 import pandas as pd
-#import matlab.engine
+import matlab.engine
 from nipype.interfaces import fsl
 from pylabs.mrs.tissue_fractions import make_voi_mask, calc_tissue_fractions
 from pylabs.structural.brain_extraction import extract_brain
@@ -25,8 +25,8 @@ os.environ["FSLMULTIFILEQUIT"] = pylabs.opts.fslmultifilequit
 fs = Path(getnetworkdataroot())
 spm_dir, tpm_path = getspmpath()
 
-#eng = matlab.engine.start_matlab()
-#eng.addpath(eng.genpath(str(pylabs_dir)))
+eng = matlab.engine.start_matlab()
+eng.addpath(eng.genpath(str(pylabs_dir)))
 
 fast = fsl.FAST(
                 output_type=pylabs.opts.nii_ftype,
@@ -48,7 +48,7 @@ only_spm = False
 subjids_picks = SubjIdPicks()
 # list of subject ids to operate on
 #picks = ['007', '088', '107', '132', '144', '226', '307', '317'] # only does one subj until bug fix
-picks = ['401']
+picks = ['038']
 setattr(subjids_picks, 'subjids', picks)
 setattr(subjids_picks, 'source_path', fs / project / 'sub-nbwr%(sid)s' / 'ses-1' / 'source_sparsdat')
 
