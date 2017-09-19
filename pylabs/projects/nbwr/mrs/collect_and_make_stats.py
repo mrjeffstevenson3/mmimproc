@@ -44,3 +44,17 @@ onerowpersubj['right-GABA']  = np.nan
 onerowpersubj = onerowpersubj[cols].T
 onerowpersubj.reindex_axis(sorted(onerowpersubj.columns), axis=1)
 onerowpersubj.drop(exclude_subj, axis=1, inplace=True)
+# now get gaba data
+for s in onerowpersubj.columns:
+    mrs_dir = fs / project / s / 'ses-1' / 'mrs'
+    gaba_fits_logf = sorted(list(mrs_dir.glob('mrs_gaba_log*.json')), key=lambda date: int(date.stem.split('_')[-1].replace('log', '')))[-1]
+    with open(str(gaba_fits_logf), 'r') as gf:
+        log_data = json.load(gf)
+    for line in log_data:
+        if 'Left gaba results' in line:
+            lt_gaba_val = float(line.split()[3])
+        if 'Right gaba results' in line:
+            rt_gaba_val = float(line.split()[3])
+
+    onerowpersubj.loc['left-GABA', s] = lt_gaba_val
+    onerowpersubj.loc['right-GABA', s] = rt_gaba_val
