@@ -44,7 +44,7 @@ source $FREESURFER_HOME/SetUpFreeSurfer.sh`
     on scotty set up /etc/exports add to /exports AND /exports/users lines ` <your_new_ip_addr>(rw,nohide,insecure,no_subtree_check,async)` - pls include leading space.
 22. copy scotty .bashrc appropriate elements to ${HOME}/.bashrc (hint use pycharm compare file fn)  
 23. install and start condor: `sudo apt install htcondor && sudo service condor start`
-24. install sip, pyqt4, mayavi, pysurfer:
+24. _--- wait on this one-bugs! ----install sip, pyqt4, mayavi, pysurfer:_ 
         cd ${HOME}/Software
         https://riverbankcomputing.com/software/sip/download
         example docs:
@@ -93,3 +93,27 @@ source $FREESURFER_HOME/SetUpFreeSurfer.sh`
             . $MNE_ROOT/bin/mne_setup_sh
 
 26. Download and install the brain connectivity toolkit from https://sites.google.com/site/bctnet in ~/Software
+
+27. Download and install rclone for linux google drive and dropbox comand line execution from https://rclone.org/downloads/ or see below:
+        **Fetch and unpack** 
+        curl -O https://downloads.rclone.org/rclone-current-linux-amd64.zip
+        unzip rclone-current-linux-amd64.zip
+        cd rclone-*-linux-amd64 
+        **Copy binary file**
+        sudo cp rclone /usr/bin/
+        sudo chown root:root /usr/bin/rclone
+        sudo chmod 755 /usr/bin/rclone
+        **Install manpage**
+        sudo mkdir -p /usr/local/share/man/man1
+        sudo cp rclone.1 /usr/local/share/man/man1/
+        sudo mandb 
+        **Run rclone config to setup. See rclone config docs for more details.**
+        rclone config
+            set up as teamdrive using existing google drive hierarchy eg ${HOME}/Software/gdrive/NBWR/subject_scans/results
+
+28. install into ${HOME}/Software pdfminer:
+        cd ${HOME}/Software
+        git clone https://github.com/euske/pdfminer.git
+        cd pdfminer/
+        python setup.py install
+        

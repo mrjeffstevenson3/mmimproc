@@ -30,7 +30,7 @@ def make_voi_mask(spar_fname, matching_image_fname, out_voi_mask_fname):
     prov.log(str(out_voi_mask_fname), 'binary voi mask file created for tissue fractions by make_voi_mask fn', str(spar_fname), script=__file__)
     return mask_img
 
-def calc_tissue_fractions(voi_mask_fname, gm_seg_fname, wm_seg_fname, csf_seg_fname, side, method='SPM', thresh=0.0):
+def calc_tissue_fractions(voi_mask_fname, gm_seg_fname, wm_seg_fname, csf_seg_fname, region, method='SPM', thresh=0.0):
     subj = voi_mask_fname.parts[-4]
     mask_img_data = nib.load(str(voi_mask_fname)).get_data()
     gm_seg_data = nib.load(str(gm_seg_fname)).get_data()
@@ -48,11 +48,12 @@ def calc_tissue_fractions(voi_mask_fname, gm_seg_fname, wm_seg_fname, csf_seg_fn
     mask_num_vox = float(np.count_nonzero(mask_img_data))
     results_d = {
         'subject': subj,
-        'side': side,
+        'region': region,
         'frac_GM': gm_num_vox / mask_num_vox,
         'frac_WM': wm_num_vox / mask_num_vox,
         'frac_CSF': csf_num_vox / mask_num_vox,
         'method': method,
+        'threshold': thresh,
         }
     results = pd.Series(results_d)
     return results
