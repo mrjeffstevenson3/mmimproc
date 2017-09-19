@@ -16,7 +16,7 @@ gannettpath = pylabs.utils.paths.getgannettpath()
 # instantiate subject id list container
 subjids_picks = SubjIdPicks()
 # list of subject ids to operate on
-picks = ['401'] # only does one subj until bug fix
+picks = ['110', '309'] # only does one subj until bug fix
 setattr(subjids_picks, 'subjids', picks)
 setattr(subjids_picks, 'source_path', fs / project / 'sub-nbwr%(sid)s' / 'ses-1' / 'source_sparsdat')
 
@@ -65,10 +65,10 @@ for rt_act, rt_ref, lt_act, lt_ref in zip(rt_actfnames, rt_reffnames, lt_actfnam
                             if '_RT' in str(f.stem):
                                 print (appendposix(f, '_fit'), appendposix(f, '_fit').is_file())
                                 rt_gaba_value = getgabavalue(appendposix(f, '_fit'))
-                                output += ('Right gaba results', str(rt_gaba_value),)
+                                output += ('Right gaba results ' + str(rt_gaba_value),)
                             elif '_LT' in str(f.stem):
                                 lt_gaba_value = getgabavalue(appendposix(f, '_fit'))
-                                output += ('Left gaba results', str(lt_gaba_value),)
+                                output += ('Left gaba results ' + str(lt_gaba_value),)
                         if 'output' in str(f.parts[-2]):
                             f.rename(appendposix(f, '_output'))
             print("({})".format(", ".join(output)))
