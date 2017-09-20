@@ -122,7 +122,7 @@ def getspmpath():
     if platform.system() == 'Darwin' and any(x in hostname for x in ['Jeffs-MacBook-Pro-3.local', 'Jeffs-MBP-3', '.dhcp4.washington.edu']):
         spm_path = Path(pylabs_dir.parent, 'spm12b')
 
-    elif platform.system() == 'Linux' and hostname in ['scotty', 'scotty.ilabs.uw.edu', 'redshirt.ilabs.uw.edu', 'redshirt']:
+    elif platform.system() == 'Linux' and hostname in ['scotty', 'scotty.ilabs.uw.edu', 'redshirt.ilabs.uw.edu', 'redshirt', 'uhora', 'uhora.ilabs.uw.edu']:
         spm_path = Path(pylabs_dir.parent, 'spm12')
 
     tpm_path = spm_path / 'tpm' / 'TPM.nii'

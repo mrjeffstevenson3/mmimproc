@@ -47,7 +47,7 @@ only_spm = True
 # instantiate subject id list container
 subjids_picks = SubjIdPicks()
 # list of subject ids to operate on
-picks = ['135']
+picks = ['038']
 #picks = ['007', '038', '088', '107', '110', '132', '135', '144', '226', '307', '309', '317', '401', '404', '405', '407', '409']
 setattr(subjids_picks, 'subjids', picks)
 setattr(subjids_picks, 'source_path', fs / project / 'sub-nbwr%(sid)s' / 'ses-1' / 'source_sparsdat')
