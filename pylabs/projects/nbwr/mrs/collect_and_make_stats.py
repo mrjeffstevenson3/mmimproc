@@ -53,7 +53,7 @@ onerowpersubj.drop(exclude_subj, axis=1, inplace=True)
 # now get gaba data
 for s in onerowpersubj.columns:
     mrs_dir = fs / project / s / 'ses-1' / 'mrs'
-    if len(list(mrs_dir.glob('mrs_gaba_log*.json'))) == 0:
+    if len(list(mrs_dir.glob('mrs_gaba_log*.json'))) in [0,[],None]:
         raise ValueError('mrs_gaba_log file missing for '+s+'. make sure gaba fit was run with MRSfit subdirs in mrs dir.')
     else:
         gaba_fits_logf = sorted(list(mrs_dir.glob('mrs_gaba_log*.json')), key=lambda date: int(date.stem.split('_')[-1].replace('log', '')))[-1]
