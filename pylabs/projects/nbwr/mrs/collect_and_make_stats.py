@@ -7,7 +7,7 @@ import datetime
 import numpy as np
 import pandas as pd
 import json
-from pylabs.utils import ProvenanceWrapper, getnetworkdataroot, appendposix, replacesuffix
+from pylabs.utils import ProvenanceWrapper, getnetworkdataroot, appendposix, replacesuffix, WorkingContext
 from pylabs.projects.nbwr.file_names import project
 prov = ProvenanceWrapper()
 
@@ -91,3 +91,9 @@ corr_metab = pd.merge(lt_corrmetab, rt_corrmetab, left_index=True, right_index=T
 corr_metab.to_excel(writer, sheet_name='corr_metab', index=True, index_label='subject', header=True, freeze_panes=(1,1), na_rep=9999)
 writer.save()
 corr_metab.to_csv(str(uncorr_csv_fname.parent/uncorr_csv_fname.name.replace('uncorr_fits.csv', 'csfcorr_fits.csv')), header=True, index=True, na_rep=9999, index_label='corr_metabolite')
+
+with WorkingContext(str(uncorr_csv_fname.parent)):
+    with open('numcol.txt', mode='w') as nc:
+        nc.write(str(len(onerowpersubj.columns)) + '\n')
+    with open('numcol.txt', mode='w') as nr:
+        nr.write(str(len(onerowpersubj.index)) + '\n')
