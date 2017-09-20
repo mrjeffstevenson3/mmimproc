@@ -116,4 +116,7 @@ source $FREESURFER_HOME/SetUpFreeSurfer.sh`
         git clone https://github.com/euske/pdfminer.git
         cd pdfminer/
         python setup.py install
+
+29. install matlab NOT as root in ${HOME}/Software/matlab/{matlabReleaseDate1,matlabReleaseDate2}
+    as of 9/19/2017 need latest release for python interface build and 2013b for inspector on linux 2016b on mac
         

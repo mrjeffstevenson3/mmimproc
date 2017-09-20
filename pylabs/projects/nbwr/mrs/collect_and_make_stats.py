@@ -3,9 +3,11 @@
 import pylabs
 pylabs.datadir.target = 'scotty'
 from pathlib import *
+import datetime
 import numpy as np
 import pandas as pd
-from pylabs.utils import ProvenanceWrapper, getnetworkdataroot
+import json
+from pylabs.utils import ProvenanceWrapper, getnetworkdataroot, appendposix, replacesuffix, WorkingContext
 from pylabs.projects.nbwr.file_names import project
 prov = ProvenanceWrapper()
 
@@ -17,16 +19,18 @@ exclude_data = ['Scan', 'Hemisphere', 'short_FWHM', 'short_SNR', 'short_TE', 'lo
 right_col_map = {'NAA+NAAG': 'right-NAAplusNAAG', 'GPC+PCh': 'right-GPCplusPCh', 'Cr+PCr': 'right-CrplusPCr', 'mIns': 'right-mIns', 'Glu': 'right-Glu-80ms'}
 left_col_map = {'NAA+NAAG': 'left-NAAplusNAAG', 'GPC+PCh': 'left-GPCplusPCh', 'Cr+PCr': 'left-CrplusPCr', 'mIns': 'left-mIns', 'Glu': 'left-Glu-80ms'}
 stats_dir = fs/project/'stats'/'mrs'
-glu_fname = 'Paros_Chemdata_tablefile.txt'
+glu_fname = 'Paros_Chemdata_tablefile_Sep19_2017.txt'
 glu_data = pd.read_csv(str(stats_dir/glu_fname), delim_whitespace=True)
 #need to edit a few subject ids
-glu_data.loc[22:23, ['Scan']] = 'NBWR404'
-glu_data.loc[34:35, ['Scan']] = 'NBWR999'
+ids2rename = {'NBWR404c': 'NBWR404', 'NWBR999B': 'NBWR999'}
+glu_data.set_index(['Scan'], inplace=True)
+glu_data.rename(index=ids2rename, inplace=True)
 
-glu_data['subject'] = glu_data['Scan'].str.replace('NBWR', 'sub-nbwr')
+
+glu_data['subject'] = glu_data.index.str.replace('NBWR', 'sub-nbwr')
 glu_data['region'] = glu_data['Hemisphere'].map({'LT': 'left-insula', 'RT': 'right-insula'})
 glu_data['method'] = 'lcmodel'
-
+glu_data.reset_index(inplace=True)
 glu_data.drop(exclude_data, axis=1, inplace=True)
 right_side_glu = glu_data[1::2]
 left_side_glu = glu_data.loc[::2]
@@ -56,13 +60,40 @@ for s in onerowpersubj.columns:
         if 'Right gaba results' in line:
             rt_gaba_val = float(line.split()[3])
 
-    onerowpersubj.loc['left-GABA', s] = lt_gaba_val
     onerowpersubj.loc['right-GABA', s] = rt_gaba_val
+    onerowpersubj.loc['left-GABA', s] = lt_gaba_val
+
     csf_frac = pd.read_csv(str(mrs_dir / str(s + '_csf_fractions.csv')))
     csf_frac.set_index(csf_frac.subject, inplace=True)
     csf_frac.drop(['subject'], axis=1, inplace=True)
     onerowpersubj.loc['left-percCSF', s] = csf_frac.loc['left-percCSF', s]
     onerowpersubj.loc['right-percCSF', s] = csf_frac.loc['right-percCSF', s]
 
-onerowpersubj.to_csv(str(fs / project / 'stats' / 'mrs' / 'all_nbwr_mrs_uncorr_fits_test1.csv'), header=True, index=True)
+uncorr_csv_fname = fs / project / 'stats' / 'mrs' / 'all_nbwr_mrs_uncorr_fits.csv'
+if uncorr_csv_fname.is_file():
+    uncorr_csv_fname.rename(appendposix(uncorr_csv_fname, '_replaced_on_{:%Y%m%d%H%M}'.format(datetime.datetime.now())))
 
+onerowpersubj.to_csv(str(uncorr_csv_fname), header=True, index=True, na_rep=9999, index_label='metabolite')
+writer = pd.ExcelWriter(str(replacesuffix(uncorr_csv_fname, '.xlsx')), engine='xlsxwriter')
+onerowpersubj.T.to_excel(writer, sheet_name='uncorr', index=True, index_label='subject', header=True, freeze_panes=(1,1), na_rep=9999)
+onerowpersubj.loc['left-1over1minfracCSF'] = 1 / (1 - onerowpersubj.loc['left-percCSF'])
+onerowpersubj.loc['right-1over1minfracCSF'] = 1 / (1 - onerowpersubj.loc['right-percCSF'])
+
+onerowpersubj = onerowpersubj.T
+left_metab = ['left-GABA', 'left-NAAplusNAAG', 'left-GPCplusPCh', 'left-CrplusPCr', 'left-mIns', 'left-Glu-80ms']
+right_metab = [ 'right-GABA', 'right-NAAplusNAAG', 'right-GPCplusPCh', 'right-CrplusPCr', 'right-mIns', 'right-Glu-80ms']
+
+lt_corrmetab = onerowpersubj[left_metab].multiply(onerowpersubj['left-1over1minfracCSF'], axis='index')
+rt_corrmetab = onerowpersubj[right_metab].multiply(onerowpersubj['right-1over1minfracCSF'], axis='index')
+lt_corrmetab['left-GluOverGABA'] = lt_corrmetab['left-Glu-80ms']/lt_corrmetab['left-GABA']
+rt_corrmetab['right-GluOverGABA'] = rt_corrmetab['right-Glu-80ms']/rt_corrmetab['right-GABA']
+corr_metab = pd.merge(lt_corrmetab, rt_corrmetab, left_index=True, right_index=True)
+corr_metab.to_excel(writer, sheet_name='corr_metab', index=True, index_label='subject', header=True, freeze_panes=(1,1), na_rep=9999)
+writer.save()
+corr_metab.to_csv(str(uncorr_csv_fname.parent/uncorr_csv_fname.name.replace('uncorr_fits.csv', 'csfcorr_fits.csv')), header=True, index=True, na_rep=9999, index_label='corr_metabolite')
+
+with WorkingContext(str(uncorr_csv_fname.parent)):
+    with open('numcol.txt', mode='w') as nc:
+        nc.write(str(len(onerowpersubj.columns)) + '\n')
+    with open('numcol.txt', mode='w') as nr:
+        nr.write(str(len(onerowpersubj.index)) + '\n')
