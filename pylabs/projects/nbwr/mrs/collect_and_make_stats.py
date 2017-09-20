@@ -7,11 +7,13 @@ import datetime
 import numpy as np
 import pandas as pd
 import json
-from pylabs.utils import ProvenanceWrapper, getnetworkdataroot, appendposix, replacesuffix, WorkingContext
+from pylabs.utils import ProvenanceWrapper, getnetworkdataroot, appendposix, replacesuffix, WorkingContext, run_subprocess, pylabs_dir
 from pylabs.projects.nbwr.file_names import project
 prov = ProvenanceWrapper()
 
 fs = Path(getnetworkdataroot())
+
+stats_fpgm = pylabs_dir / 'pylabs/projects/nbwr/mrs/nbwr_spreadsheet_sep19_2017'
 
 cols = [u'left-percCSF', u'left-GABA', u'left-NAAplusNAAG', u'left-GPCplusPCh', u'left-CrplusPCr', u'left-mIns', u'left-Glu-80ms', u'right-percCSF', u'right-GABA', u'right-NAAplusNAAG', u'right-GPCplusPCh', u'right-CrplusPCr', u'right-mIns', u'right-Glu-80ms']
 exclude_subj = ['sub-nbwr997', 'sub-nbwr998', 'sub-nbwr999',]
@@ -32,7 +34,7 @@ glu_data['region'] = glu_data['Hemisphere'].map({'LT': 'left-insula', 'RT': 'rig
 glu_data['method'] = 'lcmodel'
 glu_data.reset_index(inplace=True)
 glu_data.drop(exclude_data, axis=1, inplace=True)
-right_side_glu = glu_data[1::2]
+right_side_glu = glu_data.loc[1::2]
 left_side_glu = glu_data.loc[::2]
 right_side_glu.copy('deep')
 left_side_glu.copy('deep')
@@ -69,38 +71,47 @@ for s in onerowpersubj.columns:
     onerowpersubj.loc['left-percCSF', s] = csf_frac.loc['left-percCSF', s]
     onerowpersubj.loc['right-percCSF', s] = csf_frac.loc['right-percCSF', s]
 
-uncorr_csv_fname = fs / project / 'stats' / 'mrs' / 'all_nbwr_mrs_uncorr_fits.csv'
+# make output file names
+base_fname = fs / project / 'stats' / 'mrs' / 'all_nbwr_mrs_results'
+uncorr_csv_fname = appendposix(base_fname, '_uncorr_fits.csv')
+csfcorr_csv_fname = appendposix(base_fname, '_csfcorr_fits.csv')
+excel_fname = appendposix(base_fname, '_csfcorr_fits.xlsx')
+test_hdf_fname = appendposix(base_fname, '_csfcorr_fits_forkam.h5')
+# save old versions if there
 if uncorr_csv_fname.is_file():
-    uncorr_csv_fname.rename(appendposix(uncorr_csv_fname, '_replaced_on_{:%Y%m%d%H%M}'.format(datetime.datetime.now())))
+    uncorr_repl_fname = appendposix(uncorr_csv_fname, '_replaced_on_{:%Y%m%d%H%M}'.format(datetime.datetime.now()))
+    uncorr_csv_fname.rename(uncorr_repl_fname)
 
 onerowpersubj.to_csv(str(uncorr_csv_fname), header=True, index=True, na_rep=9999, index_label='metabolite')
 
-# start excel writer
-writer = pd.ExcelWriter(str(replacesuffix(uncorr_csv_fname, '.xlsx')), engine='xlsxwriter')
-# make uncorrected sheet
-onerowpersubj.T.to_excel(writer, sheet_name='uncorr', index=True, index_label='subject', header=True, freeze_panes=(1,1), na_rep=9999)
-# calculate correction factor
+if excel_fname.is_file():
+    excel_repl_fname = appendposix(excel_fname, '_replaced_on_{:%Y%m%d%H%M}'.format(datetime.datetime.now()))
+    excel_fname.rename(excel_repl_fname)
+
+# add hd5 file checks here
+
+writer = pd.ExcelWriter(str(excel_fname), engine='xlsxwriter')
+onerowpersubj.T.to_excel(writer, sheet_name='uncorr', index=True, index_label='subject', header=True, na_rep=9999)
 onerowpersubj.loc['left-1over1minfracCSF'] = 1 / (1 - onerowpersubj.loc['left-percCSF'])
 onerowpersubj.loc['right-1over1minfracCSF'] = 1 / (1 - onerowpersubj.loc['right-percCSF'])
 
 onerowpersubj = onerowpersubj.T
 left_metab = ['left-GABA', 'left-NAAplusNAAG', 'left-GPCplusPCh', 'left-CrplusPCr', 'left-mIns', 'left-Glu-80ms']
 right_metab = [ 'right-GABA', 'right-NAAplusNAAG', 'right-GPCplusPCh', 'right-CrplusPCr', 'right-mIns', 'right-Glu-80ms']
-# make corrections one side at a time
+
 lt_corrmetab = onerowpersubj[left_metab].multiply(onerowpersubj['left-1over1minfracCSF'], axis='index')
 rt_corrmetab = onerowpersubj[right_metab].multiply(onerowpersubj['right-1over1minfracCSF'], axis='index')
 lt_corrmetab['left-GluOverGABA'] = lt_corrmetab['left-Glu-80ms']/lt_corrmetab['left-GABA']
 rt_corrmetab['right-GluOverGABA'] = rt_corrmetab['right-Glu-80ms']/rt_corrmetab['right-GABA']
 corr_metab = pd.merge(lt_corrmetab, rt_corrmetab, left_index=True, right_index=True)
-# make corrected metabolite sheet
-corr_metab.to_excel(writer, sheet_name='corr_metab', index=True, index_label='subject', header=True, freeze_panes=(1,1), na_rep=9999)
-# close excel file
+corr_metab.to_excel(writer, sheet_name='corr_metab', index=True, index_label='subject', header=True, na_rep=9999)
 writer.save()
-# write a csv of corrected data for fun
-corr_metab.to_csv(str(uncorr_csv_fname.parent/uncorr_csv_fname.name.replace('uncorr_fits.csv', 'csfcorr_fits.csv')), header=True, index=True, na_rep=9999, index_label='corr_metabolite')
-# set up todd's fortran
+corr_metab.to_csv(str(csfcorr_csv_fname), header=True, index=True, na_rep=9999, index_label='corr_metabolite')
+
+rlog = ()
 with WorkingContext(str(uncorr_csv_fname.parent)):
     with open('numcol.txt', mode='w') as nc:
         nc.write(str(len(onerowpersubj.columns)) + '\n')
     with open('numcol.txt', mode='w') as nr:
         nr.write(str(len(onerowpersubj.index)) + '\n')
+    rlog += run_subprocess(str(stats_fpgm))

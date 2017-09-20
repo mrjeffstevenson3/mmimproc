@@ -13,7 +13,7 @@ from pylabs.utils.provenance import ProvenanceWrapper
 prov = ProvenanceWrapper()
 #setup paths and file names to process
 
-pylabs.datadir.target = 'jaba'
+pylabs.datadir.target = 'scotty'
 fs = Path(getnetworkdataroot())
 
 antsRegistrationSyN = get_antsregsyn_cmd()
@@ -21,7 +21,7 @@ antsRegistrationSyN = get_antsregsyn_cmd()
 # instantiate subject id list container
 subjids_picks = SubjIdPicks()
 # list of subject ids to operate on
-picks = ['404', '107']
+picks = ['007',]
 
 setattr(subjids_picks, 'subjids', picks)
 

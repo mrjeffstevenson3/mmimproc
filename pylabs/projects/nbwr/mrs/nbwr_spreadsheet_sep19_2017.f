@@ -8,6 +8,7 @@ c
 	common /dat1/ dmnmr(1000),dmnmr2(1000),dmnmr3(1000)
 	common /size/isize1,isize2
 	real dnmr(100,100),behav1(10000),dout(100,100)
+	real tvalue(100)
 	character*1 c1
 	
 	open(11,file ='numcol.txt')
@@ -80,23 +81,89 @@ c	dmnmr(isize1) = dnmr(isub,imetab)
 
 	write(6,*)'isize1 isize2 ',isize1,isize2
 	call ttest_unequalv(t)
+	tvalue(ileft)=t
 	write(6,*)t,imetab
 	endif !for left
 	enddo  !imetab
 c
+c first find the row with the csf right
+
+	do imetab=2,numrow
+	ch=cheader(imetab)
+	if(ch.eq.'right-percCSF')irowcorrect = imetab
+	enddo
+c
+	clabels(1) = 'subjectid'
+	iright = ileft
+	do imetab=2,numrow
+	ch=cheader(imetab)
+	if(ch(1:1).eq.'r'.and.ch(7:7).ne.'p')then
+	iright = iright+1
+	cout(1:12)='csfcorrected'
+	cout(13:13)='_'
+	cout(14:25)=ch(1:10)
+	clabels(iright) = cout
+	write(6,*)'clabels(iright) ',clabels(iright)
+
+
+	isize1 = 0
+	isize2 = 0
+	do isub=1,numcol
+
+
+	correctionfactor = 1/(1- dnmr(isub,irowcorrect))
+
+	cfn=cfnlist(isub)
+	write(6,*)cfn(9:9),ifil
+c	read(11,*)c1,(dnmr(ifil,ii),ii=1,14)
+c	read(11,*)(dnmr(ifil,ii),ii=1,1)
+c	write(6,*)'dnmr 10',dnmr(ifil,1)
+	if(cfn(9:9).ne.'4')then
+	isize1 = isize1+1
+	dmnmr(isize1) = dnmr(isub,imetab)*correctionfactor
+c	dmnmr(isize1) = dnmr(isub,imetab)
+	endif
+	if(cfn(9:9).eq.'4')then
+	isize2 = isize2+1
+	dmnmr2(isize2) = dnmr(isub,imetab)*correctionfactor
+	endif
+	enddo !isub
+	do i=1,isize1
+	dout(i,iright)=dmnmr(i)
+	write(6,*)dout(i,iright),i,iright,cout
+	enddo
+	do i=1,isize2
+	dout(i+isize1,iright)=dmnmr2(i)
+	write(6,*)dout(i+isize1,iright),i,iright
+	enddo
+
+	write(6,*)'isize1 isize2 ',isize1,isize2
+	call ttest_unequalv(t)
+	tvalue(iright)=t
+	write(6,*)t,imetab
+	endif !for left
+	enddo  !imetab
+
+c
 c output new files
 c
-	write(6,*)'ileft ',ileft
+	write(6,*)'ileft ',ileft,iright
 	open(11,file = 'csfcorrected.csv')
-	write(11,12)clabels(1),(',',clabels(ii),ii=2,ileft)
+	write(11,12)clabels(1),(',',clabels(ii),ii=2,iright)
  12	format(10a,100(1a,10a))
 	do i=1,numcol
-	write(11,13)cfnlist(i),(',',dout(i,ii),ii=2,ileft)
+	write(11,13)cfnlist(i),(',',dout(i,ii),ii=2,iright)
  13	format(a12,100(a1,f10.5))
 	write(6,*)cfnlist(i),i
 	enddo
 	close(11)
 	
+	open(11,file = 'stats_tvalue.csv')
+	write(11,12)'ttest_tvalue',(',',clabels(ii),ii=2,iright)
+	write(11,13)'ttest_value_unequalvariances',(',',tvalue(ii),ii=2,iright)
+	write(11,*)'Notes_There_were ',isize1,'subjects_from_group_1'
+	write(11,*)'Notes_There_were ',isize2,'subjects_from_group_2'
+	close(11)
 
 	stop
 	end
