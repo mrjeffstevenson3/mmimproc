@@ -26,7 +26,7 @@ fs = Path(getnetworkdataroot())
 spm_dir, tpm_path = getspmpath()
 
 eng = matlab.engine.start_matlab()
-eng.addpath(eng.genpath(str(pylabs_dir)))
+eng.addpath(eng.genpath(str(spm_dir)))
 
 fast = fsl.FAST(
                 output_type=pylabs.opts.nii_ftype,

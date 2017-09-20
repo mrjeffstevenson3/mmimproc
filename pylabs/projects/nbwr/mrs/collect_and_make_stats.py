@@ -74,24 +74,31 @@ if uncorr_csv_fname.is_file():
     uncorr_csv_fname.rename(appendposix(uncorr_csv_fname, '_replaced_on_{:%Y%m%d%H%M}'.format(datetime.datetime.now())))
 
 onerowpersubj.to_csv(str(uncorr_csv_fname), header=True, index=True, na_rep=9999, index_label='metabolite')
+
+# start excel writer
 writer = pd.ExcelWriter(str(replacesuffix(uncorr_csv_fname, '.xlsx')), engine='xlsxwriter')
+# make uncorrected sheet
 onerowpersubj.T.to_excel(writer, sheet_name='uncorr', index=True, index_label='subject', header=True, freeze_panes=(1,1), na_rep=9999)
+# calculate correction factor
 onerowpersubj.loc['left-1over1minfracCSF'] = 1 / (1 - onerowpersubj.loc['left-percCSF'])
 onerowpersubj.loc['right-1over1minfracCSF'] = 1 / (1 - onerowpersubj.loc['right-percCSF'])
 
 onerowpersubj = onerowpersubj.T
 left_metab = ['left-GABA', 'left-NAAplusNAAG', 'left-GPCplusPCh', 'left-CrplusPCr', 'left-mIns', 'left-Glu-80ms']
 right_metab = [ 'right-GABA', 'right-NAAplusNAAG', 'right-GPCplusPCh', 'right-CrplusPCr', 'right-mIns', 'right-Glu-80ms']
-
+# make corrections one side at a time
 lt_corrmetab = onerowpersubj[left_metab].multiply(onerowpersubj['left-1over1minfracCSF'], axis='index')
 rt_corrmetab = onerowpersubj[right_metab].multiply(onerowpersubj['right-1over1minfracCSF'], axis='index')
 lt_corrmetab['left-GluOverGABA'] = lt_corrmetab['left-Glu-80ms']/lt_corrmetab['left-GABA']
 rt_corrmetab['right-GluOverGABA'] = rt_corrmetab['right-Glu-80ms']/rt_corrmetab['right-GABA']
 corr_metab = pd.merge(lt_corrmetab, rt_corrmetab, left_index=True, right_index=True)
+# make corrected metabolite sheet
 corr_metab.to_excel(writer, sheet_name='corr_metab', index=True, index_label='subject', header=True, freeze_panes=(1,1), na_rep=9999)
+# close excel file
 writer.save()
+# write a csv of corrected data for fun
 corr_metab.to_csv(str(uncorr_csv_fname.parent/uncorr_csv_fname.name.replace('uncorr_fits.csv', 'csfcorr_fits.csv')), header=True, index=True, na_rep=9999, index_label='corr_metabolite')
-
+# set up todd's fortran
 with WorkingContext(str(uncorr_csv_fname.parent)):
     with open('numcol.txt', mode='w') as nc:
         nc.write(str(len(onerowpersubj.columns)) + '\n')
