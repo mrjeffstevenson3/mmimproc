@@ -76,26 +76,26 @@ for rt_matchfname, lt_matchfname, rt_actfname, lt_actfname in zip(rt_matchfnames
         try:
             # start with right side
             rt_match_pfname = mrs_dir / appendposix(rt_matchfname, ext)
-            if pylabs.opts.overwrite and not only_spm:   ## or not Path(replacesuffix(rt_match_pfname, '_brain'+ext)).is_file():
+            if pylabs.opts.overwrite: # and not only_spm:   ## or not Path(replacesuffix(rt_match_pfname, '_brain'+ext)).is_file():
                 print('running brain extraction on '+str(rt_match_pfname))
                 rt_match_brain, rt_match_mask = extract_brain(str(rt_match_pfname))
             else:
                 rt_match_brain, rt_match_mask = replacesuffix(rt_match_pfname, '_brain'+ext), replacesuffix(rt_match_pfname, '_brain_mask'+ext)
-            if pylabs.opts.overwrite  and not only_spm:  ## or not Path(replacesuffix(rt_match_pfname, '_brain_susanf'+ext)).is_file():
+            if pylabs.opts.overwrite: #  and not only_spm:  ## or not Path(replacesuffix(rt_match_pfname, '_brain_susanf'+ext)).is_file():
                 print('running susan filter on ' + str(rt_match_brain))
                 results += run_subprocess(['susan ' + str(rt_match_brain) + ' -1 1 3 1 0 ' + str(replacesuffix(rt_match_brain, '_susanf'+ext))])
                 rt_match_brain = replacesuffix(rt_match_brain, '_susanf' + ext)
             else:
                 rt_match_brain = replacesuffix(rt_match_brain, '_susanf'+ext)
-            if pylabs.opts.overwrite and not only_spm:   ## or not Path(replacesuffix(rt_match_pfname, '_mrs_roi_mask'+ext)).is_file():
+            if pylabs.opts.overwrite: # and not only_spm:   ## or not Path(replacesuffix(rt_match_pfname, '_mrs_roi_mask'+ext)).is_file():
                 print('running make mask voi on ' +str(replacesuffix(rt_actfname, '.SPAR'))+' and '+ str(rt_match_brain))
                 rt_mask_img = make_voi_mask(replacesuffix(rt_actfname, '.SPAR'), rt_match_brain, replacesuffix(rt_match_pfname, '_mrs_roi_mask'+ext))
             # run SPM segmentation on right matching
-            if pylabs.opts.overwrite and only_spm:   ## or not (Path(prependposix(rt_match_brain, 'c1')).is_file() & Path(prependposix(rt_match_brain, 'c2')).is_file() & Path(prependposix(rt_match_brain, 'c3')).is_file()):
+            if pylabs.opts.overwrite: #  and only_spm:   ## or not (Path(prependposix(rt_match_brain, 'c1')).is_file() & Path(prependposix(rt_match_brain, 'c2')).is_file() & Path(prependposix(rt_match_brain, 'c3')).is_file()):
                 print('running SPM Segmentation on ' + str(rt_match_brain)+' and '+str(rt_match_mask))
                 eng.spm_seg(str(rt_match_brain), str(tpm_path), nargout=0)
             # run FSL segmentation on right matching
-            if pylabs.opts.overwrite and not only_spm:   ## or not (Path(replacesuffix(rt_match_brain, '_fslfast_seg_1'+ext)).is_file() & Path(replacesuffix(rt_match_brain, '_fslfast_seg_2'+ext)).is_file() & Path(replacesuffix(rt_match_brain, '_fslfast_seg_0'+ext)).is_file()):
+            if pylabs.opts.overwrite: # and not only_spm:   ## or not (Path(replacesuffix(rt_match_brain, '_fslfast_seg_1'+ext)).is_file() & Path(replacesuffix(rt_match_brain, '_fslfast_seg_2'+ext)).is_file() & Path(replacesuffix(rt_match_brain, '_fslfast_seg_0'+ext)).is_file()):
                 print('running FSL Segmentation on ' + str(rt_match_brain))
                 fast.inputs.in_files = str(rt_match_brain)
                 fast.inputs.out_basename = str(replacesuffix(rt_match_brain, '_fslfast'))
@@ -103,28 +103,28 @@ for rt_matchfname, lt_matchfname, rt_actfname, lt_actfname in zip(rt_matchfnames
 
             # now do left side
             lt_match_pfname = mrs_dir / appendposix(lt_matchfname, ext)
-            if pylabs.opts.overwrite and not only_spm:   ## or not Path(replacesuffix(lt_match_pfname, '_brain'+ext)).is_file():
+            if pylabs.opts.overwrite: # and not only_spm:   ## or not Path(replacesuffix(lt_match_pfname, '_brain'+ext)).is_file():
                 print('running brain extraction on ' + str(lt_match_pfname))
                 lt_match_brain, lt_match_mask = extract_brain(str(lt_match_pfname))
             else:
                 lt_match_brain, lt_match_mask = replacesuffix(lt_match_pfname, '_brain'+ext), replacesuffix(lt_match_pfname, '_brain_mask'+ext)
-            if pylabs.opts.overwrite and not only_spm:   ##  or not Path(replacesuffix(lt_match_pfname, '_brain_susanf'+ext)).is_file():
+            if pylabs.opts.overwrite: # and not only_spm:   ##  or not Path(replacesuffix(lt_match_pfname, '_brain_susanf'+ext)).is_file():
                 print('running susan filter on ' + str(lt_match_brain))
                 results += run_subprocess(['susan ' + str(lt_match_brain) + ' -1 1 3 1 0 ' + str(replacesuffix(lt_match_brain, '_susanf'+ext))])
                 lt_match_brain = replacesuffix(lt_match_brain, '_susanf' + ext)
             else:
                 lt_match_brain = replacesuffix(lt_match_brain, '_susanf'+ext)
 
-            if pylabs.opts.overwrite and not only_spm:   ## or not Path(replacesuffix(lt_match_pfname, '_mrs_roi_mask'+ext)).is_file():
+            if pylabs.opts.overwrite: # and not only_spm:   ## or not Path(replacesuffix(lt_match_pfname, '_mrs_roi_mask'+ext)).is_file():
                 print('running make mask voi on ' + str(replacesuffix(lt_actfname, '.SPAR')) + ' and ' + str(lt_match_brain))
                 lt_mask_img = make_voi_mask(replacesuffix(lt_actfname, '.SPAR'), lt_match_brain, replacesuffix(lt_match_pfname, '_mrs_roi_mask'+ext))
 
             # run SPM segmentation on left matching
-            if pylabs.opts.overwrite and only_spm:   ## or not (Path(prependposix(lt_match_brain, 'c1')).is_file() & Path(prependposix(lt_match_brain, 'c2')).is_file() & Path(prependposix(lt_match_brain, 'c3')).is_file()):
+            if pylabs.opts.overwrite: # and only_spm:   ## or not (Path(prependposix(lt_match_brain, 'c1')).is_file() & Path(prependposix(lt_match_brain, 'c2')).is_file() & Path(prependposix(lt_match_brain, 'c3')).is_file()):
                 print('running SPM Segmentation on ' + str(lt_match_brain) + ' and ' + str(lt_match_mask))
                 eng.spm_seg(str(lt_match_brain), str(tpm_path), nargout=0)
             # run FSL segmentation on left matching
-            if pylabs.opts.overwrite and not only_spm:   ## or not (Path(replacesuffix(lt_match_brain, '_fslfast_seg_1'+ext)).is_file() & Path(replacesuffix(lt_match_brain, '_fslfast_seg_2'+ext)).is_file() & Path(replacesuffix(lt_match_brain, '_fslfast_seg_0'+ext)).is_file()):
+            if pylabs.opts.overwrite: # and not only_spm:   ## or not (Path(replacesuffix(lt_match_brain, '_fslfast_seg_1'+ext)).is_file() & Path(replacesuffix(lt_match_brain, '_fslfast_seg_2'+ext)).is_file() & Path(replacesuffix(lt_match_brain, '_fslfast_seg_0'+ext)).is_file()):
                 print('running FSL Segmentation on ' + str(lt_match_brain))
                 fast.inputs.in_files = str(lt_match_brain)
                 fast.inputs.out_basename = str(replacesuffix(lt_match_brain, '_fslfast'))
