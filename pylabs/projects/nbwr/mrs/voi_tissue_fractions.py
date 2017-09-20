@@ -47,8 +47,8 @@ only_spm = True
 # instantiate subject id list container
 subjids_picks = SubjIdPicks()
 # list of subject ids to operate on
-#picks = ['007', '088', '107', '132', '144', '226', '307', '317'] # only does one subj until bug fix
-picks = ['007', '038', '088', '107', '110', '132', '135', '144', '226', '307', '309', '317', '401', '404', '405', '407', '409']
+picks = ['135']
+#picks = ['007', '038', '088', '107', '110', '132', '135', '144', '226', '307', '309', '317', '401', '404', '405', '407', '409']
 setattr(subjids_picks, 'subjids', picks)
 setattr(subjids_picks, 'source_path', fs / project / 'sub-nbwr%(sid)s' / 'ses-1' / 'source_sparsdat')
 
@@ -59,7 +59,7 @@ rt_matchfnames, lt_matchfnames = get_matching_voi_names(subjids_picks)
 test_l = map(len, (rt_actfnames, lt_actfnames, rt_matchfnames, lt_matchfnames))
 if not all(test_l[0] == l for l in test_l):
     raise ValueError('lists lengths do not all match. cannot zip '+str(test_l))
-
+print ('overwrite='+str(pylabs.opts.overwrite))
 for rt_matchfname, lt_matchfname, rt_actfname, lt_actfname in zip(rt_matchfnames, lt_matchfnames, rt_actfnames, lt_actfnames):
     results = ()
     if not rt_matchfname.split('_')[0] == lt_matchfname.split('_')[0]:
@@ -70,11 +70,13 @@ for rt_matchfname, lt_matchfname, rt_actfname, lt_actfname in zip(rt_matchfnames
     if not mrs_dir.is_dir():
         raise ValueError('cant find mrs directory '+str(mrs_dir))
     # get gaba data from gannett fits json
-    gaba_fits_logf = sorted(list(mrs_dir.glob('mrs_gaba_log*.json')), key=lambda date: int(date.stem.split('_')[-1].replace('log','')))[-1]
+    if len(list(mrs_dir.glob('mrs_gaba_log*.json'))) > 0:
+        gaba_fits_logf = sorted(list(mrs_dir.glob('mrs_gaba_log*.json')), key=lambda date: int(date.stem.split('_')[-1].replace('log','')))[-1]
     # first do right side
     with WorkingContext(str(mrs_dir)):
         try:
             # start with right side
+            print ('overwrite='+str(pylabs.opts.overwrite))
             rt_match_pfname = mrs_dir / appendposix(rt_matchfname, ext)
             if pylabs.opts.overwrite: # and not only_spm:   ## or not Path(replacesuffix(rt_match_pfname, '_brain'+ext)).is_file():
                 print('running brain extraction on '+str(rt_match_pfname))
@@ -102,6 +104,7 @@ for rt_matchfname, lt_matchfname, rt_actfname, lt_actfname in zip(rt_matchfnames
                 fast.run()
 
             # now do left side
+            print ('overwrite='+str(pylabs.opts.overwrite))
             lt_match_pfname = mrs_dir / appendposix(lt_matchfname, ext)
             if pylabs.opts.overwrite: # and not only_spm:   ## or not Path(replacesuffix(lt_match_pfname, '_brain'+ext)).is_file():
                 print('running brain extraction on ' + str(lt_match_pfname))
