@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 import scipy.stats as ss
 import json
-from pylabs.utils import ProvenanceWrapper, getnetworkdataroot, appendposix, insertdir, WorkingContext, run_subprocess, pylabs_dir
+from pylabs.utils import ProvenanceWrapper, getnetworkdataroot, appendposix, bumptodefunct, WorkingContext, run_subprocess, pylabs_dir
 from pylabs.projects.nbwr.file_names import project
 prov = ProvenanceWrapper()
 
@@ -77,20 +77,19 @@ for s in onerowpersubj.columns:
     onerowpersubj.loc['right-percCSF', s] = csf_frac.loc['right-percCSF'][0]
 
 # make output file names
-base_fname = fs / project / 'stats' / 'mrs' / 'all_nbwr_mrs_results'
+base_fname = fs / project / 'stats' / 'mrs' / 'all_nbwr_mrs'
 uncorr_csv_fname = appendposix(base_fname, '_uncorr_fits.csv')
-csfcorr_csv_fname = appendposix(base_fname, '_csfcorr_fits.csv')
-excel_fname = appendposix(base_fname, '_csfcorr_fits.xlsx')
-hdf_fname = appendposix(base_fname, '_csfcorr_fits.h5')
-
-if not (excel_fname.parent/'defunct').is_dir():
-    (excel_fname.parent/'defunct').mkdir(parents=True)
+csfcorr_csv_fname = appendposix(base_fname, '_results_csfcorr_fits.csv')
+excel_fname = appendposix(base_fname, '_results_csfcorr_fits.xlsx')
+hdf_fname = appendposix(base_fname, '_results_csfcorr_fits.h5')
+fcsv_corr_fname = base_fname.parent / 'csfcorrected.csv'
+fstats_fname =  base_fname.parent / 'stats_tvalue.csv'
 
 # save old versions if there
-if uncorr_csv_fname.is_file():
-    uncorr_repl_fname = appendposix(insertdir(uncorr_csv_fname, 'defunct'), '_replaced_on_{:%Y%m%d%H%M}'.format(datetime.datetime.now()))
-    uncorr_csv_fname.rename(uncorr_repl_fname)
+for file in [uncorr_csv_fname, csfcorr_csv_fname, excel_fname, hdf_fname, fcsv_corr_fname, fstats_fname]:
+    bumptodefunct(file)
 
+# do fortran stats 1st
 onerowpersubj.to_csv(str(uncorr_csv_fname), header=True, index=True, na_rep=9999, index_label='metabolite')
 
 rlog = ()
@@ -100,15 +99,6 @@ with WorkingContext(str(uncorr_csv_fname.parent)):
     with open('numrow.txt', mode='w') as nr:
         nr.write(str(len(onerowpersubj.index)+1) + '\n')
     rlog += run_subprocess(str(stats_fpgm))
-
-
-if excel_fname.is_file():
-    excel_repl_fname = appendposix(insertdir(excel_fname, 'defunct'), '_replaced_on_{:%Y%m%d%H%M}'.format(datetime.datetime.now()))
-    excel_fname.rename(excel_repl_fname)
-
-if hdf_fname.is_file():
-    hdf_repl_fname = appendposix(insertdir(hdf_fname, 'defunct'), '_replaced_on_{:%Y%m%d%H%M}'.format(datetime.datetime.now()))
-    hdf_fname.rename(hdf_repl_fname)
 
 onerowpersubj.loc['left-1over1minfracCSF'] = 1 / (1 - onerowpersubj.loc['left-percCSF'])
 onerowpersubj.loc['right-1over1minfracCSF'] = 1 / (1 - onerowpersubj.loc['right-percCSF'])
@@ -129,10 +119,12 @@ tvalues, pvalues = ss.ttest_ind(corr_metab[asd_grp], corr_metab[~asd_grp], equal
 descriptives = corr_metab.groupby(asd_grp.astype(int)).describe()
 
 #organise stats results here
+fcsf_corr = pd.DataFrame.from_csv(str(fcsv_corr_fname))
 
 writer = pd.ExcelWriter(str(excel_fname), engine='xlsxwriter')
 onerowpersubj.to_excel(writer, sheet_name='uncorr', columns=uncorr_cols, index=True, index_label='subject', header=True, na_rep=9999)
 corr_metab.to_excel(writer, sheet_name='corr_metab', columns=corr_cols, index=True, index_label='subject', header=True, na_rep=9999)
+fcsf_corr.to_excel(writer, sheet_name='fortran_corr', index=True, index_label='subject', header=True, na_rep=9999)
 # third page goes here
 writer.save()
 
