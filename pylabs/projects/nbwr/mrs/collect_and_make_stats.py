@@ -6,6 +6,7 @@ from pathlib import *
 import datetime
 import numpy as np
 import pandas as pd
+import scipy.stats as ss
 import json
 from pylabs.utils import ProvenanceWrapper, getnetworkdataroot, appendposix, insertdir, WorkingContext, run_subprocess, pylabs_dir
 from pylabs.projects.nbwr.file_names import project
@@ -53,6 +54,7 @@ onerowpersubj.reindex_axis(sorted(onerowpersubj.columns), axis=1)
 onerowpersubj.drop(exclude_subj, axis=1, inplace=True)
 # now get gaba data
 for s in onerowpersubj.columns:
+    print('working on '+s)
     mrs_dir = fs / project / s / 'ses-1' / 'mrs'
     if len(list(mrs_dir.rglob('mrs_gaba_log*.json'))) in [0,[],None]:
         raise ValueError('mrs_gaba_log file missing for '+s+'. make sure gaba fit was run with MRSfit subdirs in mrs dir.')
@@ -70,10 +72,9 @@ for s in onerowpersubj.columns:
     onerowpersubj.loc['left-GABA', s] = lt_gaba_val
 
     csf_frac = pd.read_csv(str(mrs_dir / str(s + '_csf_fractions.csv')))
-    csf_frac.set_index(csf_frac.subject, inplace=True)
-    csf_frac.drop(['subject'], axis=1, inplace=True)
-    onerowpersubj.loc['left-percCSF', s] = csf_frac.loc['left-percCSF', s]
-    onerowpersubj.loc['right-percCSF', s] = csf_frac.loc['right-percCSF', s]
+    csf_frac.set_index(s, inplace=True)
+    onerowpersubj.loc['left-percCSF', s] = csf_frac.loc['left-percCSF'][0]
+    onerowpersubj.loc['right-percCSF', s] = csf_frac.loc['right-percCSF'][0]
 
 # make output file names
 base_fname = fs / project / 'stats' / 'mrs' / 'all_nbwr_mrs_results'
