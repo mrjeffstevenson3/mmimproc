@@ -7,7 +7,7 @@ import datetime
 import numpy as np
 import pandas as pd
 import json
-from pylabs.utils import ProvenanceWrapper, getnetworkdataroot, appendposix, replacesuffix, WorkingContext, run_subprocess, pylabs_dir
+from pylabs.utils import ProvenanceWrapper, getnetworkdataroot, appendposix, insertdir, WorkingContext, run_subprocess, pylabs_dir
 from pylabs.projects.nbwr.file_names import project
 prov = ProvenanceWrapper()
 
@@ -15,7 +15,8 @@ fs = Path(getnetworkdataroot())
 
 stats_fpgm = pylabs_dir / 'pylabs/projects/nbwr/mrs/nbwr_spreadsheet_sep19_2017'
 
-cols = [u'left-percCSF', u'left-GABA', u'left-NAAplusNAAG', u'left-GPCplusPCh', u'left-CrplusPCr', u'left-mIns', u'left-Glu-80ms', u'right-percCSF', u'right-GABA', u'right-NAAplusNAAG', u'right-GPCplusPCh', u'right-CrplusPCr', u'right-mIns', u'right-Glu-80ms']
+uncorr_cols = [u'left-percCSF', u'left-GABA', u'left-NAAplusNAAG', u'left-GPCplusPCh', u'left-CrplusPCr', u'left-mIns', u'left-Glu-80ms', u'right-percCSF', u'right-GABA', u'right-NAAplusNAAG', u'right-GPCplusPCh', u'right-CrplusPCr', u'right-mIns', u'right-Glu-80ms']
+corr_cols = [u'left-percCSF', u'left-GABA', u'left-NAAplusNAAG', u'left-GPCplusPCh', u'left-CrplusPCr', u'left-mIns', u'left-Glu-80ms', u'left-1over1minfracCSF', u'right-percCSF', u'right-GABA', u'right-NAAplusNAAG', u'right-GPCplusPCh', u'right-CrplusPCr', u'right-mIns', u'right-Glu-80ms', u'right-1over1minfracCSF']
 exclude_subj = ['sub-nbwr997', 'sub-nbwr998', 'sub-nbwr999',]
 exclude_data = ['Scan', 'Hemisphere', 'short_FWHM', 'short_SNR', 'short_TE', 'long_FWHM', 'long_SNR', 'long_TE']
 right_col_map = {'NAA+NAAG': 'right-NAAplusNAAG', 'GPC+PCh': 'right-GPCplusPCh', 'Cr+PCr': 'right-CrplusPCr', 'mIns': 'right-mIns', 'Glu': 'right-Glu-80ms'}
@@ -47,7 +48,7 @@ onerowpersubj['left-percCSF'] = np.nan
 onerowpersubj['right-percCSF']  = np.nan
 onerowpersubj['left-GABA']  = np.nan
 onerowpersubj['right-GABA']  = np.nan
-onerowpersubj = onerowpersubj[cols].T
+onerowpersubj = onerowpersubj[uncorr_cols].T
 onerowpersubj.reindex_axis(sorted(onerowpersubj.columns), axis=1)
 onerowpersubj.drop(exclude_subj, axis=1, inplace=True)
 # now get gaba data
@@ -79,22 +80,26 @@ base_fname = fs / project / 'stats' / 'mrs' / 'all_nbwr_mrs_results'
 uncorr_csv_fname = appendposix(base_fname, '_uncorr_fits.csv')
 csfcorr_csv_fname = appendposix(base_fname, '_csfcorr_fits.csv')
 excel_fname = appendposix(base_fname, '_csfcorr_fits.xlsx')
-test_hdf_fname = appendposix(base_fname, '_csfcorr_fits_forkam.h5')
+hdf_fname = appendposix(base_fname, '_csfcorr_fits.h5')
+
+if not (excel_fname.parent/'defunct').is_dir():
+    (excel_fname.parent/'defunct').mkdir(parents=True)
+
 # save old versions if there
 if uncorr_csv_fname.is_file():
-    uncorr_repl_fname = appendposix(uncorr_csv_fname, '_replaced_on_{:%Y%m%d%H%M}'.format(datetime.datetime.now()))
+    uncorr_repl_fname = appendposix(insertdir(uncorr_csv_fname, 'defunct'), '_replaced_on_{:%Y%m%d%H%M}'.format(datetime.datetime.now()))
     uncorr_csv_fname.rename(uncorr_repl_fname)
 
 onerowpersubj.to_csv(str(uncorr_csv_fname), header=True, index=True, na_rep=9999, index_label='metabolite')
 
 if excel_fname.is_file():
-    excel_repl_fname = appendposix(excel_fname, '_replaced_on_{:%Y%m%d%H%M}'.format(datetime.datetime.now()))
+    excel_repl_fname = appendposix(insertdir(excel_fname, 'defunct'), '_replaced_on_{:%Y%m%d%H%M}'.format(datetime.datetime.now()))
     excel_fname.rename(excel_repl_fname)
 
-# add hd5 file checks here
+if hdf_fname.is_file():
+    hdf_repl_fname = appendposix(insertdir(hdf_fname, 'defunct'), '_replaced_on_{:%Y%m%d%H%M}'.format(datetime.datetime.now()))
+    hdf_fname.rename(hdf_repl_fname)
 
-writer = pd.ExcelWriter(str(excel_fname), engine='xlsxwriter')
-onerowpersubj.T.to_excel(writer, sheet_name='uncorr', index=True, index_label='subject', header=True, na_rep=9999)
 onerowpersubj.loc['left-1over1minfracCSF'] = 1 / (1 - onerowpersubj.loc['left-percCSF'])
 onerowpersubj.loc['right-1over1minfracCSF'] = 1 / (1 - onerowpersubj.loc['right-percCSF'])
 
@@ -107,9 +112,19 @@ rt_corrmetab = onerowpersubj[right_metab].multiply(onerowpersubj['right-1over1mi
 lt_corrmetab['left-GluOverGABA'] = lt_corrmetab['left-Glu-80ms']/lt_corrmetab['left-GABA']
 rt_corrmetab['right-GluOverGABA'] = rt_corrmetab['right-Glu-80ms']/rt_corrmetab['right-GABA']
 corr_metab = pd.merge(lt_corrmetab, rt_corrmetab, left_index=True, right_index=True)
-corr_metab.to_excel(writer, sheet_name='corr_metab', index=True, index_label='subject', header=True, na_rep=9999)
+corr_metab.to_csv(str(csfcorr_csv_fname), header=True, columns=corr_cols, index=True, na_rep=9999, index_label='corr_metabolite')
+
+asd_grp = corr_metab.index.str.replace('sub-nbwr', '').astype('int') < 400  # ASD only
+tvalues, pvalues = ss.ttest_ind(corr_metab[asd_grp], corr_metab[~asd_grp], equal_var=False)
+descriptives = corr_metab.groupby(group_by.astype(int)).describe()
+
+#organise stats results here
+
+writer = pd.ExcelWriter(str(excel_fname), engine='xlsxwriter')
+onerowpersubj.to_excel(writer, sheet_name='uncorr', columns=uncorr_cols,index=True, index_label='subject', header=True, na_rep=9999)
+corr_metab.to_excel(writer, sheet_name='corr_metab', columns=corr_cols, index=True, index_label='subject', header=True, na_rep=9999)
+
 writer.save()
-corr_metab.to_csv(str(csfcorr_csv_fname), header=True, index=True, na_rep=9999, index_label='corr_metabolite')
 
 rlog = ()
 with WorkingContext(str(uncorr_csv_fname.parent)):

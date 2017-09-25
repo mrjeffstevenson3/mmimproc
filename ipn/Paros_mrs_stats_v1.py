@@ -23,11 +23,11 @@ stats_dir = fs / project / 'stats' / 'mrs'
 corr_metab = pd.read_hdf(str(stats_dir / 'all_nbwr_mrs_results_csfcorr_fits_forkam.h5'))
 asd_metab = corr_metab[corr_metab.index.str.replace('sub-nbwr','').astype('int') < 400]
 cntrl_metab = corr_metab[corr_metab.index.str.replace('sub-nbwr','').astype('int') >= 400]
+ttest_results = pd.Series(ss.ttest_ind(asd_metab, cntrl_metab, axis=0, equal_var=False), index=['t-stat', 'p-value'])
+ttest_results_df = pd.DataFrame.from_dict({'t-stat': ttest_results['t-stat'], 'p-value': ttest_results['p-value']})
 col_map = {}
 for n, c in zip(range(0, len(corr_metab.columns)), corr_metab.columns):
     col_map[n] = c
-ttest_results = pd.Series(ss.ttest_ind(asd_metab, cntrl_metab, axis=0, equal_var=False), index=['t-stat', 'p-value'])
-ttest_results_df = pd.DataFrame.from_dict({'t-stat': ttest_results['t-stat'], 'p-value': ttest_results['p-value']})
 ttest_results_df.rename(index=col_map,inplace=True)
 ttest_results_df
 
