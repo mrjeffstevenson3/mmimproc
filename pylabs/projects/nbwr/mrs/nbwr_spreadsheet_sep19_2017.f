@@ -4,7 +4,7 @@ c paired ttest
 c
 	character*40 cfn,cfnlist(100),cheader(100),ch
 	character*40 cout,csubjects(100)
-	character*20 clabels(100)
+	character*35 clabels(100)
 	common /dat1/ dmnmr(1000),dmnmr2(1000),dmnmr3(1000)
 	common /size/isize1,isize2
 	real dnmr(100,100),behav1(10000),dout(100,100)
@@ -101,7 +101,7 @@ c
 	iright = iright+1
 	cout(1:12)='csfcorrected'
 	cout(13:13)='_'
-	cout(14:25)=ch(1:10)
+	cout(14:35)=ch(1:20)
 	clabels(iright) = cout
 	write(6,*)'clabels(iright) ',clabels(iright)
 
