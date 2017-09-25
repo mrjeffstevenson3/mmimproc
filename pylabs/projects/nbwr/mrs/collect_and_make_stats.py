@@ -117,7 +117,7 @@ corr_metab.to_csv(str(csfcorr_csv_fname), header=True, columns=corr_cols, index=
 
 asd_grp = corr_metab.index.str.replace('sub-nbwr', '').astype('int') < 400  # ASD only
 tvalues, pvalues = ss.ttest_ind(corr_metab[asd_grp], corr_metab[~asd_grp], equal_var=False)
-descriptives = corr_metab.groupby(group_by.astype(int)).describe()
+descriptives = corr_metab.groupby(asd_grp.astype(int)).describe()
 
 rlog = ()
 with WorkingContext(str(uncorr_csv_fname.parent)):
