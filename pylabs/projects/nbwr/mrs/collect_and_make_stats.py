@@ -6,14 +6,18 @@ from pathlib import *
 import datetime
 import numpy as np
 import pandas as pd
+import scipy.stats as ss
 import json
-from pylabs.utils import ProvenanceWrapper, getnetworkdataroot, appendposix, replacesuffix, WorkingContext
+from pylabs.utils import ProvenanceWrapper, getnetworkdataroot, appendposix, insertdir, WorkingContext, run_subprocess, pylabs_dir
 from pylabs.projects.nbwr.file_names import project
 prov = ProvenanceWrapper()
 
 fs = Path(getnetworkdataroot())
 
-cols = [u'left-percCSF', u'left-GABA', u'left-NAAplusNAAG', u'left-GPCplusPCh', u'left-CrplusPCr', u'left-mIns', u'left-Glu-80ms', u'right-percCSF', u'right-GABA', u'right-NAAplusNAAG', u'right-GPCplusPCh', u'right-CrplusPCr', u'right-mIns', u'right-Glu-80ms']
+stats_fpgm = pylabs_dir / 'pylabs/projects/nbwr/mrs/nbwr_spreadsheet_sep19_2017'
+
+uncorr_cols = [u'left-percCSF', u'left-GABA', u'left-NAAplusNAAG', u'left-GPCplusPCh', u'left-CrplusPCr', u'left-mIns', u'left-Glu-80ms', u'right-percCSF', u'right-GABA', u'right-NAAplusNAAG', u'right-GPCplusPCh', u'right-CrplusPCr', u'right-mIns', u'right-Glu-80ms']
+corr_cols = [u'left-percCSF', u'left-GABA', u'left-NAAplusNAAG', u'left-GPCplusPCh', u'left-CrplusPCr', u'left-mIns', u'left-Glu-80ms', u'left-1over1minfracCSF', u'right-percCSF', u'right-GABA', u'right-NAAplusNAAG', u'right-GPCplusPCh', u'right-CrplusPCr', u'right-mIns', u'right-Glu-80ms', u'right-1over1minfracCSF']
 exclude_subj = ['sub-nbwr997', 'sub-nbwr998', 'sub-nbwr999',]
 exclude_data = ['Scan', 'Hemisphere', 'short_FWHM', 'short_SNR', 'short_TE', 'long_FWHM', 'long_SNR', 'long_TE']
 right_col_map = {'NAA+NAAG': 'right-NAAplusNAAG', 'GPC+PCh': 'right-GPCplusPCh', 'Cr+PCr': 'right-CrplusPCr', 'mIns': 'right-mIns', 'Glu': 'right-Glu-80ms'}
@@ -32,7 +36,7 @@ glu_data['region'] = glu_data['Hemisphere'].map({'LT': 'left-insula', 'RT': 'rig
 glu_data['method'] = 'lcmodel'
 glu_data.reset_index(inplace=True)
 glu_data.drop(exclude_data, axis=1, inplace=True)
-right_side_glu = glu_data[1::2]
+right_side_glu = glu_data.loc[1::2]
 left_side_glu = glu_data.loc[::2]
 right_side_glu.copy('deep')
 left_side_glu.copy('deep')
@@ -45,13 +49,17 @@ onerowpersubj['left-percCSF'] = np.nan
 onerowpersubj['right-percCSF']  = np.nan
 onerowpersubj['left-GABA']  = np.nan
 onerowpersubj['right-GABA']  = np.nan
-onerowpersubj = onerowpersubj[cols].T
+onerowpersubj = onerowpersubj[uncorr_cols].T
 onerowpersubj.reindex_axis(sorted(onerowpersubj.columns), axis=1)
 onerowpersubj.drop(exclude_subj, axis=1, inplace=True)
 # now get gaba data
 for s in onerowpersubj.columns:
+    print('working on '+s)
     mrs_dir = fs / project / s / 'ses-1' / 'mrs'
-    gaba_fits_logf = sorted(list(mrs_dir.glob('mrs_gaba_log*.json')), key=lambda date: int(date.stem.split('_')[-1].replace('log', '')))[-1]
+    if len(list(mrs_dir.rglob('mrs_gaba_log*.json'))) in [0,[],None]:
+        raise ValueError('mrs_gaba_log file missing for '+s+'. make sure gaba fit was run with MRSfit subdirs in mrs dir.')
+    else:
+        gaba_fits_logf = sorted(list(mrs_dir.rglob('mrs_gaba_log*.json')), key=lambda date: int(date.stem.split('_')[-1].replace('log', '')))[-1]
     with open(str(gaba_fits_logf), 'r') as gf:
         log_data = json.load(gf)
     for line in log_data:
@@ -64,18 +72,44 @@ for s in onerowpersubj.columns:
     onerowpersubj.loc['left-GABA', s] = lt_gaba_val
 
     csf_frac = pd.read_csv(str(mrs_dir / str(s + '_csf_fractions.csv')))
-    csf_frac.set_index(csf_frac.subject, inplace=True)
-    csf_frac.drop(['subject'], axis=1, inplace=True)
-    onerowpersubj.loc['left-percCSF', s] = csf_frac.loc['left-percCSF', s]
-    onerowpersubj.loc['right-percCSF', s] = csf_frac.loc['right-percCSF', s]
+    csf_frac.set_index(s, inplace=True)
+    onerowpersubj.loc['left-percCSF', s] = csf_frac.loc['left-percCSF'][0]
+    onerowpersubj.loc['right-percCSF', s] = csf_frac.loc['right-percCSF'][0]
 
-uncorr_csv_fname = fs / project / 'stats' / 'mrs' / 'all_nbwr_mrs_uncorr_fits.csv'
+# make output file names
+base_fname = fs / project / 'stats' / 'mrs' / 'all_nbwr_mrs_results'
+uncorr_csv_fname = appendposix(base_fname, '_uncorr_fits.csv')
+csfcorr_csv_fname = appendposix(base_fname, '_csfcorr_fits.csv')
+excel_fname = appendposix(base_fname, '_csfcorr_fits.xlsx')
+hdf_fname = appendposix(base_fname, '_csfcorr_fits.h5')
+
+if not (excel_fname.parent/'defunct').is_dir():
+    (excel_fname.parent/'defunct').mkdir(parents=True)
+
+# save old versions if there
 if uncorr_csv_fname.is_file():
-    uncorr_csv_fname.rename(appendposix(uncorr_csv_fname, '_replaced_on_{:%Y%m%d%H%M}'.format(datetime.datetime.now())))
+    uncorr_repl_fname = appendposix(insertdir(uncorr_csv_fname, 'defunct'), '_replaced_on_{:%Y%m%d%H%M}'.format(datetime.datetime.now()))
+    uncorr_csv_fname.rename(uncorr_repl_fname)
 
 onerowpersubj.to_csv(str(uncorr_csv_fname), header=True, index=True, na_rep=9999, index_label='metabolite')
-writer = pd.ExcelWriter(str(replacesuffix(uncorr_csv_fname, '.xlsx')), engine='xlsxwriter')
-onerowpersubj.T.to_excel(writer, sheet_name='uncorr', index=True, index_label='subject', header=True, freeze_panes=(1,1), na_rep=9999)
+
+rlog = ()
+with WorkingContext(str(uncorr_csv_fname.parent)):
+    with open('numcol.txt', mode='w') as nc:
+        nc.write(str(len(onerowpersubj.columns)) + '\n')
+    with open('numrow.txt', mode='w') as nr:
+        nr.write(str(len(onerowpersubj.index)+1) + '\n')
+    rlog += run_subprocess(str(stats_fpgm))
+
+
+if excel_fname.is_file():
+    excel_repl_fname = appendposix(insertdir(excel_fname, 'defunct'), '_replaced_on_{:%Y%m%d%H%M}'.format(datetime.datetime.now()))
+    excel_fname.rename(excel_repl_fname)
+
+if hdf_fname.is_file():
+    hdf_repl_fname = appendposix(insertdir(hdf_fname, 'defunct'), '_replaced_on_{:%Y%m%d%H%M}'.format(datetime.datetime.now()))
+    hdf_fname.rename(hdf_repl_fname)
+
 onerowpersubj.loc['left-1over1minfracCSF'] = 1 / (1 - onerowpersubj.loc['left-percCSF'])
 onerowpersubj.loc['right-1over1minfracCSF'] = 1 / (1 - onerowpersubj.loc['right-percCSF'])
 
@@ -88,12 +122,18 @@ rt_corrmetab = onerowpersubj[right_metab].multiply(onerowpersubj['right-1over1mi
 lt_corrmetab['left-GluOverGABA'] = lt_corrmetab['left-Glu-80ms']/lt_corrmetab['left-GABA']
 rt_corrmetab['right-GluOverGABA'] = rt_corrmetab['right-Glu-80ms']/rt_corrmetab['right-GABA']
 corr_metab = pd.merge(lt_corrmetab, rt_corrmetab, left_index=True, right_index=True)
-corr_metab.to_excel(writer, sheet_name='corr_metab', index=True, index_label='subject', header=True, freeze_panes=(1,1), na_rep=9999)
-writer.save()
-corr_metab.to_csv(str(uncorr_csv_fname.parent/uncorr_csv_fname.name.replace('uncorr_fits.csv', 'csfcorr_fits.csv')), header=True, index=True, na_rep=9999, index_label='corr_metabolite')
+corr_metab.to_csv(str(csfcorr_csv_fname), header=True, columns=corr_cols, index=True, na_rep=9999, index_label='corr_metabolite')
 
-with WorkingContext(str(uncorr_csv_fname.parent)):
-    with open('numcol.txt', mode='w') as nc:
-        nc.write(str(len(onerowpersubj.columns)) + '\n')
-    with open('numcol.txt', mode='w') as nr:
-        nr.write(str(len(onerowpersubj.index)) + '\n')
+asd_grp = corr_metab.index.str.replace('sub-nbwr', '').astype('int') < 400  # ASD only
+tvalues, pvalues = ss.ttest_ind(corr_metab[asd_grp], corr_metab[~asd_grp], equal_var=False)
+descriptives = corr_metab.groupby(asd_grp.astype(int)).describe()
+
+#organise stats results here
+
+writer = pd.ExcelWriter(str(excel_fname), engine='xlsxwriter')
+onerowpersubj.to_excel(writer, sheet_name='uncorr', columns=uncorr_cols, index=True, index_label='subject', header=True, na_rep=9999)
+corr_metab.to_excel(writer, sheet_name='corr_metab', columns=corr_cols, index=True, index_label='subject', header=True, na_rep=9999)
+# third page goes here
+writer.save()
+
+

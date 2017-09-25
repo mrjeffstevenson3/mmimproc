@@ -93,3 +93,11 @@ def prependposix(file, prefix):
     file = Path(file)
     new_name = str(prefix) + file.name
     return Path(file.parent/new_name)
+
+def insertdir(file, newdir):
+    '''
+    inserts dir into last line of path for file. e.g /root/exist_dir1/file.ext to /root/exist_dir1/dir/file.ext
+    '''
+
+    file = Path(file)
+    return file.parent/newdir/file.name
