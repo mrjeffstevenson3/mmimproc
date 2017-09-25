@@ -118,12 +118,20 @@ asd_grp = corr_metab.index.str.replace('sub-nbwr', '').astype('int') < 400  # AS
 tvalues, pvalues = ss.ttest_ind(corr_metab[asd_grp], corr_metab[~asd_grp], equal_var=False)
 descriptives = corr_metab.groupby(group_by.astype(int)).describe()
 
+rlog = ()
+with WorkingContext(str(uncorr_csv_fname.parent)):
+    with open('numcol.txt', mode='w') as nc:
+        nc.write(str(len(onerowpersubj.columns)) + '\n')
+    with open('numcol.txt', mode='w') as nr:
+        nr.write(str(len(onerowpersubj.index)) + '\n')
+    rlog += run_subprocess(str(stats_fpgm))
+
 #organise stats results here
 
 writer = pd.ExcelWriter(str(excel_fname), engine='xlsxwriter')
 onerowpersubj.to_excel(writer, sheet_name='uncorr', columns=uncorr_cols,index=True, index_label='subject', header=True, na_rep=9999)
 corr_metab.to_excel(writer, sheet_name='corr_metab', columns=corr_cols, index=True, index_label='subject', header=True, na_rep=9999)
-
+# third page goes here
 writer.save()
 
 rlog = ()
@@ -133,3 +141,4 @@ with WorkingContext(str(uncorr_csv_fname.parent)):
     with open('numcol.txt', mode='w') as nr:
         nr.write(str(len(onerowpersubj.index)) + '\n')
     rlog += run_subprocess(str(stats_fpgm))
+
