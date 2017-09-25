@@ -43,7 +43,7 @@ c
 	ileft = ileft+1
 	cout(1:12)='csfcorrected'
 	cout(13:13)='_'
-	cout(14:25)=ch(1:10)
+	cout(14:35)=ch(1:20)
 	clabels(ileft) = cout
 	write(6,*)'clabels(ileft) ',clabels(ileft)
 
