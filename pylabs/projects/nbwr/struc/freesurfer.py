@@ -34,10 +34,13 @@ b1corr = True
 noise_filter = True
 noise_thresh = -1
 noise_kernel = 1
-
+meg_source_spacing = 5
+bem_from = 'T1' # or 'brain' if probs with overlapping boundaries
 
 b1map_fnames, freesurf_fnames = get_freesurf_names(subjids_picks)
 
+if 'FREESURFER_HOME' not in os.environ:
+    raise RuntimeError('FreeSurfer environment not set up. Pls fix.')
 
 if not (fs/project/'freesurf_subjs').is_dir():
     (fs / project / 'freesurf_subjs').mkdir(parents=True)
@@ -88,6 +91,9 @@ for fsf, b1map in zip(freesurf_fnames, b1map_fnames):
             results += ('finished 1mm3 freesurfer run for ' + fs_sid + ' at {:%H:%M on %M %d %Y}.'.format(
                 datetime.datetime.now()),)
             print('finished 1mm3 freesurfer run for ' + fs_sid + ' at {:%H:%M on %M %d %Y}.'.format(datetime.datetime.now()))
+        this_env = this_env = copy.copy(os.environ)
+        results += run_subprocess(['mne_setup_mri', '--mri', bem_from, '--subject', fs_sid, '--overwrite'], env=this_env)
+        results += run_subprocess(['mne_setup_source_space', '--subject', fs_sid, '--spacing', '%.0f' % meg_source_spacing, '--cps'], env=this_env)
         with open(fs_sid+'/'+fs_sid+'_log{:%Y%m%d%H%M}.json'.format(datetime.datetime.now()), mode='a') as logr:
             json.dump(results, logr, indent=2)
     fs_subj_ln = fs/project/'freesurf_subjs'/fs_sid
