@@ -145,8 +145,8 @@ worksheet = writer.sheets['stats']
 worksheet.write_string(0,0,stats_hdrs['scipy_stats'])
 worksheet.write_string(5,0,stats_hdrs['fortran'])
 fstats.to_excel(writer, sheet_name='stats', index_label='stats', header=True, startrow=7, startcol=0)
-worksheet.write_string(16,0,stats_hdrs['descriptive'])
-descriptives.to_excel(writer, sheet_name='stats', index_label='stats', header=True, startrow=18, startcol=0)
+worksheet.write_string(20,0,stats_hdrs['descriptive'])
+descriptives.to_excel(writer, sheet_name='stats', index_label='stats', header=True, startrow=22, startcol=0)
 writer.save()
 
 
