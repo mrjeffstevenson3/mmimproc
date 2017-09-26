@@ -8,8 +8,11 @@ c
 	common /dat1/ dmnmr(1000),dmnmr2(1000),dmnmr3(1000)
 	common /size/isize1,isize2
 	real dnmr(100,100),behav1(10000),dout(100,100)
-	real tvalue(100)
+	real tvalue(100),pvalue(100)
 	character*1 c1
+	REAL X,XNU,PROB1,PROB2
+  	INTEGER NU, ERROR
+
 	
 	open(11,file ='numcol.txt')
 	read(11,*)numcol
@@ -80,8 +83,13 @@ c	dmnmr(isize1) = dnmr(isub,imetab)
 	enddo
 
 	write(6,*)'isize1 isize2 ',isize1,isize2
-	call ttest_unequalv(t)
+	call ttest_unequalv(t,degressof)
 	tvalue(ileft)=t
+	PROB2=STUDNT(t,degreesof,ERROR)
+  	write(6,*)' tvalue=', t
+  	write(6,*)' PROB2=', PROB2*2.0
+	pvalue(ileft)=prob2*2.0
+
 	write(6,*)t,imetab
 	endif !for left
 	enddo  !imetab
@@ -138,8 +146,50 @@ c	dmnmr(isize1) = dnmr(isub,imetab)
 	enddo
 
 	write(6,*)'isize1 isize2 ',isize1,isize2
-	call ttest_unequalv(t)
+c to test the equation we use a verified example of data
+c
+c	dmnmr(1) = 134
+c	dmnmr(2) = 146
+c	dmnmr(3) = 104
+c	dmnmr(4) = 119
+c	dmnmr(5) = 124
+c	dmnmr(6) = 161
+c	dmnmr(7) = 107
+c	dmnmr(8) = 83
+c	dmnmr(9) = 113
+c	dmnmr(10)= 129
+c	dmnmr(11) = 97
+c	dmnmr(12) = 123
+c	dmnmr2(1) = 70
+c	dmnmr2(2) = 118
+c	dmnmr2(3) = 101
+c	dmnmr2(4) = 85
+c	dmnmr2(5) = 107
+c	dmnmr2(6) = 132
+c	dmnmr2(7) = 94
+cHigh protein 	Low protein
+c134 	70
+c146 	118
+c104 	101
+c119 	85
+c124 	107
+c161 	132
+c107 	94
+c83 	 
+c113 	 
+c129 	 
+c97 	 
+c123 	 
+
+c	isize1 = 12
+c	isize2 = 7
+	call ttest_unequalv(t,degreesof)
+	PROB2=STUDNT(t,degreesof,ERROR)
+  	write(6,*)' tvalue=', t
+  	write(6,*)' PROB2=', PROB2*2.0
+  	write(6,*)' ERROR=', ERROR
 	tvalue(iright)=t
+	pvalue(iright)=prob2*2.0
 	write(6,*)t,imetab
 	endif !for left
 	enddo  !imetab
@@ -160,7 +210,8 @@ c
 	
 	open(11,file = 'stats_tvalue.csv')
 	write(11,12)'ttest_tvalue',(',',clabels(ii),ii=2,iright)
-	write(11,13)'ttest_value_unequalvariances',(',',tvalue(ii),ii=2,iright)
+	write(11,13)'ttest_values_unequalvariances',(',',tvalue(ii),ii=2,iright)
+	write(11,13)'proba_values_unequalvariances',(',',pvalue(ii),ii=2,iright)
 	write(11,*)'Notes_There_were ',isize1,'subjects_from_group_1'
 	write(11,*)'Notes_There_were ',isize2,'subjects_from_group_2'
 	close(11)
@@ -169,44 +220,8 @@ c
 	end
 	
 
-c
-	subroutine ttest(t)
-	common /dat1/ dmnmr(1000),dmnmr2(1000),dmnmr3(1000)
-	common /size/isize1,isize2
-C	CALCULATER AVERAGE AND STANDARD DEVIATION FOR INPUT
-c	and student t
-c
-	real incv(2)
-	dimension sdv(2),averv(2)
-C
-	isize1sav = isize1
-	isize2sav = isize2
-	df = isize1+isize2-2
-c	write(6,*)'degrees of freedom ',df
-	incv(1) = isize1
-	incv(2) = isize2
-	call average2(averv(1),sdv(1),stem)
-c	write(6,*)'aver1 sdv, stem ',averv(1),sdv(1),stem,incv(1)
-	isize1=isize2
-	do i=1,isize1
-	dmnmr(i)=dmnmr2(i)
-	enddo
-	call average2(averv(2),sdv(2),stem)
-c	write(6,*)'aver2 sdv, stem ',averv(2),sdv(2),stem,incv(2)
-	sdv(1)=sdv(1)**2
-	sdv(2)=sdv(2)**2
-	ssqu=( incv(1) -1 )*sdv(1) + (incv(2) - 1) * sdv(2)
-	ssqu= ssqu/(incv(1) + incv(2) -2)
-	t = averv(1) - averv(2)
-	denom = sqrt( (ssqu/incv(1)) + (ssqu/incv(2)) )
-	t =( t/denom)
-c	write(6,*)'ttest t value = ',t
-	isize1 = isize1sav
-	isize2 = isize2sav
-	return
-	end
 
-	subroutine ttest_unequalv(t)
+	subroutine ttest_unequalv(t,degreesof)
 	common /dat1/ dmnmr(1000),dmnmr2(1000),dmnmr3(1000)
 	common /size/isize1,isize2
 C	CALCULATER AVERAGE AND STANDARD DEVIATION FOR INPUT
@@ -219,16 +234,17 @@ C
 	isize2sav = isize2
 	df = isize1+isize2-2
 c	write(6,*)'degrees of freedom ',df
-	incv(1) = isize1
-	incv(2) = isize2
+	incv(1) = isize1-1
+	incv(2) = isize2-1
 	call average2(averv(1),sdv(1),stem)
 	sum1 = 0
 	do i=1,isize1
 	sum1 = sum1 + ((dmnmr(i)-averv(1))*(dmnmr(i)-averv(1)))
 	enddo
+
 	s1s2 = sum1/incv(1)
 	
-c	write(6,*)'aver1 sdv, stem ',averv(1),sdv(1),stem,incv(1)
+	write(6,*)'aver1 sdv, stem ',averv(1),sdv(1),stem,incv(1)
 	isize1=isize2
 	do i=1,isize1
 	dmnmr(i)=dmnmr2(i)
@@ -236,18 +252,29 @@ c	write(6,*)'aver1 sdv, stem ',averv(1),sdv(1),stem,incv(1)
 	call average2(averv(2),sdv(2),stem)
 	sum1 = 0
 	do i=1,isize2
-	sum1 = sum1 + ((dmnmr(i)-averv(1))*(dmnmr(i)-averv(1)))
+	sum1 = sum1 + ((dmnmr(i)-averv(2))*(dmnmr(i)-averv(2)))
 	enddo
 	s2s2 = sum1/incv(2)
 
-c	write(6,*)'aver2 sdv, stem ',averv(2),sdv(2),stem,incv(2),s1s2,s2s2
+	write(6,*)'aver2 sdv, stem ',averv(2),sdv(2),stem,incv(2),s1s2,s2s2
 	t = averv(1) - averv(2)
 c	denom = sqrt( (s1s2/incv(1) )+ s2s2/incv(2) )
-	denom = sqrt( ((sdv(1)*sdv(1))/incv(1) )+ ((sdv(2)*sdv(2))/incv(2)) )
+	denom = sqrt( (s1s2/(incv(1)+1) )+ (s2s2/(incv(2)+1)) )
 	t =( t/denom)
 c	write(6,*)'ttest t value = ',t
 	isize1 = isize1sav
 	isize2 = isize2sav
+c
+c calculate the degrees of freedom for unequal
+c variances
+	rnumerator = (s1s2/(incv(1)+1))+(s2s2/(incv(2)+1))
+	rnumerator2 = rnumerator*rnumerator
+	denominator1 = (s1s2/(incv(1)+1))*(s1s2/(incv(1)+1))
+	denominator2 = (s2s2/(incv(2)+1))*(s2s2/(incv(2)+1))
+	denominator3 = (denominator1/incv(1))+ (denominator2/incv(2))
+	degreesof = rnumerator2/denominator3
+	write(6,*)'degrees of freedom for unequal variances ',degreesof
+
 	return
 	end
 
@@ -325,3 +352,57 @@ c	write(6,*)'rmeana rmeanb ',rmeana,rmeanb
 	endif
 	return
 	end
+	REAL FUNCTION STUDNT (T, DOFF, IFAULT)
+! ----------------------------------------------------------------
+!  ALGORITHM AS 27  APPL. STATIST. VOL.19, NO.1
+!
+!  Calculate the upper tail area under Student's t-distribution
+!
+!  Translated from Algol by Alan Miller
+! ----------------------------------------------------------------
+	INTEGER IFAULT
+	REAL T, DOFF
+
+!  Local variables
+
+	REAL V, X, TT, TWO, FOUR, ONE, ZERO, HALF
+	REAL A1, A2, A3, A4, A5, B1, B2, C1, C2, C3, C4, C5, D1, D2, E1, E2, E3, E4, E5, F1, F2, G1, G2, G3, G4, G5, H1, H2, I1, I2, I3, I4, I5, J1, J2
+	LOGICAL POS
+	DATA TWO /2.0/, FOUR /4.0/, ONE /1.0/, ZERO /0.0/, HALF /0.5/
+	DATA A1, A2, A3, A4, A5 /0.09979441, -0.581821, 1.390993,-1.222452, 2.151185/, B1, B2 /5.537409, 11.42343/
+	DATA C1, C2, C3, C4, C5 /0.04431742, -0.2206018, -0.03317253,5.679969, -12.96519/, D1, D2 /5.166733, 13.49862/
+	DATA E1, E2, E3, E4, E5 /0.009694901, -0.1408854, 1.88993,-12.75532, 25.77532/, F1, F2 /4.233736, 14.3963/
+	DATA G1, G2, G3, G4, G5 /-9.187228E-5, 0.03789901, -1.280346,9.249528, -19.08115/, H1, H2 /2.777816, 16.46132/
+	DATA I1, I2, I3, I4, I5 /5.79602E-4, -0.02763334, 0.4517029,-2.657697, 5.127212/, J1, J2 /0.5657187, 21.83269/
+
+!  Check that number of degrees of freedom > 4.
+
+	IF (DOFF .LT. TWO) THEN
+	 IFAULT = 1
+	 STUDNT = - ONE
+	 RETURN
+	END IF
+
+	IF (DOFF .LE. FOUR) THEN
+	 IFAULT = DOFF
+	ELSE
+	 IFAULT = 0
+	END IF
+
+!  Evaluate series.
+
+	V = ONE / DOFF
+	POS = (T .GE. ZERO)
+	TT = ABS(T)
+	X = HALF * (ONE + TT * (((A1 + V * (A2 + V * (A3 + V * (A4 + V * A5)))) / (ONE - V * (B1 - V * B2))) + TT * (((C1 + V * (C2 + V * (C3 + V * (C4 + V * C5)))) /  (ONE - V * (D1 - V * D2))) +TT * (((E1 + V * (E2 + V * (E3 + V * (E4 + V * E5)))) / (ONE - V * (F1 - V * F2))) +TT * (((G1 + V * (G2 + V * (G3 + V * (G4 + V * G5)))) /  (ONE - V * (H1 - V * H2))) + TT * ((I1 + V * (I2 + V * (I3 + V * (I4 + V * I5)))) /(ONE - V * (J1 - V * J2))) ))))) ** (-8)
+	IF (POS) THEN
+	 STUDNT = X
+	ELSE
+	 STUDNT = ONE - X
+	END IF
+
+	RETURN
+	END
+
+!end of file Student.f90
+
