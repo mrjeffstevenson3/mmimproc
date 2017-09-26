@@ -2,7 +2,7 @@ c
 c this is software to test all of the network results for bbc for
 c paired ttest
 c
-c tested using
+c tested data and results from 
 c http://www.statsdirect.com/help/parametric_methods/unpaired_t.htm
 c
 	character*40 cfn,cfnlist(100),cheader(100),ch
