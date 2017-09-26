@@ -147,7 +147,7 @@ c
 	cout(13:13)='_'
 	cout(14:35)=ch(1:20)
 	clabels(iright) = cout
-	write(6,*)'clabels(iright) ',clabels(iright)
+	write(6,*)'clabels(iright) ',clabels(iright),iright
 
 
 	isize1 = 0
@@ -238,18 +238,18 @@ c	isize2 = 7
 c add a column for the glu/gaba ratio on the left
 c
 	iright = iright+1
-	write(6,*)'ratio test ',clabels(2),clabels(7)
+	write(6,*)'ratio test ',clabels(9),clabels(14)
 	cout(1:12)='csfcorrected'
 	cout(13:13)='_'
 	cout(14:35)='glu_gaba_ratio_right'
 	clabels(iright) = cout
 
 	do i=1,isize1
-	dout(i,iright)=dout(i,7)/dout(i,2)
+	dout(i,iright)=dout(i,14)/dout(i,9)
 	dmnmr(i) = dout(i,iright)
 	enddo
 	do i=1,isize2
-	dout(i+isize1,iright)=dout(i+isize1,7)/dout(i+isize1,2)
+	dout(i+isize1,iright)=dout(i+isize1,14)/dout(i+isize1,9)
 	dmnmr2(i) = dout(i+isize1,iright)
 	enddo
 	call ttest_unequalv(t,degreesof,aver,sdv)
