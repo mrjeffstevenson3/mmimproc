@@ -2,6 +2,9 @@ c
 c this is software to test all of the network results for bbc for
 c paired ttest
 c
+c tested using
+c http://www.statsdirect.com/help/parametric_methods/unpaired_t.htm
+c
 	character*40 cfn,cfnlist(100),cheader(100),ch
 	character*40 cout,csubjects(100)
 	character*35 clabels(100)
