@@ -3,6 +3,7 @@ from pathlib import *
 import os
 import tempfile
 import shutil
+import datetime
 
 
 class InDir(object):
@@ -101,3 +102,19 @@ def insertdir(file, newdir):
 
     file = Path(file)
     return file.parent/newdir/file.name
+
+def bumptodefunct(file):
+    '''
+    this function moves and renames file down into a defunct directory with a date stamp
+    Args:
+        file: the posix file to rename and move
+    '''
+    file = Path(file)
+    if file.is_file():
+        if not (file.parent/'defunct').is_dir():
+            (file.parent/'defunct').mkdir(parents=True)
+        new_fname = appendposix(insertdir(file, 'defunct'), '_replaced_on_{:%Y%m%d%H%M}'.format(datetime.datetime.now()))
+        file.rename(new_fname)
+        print(str(file)+' moved to defunct as '+str(new_fname))
+    return
+

@@ -1,4 +1,4 @@
-# half baked untested nbwr freesurf script
+# first runs for nbwr freesurf script. now includes making bem surfs
 import pylabs
 import os, copy
 from pathlib import *
@@ -22,21 +22,21 @@ antsRegistrationSyN = get_antsregsyn_cmd()
 # instantiate subject id list container
 subjids_picks = SubjIdPicks()
 # list of subject ids to operate on
-picks = ['007'] #, '088', '107', '110', '135', '226', '307', '309',]
+picks = ['088', '107', '110', '135', '226', '307', '309',]
 
 setattr(subjids_picks, 'subjids', picks)
 
 
 # string defining reg directory and appended to file name
-reg_dir_name = 'b1map2fsrms'
-overwrite = False
-hires = True
-b1corr = True
-noise_filter = True
-noise_thresh = -1
-noise_kernel = 1
-meg_source_spacing = 5
-bem_from = 'T1' # or 'brain' if probs with overlapping boundaries
+reg_dir_name = 'b1map2fsrms'   # for ants warp files
+overwrite = True
+hires = True          # for freesurfer
+b1corr = True         # for preprocess rms
+noise_filter = True   # for susan
+noise_thresh = -1     # for susan
+noise_kernel = 1      # for susan
+meg_source_spacing = 5    # for mne source space
+bem_from = 'T1'       # or 'brain' if probs with overlapping boundaries in source space
 
 b1map_fnames, freesurf_fnames = get_freesurf_names(subjids_picks)
 
@@ -76,7 +76,7 @@ for fsf, b1map in zip(freesurf_fnames, b1map_fnames):
                      provenance={'filter': 'susan noise filter', 'filter size': '1mm', 'noise level': 'auto', 'results': results})
     elif not overwrite and noise_filter:
         fs_fname += '_susanf'
-    fs_sid = fs_fname+'_freesurf'
+    fs_sid = fsf+'_freesurf'
 
     with WorkingContext(str(subjects_dir)):
         if overwrite:
@@ -97,8 +97,10 @@ for fsf, b1map in zip(freesurf_fnames, b1map_fnames):
                 results += ('finished 1mm3 freesurfer run for ' + fs_sid + ' at {:%H:%M on %M %d %Y}.'.format(
                     datetime.datetime.now()),)
                 print('finished 1mm3 freesurfer run for ' + fs_sid + ' at {:%H:%M on %M %d %Y}.'.format(datetime.datetime.now()))
-
+        if not overwrite and hires:
+            fs_sid += '_hires'
         results += mne_subprocess(['mne_setup_mri', '--mri', bem_from, '--subject', fs_sid, '--overwrite'], env=curr_env)
+        results += mne_subprocess(['mne', 'watershed_bem', '--subject', fs_sid, '--overwrite'], env=curr_env)
         results += mne_subprocess(['mne_setup_source_space', '--subject', fs_sid, '--spacing', '%.0f' % meg_source_spacing, '--cps'], env=curr_env)
         with open(fs_sid+'/'+fs_sid+'_log{:%Y%m%d%H%M}.json'.format(datetime.datetime.now()), mode='a') as logr:
             json.dump(results, logr, indent=2)
