@@ -298,8 +298,8 @@ c
 	write(11,13)'mean_control',(',',mean2(ii),ii=2,iright)
 	write(11,13)'stdev_control',(',',stdev2(ii),ii=2,iright)
 	write(11,13)'degreesof',(',',dof(ii),ii=2,iright)
-	write(11,*)'Notes_There_were ',isize1,'subjects_from_group_1'
-	write(11,*)'Notes_There_were ',isize2,'subjects_from_group_2'
+	write(11,*)'Notes_There_were ',isize1,'subjects_from_ASD_group'
+	write(11,*)'Notes_There_were ',isize2,'subjects_from_Control_group'
 	close(11)
 
 	stop
