@@ -284,7 +284,7 @@ c
  12	format(10a,100(1a,10a))
 	do i=1,numcol
 	write(11,13)cfnlist(i),(',',dout(i,ii),ii=2,iright)
- 13	format(a12,100(a1,f10.5))
+ 13	format(a13,100(a1,f10.5))
 	write(6,*)cfnlist(i),i
 	enddo
 	close(11)
