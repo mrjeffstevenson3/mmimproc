@@ -17,7 +17,7 @@ fs = Path(getnetworkdataroot())
 stats_fpgm = pylabs_dir / 'pylabs/projects/nbwr/mrs/nbwr_spreadsheet_sep19_2017'
 
 uncorr_cols = [u'left-percCSF', u'left-GABA', u'left-NAAplusNAAG', u'left-GPCplusPCh', u'left-CrplusPCr', u'left-mIns', u'left-Glu-80ms', u'right-percCSF', u'right-GABA', u'right-NAAplusNAAG', u'right-GPCplusPCh', u'right-CrplusPCr', u'right-mIns', u'right-Glu-80ms']
-corr_cols = [u'left-percCSF', u'left-GABA', u'left-NAAplusNAAG', u'left-GPCplusPCh', u'left-CrplusPCr', u'left-mIns', u'left-Glu-80ms', u'left-1over1minfracCSF', u'right-percCSF', u'right-GABA', u'right-NAAplusNAAG', u'right-GPCplusPCh', u'right-CrplusPCr', u'right-mIns', u'right-Glu-80ms', u'right-1over1minfracCSF']
+corr_cols = [u'left-GABA', u'left-NAAplusNAAG', u'left-GPCplusPCh', u'left-CrplusPCr', u'left-mIns', u'left-Glu-80ms', u'left-1over1minfracCSF', u'right-GABA', u'right-NAAplusNAAG', u'right-GPCplusPCh', u'right-CrplusPCr', u'right-mIns', u'right-Glu-80ms', u'right-1over1minfracCSF']
 exclude_subj = ['sub-nbwr997', 'sub-nbwr998', 'sub-nbwr999',]
 exclude_data = ['Scan', 'Hemisphere', 'short_FWHM', 'short_SNR', 'short_TE', 'long_FWHM', 'long_SNR', 'long_TE']
 right_col_map = {'NAA+NAAG': 'right-NAAplusNAAG', 'GPC+PCh': 'right-GPCplusPCh', 'Cr+PCr': 'right-CrplusPCr', 'mIns': 'right-mIns', 'Glu': 'right-Glu-80ms'}
@@ -82,11 +82,11 @@ uncorr_csv_fname = appendposix(base_fname, '_uncorr_fits.csv')
 csfcorr_csv_fname = appendposix(base_fname, '_results_csfcorr_fits.csv')
 excel_fname = appendposix(base_fname, '_results_csfcorr_fits.xlsx')
 hdf_fname = appendposix(base_fname, '_results_csfcorr_fits.h5')
-fcsv_corr_fname = base_fname.parent / 'csfcorrected.csv'
+fcsf_corr_fname = base_fname.parent / 'csfcorrected.csv'
 fstats_fname =  base_fname.parent / 'stats_tvalue.csv'
 
 # save old versions if there
-for file in [uncorr_csv_fname, csfcorr_csv_fname, excel_fname, hdf_fname, fcsv_corr_fname, fstats_fname]:
+for file in [uncorr_csv_fname, csfcorr_csv_fname, excel_fname, hdf_fname, fcsf_corr_fname, fstats_fname]:
     bumptodefunct(file)
 
 # do fortran stats 1st
@@ -117,15 +117,36 @@ corr_metab.to_csv(str(csfcorr_csv_fname), header=True, columns=corr_cols, index=
 asd_grp = corr_metab.index.str.replace('sub-nbwr', '').astype('int') < 400  # ASD only
 tvalues, pvalues = ss.ttest_ind(corr_metab[asd_grp], corr_metab[~asd_grp], equal_var=False)
 descriptives = corr_metab.groupby(asd_grp.astype(int)).describe()
+descriptives.rename(index={0: 'control', 1: 'asd'}, inplace=True)
+descriptives.index.rename('descriptives', inplace=True)
 
 #organise stats results here
-fcsf_corr = pd.DataFrame.from_csv(str(fcsv_corr_fname))
+fcsf_corr = pd.DataFrame.from_csv(str(fcsf_corr_fname))
+fstats = pd.DataFrame.from_csv(str(fstats_fname))
+stats_results = pd.DataFrame.from_dict({'t-stat': tvalues, 'p-value': pvalues})
+if len(stats_results.T.columns) == len(corr_cols) == len(corr_metab.columns):
+    col_map = {}
+    for n, c in zip(range(0, len(corr_metab.columns)), corr_metab.columns):
+        col_map[n] = c
+else:
+    mismatch = [len(stats_results.T.columns), len(corr_cols), len(corr_metab.columns)]
+    raise ValueError('stats result cols do not match. stats='+str(mismatch[0])+' corr_cols='+str(mismatch[1])+' metab cols='+str(mismatch[2]))
+stats_results.rename(index=col_map,inplace=True)
+hdr_txt = {'fortran': 'Stats results from todds fortran code', 'scipy_stats': 'summary t-stats and p-values from python stats', 'descriptive': 'Additional descriptive stats from pandas'}
+stats_hdrs = pd.Series(hdr_txt)
 
 writer = pd.ExcelWriter(str(excel_fname), engine='xlsxwriter')
 onerowpersubj.to_excel(writer, sheet_name='uncorr', columns=uncorr_cols, index=True, index_label='subject', header=True, na_rep=9999)
 corr_metab.to_excel(writer, sheet_name='corr_metab', columns=corr_cols, index=True, index_label='subject', header=True, na_rep=9999)
 fcsf_corr.to_excel(writer, sheet_name='fortran_corr', index=True, index_label='subject', header=True, na_rep=9999)
-# third page goes here
+stats_results.T.to_excel(writer, sheet_name='stats', index_label='stats', header=True, startrow=2, startcol=0)
+workbook = writer.book
+worksheet = writer.sheets['stats']
+worksheet.write_string(0,0,stats_hdrs['scipy_stats'])
+worksheet.write_string(5,0,stats_hdrs['fortran'])
+fstats.to_excel(writer, sheet_name='stats', index_label='stats', header=True, startrow=7, startcol=0)
+worksheet.write_string(16,0,stats_hdrs['descriptive'])
+descriptives.to_excel(writer, sheet_name='stats', index_label='stats', header=True, startrow=18, startcol=0)
 writer.save()
 
 
