@@ -259,8 +259,7 @@ c
 	dout(i+isize1,iright)=dout(i+isize1,14)/dout(i+isize1,9)
 	dmnmr2(i) = dout(i+isize1,iright)
 	enddo
-	tt = abs(t)
-	call ttest_unequalv(tt,degreesof,aver,sdv)
+	call ttest_unequalv(t,degreesof,aver,sdv)
 	mean1(iright) =aver(1)
 	mean2(iright) =aver(2)
 	stdev1(iright) = sdv(1)
