@@ -1,4 +1,4 @@
-# half baked untested nbwr freesurf script
+# first runs for nbwr freesurf script. now includes making bem surfs
 import pylabs
 import os, copy
 from pathlib import *
@@ -22,21 +22,21 @@ antsRegistrationSyN = get_antsregsyn_cmd()
 # instantiate subject id list container
 subjids_picks = SubjIdPicks()
 # list of subject ids to operate on
-picks = ['007'] #, '088', '107', '110', '135', '226', '307', '309',]
+picks = ['088', '107', '110', '135', '226', '307', '309',]
 
 setattr(subjids_picks, 'subjids', picks)
 
 
 # string defining reg directory and appended to file name
-reg_dir_name = 'b1map2fsrms'
+reg_dir_name = 'b1map2fsrms'   # for ants warp files
 overwrite = True
-hires = True
-b1corr = True
-noise_filter = True
-noise_thresh = -1
-noise_kernel = 1
-meg_source_spacing = 5
-bem_from = 'T1' # or 'brain' if probs with overlapping boundaries
+hires = True          # for freesurfer
+b1corr = True         # for preprocess rms
+noise_filter = True   # for susan
+noise_thresh = -1     # for susan
+noise_kernel = 1      # for susan
+meg_source_spacing = 5    # for mne source space
+bem_from = 'T1'       # or 'brain' if probs with overlapping boundaries in source space
 
 b1map_fnames, freesurf_fnames = get_freesurf_names(subjids_picks)
 
