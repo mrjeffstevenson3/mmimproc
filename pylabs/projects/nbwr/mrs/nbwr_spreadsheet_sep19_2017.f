@@ -10,7 +10,8 @@ c
 	real dnmr(100,100),behav1(10000),dout(100,100)
 	real tvalue(100),pvalue(100)
 	character*1 c1
-	REAL X,XNU,PROB1,PROB2
+	REAL X,XNU,PROB1,PROB2,aver(2),mean1(100),mean2(100)
+	real dof(100),sdv(2),stdev1(100),stdev2(100)
   	INTEGER NU, ERROR
 
 	
@@ -83,8 +84,13 @@ c	dmnmr(isize1) = dnmr(isub,imetab)
 	enddo
 
 	write(6,*)'isize1 isize2 ',isize1,isize2
-	call ttest_unequalv(t,degressof)
+	call ttest_unequalv(t,degreesof,aver,sdv)
 	tvalue(ileft)=t
+	mean1(ileft) =aver(1)
+	mean2(ileft) =aver(2)
+	stdev1(ileft) = sdv(1)
+	stdev2(ileft) = sdv(2)
+	dof(ileft) = degreesof
 	PROB2=STUDNT(t,degreesof,ERROR)
   	write(6,*)' tvalue=', t
   	write(6,*)' PROB2=', PROB2*2.0
@@ -183,7 +189,13 @@ c123
 
 c	isize1 = 12
 c	isize2 = 7
-	call ttest_unequalv(t,degreesof)
+	call ttest_unequalv(t,degreesof,aver,sdv)
+	mean1(iright) =aver(1)
+	mean2(iright) =aver(2)
+	stdev1(iright) = sdv(1)
+	stdev2(iright) = sdv(2)
+
+	dof(iright) = degreesof
 	PROB2=STUDNT(t,degreesof,ERROR)
   	write(6,*)' tvalue=', t
   	write(6,*)' PROB2=', PROB2*2.0
@@ -212,6 +224,11 @@ c
 	write(11,12)'ttest_tvalue',(',',clabels(ii),ii=2,iright)
 	write(11,13)'ttest_values_unequalvariances',(',',tvalue(ii),ii=2,iright)
 	write(11,13)'proba_values_unequalvariances',(',',pvalue(ii),ii=2,iright)
+	write(11,13)'mean_group1',(',',mean1(ii),ii=2,iright)
+	write(11,13)'stdev_group1',(',',stdev1(ii),ii=2,iright)
+	write(11,13)'mean_group2',(',',mean2(ii),ii=2,iright)
+	write(11,13)'stdev_group2',(',',stdev2(ii),ii=2,iright)
+	write(11,13)'degreesof',(',',dof(ii),ii=2,iright)
 	write(11,*)'Notes_There_were ',isize1,'subjects_from_group_1'
 	write(11,*)'Notes_There_were ',isize2,'subjects_from_group_2'
 	close(11)
@@ -221,7 +238,7 @@ c
 	
 
 
-	subroutine ttest_unequalv(t,degreesof)
+	subroutine ttest_unequalv(t,degreesof,averv,sdv)
 	common /dat1/ dmnmr(1000),dmnmr2(1000),dmnmr3(1000)
 	common /size/isize1,isize2
 C	CALCULATER AVERAGE AND STANDARD DEVIATION FOR INPUT
