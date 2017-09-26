@@ -2,6 +2,9 @@ c
 c this is software to test all of the network results for bbc for
 c paired ttest
 c
+c tested data and results from 
+c http://www.statsdirect.com/help/parametric_methods/unpaired_t.htm
+c
 	character*40 cfn,cfnlist(100),cheader(100),ch
 	character*40 cout,csubjects(100)
 	character*35 clabels(100)
@@ -91,7 +94,8 @@ c	dmnmr(isize1) = dnmr(isub,imetab)
 	stdev1(ileft) = sdv(1)
 	stdev2(ileft) = sdv(2)
 	dof(ileft) = degreesof
-	PROB2=STUDNT(t,degreesof,ERROR)
+	tt=abs(t)
+	PROB2=STUDNT(tt,degreesof,ERROR)
   	write(6,*)' tvalue=', t
   	write(6,*)' PROB2=', PROB2*2.0
 	pvalue(ileft)=prob2*2.0
@@ -124,11 +128,13 @@ c
 	stdev1(ileft) = sdv(1)
 	stdev2(ileft) = sdv(2)
 	dof(ileft) = degreesof
-	PROB2=STUDNT(t,degreesof,ERROR)
+	tt = abs(t)
+	PROB2=STUDNT(tt,degreesof,ERROR)
   	write(6,*)' tvalue=', t
   	write(6,*)' PROB2=', PROB2*2.0
 	pvalue(ileft)=prob2*2.0
 	
+
 c
 c first find the row with the csf right
 
@@ -226,7 +232,8 @@ c	isize2 = 7
 	stdev2(iright) = sdv(2)
 
 	dof(iright) = degreesof
-	PROB2=STUDNT(t,degreesof,ERROR)
+	tt = abs(t)
+	PROB2=STUDNT(tt,degreesof,ERROR)
   	write(6,*)' tvalue=', t
   	write(6,*)' PROB2=', PROB2*2.0
   	write(6,*)' ERROR=', ERROR
@@ -252,14 +259,16 @@ c
 	dout(i+isize1,iright)=dout(i+isize1,14)/dout(i+isize1,9)
 	dmnmr2(i) = dout(i+isize1,iright)
 	enddo
-	call ttest_unequalv(t,degreesof,aver,sdv)
+	tt = abs(t)
+	call ttest_unequalv(tt,degreesof,aver,sdv)
 	mean1(iright) =aver(1)
 	mean2(iright) =aver(2)
 	stdev1(iright) = sdv(1)
 	stdev2(iright) = sdv(2)
 
 	dof(iright) = degreesof
-	PROB2=STUDNT(t,degreesof,ERROR)
+	tt = abs(t)
+	PROB2=STUDNT(tt,degreesof,ERROR)
   	write(6,*)' tvalue=', t
   	write(6,*)' PROB2=', PROB2*2.0
   	write(6,*)' ERROR=', ERROR
