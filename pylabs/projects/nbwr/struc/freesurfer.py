@@ -100,6 +100,7 @@ for fsf, b1map in zip(freesurf_fnames, b1map_fnames):
         if not overwrite and hires:
             fs_sid += '_hires'
         results += mne_subprocess(['mne_setup_mri', '--mri', bem_from, '--subject', fs_sid, '--overwrite'], env=curr_env)
+        results += mne_subprocess(['mne', 'watershed_bem', '--subject', fs_sid, '--overwrite'], env=curr_env)
         results += mne_subprocess(['mne_setup_source_space', '--subject', fs_sid, '--spacing', '%.0f' % meg_source_spacing, '--cps'], env=curr_env)
         with open(fs_sid+'/'+fs_sid+'_log{:%Y%m%d%H%M}.json'.format(datetime.datetime.now()), mode='a') as logr:
             json.dump(results, logr, indent=2)
