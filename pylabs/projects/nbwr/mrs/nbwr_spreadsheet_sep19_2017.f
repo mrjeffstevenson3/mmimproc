@@ -100,6 +100,36 @@ c	dmnmr(isize1) = dnmr(isub,imetab)
 	endif !for left
 	enddo  !imetab
 c
+c add a column for the glu/gaba ratio on the left
+c
+	ileft = ileft+1
+	write(6,*)'ratio test ',clabels(2),clabels(7)
+	cout(1:12)='csfcorrected'
+	cout(13:13)='_'
+	cout(14:35)='glu_gaba_ratio_left'
+	clabels(ileft) = cout
+
+	do i=1,isize1
+	dout(i,ileft)=dout(i,7)/dout(i,2)
+	dmnmr(i) = dout(i,ileft)
+	enddo
+	do i=1,isize2
+	dout(i+isize1,ileft)=dout(i+isize1,7)/dout(i+isize1,2)
+	dmnmr2(i) = dout(i+isize1,ileft)
+	enddo
+	call ttest_unequalv(t,degreesof,aver,sdv)
+	tvalue(ileft)=t
+	mean1(ileft) =aver(1)
+	mean2(ileft) =aver(2)
+	stdev1(ileft) = sdv(1)
+	stdev2(ileft) = sdv(2)
+	dof(ileft) = degreesof
+	PROB2=STUDNT(t,degreesof,ERROR)
+  	write(6,*)' tvalue=', t
+  	write(6,*)' PROB2=', PROB2*2.0
+	pvalue(ileft)=prob2*2.0
+	
+c
 c first find the row with the csf right
 
 	do imetab=2,numrow
@@ -205,6 +235,37 @@ c	isize2 = 7
 	write(6,*)t,imetab
 	endif !for left
 	enddo  !imetab
+c add a column for the glu/gaba ratio on the left
+c
+	iright = iright+1
+	write(6,*)'ratio test ',clabels(2),clabels(7)
+	cout(1:12)='csfcorrected'
+	cout(13:13)='_'
+	cout(14:35)='glu_gaba_ratio_right'
+	clabels(iright) = cout
+
+	do i=1,isize1
+	dout(i,iright)=dout(i,7)/dout(i,2)
+	dmnmr(i) = dout(i,iright)
+	enddo
+	do i=1,isize2
+	dout(i+isize1,iright)=dout(i+isize1,7)/dout(i+isize1,2)
+	dmnmr2(i) = dout(i+isize1,iright)
+	enddo
+	call ttest_unequalv(t,degreesof,aver,sdv)
+	mean1(iright) =aver(1)
+	mean2(iright) =aver(2)
+	stdev1(iright) = sdv(1)
+	stdev2(iright) = sdv(2)
+
+	dof(iright) = degreesof
+	PROB2=STUDNT(t,degreesof,ERROR)
+  	write(6,*)' tvalue=', t
+  	write(6,*)' PROB2=', PROB2*2.0
+  	write(6,*)' ERROR=', ERROR
+	tvalue(iright)=t
+	pvalue(iright)=prob2*2.0
+	write(6,*)t,imetab
 
 c
 c output new files
