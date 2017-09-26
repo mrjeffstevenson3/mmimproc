@@ -293,10 +293,10 @@ c
 	write(11,12)'ttest_tvalue',(',',clabels(ii),ii=2,iright)
 	write(11,13)'ttest_values_unequalvariances',(',',tvalue(ii),ii=2,iright)
 	write(11,13)'proba_values_unequalvariances',(',',pvalue(ii),ii=2,iright)
-	write(11,13)'mean_group1',(',',mean1(ii),ii=2,iright)
-	write(11,13)'stdev_group1',(',',stdev1(ii),ii=2,iright)
-	write(11,13)'mean_group2',(',',mean2(ii),ii=2,iright)
-	write(11,13)'stdev_group2',(',',stdev2(ii),ii=2,iright)
+	write(11,13)'mean_ASD',(',',mean1(ii),ii=2,iright)
+	write(11,13)'stdev_ASD',(',',stdev1(ii),ii=2,iright)
+	write(11,13)'mean_control',(',',mean2(ii),ii=2,iright)
+	write(11,13)'stdev_control',(',',stdev2(ii),ii=2,iright)
 	write(11,13)'degreesof',(',',dof(ii),ii=2,iright)
 	write(11,*)'Notes_There_were ',isize1,'subjects_from_group_1'
 	write(11,*)'Notes_There_were ',isize2,'subjects_from_group_2'
