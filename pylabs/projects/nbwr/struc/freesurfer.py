@@ -29,7 +29,7 @@ setattr(subjids_picks, 'subjids', picks)
 
 # string defining reg directory and appended to file name
 reg_dir_name = 'b1map2fsrms'
-overwrite = False
+overwrite = True
 hires = True
 b1corr = True
 noise_filter = True
@@ -76,7 +76,7 @@ for fsf, b1map in zip(freesurf_fnames, b1map_fnames):
                      provenance={'filter': 'susan noise filter', 'filter size': '1mm', 'noise level': 'auto', 'results': results})
     elif not overwrite and noise_filter:
         fs_fname += '_susanf'
-    fs_sid = fs_fname+'_freesurf'
+    fs_sid = fsf+'_freesurf'
 
     with WorkingContext(str(subjects_dir)):
         if overwrite:
@@ -97,7 +97,8 @@ for fsf, b1map in zip(freesurf_fnames, b1map_fnames):
                 results += ('finished 1mm3 freesurfer run for ' + fs_sid + ' at {:%H:%M on %M %d %Y}.'.format(
                     datetime.datetime.now()),)
                 print('finished 1mm3 freesurfer run for ' + fs_sid + ' at {:%H:%M on %M %d %Y}.'.format(datetime.datetime.now()))
-
+        if not overwrite and hires:
+            fs_sid += '_hires'
         results += mne_subprocess(['mne_setup_mri', '--mri', bem_from, '--subject', fs_sid, '--overwrite'], env=curr_env)
         results += mne_subprocess(['mne_setup_source_space', '--subject', fs_sid, '--spacing', '%.0f' % meg_source_spacing, '--cps'], env=curr_env)
         with open(fs_sid+'/'+fs_sid+'_log{:%Y%m%d%H%M}.json'.format(datetime.datetime.now()), mode='a') as logr:
