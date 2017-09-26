@@ -142,11 +142,15 @@ fcsf_corr.to_excel(writer, sheet_name='fortran_corr', index=True, index_label='s
 stats_results.T.to_excel(writer, sheet_name='stats', index_label='stats', header=True, startrow=2, startcol=0)
 workbook = writer.book
 worksheet = writer.sheets['stats']
-worksheet.write_string(0,0,stats_hdrs['scipy_stats'])
-worksheet.write_string(5,0,stats_hdrs['fortran'])
-fstats.to_excel(writer, sheet_name='stats', index_label='stats', header=True, startrow=7, startcol=0)
-worksheet.write_string(20,0,stats_hdrs['descriptive'])
-descriptives.to_excel(writer, sheet_name='stats', index_label='stats', header=True, startrow=22, startcol=0)
+title_format = workbook.add_format({'bold': True, 'align': 'left'})
+data_format = workbook.add_format({'num_format': '0.0000', 'align': 'center', 'bold': False})
+worksheet.write_string(0,0,stats_hdrs['scipy_stats'], title_format)
+worksheet.write_string(7,0,stats_hdrs['fortran'], title_format)
+fstats.to_excel(writer, sheet_name='stats', index_label='stats', header=True, startrow=9, startcol=0)
+worksheet.write_string(22,0,stats_hdrs['descriptive'], title_format)
+descriptives.to_excel(writer, sheet_name='stats', index_label='stats', header=True, startrow=24, startcol=0)
+worksheet.set_column('A', 18)
+worksheet.set_column('B:O', 24)
 writer.save()
 
 
