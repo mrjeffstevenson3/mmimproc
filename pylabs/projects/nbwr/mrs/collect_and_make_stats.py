@@ -17,7 +17,7 @@ fs = Path(getnetworkdataroot())
 stats_fpgm = pylabs_dir / 'pylabs/projects/nbwr/mrs/nbwr_spreadsheet_sep19_2017'
 
 uncorr_cols = [u'left-percCSF', u'left-GABA', u'left-NAAplusNAAG', u'left-GPCplusPCh', u'left-CrplusPCr', u'left-mIns', u'left-Glu-80ms', u'right-percCSF', u'right-GABA', u'right-NAAplusNAAG', u'right-GPCplusPCh', u'right-CrplusPCr', u'right-mIns', u'right-Glu-80ms']
-corr_cols = [u'left-GABA', u'left-NAAplusNAAG', u'left-GPCplusPCh', u'left-CrplusPCr', u'left-mIns', u'left-Glu-80ms', u'left-1over1minfracCSF', u'right-GABA', u'right-NAAplusNAAG', u'right-GPCplusPCh', u'right-CrplusPCr', u'right-mIns', u'right-Glu-80ms', u'right-1over1minfracCSF']
+corr_cols = [u'left-GABA', u'left-NAAplusNAAG', u'left-GPCplusPCh', u'left-CrplusPCr', u'left-mIns', u'left-Glu-80ms', u'left-GluOverGABA', u'right-GABA', u'right-NAAplusNAAG', u'right-GPCplusPCh', u'right-CrplusPCr', u'right-mIns', u'right-Glu-80ms', u'right-GluOverGABA']
 exclude_subj = ['sub-nbwr997', 'sub-nbwr998', 'sub-nbwr999',]
 exclude_data = ['Scan', 'Hemisphere', 'short_FWHM', 'short_SNR', 'short_TE', 'long_FWHM', 'long_SNR', 'long_TE']
 right_col_map = {'NAA+NAAG': 'right-NAAplusNAAG', 'GPC+PCh': 'right-GPCplusPCh', 'Cr+PCr': 'right-CrplusPCr', 'mIns': 'right-mIns', 'Glu': 'right-Glu-80ms'}
@@ -135,23 +135,58 @@ stats_results.rename(index=col_map,inplace=True)
 hdr_txt = {'fortran': 'Stats results from todds fortran code', 'scipy_stats': 'summary t-stats and p-values from python stats', 'descriptive': 'Additional descriptive stats from pandas'}
 stats_hdrs = pd.Series(hdr_txt)
 
+
+
 writer = pd.ExcelWriter(str(excel_fname), engine='xlsxwriter')
-onerowpersubj.to_excel(writer, sheet_name='uncorr', columns=uncorr_cols, index=True, index_label='subject', header=True, na_rep=9999)
-corr_metab.to_excel(writer, sheet_name='corr_metab', columns=corr_cols, index=True, index_label='subject', header=True, na_rep=9999)
-fcsf_corr.to_excel(writer, sheet_name='fortran_corr', index=True, index_label='subject', header=True, na_rep=9999)
-stats_results.T.to_excel(writer, sheet_name='stats', index_label='stats', header=True, startrow=2, startcol=0)
 workbook = writer.book
-worksheet = writer.sheets['stats']
-title_format = workbook.add_format({'bold': True, 'align': 'left'})
-data_format = workbook.add_format({'num_format': '0.0000', 'align': 'center', 'bold': False})
-worksheet.write_string(0,0,stats_hdrs['scipy_stats'], title_format)
-worksheet.write_string(7,0,stats_hdrs['fortran'], title_format)
+
+title_format = workbook.add_format({'bold': True, 'font_size': '24', 'text_wrap': False})
+title_format.set_align('vcenter')
+title_format.set_align('left')
+title_format.set_text_wrap(False)
+
+labels_format = workbook.add_format({'bold': True, 'font_size': '18',})
+labels_format.set_align('vcenter')
+labels_format.set_align('right')
+labels_format.set_text_wrap(False)
+
+data_format = workbook.add_format({'num_format': '0.0000', 'bold': False, 'font_size': '18',})
+data_format.set_align('vcenter')
+data_format.set_align('center')
+data_format.set_text_wrap(False)
+
+onerowpersubj.to_excel(writer, sheet_name='uncorr', columns=uncorr_cols, index=True, index_label='subject', header=True, startrow=1, na_rep=9999)
+uncorr_worksheet = writer.sheets['uncorr']
+uncorr_worksheet.set_default_row(25)
+uncorr_worksheet.set_column('B:O', 24, data_format)
+uncorr_worksheet.set_column('A:A', 18, labels_format)
+uncorr_worksheet.write_string(0,0,'Uncorrected fit data and CSF correction factor', title_format)
+
+corr_metab.to_excel(writer, sheet_name='corr_metab', columns=corr_cols, index=True, index_label='subject', header=True, startrow=1, na_rep=9999)
+corr_worksheet = writer.sheets['corr_metab']
+corr_worksheet.set_default_row(25)
+corr_worksheet.set_column('B:O', 24, data_format)
+corr_worksheet.set_column('A:A', 18, labels_format)
+corr_worksheet.write_string(0,0,'Corrected Metabolite Concentration after CSF correction factor applied', title_format)
+fcsf_corr.to_excel(writer, sheet_name='fortran_corr', index=True, index_label='subject', header=True, startrow=1, na_rep=9999)
+fcsf_worksheet = writer.sheets['fortran_corr']
+fcsf_worksheet.set_default_row(25)
+fcsf_worksheet.set_column('B:O', 24, data_format)
+fcsf_worksheet.set_column('A:A', 18, labels_format)
+fcsf_worksheet.write_string(0,0,'Corrected Metabolite Concentration after CSF correction factor applied', title_format)
+stats_results.T.to_excel(writer, sheet_name='stats', index_label='stats', header=True, startrow=2, startcol=0)
 fstats.to_excel(writer, sheet_name='stats', index_label='stats', header=True, startrow=9, startcol=0)
-worksheet.write_string(22,0,stats_hdrs['descriptive'], title_format)
-descriptives.to_excel(writer, sheet_name='stats', index_label='stats', header=True, startrow=24, startcol=0)
-worksheet.set_column('A:A', 18)
-worksheet.set_column('B:O', 24)
-#worksheet.conditional_format('B4:O4', {'type': 'cell', 'criteria': '<=', 'value': 0.05, 'bg_color': '#FFC7CE'})
+descriptives.to_excel(writer, sheet_name='stats', index_label='stats', header=True, startrow=22, startcol=0)
+stats_worksheet = writer.sheets['stats']
+stats_worksheet.set_column('B:O', 24, data_format)
+stats_worksheet.set_default_row(25)
+stats_worksheet.set_column('A:A', 18, labels_format)
+stats_worksheet.write_string(0,0,'Summary t-stats and p-values from python stats', title_format)
+stats_worksheet.write_string(7,0,'Stats results from todds fortran code', title_format)
+stats_worksheet.write_string(20,0,'Additional descriptive stats from pandas', title_format)
+stats_worksheet.set_row(18, {'align': 'left'})
+stats_worksheet.set_row(19, {'align': 'left'})
+#stats_worksheet.conditional_format('B4:O4', {'type': 'cell', 'criteria': '<=', 'value': 0.05, 'bg_color': '#FFC7CE'})
 writer.save()
 
 
