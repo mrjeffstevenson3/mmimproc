@@ -45,7 +45,7 @@ def getnetworkdataroot(verbose=True):
             print('setting root data directory to scotty.')
         if hostname == 'scotty.ilabs.uw.edu':
             return '/media/DiskArray/shared_data/js/'
-        elif hostname in ['redshirt.ilabs.uw.edu', 'redshirt', 'uhora.ilabs.uw.edu', 'uhora', 'sulu.ilabs.uw.edu', 'sulu', 'JVDB']:
+        elif hostname in ['redshirt.ilabs.uw.edu', 'redshirt', 'uhora.ilabs.uw.edu', 'uhora', 'sulu.ilabs.uw.edu', 'sulu', 'JVDB', 'spock', 'spock.ilabs.uw.edu']:
             return '/mnt/users/js/'
         elif any(x in hostname for x in ['Jeffs-MacBook-Pro-3.local', 'Jeffs-MBP-3', '.dhcp4.washington.edu']):
             return '/Users/mrjeffs/Documents/Research/data'
@@ -54,8 +54,8 @@ def getnetworkdataroot(verbose=True):
     if pylabs.datadir.target == 'jaba':
         if verbose:
             print('setting root data directory to jaba.')
-        if hostname in ['scotty.ilabs.uw.edu', 'scotty', 'redshirt.ilabs.uw.edu', 'redshirt', 'uhora.ilabs.uw.edu', 'uhora', 'sulu.ilabs.uw.edu', 'sulu', 'JVDB']:
-            return '/mnt/brainstudio/data'
+        if hostname in ['scotty.ilabs.uw.edu', 'scotty', 'redshirt.ilabs.uw.edu', 'redshirt', 'uhora.ilabs.uw.edu', 'uhora', 'sulu.ilabs.uw.edu', 'sulu', 'JVDB', 'spock', 'spock.ilabs.uw.edu']:
+            return '/brainstudio/data'
         elif any(x in hostname for x in ['Jeffs-MacBook-Pro-3.local', 'Jeffs-MBP-3', '.dhcp4.washington.edu']):
             print('found mrjeffs laptop. using local datadir. datadir= ', pylabs.datadir.target)
             return '/Users/mrjeffs/Documents/Research/data'
