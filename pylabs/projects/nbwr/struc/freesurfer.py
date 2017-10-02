@@ -1,5 +1,6 @@
 # first runs for nbwr freesurf script. now includes making bem surfs
 import pylabs
+pylabs.datadir.target = 'jaba'
 import os, copy
 from pathlib import *
 import datetime
@@ -14,7 +15,6 @@ from pylabs.utils.provenance import ProvenanceWrapper
 prov = ProvenanceWrapper()
 #setup paths and file names to process
 
-pylabs.datadir.target = 'scotty'
 fs = Path(getnetworkdataroot())
 
 antsRegistrationSyN = get_antsregsyn_cmd()
@@ -22,7 +22,7 @@ antsRegistrationSyN = get_antsregsyn_cmd()
 # instantiate subject id list container
 subjids_picks = SubjIdPicks()
 # list of subject ids to operate on
-picks = ['038', '088', '107', '110', '135', '226', '307', '309',]
+picks = [ '226', '307', '309',]
 
 setattr(subjids_picks, 'subjids', picks)
 
