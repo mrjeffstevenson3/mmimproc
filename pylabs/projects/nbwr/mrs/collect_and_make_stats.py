@@ -1,7 +1,7 @@
 # this is awraper function for mrs that collects the disparate mrs data, calculates group stats, and output to google spreadsheet.
 # first set global root data directory
 import pylabs
-pylabs.datadir.target = 'scotty'
+pylabs.datadir.target = 'jaba'
 from pathlib import *
 import datetime
 import numpy as np
