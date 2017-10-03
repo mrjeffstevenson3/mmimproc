@@ -1,3 +1,6 @@
+# first set global root data directory
+import pylabs
+pylabs.datadir.target = 'jaba'
 import os, cPickle
 from pathlib import *
 from collections import defaultdict
@@ -25,7 +28,7 @@ from pylabs.utils.provenance import ProvenanceWrapper
 prov = ProvenanceWrapper()
 
 
-fs = Path(getnetworkdataroot(datadir))
+fs = Path(getnetworkdataroot())
 
 #  define hostnames with working gpus for processing
 flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo', output_type='NIFTI_GZ')
