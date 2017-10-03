@@ -229,7 +229,8 @@ img_conv = pd.Panel({'phantom_qT1_slu': slu_phant_conv,
             'roots_of_empathy': roots_conv,
             'bbc': bbc_conv,
             'nbwr': nbwr_conv,
-            'tadpole': tadpole_conv})
+            'tadpole': tadpole_conv,
+            })
 
 opts = BrainOpts()
 
