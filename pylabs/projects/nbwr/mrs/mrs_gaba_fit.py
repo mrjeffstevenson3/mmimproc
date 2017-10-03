@@ -2,7 +2,7 @@
 
 # first set global root data directory
 import pylabs
-pylabs.datadir.target = 'scotty'
+pylabs.datadir.target = 'jaba'
 from pathlib import *
 import datetime, json
 from pylabs.utils import ProvenanceWrapper, run_subprocess, WorkingContext, getnetworkdataroot, appendposix
@@ -16,9 +16,10 @@ gannettpath = pylabs.utils.paths.getgannettpath()
 # instantiate subject id list container
 subjids_picks = SubjIdPicks()
 # list of subject ids to operate on
-picks = ['007',] # only does one subj until bug fix
+picks = ['001',] # only does one subj until bug fix
 setattr(subjids_picks, 'subjids', picks)
 setattr(subjids_picks, 'source_path', fs / project / 'sub-nbwr%(sid)s' / 'ses-1' / 'source_sparsdat')
+# setattr(subjids_picks, 'source_path', fs / project / 'sub-tadpole%(sid)s' / 'ses-%(ses)s' / 'source_sparsdat')
 
 rt_actfnames, rt_reffnames, lt_actfnames, lt_reffnames = get_gaba_names(subjids_picks)
 

@@ -204,13 +204,33 @@ nbwr_conv = pd.DataFrame({
                         'scaling': 'dv', 'keep_trace': False, 'overwrite': True, 'strict_sort': False, 'multisession': (1, 2, 3), 'rms': False},
             })
 
+tadpole_conv = pd.DataFrame({
+            '_MEMP_VBM_TI1100_': {'dirstruct': 'BIDS', 'outdir': 'anat', 'scan_name': 'fsmempr', 'scan_info': 'ti1100',
+                        'fname_template': '{subj}_{session}_{scan_name}_{scan_info}_{run}.nii', 'take_lowest_recon': True,
+                        'verbose': True, 'compressed': False, 'permit_truncated': False, 'bvs': False,
+                        'dwell_time': False, 'b1corr': False,
+                        'field_strength': False, 'vol_info': False, 'origin': 'scanner', 'minmax': ('parse', 'parse'),
+                        'store_header': True,
+                        'scaling': 'dv', 'keep_trace': False, 'overwrite': True, 'strict_sort': False,
+                        'multisession': (1, 2, 3), 'rms': True},
+            '_MATCHING_SV_': {'dirstruct': 'BIDS', 'outdir': 'mrs', 'scan_name': 'left_match_mrs', 'scan_info': 'ti1100',
+                         'fname_template': '{subj}_{session}_{scan_name}_{scan_info}_{run}.nii', 'take_lowest_recon': True,
+                         'verbose': True, 'compressed': False, 'permit_truncated': False, 'bvs': False,
+                         'dwell_time': False, 'b1corr': False,
+                         'field_strength': False, 'vol_info': False, 'origin': 'scanner',
+                         'minmax': ('parse', 'parse'), 'store_header': True,
+                         'scaling': 'dv', 'keep_trace': False, 'overwrite': True, 'strict_sort': False,
+                         'multisession': (1, 2, 3), 'rms': False},
+            })
 #new project DataFrame objects to be added to Panel here
 img_conv = pd.Panel({'phantom_qT1_slu': slu_phant_conv,
             'phantom_qT1_disc': disc_phant_conv,
             'self_control': self_control_conv,
             'roots_of_empathy': roots_conv,
             'bbc': bbc_conv,
-            'nbwr': nbwr_conv})
+            'nbwr': nbwr_conv,
+            'tadpole': tadpole_conv,
+            })
 
 opts = BrainOpts()
 

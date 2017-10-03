@@ -1,7 +1,7 @@
 # this is awraper function for mrs that collects the disparate mrs data, calculates group stats, and output to google spreadsheet.
 # first set global root data directory
 import pylabs
-pylabs.datadir.target = 'scotty'
+pylabs.datadir.target = 'jaba'
 from pathlib import *
 import datetime
 import numpy as np
@@ -184,6 +184,7 @@ stats_worksheet.set_column('A:A', 18, labels_format)
 stats_worksheet.write_string(0,0,'Summary t-stats and p-values from python stats', title_format)
 stats_worksheet.write_string(7,0,'Stats results from todds fortran code', title_format)
 stats_worksheet.write_string(20,0,'Additional descriptive stats from pandas', title_format)
+stats_worksheet.write_string(28,0,'Selected Correlations:', title_format)
 stats_worksheet.set_row(18, {'align': 'left'})
 stats_worksheet.set_row(19, {'align': 'left'})
 #stats_worksheet.conditional_format('B4:O4', {'type': 'cell', 'criteria': '<=', 'value': 0.05, 'bg_color': '#FFC7CE'})
