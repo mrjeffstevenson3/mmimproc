@@ -5,6 +5,7 @@ c
 	character*40 cfn,cfnlist(100),cfnlist2(100),cheader(100),ch,cheader2(100)
 	character*40 cout,csubjects(100)
 	character*20 clabels(100),cbehav(100),cbrain(100)
+	character*90 cfnall_nbwr,cfnbehav
 	common /dat1/ dmnmr(10000),dmnmr2(1000),dmnmr3(1000)
 	common /size/isize1,isize2
 	integer scores(100,100)
@@ -25,9 +26,18 @@ c
 	open(11,file ='numrow2.txt')
 	read(11,*)numrow2
 	close(11)
+	open(11,file ='all_nbwr.txt')
+	read(11,11)cfnall_nbwr
+ 11	format(a90)
+	write(6,*)'cfnall_nbwr ',cfnall_nbwr
+	close(11)
+	open(11,file ='gaba_scores.txt')
+	read(11,11)cfnbehav
+	write(6,*)'cfnbehav ',cfnbehav
+	close(11)
 
 
-	open(11,file = 'all_nbwr_mrs_results_csfcorr_fits.csv')
+	open(11,file = cfnall_nbwr)
 	read(11,*)cfn
 	read(11,*)cheader(1),(cfnlist(ii),ii=1,numcol1)
 	write(6,*)cfnlist(1),cfnlist(numcol1)
@@ -37,7 +47,7 @@ c
 	enddo  !irow1
 	
 	close(11)
-	open(11,file = 'GABA_scores.csv')
+	open(11,file = cfnbehav)
 	read(11,*)cheader2(1),(cfnlist2(ii),ii=1,numcol2)
 	write(6,*)cfnlist2(1),cfnlist2(numcol2)
 	do irow =2,numrow2
