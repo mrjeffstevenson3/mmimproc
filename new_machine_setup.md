@@ -119,4 +119,10 @@ source $FREESURFER_HOME/SetUpFreeSurfer.sh`
 
 29. install matlab NOT as root in ${HOME}/Software/matlab/{matlabReleaseDate1,matlabReleaseDate2}
     as of 9/19/2017 need latest release for python interface build and 2013b for inspector on linux 2016b on mac
+
+30. install gannett 2.0 sw in ${HOME}/Software
+        on linux make sure to edit philipsRead.m line 60:
+        ```% work out data header name
+        sparnameW = [fname_water(1:(end-4)) 'SPAR']; ```
+        this makes sure the spar file ext is read on linux eg all upper case.
         

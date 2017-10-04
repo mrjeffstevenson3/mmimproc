@@ -213,7 +213,7 @@ tadpole_conv = pd.DataFrame({
                         'store_header': True,
                         'scaling': 'dv', 'keep_trace': False, 'overwrite': True, 'strict_sort': False,
                         'multisession': (1, 2, 3), 'rms': True},
-            '_MATCHING_SV_': {'dirstruct': 'BIDS', 'outdir': 'mrs', 'scan_name': 'right_match_mrs', 'scan_info': 'ti850',
+            '_MATCHING_SV_': {'dirstruct': 'BIDS', 'outdir': 'mrs', 'scan_name': 'left_match_mrs', 'scan_info': 'ti1100',
                          'fname_template': '{subj}_{session}_{scan_name}_{scan_info}_{run}.nii', 'take_lowest_recon': True,
                          'verbose': True, 'compressed': False, 'permit_truncated': False, 'bvs': False,
                          'dwell_time': False, 'b1corr': False,
