@@ -25,7 +25,8 @@ on brand new system:
 	`cd ~/Software && git clone https://github.com/stnava/ANTs.git && mkdir antsbin && cd antsbin && ccmake ../ANTs`
 	when the cmake interface comes onscreen press c twice (to configure) till you see the option g appear on bottom middle, then press g to save and exit
 	then type `make -j 4`
-and open another terminal tab since this will take a while and there is more to do.
+	
+**and** open another terminal tab since this will take a while and there is more to do.
 17. If you like, Install and setup Dropbox `https://www.dropbox.com` and teamviewer `https://www.teamviewer.com/en/`
 18. install FSL. in terminal paste:
 	`wget -O- http://neuro.debian.net/lists/xenial.us-ca.full | sudo tee /etc/apt/sources.list.d/neurodebian.sources.list` and enter your admin pwd then
@@ -42,9 +43,16 @@ source $FREESURFER_HOME/SetUpFreeSurfer.sh`
     <scotty_ip_addr>:/export /mnt    nfs auto    0   0
     `sudo ufw allow from <scotty_ip_addr>` on new machine and `sudo ufw allow from <your_new_ip_addr>` on scotty
     on scotty set up /etc/exports add to /exports AND /exports/users lines ` <your_new_ip_addr>(rw,nohide,insecure,no_subtree_check,async)` - pls include leading space.
-22. copy scotty .bashrc appropriate elements to ${HOME}/.bashrc (hint use pycharm compare file fn)  
+22. copy scotty .bashrc appropriate elements to ${HOME}/.bashrc (hint use pycharm compare file fn)
+    here are some pylabs env vars to put at the end to make sure bash scripts find their way:
+        #set up pylabs env variables
+        PYLABSD=`python -c "import inspect, pylabs; from pathlib import *; print str(Path(*Path(inspect.getabsfile(pylabs)).parts[:-2]) / 'data')"`
+        PYLABS=`python -c "import inspect, pylabs; from pathlib import *; print str(Path(*Path(inspect.getabsfile(pylabs)).parts[:-2]))"`
+        DATADIR=`python -c "import pylabs; pylabs.datadir.target = 'jaba'; from pylabs.utils.paths import getnetworkdataroot; fs = getnetworkdataroot(verbose=False); print fs"`
+        export PYLABS PYLABSD DATADIR PATH="$PYLABS:$PYLABSD:$PYLABS/pylabs:$PYLABS/bin:$PATH"
+
 23. install and start condor: `sudo apt install htcondor && sudo service condor start`
-24. _--- wait on this one-bugs! ----install sip, pyqt4, mayavi, pysurfer:_ 
+24. do not use!_--- wait on this one-bugs! ----install sip, pyqt4, mayavi, pysurfer:_ 
         cd ${HOME}/Software
         https://riverbankcomputing.com/software/sip/download
         example docs:
@@ -133,3 +141,6 @@ source $FREESURFER_HOME/SetUpFreeSurfer.sh`
         sparnameW = [fname_water(1:(end-4)) 'SPAR']; ```
         this makes sure the spar file ext is read on linux eg all upper case.
         
+31. install inspector sw in ${HOME}/Software (depends on matlab R2013b )
+
+32. install spm12 sw in ${HOME}/Software (depends on matlab)
