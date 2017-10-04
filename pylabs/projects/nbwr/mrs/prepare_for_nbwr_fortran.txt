@@ -1,9 +1,15 @@
-cp ${DATADIR}nbwr/stats/mrs/all* .
-cp all_nbwr_mrs_uncorr_fits_test1.csv all_nbwr_mrs_uncorr_fits.csv
-numcol=`head -n1 all_nbwr_mrs_uncorr_fits.csv | grep -o "," | wc -l`
-numrow=`wc -l all_nbwr_mrs_uncorr_fits.csv`
-echo $numcol > numcol.txt
-echo $numrow > numrow.txt
+
+numcol1=`head -n1 ${PYLABSD}/testdata/mrs/all_nbwr_mrs_results_csfcorr_fits.csv | grep -o "," | wc -l`
+numrow1=`wc -l ${PYLABSD}/testdata/mrs/all_nbwr_mrs_results_csfcorr_fits.csv`
+numcol2=`head -n1 ${PYLABSD}/testdata/mrs/GABA_scores.csv | grep -o "," | wc -l`
+numrow2=`wc -l ${PYLABSD}/testdata/mrs/GABA_scores.csv`
+
+echo $numcol1 > numcol1.txt
+echo $numrow1 > numrow1.txt
+echo $numcol2 > numcol2.txt
+echo $numrow2 > numrow2.txt
+echo ${PYLABSD}/testdata/mrs/all_nbwr_mrs_results_csfcorr_fits.csv > all_nbwr.txt
+echo ${PYLABSD}/testdata/mrs/GABA_scores.csv > gaba_scores.txt
 
 
 

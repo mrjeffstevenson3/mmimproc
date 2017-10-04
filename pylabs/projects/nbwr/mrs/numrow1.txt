@@ -1,1 +1,1 @@
-19 all_nbwr_mrs_results_csfcorr_fits.csv
+19 /home/mrjeffs/Software/pylabs/data/testdata/mrs/all_nbwr_mrs_results_csfcorr_fits.csv
