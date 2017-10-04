@@ -117,9 +117,16 @@ source $FREESURFER_HOME/SetUpFreeSurfer.sh`
         cd pdfminer/
         python setup.py install
 
-29. install matlab NOT as root in ${HOME}/Software/matlab/{matlabReleaseDate1,matlabReleaseDate2}
-    as of 9/19/2017 need latest release for python interface build and 2013b for inspector on linux 2016b on mac
-
+29. install matlab NOT as root but as user in ${HOME}/Software/matlab${ReleaseDate}
+    as of 9/19/2017 need latest release for python interface build and maybe (tbd) 2013b for inspector on linux 2016b on mac
+        make sure conda is latest release and anaconda or env is latest:
+        conda install conda
+        conda upgrade --all
+        ReleaseDate=2017b
+        cd ${HOME}/Software/matlab${ReleaseDate}/extern/engines/python
+        python setup.py install --prefix=${HOME}/Software/anaconda2
+        note bug in pycharm console and runtime engine. use only on comand line till fixed
+        
 30. install gannett 2.0 sw in ${HOME}/Software
         on linux make sure to edit philipsRead.m line 60:
         ```% work out data header name
