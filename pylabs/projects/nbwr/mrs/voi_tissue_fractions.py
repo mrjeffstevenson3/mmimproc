@@ -1,7 +1,7 @@
 # needs to be made into callable function using extract_brain and spm for segs as death match
 # first set global root data directory and defaults
 import pylabs
-pylabs.datadir.target = 'scotty'
+pylabs.datadir.target = 'jaba'
 pylabs.opts.nii_ftype = 'NIFTI'
 pylabs.opts.nii_fext = '.nii'
 pylabs.opts.fslmultifilequit = 'FALSE'
