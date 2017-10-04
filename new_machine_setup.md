@@ -46,10 +46,14 @@ source $FREESURFER_HOME/SetUpFreeSurfer.sh`
 22. copy scotty .bashrc appropriate elements to ${HOME}/.bashrc (hint use pycharm compare file fn)
     here are some pylabs env vars to put at the end to make sure bash scripts find their way:
         #set up pylabs env variables
-        PYLABSD=`python -c "import inspect, pylabs; from pathlib import *; print str(Path(*Path(inspect.getabsfile(pylabs)).parts[:-2]) / 'data')"`
-        PYLABS=`python -c "import inspect, pylabs; from pathlib import *; print str(Path(*Path(inspect.getabsfile(pylabs)).parts[:-2]))"`
+        PYLABSD=`python -c "from pylabs.utils import pylabs_datadir; print str(pylabs_datadir)"`
+        PYLABS=`python -c "from pylabs.utils import pylabs_dir; print str(pylabs_dir)"`
         DATADIR=`python -c "import pylabs; pylabs.datadir.target = 'jaba'; from pylabs.utils.paths import getnetworkdataroot; fs = getnetworkdataroot(verbose=False); print fs"`
-        export PYLABS PYLABSD DATADIR PATH="$PYLABS:$PYLABSD:$PYLABS/pylabs:$PYLABS/bin:$PATH"
+        PATH="$PYLABS:$PYLABSD:$PYLABS/pylabs:$PYLABS/bin:$PATH"
+        MORIMNI=`python -c "from pylabs.utils import moriMNIatlas; print str(moriMNIatlas)"`
+        JHUMNI=`python -c "from pylabs.utils import JHUMNIatlas; print str(JHUMNIatlas)"`
+        FS=`python -c "import pylabs; pylabs.datadir.target = 'jaba'; from pylabs.utils.paths import getnetworkdataroot; fs = getnetworkdataroot(verbose=False); print fs"`
+        export PYLABS PYLABSD DATADIR PATH FS MORIMNI JHUMNI
 
 23. install and start condor: `sudo apt install htcondor && sudo service condor start`
 24. do not use!_--- wait on this one-bugs! ----install sip, pyqt4, mayavi, pysurfer:_ 
