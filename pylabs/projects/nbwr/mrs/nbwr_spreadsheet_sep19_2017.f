@@ -8,6 +8,7 @@ c
 	character*40 cfn,cfnlist(100),cheader(100),ch
 	character*40 cout,csubjects(100)
 	character*35 clabels(100)
+	character*90 cfnall_nbwr,cfnbehav
 	common /dat1/ dmnmr(1000),dmnmr2(1000),dmnmr3(1000)
 	common /size/isize1,isize2
 	real dnmr(100,100),behav1(10000),dout(100,100)
@@ -18,29 +19,35 @@ c
   	INTEGER NU, ERROR
 
 	
-	open(11,file ='numcol.txt')
-	read(11,*)numcol
+	open(11,file ='numcol3.txt')
+	read(11,*)numcol3
 	close(11)
-	open(11,file ='numrow.txt')
-	read(11,*)numrow
+	open(11,file ='numrow3.txt')
+	read(11,*)numrow3
 	close(11)
+	open(11,file ='all_nbwr_uncorr.txt')
+	read(11,11)cfnall_nbwr
+ 11	format(a90)
+	write(6,*)'cfnall_nbwr ',cfnall_nbwr
+	close(11)
+	numrow = numrow3
+	numcol = numcol3
 
-	open(11,file = 'all_nbwr_mrs_uncorr_fits.csv')
+	open(11,file = cfnall_nbwr)
 	read(11,*)cheader(1),(cfnlist(ii),ii=1,numcol)
 	write(6,*)cfnlist(1),cfnlist(numcol)
 	do irow =2,numrow
 	read(11,*)cheader(irow),(dnmr(ii,irow),ii=1,numcol)
 	write(6,*)cheader(irow),dnmr(1,irow),dnmr(numcol,irow),irow
 	enddo  !irow
-
 	close(11)
 c
 c first find the row with the csf left
-
 	do imetab=2,numrow
 	ch=cheader(imetab)
 	if(ch.eq.'left-percCSF')irowcorrect = imetab
 	enddo
+	write(6,*)'irowcorrect ',irowcorrect
 c
 	clabels(1) = 'subjectid'
 	ileft = 1
