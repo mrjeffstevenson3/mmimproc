@@ -75,7 +75,7 @@ c	write(6,*)cfn
 c	write(6,*)csubg
 	do irow2 = 2,numrow2-1
 	cfn = cheader2(irow2)
-	csubb =cfn(6:8)
+	csubb =cfn(9:11)
 
 	if(csubb.eq.csubg)then
 c	write(6,*)'we have found the one!'
@@ -91,6 +91,9 @@ c		write(6,*)csubb
 	itsize = index1-1
 	open(12,file='output_correlation.txt')
 	open(13,file='output_correlation_stats.txt')
+	open(14,file='behave_name.txt')
+	open(15,file='metabolite_name.txt')
+
 	do i=1,itsize
 c	write(6,*)'test corr input ',dmnmr(i),behav1(i),i
 	write(12,*)dmnmr(i),behav1(i),csubsav(i)
@@ -109,13 +112,15 @@ c	write(6,*)'test corr input ',dmnmr(i),behav1(i),i
   	write(6,*)' PROB2=', PROB2*2.0
   	write(13,*)PROB2*2.0
   	write(6,*)' ERROR=', ERROR
-
-
+	write(14,*)cfnlist2(ibeh)
+	write(15,*)cfnlist(ii)
 	enddo !ibehav
 	enddo !ii
 c
 	close(12)
 	close(13)
+	close(14)
+	close(15)
 	stop
 	end
 	
