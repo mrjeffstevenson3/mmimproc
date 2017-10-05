@@ -2,6 +2,8 @@ rm GenSpec.m
 echo "h = figure ;" >> GenSpec.m
 echo "load output_correlation.txt" >> GenSpec.m
 echo "load output_correlation_stats.txt" >> GenSpec.m
+behav_name=`cat behave_name.txt`
+metabolite_name=`cat metabolite_name.txt`
 echo "xdata = output_correlation(:,1); "  >> GenSpec.m
 echo "ydata = output_correlation(:,2); "  >> GenSpec.m
 echo "tvalue = output_correlation_stats(1,1); " >> GenSpec.m
@@ -17,27 +19,35 @@ echo "y = polyval (p, x); "  >> GenSpec.m
 
 ## Plot
 echo "plot (x, y, '-', xdata, ydata, 's', \"markersize\", 8); "  >> GenSpec.m
-echo "xlabel('MRS Glutamate right side ','fontsize',20); " >> GenSpec.m
-echo "ylabel('FSIQ-4 composite ','fontsize',20); " >> GenSpec.m
+echo "xlabel('${metabolite_name} ','fontsize',20); " >> GenSpec.m
+echo "ylabel('${behav_name} ','fontsize',20); " >> GenSpec.m
 
-echo "maxy=max(y); " >> GenSpec.m
-echo "miny=min(y); " >> GenSpec.m
-echo "pos1=((maxy-miny)*.95) + miny; " >> GenSpec.m
-echo "pos2=((maxy-miny)*.85) + miny; " >> GenSpec.m
-echo "text(1,-0.025,'${newanatomy}_${side}','fontsize',15); " >> GenSpec.m
+echo "maxy=max(ydata); " >> GenSpec.m
+echo "miny=min(ydata); " >> GenSpec.m
+echo "pos1y=miny- ((maxy-miny)*0.1); " >> GenSpec.m
+echo "pos2y=maxy+ ((maxy-miny)*0.1); " >> GenSpec.m
+echo "maxx=max(xdata); " >> GenSpec.m
+echo "minx=min(xdata); " >> GenSpec.m
+echo "pos1x=minx- ((maxx-minx)*0.1); " >> GenSpec.m
+echo "pos2x=maxx+ ((maxx-minx)*0.1); " >> GenSpec.m
+
 echo "set(gca,'fontsize',15); " >> GenSpec.m
-echo "axis([6,10, 90,140]); " >>GenSpec.m
+echo "axis([pos1x, pos2x, pos1y,pos2y]); " >>GenSpec.m
 echo "title ('MRS/Behavioral correlation', 'fontsize',20);  " >> GenSpec.m
 #echo "rho=spearman (xdata, ydata); " >> GenSpec.m
 echo "rcorr=cor (xdata, ydata); " >> GenSpec.m
 echo "rcorr "  >> GenSpec.m
 #echo "str=sprintf(\"spearman rho %f \",rho);  "  >> GenSpec.m
 echo "str=sprintf(\"correlation r %f \",rcorr);  "  >> GenSpec.m
-echo "text(6.5,130,str,'fontsize',15); " >> GenSpec.m
+echo "posx_stats=pos1x+((maxx-minx)*0.1); " >> GenSpec.m
+echo "posy_stats1=maxy-((maxx-minx)*0.1); " >> GenSpec.m
+echo "posy_stats1=maxy-((maxx-minx)*0.15); " >> GenSpec.m
+echo "posy_stats1=maxy-((maxx-minx)*0.2); " >> GenSpec.m
+echo "text(posx_stats,posy_stats1,str,'fontsize',15); " >> GenSpec.m
 echo "str=sprintf(\"tvalue from rcorr %f \",tvalue);  "  >> GenSpec.m
-echo "text(6.5,132,str,'fontsize',15); " >> GenSpec.m
+echo "text(posx_stats,132,str,'fontsize',15); " >> GenSpec.m
 echo "str=sprintf(\"prob value %f \",probvalue);  "  >> GenSpec.m
-echo "text(6.5,134,str,'fontsize',15); " >> GenSpec.m
+echo "text(posx_stats,134,str,'fontsize',15); " >> GenSpec.m
 
 echo "for it = 1:12  " >> GenSpec.m
 echo "str=sprintf(\"%04d \",output_correlation(it,3));  "  >> GenSpec.m
