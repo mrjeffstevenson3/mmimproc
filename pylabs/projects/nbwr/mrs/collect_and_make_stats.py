@@ -7,6 +7,7 @@ import datetime
 import numpy as np
 import pandas as pd
 import scipy.stats as ss
+import itertools
 import json
 from pylabs.utils import ProvenanceWrapper, getnetworkdataroot, appendposix, bumptodefunct, WorkingContext, run_subprocess, pylabs_dir
 from pylabs.projects.nbwr.file_names import project
@@ -15,6 +16,9 @@ prov = ProvenanceWrapper()
 fs = Path(getnetworkdataroot())
 
 stats_fpgm = pylabs_dir / 'pylabs/projects/nbwr/mrs/nbwr_spreadsheet_sep19_2017'
+corr_fpgm = pylabs_dir / 'pylabs/projects/nbwr/mrs/nbwr_spreadsheet_sep27_correlations_13_3'
+plot_fpgm = pylabs_dir / 'pylabs/projects/nbwr/mrs/makeplots_nbwr.txt'
+
 
 uncorr_cols = [u'left-percCSF', u'left-GABA', u'left-NAAplusNAAG', u'left-GPCplusPCh', u'left-CrplusPCr', u'left-mIns', u'left-Glu-80ms', u'right-percCSF', u'right-GABA', u'right-NAAplusNAAG', u'right-GPCplusPCh', u'right-CrplusPCr', u'right-mIns', u'right-Glu-80ms']
 corr_cols = [u'left-GABA', u'left-NAAplusNAAG', u'left-GPCplusPCh', u'left-CrplusPCr', u'left-mIns', u'left-Glu-80ms', u'left-GluOverGABA', u'right-GABA', u'right-NAAplusNAAG', u'right-GPCplusPCh', u'right-CrplusPCr', u'right-mIns', u'right-Glu-80ms', u'right-GluOverGABA']
@@ -22,8 +26,13 @@ exclude_subj = ['sub-nbwr997', 'sub-nbwr998', 'sub-nbwr999',]
 exclude_data = ['Scan', 'Hemisphere', 'short_FWHM', 'short_SNR', 'short_TE', 'long_FWHM', 'long_SNR', 'long_TE']
 right_col_map = {'NAA+NAAG': 'right-NAAplusNAAG', 'GPC+PCh': 'right-GPCplusPCh', 'Cr+PCr': 'right-CrplusPCr', 'mIns': 'right-mIns', 'Glu': 'right-Glu-80ms'}
 left_col_map = {'NAA+NAAG': 'left-NAAplusNAAG', 'GPC+PCh': 'left-GPCplusPCh', 'Cr+PCr': 'left-CrplusPCr', 'mIns': 'left-mIns', 'Glu': 'left-Glu-80ms'}
+behav_cols_of_interest = [u'VCI Composite', u'PRI Composite', u'FSIQ-4 Composite', u'FSIQ-2 Composite']  # options: u'SRS-2 Total T-Score', u'Awr T-Score', u'Cog T-Score', u'Com T-Score', u'Mot T-Score', u'RRB T-Score', u'SCI T-Score'
+behav_col_map = {'VCI Composite':  'VCI_Composite','PRI Composite':  'PRI_Composite', 'FSIQ-4 Composite':  'FSIQ-4_Composite', 'FSIQ-2 Composite': 'FSIQ-2_Composite'}
+behav_to_correlate = ['VCI_Composite', 'PRI_Composite',  'FSIQ-4_Composite', 'FSIQ-2_Composite']
+metab_to_correlate = [ u'right-Glu-80ms', u'right-GluOverGABA']
 stats_dir = fs/project/'stats'/'mrs'
-glu_fname = 'Paros_Chemdata_tablefile_Sep19_2017.txt'
+glu_fname = 'Paros_Chemdata_tablefile_Neva.txt'
+jonah_glu_fname = 'jonah_Chemdata_tablefile_reformat2017-10-4.csv'
 glu_data = pd.read_csv(str(stats_dir/glu_fname), delim_whitespace=True)
 #need to edit a few subject ids
 ids2rename = {'NBWR404c': 'NBWR404', 'NWBR999B': 'NBWR999'}
@@ -44,6 +53,30 @@ right_side_glu.rename(columns=right_col_map, inplace=True)
 left_side_glu.rename(columns=left_col_map, inplace=True)
 right_side_glu.set_index('subject', inplace=True)
 left_side_glu.set_index('subject', inplace=True)
+
+
+jonah_glu_data = pd.read_csv(str(stats_dir/jonah_glu_fname))
+jonah_glu_data.set_index('subject', inplace=True)
+jonah_glu_data.rename(columns=left_col_map, inplace=True)
+jonah_glu_data.drop(exclude_data[1:], axis=1, inplace=True)
+jonah_glu_data['left-percCSF'] = np.nan
+jonah_glu_data['left-GABA']  = np.nan
+jonah_glu_data = jonah_glu_data.T
+for ses in ['1','2']:
+    mrs_dir = fs / 'tadpole' / 'sub-tadpole001' / str('ses-'+ses) / 'mrs'
+    jonah_gaba_fits_logf = sorted(list(mrs_dir.rglob('mrs_gaba_log*.json')),
+                            key=lambda date: int(date.stem.split('_')[-1].replace('log', '')))[-1]
+    with open(str(jonah_gaba_fits_logf), 'r') as gf:
+        log_data = json.load(gf)
+    for line in log_data:
+        if 'Left gaba results' in line:
+            lt_gaba_val = float(line.split()[3])
+            jonah_glu_data.loc['left-GABA', 'sub-tadpole00'+ses] = lt_gaba_val
+    csf_frac = pd.read_csv(str(mrs_dir / 'sub-tadpole001_csf_fractions.csv'))
+    csf_frac.set_index('sub-tadpole001', inplace=True)
+    jonah_glu_data.loc['left-percCSF', 'sub-tadpole00'+ses] = csf_frac.loc['left-percCSF'].values[0]
+
+
 onerowpersubj = pd.merge(left_side_glu, right_side_glu, left_index=True, right_index=True)
 onerowpersubj['left-percCSF'] = np.nan
 onerowpersubj['right-percCSF']  = np.nan
@@ -84,6 +117,15 @@ excel_fname = appendposix(base_fname, '_results_csfcorr_fits.xlsx')
 hdf_fname = appendposix(base_fname, '_results_csfcorr_fits.h5')
 fcsf_corr_fname = base_fname.parent / 'csfcorrected.csv'
 fstats_fname =  base_fname.parent / 'stats_tvalue.csv'
+# behavior data
+behav_fname = stats_dir / 'GABA.xlsx'
+behav_raw = pd.read_excel(str(behav_fname), sheetname='ASD tracking')
+behav_raw['subject'] = behav_raw['Subject #'].str.replace('GABA_', 'sub-nbwr')
+behav_raw.set_index(['subject'], inplace=True)
+behav_data = behav_raw[behav_cols_of_interest]
+behav_data.rename(columns=behav_col_map, inplace=True)
+behav_data.copy('deep')
+behav_data.sort_index(inplace=True)
 
 # save old versions if there
 for file in [uncorr_csv_fname, csfcorr_csv_fname, excel_fname, hdf_fname, fcsf_corr_fname, fstats_fname]:
@@ -94,11 +136,22 @@ onerowpersubj.to_csv(str(uncorr_csv_fname), header=True, index=True, na_rep=9999
 
 rlog = ()
 with WorkingContext(str(uncorr_csv_fname.parent)):
-    with open('numcol.txt', mode='w') as nc:
+    with open('numcol1.txt', mode='w') as nc:
+        nc.write(str(len(onerowpersubj.columns)-2) + '\n')
+    with open('numrow1.txt', mode='w') as nr:
+        nr.write(str(len(onerowpersubj.index)+1) + '\n')
+    with open('numcol2.txt', mode='w') as nc:
+        nc.write(str(2) + '\n')
+    with open('numrow2.txt', mode='w') as nr:
+        nr.write(str(len(behav_data.index)+1) + '\n')
+    with open('numcol3.txt', mode='w') as nc:
         nc.write(str(len(onerowpersubj.columns)) + '\n')
-    with open('numrow.txt', mode='w') as nr:
+    with open('numrow3.txt', mode='w') as nr:
         nr.write(str(len(onerowpersubj.index)+1) + '\n')
     rlog += run_subprocess(str(stats_fpgm))
+    for i, t in itertools.product(metab_to_correlate, behav_to_correlate):
+
+
 
 onerowpersubj.loc['left-1over1minfracCSF'] = 1 / (1 - onerowpersubj.loc['left-percCSF'])
 onerowpersubj.loc['right-1over1minfracCSF'] = 1 / (1 - onerowpersubj.loc['right-percCSF'])
