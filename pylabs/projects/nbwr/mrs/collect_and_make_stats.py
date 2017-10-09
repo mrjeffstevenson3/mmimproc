@@ -170,6 +170,7 @@ lt_corrmetab['left-GluOverGABA'] = lt_corrmetab['left-Glu-80ms']/lt_corrmetab['l
 rt_corrmetab['right-GluOverGABA'] = rt_corrmetab['right-Glu-80ms']/rt_corrmetab['right-GABA']
 corr_metab = pd.merge(lt_corrmetab, rt_corrmetab, left_index=True, right_index=True)
 corr_metab.to_csv(str(csfcorr_csv_fname), header=True, columns=corr_cols, index=True, na_rep=9999, index_label='corr_metabolite')
+corr_metab.to_hdf(hdf_fname, 'CSFcorrected_mrs_data', mode='a', format='t', append=True, data_columns=corr_metab.columns)
 
 asd_grp = corr_metab.index.str.replace('sub-nbwr', '').astype('int') < 400  # ASD only
 tvalues, pvalues = ss.ttest_ind(corr_metab[asd_grp], corr_metab[~asd_grp], equal_var=False)
@@ -192,8 +193,7 @@ stats_results.rename(index=col_map,inplace=True)
 hdr_txt = {'fortran': 'Stats results from todds fortran code', 'scipy_stats': 'summary t-stats and p-values from python stats', 'descriptive': 'Additional descriptive stats from pandas'}
 stats_hdrs = pd.Series(hdr_txt)
 
-
-
+#write excel workbook and matching h5 dataframes
 writer = pd.ExcelWriter(str(excel_fname), engine='xlsxwriter')
 workbook = writer.book
 
@@ -213,6 +213,9 @@ data_format.set_align('center')
 data_format.set_text_wrap(False)
 
 onerowpersubj.to_excel(writer, sheet_name='uncorr', columns=uncorr_cols, index=True, index_label='subject', header=True, startrow=1, na_rep=9999)
+
+onerowpersubj.to_hdf(hdf_fname, 'uncorrected_mrs_data', mode='a', format='t', append=True, data_columns=onerowpersubj.columns)
+
 uncorr_worksheet = writer.sheets['uncorr']
 uncorr_worksheet.set_default_row(25)
 uncorr_worksheet.set_column('B:O', 24, data_format)
@@ -232,8 +235,11 @@ fcsf_worksheet.set_column('B:O', 24, data_format)
 fcsf_worksheet.set_column('A:A', 18, labels_format)
 fcsf_worksheet.write_string(0,0,'Corrected Metabolite Concentration after CSF correction factor applied', title_format)
 stats_results.T.to_excel(writer, sheet_name='stats', index_label='stats', header=True, startrow=2, startcol=0)
+stats_results.T.to_hdf(hdf_fname, 'CSFcorrected_mrs_stats', mode='a', format='t', append=True, data_columns=stats_results.T.columns)
 fstats.to_excel(writer, sheet_name='stats', index_label='stats', header=True, startrow=9, startcol=0)
 descriptives.to_excel(writer, sheet_name='stats', index_label='stats', header=True, startrow=22, startcol=0)
+descriptives.to_hdf(hdf_fname, 'CSFcorrected_mrs_descriptive_stats', mode='a', format='t', append=True, data_columns=descriptives.columns)
+
 stats_worksheet = writer.sheets['stats']
 stats_worksheet.set_column('B:O', 24, data_format)
 stats_worksheet.set_default_row(25)
