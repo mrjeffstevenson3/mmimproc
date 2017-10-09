@@ -76,6 +76,9 @@ for ses in ['1','2']:
     csf_frac.set_index('sub-tadpole001', inplace=True)
     jonah_glu_data.loc['left-percCSF', 'sub-tadpole00'+ses] = csf_frac.loc['left-percCSF'].values[0]
 
+# add csf correction to jonah
+#onerowpersubj.loc['left-1over1minfracCSF'] = 1 / (1 - onerowpersubj.loc['left-percCSF'])
+#lt_corrmetab = onerowpersubj[left_metab].multiply(onerowpersubj['left-1over1minfracCSF'], axis='index')
 
 onerowpersubj = pd.merge(left_side_glu, right_side_glu, left_index=True, right_index=True)
 onerowpersubj['left-percCSF'] = np.nan
@@ -149,7 +152,8 @@ with WorkingContext(str(uncorr_csv_fname.parent)):
     with open('numrow3.txt', mode='w') as nr:
         nr.write(str(len(onerowpersubj.index)+1) + '\n')
     rlog += run_subprocess(str(stats_fpgm))
-    for i, t in itertools.product(metab_to_correlate, behav_to_correlate):
+    # loop over correlation
+    #for i, t in itertools.product(metab_to_correlate, behav_to_correlate):
 
 
 
