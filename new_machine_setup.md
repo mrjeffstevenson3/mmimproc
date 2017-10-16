@@ -137,7 +137,7 @@ source $FREESURFER_HOME/SetUpFreeSurfer.sh`
         ReleaseDate=2017b
         cd ${HOME}/Software/matlab${ReleaseDate}/extern/engines/python
         python setup.py install --prefix=${HOME}/Software/anaconda2
-        note bug in pycharm console and runtime engine. use only on comand line till fixed
+        note __init__ import bug in ubuntu pycharm console and runtime engine. use only on comand line till fixed
         
 30. install gannett 2.0 sw in ${HOME}/Software
         on linux make sure to edit philipsRead.m line 60:
