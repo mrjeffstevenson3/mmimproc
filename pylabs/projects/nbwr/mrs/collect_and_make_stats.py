@@ -43,6 +43,8 @@ exclude_subj = ['sub-nbwr997', 'sub-nbwr998', 'sub-nbwr999',]
 exclude_data = ['Scan', 'Hemisphere', 'short_FWHM', 'short_SNR', 'short_TE', 'long_FWHM', 'long_SNR', 'long_TE']
 right_col_map = {'NAA+NAAG': 'right-NAAplusNAAG', 'GPC+PCh': 'right-GPCplusPCh', 'Cr+PCr': 'right-CrplusPCr', 'mIns': 'right-mIns', 'Glu': 'right-Glu-80ms'}
 left_col_map = {'NAA+NAAG': 'left-NAAplusNAAG', 'GPC+PCh': 'left-GPCplusPCh', 'Cr+PCr': 'left-CrplusPCr', 'mIns': 'left-mIns', 'Glu': 'left-Glu-80ms'}
+left_metab = ['left-GABA', 'left-NAAplusNAAG', 'left-GPCplusPCh', 'left-CrplusPCr', 'left-mIns', 'left-Glu-80ms']
+right_metab = [ 'right-GABA', 'right-NAAplusNAAG', 'right-GPCplusPCh', 'right-CrplusPCr', 'right-mIns', 'right-Glu-80ms']
 behav_cols_of_interest = [u'VCI Composite', u'PRI Composite', u'FSIQ-4 Composite', u'FSIQ-2 Composite']  # options: u'SRS-2 Total T-Score', u'Awr T-Score', u'Cog T-Score', u'Com T-Score', u'Mot T-Score', u'RRB T-Score', u'SCI T-Score'
 behav_col_map = {'VCI Composite':  'VCI_Composite','PRI Composite':  'PRI_Composite', 'FSIQ-4 Composite':  'FSIQ-4_Composite', 'FSIQ-2 Composite': 'FSIQ-2_Composite'}
 behav_to_correlate = ['VCI_Composite', 'PRI_Composite',  'FSIQ-4_Composite', 'FSIQ-2_Composite']
@@ -94,9 +96,12 @@ for ses in ['1','2']:
     csf_frac.set_index('sub-tadpole001', inplace=True)
     jonah_glu_data.loc['left-percCSF', 'sub-tadpole00'+ses] = csf_frac.loc['left-percCSF'].values[0]
 
-# add csf correction to jonah ========= get from redshirt one off
-#onerowpersubj.loc['left-1over1minfracCSF'] = 1 / (1 - onerowpersubj.loc['left-percCSF'])
-#lt_corrmetab = onerowpersubj[left_metab].multiply(onerowpersubj['left-1over1minfracCSF'], axis='index')
+jonah_glu_data = jonah_glu_data.T
+jonah_glu_data['left-1over1minfracCSF'] = 1 / (1 - jonah_glu_data.loc[:, 'left-percCSF'])
+jonah_lt_corrmetab = jonah_glu_data[left_metab].multiply(jonah_glu_data['left-1over1minfracCSF'], axis='index')
+jonah_lt_corrmetab['left-GluOverGABA'] = jonah_lt_corrmetab['left-Glu-80ms']/jonah_lt_corrmetab['left-GABA']
+#save jonah data to hdf
+jonah_lt_corrmetab.to_hdf(hdf_fname, 'jonah_left_csf_corrected_mrs_data', mode='a', format='t', append=True, data_columns=jonah_lt_corrmetab.columns)
 
 onerowpersubj = pd.merge(left_side_glu, right_side_glu, left_index=True, right_index=True)
 onerowpersubj['left-percCSF'] = np.nan
@@ -163,12 +168,10 @@ with WorkingContext(str(uncorr_csv_fname.parent)):
 
 
 
-onerowpersubj.loc['left-1over1minfracCSF'] = 1 / (1 - onerowpersubj.loc['left-percCSF'])
-onerowpersubj.loc['right-1over1minfracCSF'] = 1 / (1 - onerowpersubj.loc['right-percCSF'])
+onerowpersubj.loc['left-1over1minfracCSF'] = 1 / (1 - onerowpersubj.loc[:,'left-percCSF'])
+onerowpersubj.loc['right-1over1minfracCSF'] = 1 / (1 - onerowpersubj.loc[:,'right-percCSF'])
 
 onerowpersubj = onerowpersubj.T
-left_metab = ['left-GABA', 'left-NAAplusNAAG', 'left-GPCplusPCh', 'left-CrplusPCr', 'left-mIns', 'left-Glu-80ms']
-right_metab = [ 'right-GABA', 'right-NAAplusNAAG', 'right-GPCplusPCh', 'right-CrplusPCr', 'right-mIns', 'right-Glu-80ms']
 
 lt_corrmetab = onerowpersubj[left_metab].multiply(onerowpersubj['left-1over1minfracCSF'], axis='index')
 rt_corrmetab = onerowpersubj[right_metab].multiply(onerowpersubj['right-1over1minfracCSF'], axis='index')
@@ -198,6 +201,7 @@ else:
 stats_results.rename(index=col_map,inplace=True)
 hdr_txt = {'fortran': 'Stats results from todds fortran code', 'scipy_stats': 'summary t-stats and p-values from python stats', 'descriptive': 'Additional descriptive stats from pandas'}
 stats_hdrs = pd.Series(hdr_txt)
+
 
 #write excel workbook and matching h5 dataframes
 writer = pd.ExcelWriter(str(excel_fname), engine='xlsxwriter')
