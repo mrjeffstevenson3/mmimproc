@@ -32,19 +32,22 @@ hdf_fname = appendposix(base_fname, '_results_csfcorr_fits.h5')
 fcsf_corr_fname = base_fname.parent / 'csfcorrected.csv'
 fstats_fname =  base_fname.parent / 'stats_tvalue.csv'
 
-# save old versions if there
+# save old data file versions if there
 for file in [uncorr_csv_fname, csfcorr_csv_fname, excel_fname, hdf_fname, fcsf_corr_fname, fstats_fname]:
     bumptodefunct(file)
 
 #define dataframe col names
 uncorr_cols = [u'left-percCSF', u'left-GABA', u'left-NAAplusNAAG', u'left-GPCplusPCh', u'left-CrplusPCr', u'left-mIns', u'left-Glu-80ms', u'right-percCSF', u'right-GABA', u'right-NAAplusNAAG', u'right-GPCplusPCh', u'right-CrplusPCr', u'right-mIns', u'right-Glu-80ms']
 corr_cols = [u'left-GABA', u'left-NAAplusNAAG', u'left-GPCplusPCh', u'left-CrplusPCr', u'left-mIns', u'left-Glu-80ms', u'left-GluOverGABA', u'right-GABA', u'right-NAAplusNAAG', u'right-GPCplusPCh', u'right-CrplusPCr', u'right-mIns', u'right-Glu-80ms', u'right-GluOverGABA']
+ftran_cols = [u'csfcorrected_left-GABA             ', u'csfcorrected_left-NAAplusNAAG      ', u'csfcorrected_left-GPCplusPCh       ', u'csfcorrected_left-CrplusPCr        ', u'csfcorrected_left-mIns             ', u'csfcorrected_left-Glu-80ms         ', u'csfcorrected_glu_gaba_ratio_left   ', u'csfcorrected_right-GABA            ', u'csfcorrected_right-NAAplusNAAG     ', u'csfcorrected_right-GPCplusPCh      ', u'csfcorrected_right-CrplusPCr       ', u'csfcorrected_right-mIns            ', u'csfcorrected_right-Glu-80ms        ', u'csfcorrected_glu_gaba_ratio_right  ']
 exclude_subj = ['sub-nbwr997', 'sub-nbwr998', 'sub-nbwr999',]
 exclude_data = ['Scan', 'Hemisphere', 'short_FWHM', 'short_SNR', 'short_TE', 'long_FWHM', 'long_SNR', 'long_TE']
 right_col_map = {'NAA+NAAG': 'right-NAAplusNAAG', 'GPC+PCh': 'right-GPCplusPCh', 'Cr+PCr': 'right-CrplusPCr', 'mIns': 'right-mIns', 'Glu': 'right-Glu-80ms'}
 left_col_map = {'NAA+NAAG': 'left-NAAplusNAAG', 'GPC+PCh': 'left-GPCplusPCh', 'Cr+PCr': 'left-CrplusPCr', 'mIns': 'left-mIns', 'Glu': 'left-Glu-80ms'}
+ftran2py_col_map = dict(zip(ftran_cols, corr_cols))
 left_metab = ['left-GABA', 'left-NAAplusNAAG', 'left-GPCplusPCh', 'left-CrplusPCr', 'left-mIns', 'left-Glu-80ms']
 right_metab = [ 'right-GABA', 'right-NAAplusNAAG', 'right-GPCplusPCh', 'right-CrplusPCr', 'right-mIns', 'right-Glu-80ms']
+
 behav_cols_of_interest = [u'VCI Composite', u'PRI Composite', u'FSIQ-4 Composite', u'FSIQ-2 Composite']  # options: u'SRS-2 Total T-Score', u'Awr T-Score', u'Cog T-Score', u'Com T-Score', u'Mot T-Score', u'RRB T-Score', u'SCI T-Score'
 behav_col_map = {'VCI Composite':  'VCI_Composite','PRI Composite':  'PRI_Composite', 'FSIQ-4 Composite':  'FSIQ-4_Composite', 'FSIQ-2 Composite': 'FSIQ-2_Composite'}
 behav_to_correlate = ['VCI_Composite', 'PRI_Composite',  'FSIQ-4_Composite', 'FSIQ-2_Composite']
@@ -147,15 +150,13 @@ behav_data.sort_index(inplace=True)
 
 # do fortran stats 1st
 onerowpersubj.to_csv(str(uncorr_csv_fname), header=True, index=True, na_rep=9999, index_label='metabolite')
-# hard coded file name for todd's fortran
-onerowpersubj.to_csv(str(uncorr_csv_fname.parent/'all_nbwr_uncorr.txt'), header=True, index=True, na_rep=9999, index_label='metabolite')
 
 rlog = ()
 with WorkingContext(str(uncorr_csv_fname.parent)):
     with open('numcol1.txt', mode='w') as nc:
-        nc.write(str(len(onerowpersubj.columns)-2) + '\n')
+        nc.write(str(len(onerowpersubj.T.columns)-2) + '\n')
     with open('numrow1.txt', mode='w') as nr:
-        nr.write(str(len(onerowpersubj.index)+1) + '\n')
+        nr.write(str(len(onerowpersubj.T.index)+1) + '\n')
     with open('numcol2.txt', mode='w') as nc:
         nc.write(str(2) + '\n')
     with open('numrow2.txt', mode='w') as nr:
@@ -164,11 +165,23 @@ with WorkingContext(str(uncorr_csv_fname.parent)):
         nc.write(str(len(onerowpersubj.columns)) + '\n')
     with open('numrow3.txt', mode='w') as nr:
         nr.write(str(len(onerowpersubj.index)+1) + '\n')
+    with open('all_nbwr_uncorr.txt', mode='w') as ufn:
+        ufn.write(uncorr_csv_fname.name + '\n')
+    with open('all_nbwr.txt', mode='w') as cfn:
+        cfn.write(fcsf_corr_fname.name + '\n')  # was csfcorr_csv_fname.name
     rlog += run_subprocess(str(stats_fpgm))
+    # read back in results of stats
+    fcsf_corr = pd.DataFrame.from_csv(str(fcsf_corr_fname))
+    fcsf_corr_colrename = fcsf_corr.rename(columns=ftran2py_col_map)
     # loop over correlation
-    #for i, mb in enumerate(itertools.product(metab_to_correlate, behav_to_correlate)):
-
-
+    for mb in itertools.product(metab_to_correlate, behav_to_correlate):
+        # pick column number
+        with open('chosen_metabolite.txt', mode='w') as cmet:
+            cmet.write(str(fcsf_corr_colrename.columns.get_loc(mb[0])+1) + '\n')
+        behav_data.to_csv('gaba_scores.txt', header=True, columns=mb[1], index=True, na_rep=9999, index_label='subject')
+        rlog += run_subprocess(str(corr_fpgm))
+        rlog += run_subprocess(str(plot_fpgm))
+        # now save results to new file names
 
 onerowpersubj.loc['left-1over1minfracCSF'] = 1 / (1 - onerowpersubj.loc[:,'left-percCSF'])
 onerowpersubj.loc['right-1over1minfracCSF'] = 1 / (1 - onerowpersubj.loc[:,'right-percCSF'])
@@ -190,7 +203,6 @@ descriptives.rename(index={0: 'control', 1: 'asd'}, inplace=True)
 descriptives.index.rename('descriptives', inplace=True)
 
 #organise stats results here
-fcsf_corr = pd.DataFrame.from_csv(str(fcsf_corr_fname))
 fstats = pd.DataFrame.from_csv(str(fstats_fname))
 stats_results = pd.DataFrame.from_dict({'t-stat': tvalues, 'p-value': pvalues})
 if len(stats_results.T.columns) == len(corr_cols) == len(corr_metab.columns):
