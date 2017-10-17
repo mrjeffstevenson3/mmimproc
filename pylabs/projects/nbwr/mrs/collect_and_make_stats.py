@@ -147,6 +147,8 @@ behav_data.sort_index(inplace=True)
 
 # do fortran stats 1st
 onerowpersubj.to_csv(str(uncorr_csv_fname), header=True, index=True, na_rep=9999, index_label='metabolite')
+# hard coded file name for todd's fortran
+onerowpersubj.to_csv(str(uncorr_csv_fname.parent/'all_nbwr_uncorr.txt'), header=True, index=True, na_rep=9999, index_label='metabolite')
 
 rlog = ()
 with WorkingContext(str(uncorr_csv_fname.parent)):
