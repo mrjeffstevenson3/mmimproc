@@ -1,4 +1,4 @@
-cd ${PYLABSD}/testdata/mrs
+cd /brainstudio/data/nbwr/stats/mrs
 numcol1=`head -n1 all_nbwr_mrs_results_csfcorr_fits.csv | grep -o "," | wc -l`
 numrow1=`wc -l all_nbwr_mrs_results_csfcorr_fits.csv`
 numcol2=`head -n1 fsiq4.csv | grep -o "," | wc -l`

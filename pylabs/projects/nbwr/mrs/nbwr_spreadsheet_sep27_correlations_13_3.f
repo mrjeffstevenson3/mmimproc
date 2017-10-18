@@ -44,7 +44,7 @@ c
 
 
 	open(11,file = cfnall_nbwr)
-	read(11,*)cfn
+c	read(11,*)cfn
 	read(11,*)cheader(1),(cfnlist(ii),ii=1,numcol1)
 	write(6,*)cfnlist(1),cfnlist(numcol1)
 	do irow =2,numrow1-1
