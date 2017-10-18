@@ -35,7 +35,7 @@ echo "set(gca,'fontsize',15); " >> GenSpec.m
 echo "axis([pos1x, pos2x, pos1y,pos2y]); " >>GenSpec.m
 echo "title ('MRS/Behavioral correlation', 'fontsize',20);  " >> GenSpec.m
 #echo "rho=spearman (xdata, ydata); " >> GenSpec.m
-echo "rcorr=cor (xdata, ydata); " >> GenSpec.m
+echo "rcorr=corr (xdata, ydata); " >> GenSpec.m
 echo "rcorr "  >> GenSpec.m
 #echo "str=sprintf(\"spearman rho %f \",rho);  "  >> GenSpec.m
 echo "str=sprintf(\"correlation r %f \",rcorr);  "  >> GenSpec.m
