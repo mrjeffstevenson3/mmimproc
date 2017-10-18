@@ -48,7 +48,7 @@ only_spm = True
 # instantiate subject id list container
 subjids_picks = SubjIdPicks()
 # list of subject ids to operate on
-picks = ['017']
+picks = ['081']
 setattr(subjids_picks, 'subjids', picks)
 setattr(subjids_picks, 'source_path', fs / project / 'sub-nbwr%(sid)s' / 'ses-1' / 'source_sparsdat')
 
@@ -59,7 +59,7 @@ rt_matchfnames, lt_matchfnames = get_matching_voi_names(subjids_picks)
 test_l = map(len, (rt_actfnames, lt_actfnames, rt_matchfnames, lt_matchfnames))
 if not all(test_l[0] == l for l in test_l):
     raise ValueError('lists lengths do not all match. cannot zip '+str(test_l))
-print ('overwrite='+str(pylabs.opts.overwrite))
+
 for rt_matchfname, lt_matchfname, rt_actfname, lt_actfname in zip(rt_matchfnames, lt_matchfnames, rt_actfnames, lt_actfnames):
     results = ()
     if not rt_matchfname.split('_')[0] == lt_matchfname.split('_')[0]:
@@ -76,7 +76,6 @@ for rt_matchfname, lt_matchfname, rt_actfname, lt_actfname in zip(rt_matchfnames
     with WorkingContext(str(mrs_dir)):
         try:
             # start with right side
-            print ('overwrite='+str(pylabs.opts.overwrite))
             rt_match_pfname = mrs_dir / appendposix(rt_matchfname, ext)
             if pylabs.opts.overwrite: # and not only_spm:   ## or not Path(replacesuffix(rt_match_pfname, '_brain'+ext)).is_file():
                 print('running brain extraction on '+str(rt_match_pfname))

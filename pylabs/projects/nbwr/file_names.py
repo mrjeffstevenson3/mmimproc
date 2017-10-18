@@ -35,7 +35,7 @@ sub-nbwr144_ses-1_right_match_mrs_ti1100_1.nii
 
 TADPOLE_PR20160804_WIP_GABAMM_TE80_120DYN_3_2_raw_act.SPAR
 gaba_ftempl = '{proj}_{sid2}_WIP_GABAMM_TE{te}_{dyn}DYN_{wild}_raw_{type}.SDAT'
-gaba_fname_dd = {'proj': 'TADPOLE', 'wild': '*', 'te': gaba_te, 'dyn': gaba_dyn, 'side': 'RT', 'type': 'act', 'sid2': 'PR20160804', 'ses': '2'}
+gaba_fname_dd = {'proj': 'TADPOLE', 'wild': '*', 'te': gaba_te, 'dyn': gaba_dyn, 'side': 'RT', 'type': 'act', 'sid2': 'PR20160803', 'ses': '1'}
 '''
 
 
