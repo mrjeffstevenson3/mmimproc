@@ -8,7 +8,7 @@ c
 	character*90 cfnall_nbwr,cfnbehav
 	common /dat1/ dmnmr(10000),dmnmr2(1000),dmnmr3(1000)
 	common /size/isize1,isize2
-	integer scores(100,100)
+	real scores(100,100)
 	real dnmr(100,100),behav1(10000),dout(100,100)
 	real tvalue(100)
 	character*1 c1
