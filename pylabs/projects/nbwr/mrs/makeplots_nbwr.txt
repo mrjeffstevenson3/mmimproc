@@ -55,6 +55,6 @@ echo "text(output_correlation(it,1),output_correlation(it,2),str,'fontsize',10);
 echo "end;  " >> GenSpec.m
 
 echo "print -djpg 'mrsbehav.jpg' ; " >> GenSpec.m
-echo "pause; " >> GenSpec.m
+echo "#pause; " >> GenSpec.m
 
 

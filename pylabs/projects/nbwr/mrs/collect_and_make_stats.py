@@ -217,9 +217,9 @@ with WorkingContext(str(uncorr_csv_fname.parent)):
             gs.write('behav_corr.csv' + '\n')
         rlog += run_subprocess(str(corr_fpgm))
         rlog += run_subprocess(str(plot_fpgm))
-        rlog += run_subprocess(['octave', 'GenSpec.m'])
+        rlog += run_subprocess(['octave GenSpec.m'])
         # now save results to new file names
-        newname = uncorr_csv_fname.parent / '_'.join(mb)+'_corr_plot_{:%Y%m%d%H%M}.jpg'.format(datetime.datetime.now())
+        newname = uncorr_csv_fname.parent / ('_'.join(mb)+'_corr_plot_{:%Y%m%d%H%M}.jpg'.format(datetime.datetime.now()))
         Path(uncorr_csv_fname.parent / 'mrsbehav.jpg').rename(newname)
 
 
