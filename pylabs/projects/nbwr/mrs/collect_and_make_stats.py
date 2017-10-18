@@ -178,15 +178,19 @@ with WorkingContext(str(uncorr_csv_fname.parent)):
         # pick column number
         with open('chosen_metabolite.txt', mode='w') as cmet:
             cmet.write(str(fcsf_corr_colrename.columns.get_loc(mb[0])+1) + '\n')
-        behav_data.to_csv('gaba_scores.txt', header=True, columns=mb[1], index=True, na_rep=9999, index_label='subject')
+        behav_data.to_csv('behav_corr.csv', header=True, columns=[mb[1]], index=True, na_rep=9999, index_label='subject')
+        with open('gaba_scores.txt', mode='w') as gs:
+            gs.write('behav_corr.csv' + '\n')
         rlog += run_subprocess(str(corr_fpgm))
         rlog += run_subprocess(str(plot_fpgm))
+        rlog += run_subprocess(['octave', 'GenSpec.m'])
         # now save results to new file names
-
-onerowpersubj.loc['left-1over1minfracCSF'] = 1 / (1 - onerowpersubj.loc[:,'left-percCSF'])
-onerowpersubj.loc['right-1over1minfracCSF'] = 1 / (1 - onerowpersubj.loc[:,'right-percCSF'])
+        newname = uncorr_csv_fname.parent / '_'.join(mb)+'_corr_plot_{:%Y%m%d%H%M}.jpg'.format(datetime.datetime.now())
+        Path(uncorr_csv_fname.parent / 'mrsbehav.jpg').rename(newname)
 
 onerowpersubj = onerowpersubj.T
+onerowpersubj['left-1over1minfracCSF'] = 1 / (1 - onerowpersubj.loc[:,'left-percCSF'])
+onerowpersubj['right-1over1minfracCSF'] = 1 / (1 - onerowpersubj.loc[:,'right-percCSF'])
 
 lt_corrmetab = onerowpersubj[left_metab].multiply(onerowpersubj['left-1over1minfracCSF'], axis='index')
 rt_corrmetab = onerowpersubj[right_metab].multiply(onerowpersubj['right-1over1minfracCSF'], axis='index')
