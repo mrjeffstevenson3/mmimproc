@@ -153,10 +153,6 @@ onerowpersubj.to_csv(str(uncorr_csv_fname), header=True, index=True, na_rep=9999
 
 rlog = ()
 with WorkingContext(str(uncorr_csv_fname.parent)):
-    with open('numcol1.txt', mode='w') as nc:
-        nc.write(str(len(onerowpersubj.T.columns)-2) + '\n')
-    with open('numrow1.txt', mode='w') as nr:
-        nr.write(str(len(onerowpersubj.T.index)+1) + '\n')
     with open('numcol2.txt', mode='w') as nc:
         nc.write(str(2) + '\n')
     with open('numrow2.txt', mode='w') as nr:
@@ -170,23 +166,6 @@ with WorkingContext(str(uncorr_csv_fname.parent)):
     with open('all_nbwr.txt', mode='w') as cfn:
         cfn.write(fcsf_corr_fname.name + '\n')  # was csfcorr_csv_fname.name
     rlog += run_subprocess(str(stats_fpgm))
-    # read back in results of stats
-    fcsf_corr = pd.DataFrame.from_csv(str(fcsf_corr_fname))
-    fcsf_corr_colrename = fcsf_corr.rename(columns=ftran2py_col_map)
-    # loop over correlation
-    for mb in itertools.product(metab_to_correlate, behav_to_correlate):
-        # pick column number
-        with open('chosen_metabolite.txt', mode='w') as cmet:
-            cmet.write(str(fcsf_corr_colrename.columns.get_loc(mb[0])+1) + '\n')
-        behav_data.to_csv('behav_corr.csv', header=True, columns=[mb[1]], index=True, na_rep=9999, index_label='subject')
-        with open('gaba_scores.txt', mode='w') as gs:
-            gs.write('behav_corr.csv' + '\n')
-        rlog += run_subprocess(str(corr_fpgm))
-        rlog += run_subprocess(str(plot_fpgm))
-        rlog += run_subprocess(['octave', 'GenSpec.m'])
-        # now save results to new file names
-        newname = uncorr_csv_fname.parent / '_'.join(mb)+'_corr_plot_{:%Y%m%d%H%M}.jpg'.format(datetime.datetime.now())
-        Path(uncorr_csv_fname.parent / 'mrsbehav.jpg').rename(newname)
 
 onerowpersubj = onerowpersubj.T
 onerowpersubj['left-1over1minfracCSF'] = 1 / (1 - onerowpersubj.loc[:,'left-percCSF'])
@@ -219,6 +198,29 @@ else:
 stats_results.rename(index=col_map,inplace=True)
 hdr_txt = {'fortran': 'Stats results from todds fortran code', 'scipy_stats': 'summary t-stats and p-values from python stats', 'descriptive': 'Additional descriptive stats from pandas'}
 stats_hdrs = pd.Series(hdr_txt)
+
+with WorkingContext(str(uncorr_csv_fname.parent)):
+    with open('numcol1.txt', mode='w') as nc:
+        nc.write(str(len(corr_metab.columns)) + '\n')
+    with open('numrow1.txt', mode='w') as nr:
+        nr.write(str(len(corr_metab.index)+1) + '\n')
+    # read back in results of stats
+    fcsf_corr = pd.DataFrame.from_csv(str(fcsf_corr_fname))
+    fcsf_corr_colrename = fcsf_corr.rename(columns=ftran2py_col_map)
+    # loop over correlation
+    for mb in itertools.product(metab_to_correlate, behav_to_correlate):
+        # pick column number
+        with open('chosen_metabolite.txt', mode='w') as cmet:
+            cmet.write(str(fcsf_corr_colrename.columns.get_loc(mb[0])+1) + '\n')
+        behav_data.to_csv('behav_corr.csv', header=True, columns=[mb[1]], index=True, na_rep=9999, index_label='subject')
+        with open('gaba_scores.txt', mode='w') as gs:
+            gs.write('behav_corr.csv' + '\n')
+        rlog += run_subprocess(str(corr_fpgm))
+        rlog += run_subprocess(str(plot_fpgm))
+        rlog += run_subprocess(['octave', 'GenSpec.m'])
+        # now save results to new file names
+        newname = uncorr_csv_fname.parent / '_'.join(mb)+'_corr_plot_{:%Y%m%d%H%M}.jpg'.format(datetime.datetime.now())
+        Path(uncorr_csv_fname.parent / 'mrsbehav.jpg').rename(newname)
 
 
 #write excel workbook and matching h5 dataframes
