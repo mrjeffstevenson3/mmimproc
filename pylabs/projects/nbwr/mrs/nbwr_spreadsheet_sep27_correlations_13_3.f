@@ -66,7 +66,7 @@ c
 
 C
 	do ii=ichosen_metabolite,ichosen_metabolite
-	do ibeh = 1,1
+	do ibeh = numcol2,numcol2
 	index1 = 1
 	do irow = 2,numrow1-1
 	cfn = cheader(irow)
