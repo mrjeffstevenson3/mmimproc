@@ -53,11 +53,11 @@ c	read(11,*)cfn
 	enddo  !irow1
 	close(11)
 	open(11,file = cfnbehav)
-	read(11,*)cheader2(1),(cfnlist2(ii),ii=1,numcol2)
+	read(11,*)cheader2(1),(cfnlist2(ii),ii=numcol2,numcol2)
 	write(6,*)cfnlist2(1),cfnlist2(numcol2)
 	do irow =2,numrow2
-	read(11,*)cheader2(irow),(scores(ii,irow),ii=1,numcol2)
-	write(6,*)cheader2(irow),scores(1,irow),scores(numcol2,irow),irow
+	read(11,*)cheader2(irow),(scores(ii,irow),ii=numcol2,numcol2)
+	write(6,*)cheader2(irow),scores(1,irow),scores(numcol2-1,irow),irow
 	enddo  !irow1
 	
 	close(11)
