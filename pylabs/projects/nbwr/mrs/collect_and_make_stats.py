@@ -34,9 +34,11 @@ fcsf_corr_fname = base_fname.parent / 'csfcorrected.csv'
 fstats_fname =  base_fname.parent / 'stats_tvalue.csv'
 
 # set up matlab runtime engine
-eng = matlab.engine.start_matlab("-nodesktop")
+eng = matlab.engine.start_matlab("-noFigureWindows -nodesktop -nodisplay -nosplash")    #"-nodesktop" or try "-nodisplay"
 eng.addpath(eng.genpath(str(pylabs_dir)))
 eng.addpath(eng.genpath(str(stats_dir)))
+eng.cd(str(stats_dir))
+print("current matlab working directory is " + str(eng.pwd()))
 
 # save old data file versions if there
 for file in [uncorr_csv_fname, csfcorr_csv_fname, excel_fname, hdf_fname, fcsf_corr_fname, fstats_fname]:
@@ -206,7 +208,7 @@ hdr_txt = {'fortran': 'Stats results from todds fortran code', 'scipy_stats': 's
 stats_hdrs = pd.Series(hdr_txt)
 
 # now do fortran correlations
-with WorkingContext(str(uncorr_csv_fname.parent)):
+with WorkingContext(str(stats_dir)):
     with open('numcol1.txt', mode='w') as nc:
         nc.write(str(len(corr_metab.columns)) + '\n'+str(len(corr_metab.columns)) + '\n')
     with open('numrow1.txt', mode='w') as nr:
@@ -222,12 +224,13 @@ with WorkingContext(str(uncorr_csv_fname.parent)):
         behav_data.to_csv('behav_corr.csv', header=True, columns=[mb[1]], index=True, na_rep=9999, index_label='subject')
         with open('gaba_scores.txt', mode='w') as gs:
             gs.write('behav_corr.csv' + '\n')
+        print("working on "+'_'.join(mb)+" correlations")
         rlog += run_subprocess(str(corr_fpgm))
         rlog += run_subprocess(str(plot_fpgm))
         rlog += run_subprocess(['octave GenSpec.m'])
         # now save results to new file names
-        newname = uncorr_csv_fname.parent / ('_'.join(mb)+'_corr_plot_{:%Y%m%d%H%M}.jpg'.format(datetime.datetime.now()))
-        Path(uncorr_csv_fname.parent / 'mrsbehav.jpg').rename(newname)
+        newname = stats_dir / ('_'.join(mb)+'_corr_plot_{:%Y%m%d%H%M}.jpg'.format(datetime.datetime.now()))
+        Path(stats_dir / 'mrsbehav.jpg').rename(newname)
 
 
 #write excel workbook and matching h5 dataframes
