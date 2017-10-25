@@ -58,7 +58,7 @@ behav_cols_of_interest = [u'VCI Composite', u'PRI Composite', u'FSIQ-4 Composite
 behav_col_map = {'VCI Composite':  'VCI-Composite','PRI Composite':  'PRI-Composite', 'FSIQ-4 Composite':  'FSIQ-4-Composite', 'FSIQ-2 Composite': 'FSIQ-2-Composite'}
 behav_to_correlate = ['VCI-Composite', 'PRI-Composite',  'FSIQ-4-Composite', 'FSIQ-2-Composite']
 metab_to_correlate = [ u'right-Glu-80ms', u'right-GluOverGABA']
-
+ftran_cols_to_correlate = [u'csfcorrected-right-Glu-80ms        ', u'csfcorrected-glu-gaba-ratio-right  ']
 # get neva's lc model csv file
 glu_data = pd.read_csv(str(stats_dir/glu_fname), delim_whitespace=True)
 #need to edit a few subject ids
@@ -208,14 +208,14 @@ stats_hdrs = pd.Series(hdr_txt)
 # now do fortran correlations
 with WorkingContext(str(uncorr_csv_fname.parent)):
     with open('numcol1.txt', mode='w') as nc:
-        nc.write(str(len(corr_metab.columns)) + '\n')
+        nc.write(str(len(corr_metab.columns)) + '\n'+str(len(corr_metab.columns)) + '\n')
     with open('numrow1.txt', mode='w') as nr:
-        nr.write(str(len(corr_metab.index)+1) + '\n')
+        nr.write(str(len(corr_metab.index)+1) + '\n'+str(len(corr_metab.index)+1) + '\n')
     # read back in results of stats
     fcsf_corr = pd.DataFrame.from_csv(str(fcsf_corr_fname))
     fcsf_corr_colrename = fcsf_corr.rename(columns=ftran2py_col_map)
     # loop over correlation
-    for mb in itertools.product(metab_to_correlate, behav_to_correlate):
+    for mb in itertools.product(ftran_cols_to_correlate, behav_to_correlate):
         # pick column number
         with open('chosen_metabolite.txt', mode='w') as cmet:
             cmet.write(str(fcsf_corr_colrename.columns.get_loc(mb[0])+1) + '\n')
