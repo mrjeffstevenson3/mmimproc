@@ -9,6 +9,7 @@ import pandas as pd
 import scipy.stats as ss
 import itertools
 import json
+import matlab.engine
 from pylabs.utils import ProvenanceWrapper, getnetworkdataroot, appendposix, bumptodefunct, WorkingContext, run_subprocess, pylabs_dir
 from pylabs.projects.nbwr.file_names import project
 prov = ProvenanceWrapper()
@@ -32,6 +33,11 @@ hdf_fname = appendposix(base_fname, '_results_csfcorr_fits.h5')
 fcsf_corr_fname = base_fname.parent / 'csfcorrected.csv'
 fstats_fname =  base_fname.parent / 'stats_tvalue.csv'
 
+# set up matlab runtime engine
+eng = matlab.engine.start_matlab("-nodesktop")
+eng.addpath(eng.genpath(str(pylabs_dir)))
+eng.addpath(eng.genpath(str(stats_dir)))
+
 # save old data file versions if there
 for file in [uncorr_csv_fname, csfcorr_csv_fname, excel_fname, hdf_fname, fcsf_corr_fname, fstats_fname]:
     bumptodefunct(file)
@@ -49,8 +55,8 @@ left_metab = ['left-GABA', 'left-NAAplusNAAG', 'left-GPCplusPCh', 'left-CrplusPC
 right_metab = [ 'right-GABA', 'right-NAAplusNAAG', 'right-GPCplusPCh', 'right-CrplusPCr', 'right-mIns', 'right-Glu-80ms']
 
 behav_cols_of_interest = [u'VCI Composite', u'PRI Composite', u'FSIQ-4 Composite', u'FSIQ-2 Composite']  # options: u'SRS-2 Total T-Score', u'Awr T-Score', u'Cog T-Score', u'Com T-Score', u'Mot T-Score', u'RRB T-Score', u'SCI T-Score'
-behav_col_map = {'VCI Composite':  'VCI_Composite','PRI Composite':  'PRI_Composite', 'FSIQ-4 Composite':  'FSIQ-4_Composite', 'FSIQ-2 Composite': 'FSIQ-2_Composite'}
-behav_to_correlate = ['VCI_Composite', 'PRI_Composite',  'FSIQ-4_Composite', 'FSIQ-2_Composite']
+behav_col_map = {'VCI Composite':  'VCI-Composite','PRI Composite':  'PRI-Composite', 'FSIQ-4 Composite':  'FSIQ-4-Composite', 'FSIQ-2 Composite': 'FSIQ-2-Composite'}
+behav_to_correlate = ['VCI-Composite', 'PRI-Composite',  'FSIQ-4-Composite', 'FSIQ-2-Composite']
 metab_to_correlate = [ u'right-Glu-80ms', u'right-GluOverGABA']
 
 # get neva's lc model csv file
