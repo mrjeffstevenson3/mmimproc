@@ -199,6 +199,7 @@ stats_results.rename(index=col_map,inplace=True)
 hdr_txt = {'fortran': 'Stats results from todds fortran code', 'scipy_stats': 'summary t-stats and p-values from python stats', 'descriptive': 'Additional descriptive stats from pandas'}
 stats_hdrs = pd.Series(hdr_txt)
 
+# now do fortran correlations
 with WorkingContext(str(uncorr_csv_fname.parent)):
     with open('numcol1.txt', mode='w') as nc:
         nc.write(str(len(corr_metab.columns)) + '\n')
