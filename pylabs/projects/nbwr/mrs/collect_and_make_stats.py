@@ -199,6 +199,7 @@ stats_results.rename(index=col_map,inplace=True)
 hdr_txt = {'fortran': 'Stats results from todds fortran code', 'scipy_stats': 'summary t-stats and p-values from python stats', 'descriptive': 'Additional descriptive stats from pandas'}
 stats_hdrs = pd.Series(hdr_txt)
 
+# now do fortran correlations
 with WorkingContext(str(uncorr_csv_fname.parent)):
     with open('numcol1.txt', mode='w') as nc:
         nc.write(str(len(corr_metab.columns)) + '\n')
@@ -217,9 +218,9 @@ with WorkingContext(str(uncorr_csv_fname.parent)):
             gs.write('behav_corr.csv' + '\n')
         rlog += run_subprocess(str(corr_fpgm))
         rlog += run_subprocess(str(plot_fpgm))
-        rlog += run_subprocess(['octave', 'GenSpec.m'])
+        rlog += run_subprocess(['octave GenSpec.m'])
         # now save results to new file names
-        newname = uncorr_csv_fname.parent / '_'.join(mb)+'_corr_plot_{:%Y%m%d%H%M}.jpg'.format(datetime.datetime.now())
+        newname = uncorr_csv_fname.parent / ('_'.join(mb)+'_corr_plot_{:%Y%m%d%H%M}.jpg'.format(datetime.datetime.now()))
         Path(uncorr_csv_fname.parent / 'mrsbehav.jpg').rename(newname)
 
 

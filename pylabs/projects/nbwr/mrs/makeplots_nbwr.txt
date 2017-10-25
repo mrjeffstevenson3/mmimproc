@@ -54,8 +54,8 @@ echo "str=sprintf(\'%04d \',output_correlation(it,3));  "  >> GenSpec.m
 echo "text(output_correlation(it,1),output_correlation(it,2),str,'fontsize',10); " >> GenSpec.m
 echo "end;  " >> GenSpec.m
 
-#echo "print -djpg 'mrsbehav.jpg' ; " >> GenSpec.m
+echo "%print -djpg 'mrsbehav.jpg' ; " >> GenSpec.m
 echo "saveas(h,'mrsbehav.jpg') ; " >> GenSpec.m
-#echo "pause; " >> GenSpec.m
+echo "%pause; " >> GenSpec.m
 
 
