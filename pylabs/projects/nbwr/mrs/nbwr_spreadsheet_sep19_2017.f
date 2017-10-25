@@ -56,7 +56,7 @@ c
 	if(ch(1:1).eq.'l'.and.ch(6:6).ne.'p')then
 	ileft = ileft+1
 	cout(1:12)='csfcorrected'
-	cout(13:13)='_'
+	cout(13:13)='-'
 	cout(14:35)=ch(1:20)
 	clabels(ileft) = cout
 	write(6,*)'clabels(ileft) ',clabels(ileft)
@@ -117,7 +117,7 @@ c
 	write(6,*)'ratio test ',clabels(2),clabels(7)
 	cout(1:12)='csfcorrected'
 	cout(13:13)='_'
-	cout(14:35)='glu_gaba_ratio_left'
+	cout(14:35)='glu-gaba-ratio-left'
 	clabels(ileft) = cout
 
 	do i=1,isize1
@@ -157,7 +157,7 @@ c
 	if(ch(1:1).eq.'r'.and.ch(7:7).ne.'p')then
 	iright = iright+1
 	cout(1:12)='csfcorrected'
-	cout(13:13)='_'
+	cout(13:13)='-'
 	cout(14:35)=ch(1:20)
 	clabels(iright) = cout
 	write(6,*)'clabels(iright) ',clabels(iright),iright
@@ -254,8 +254,8 @@ c
 	iright = iright+1
 	write(6,*)'ratio test ',clabels(9),clabels(14)
 	cout(1:12)='csfcorrected'
-	cout(13:13)='_'
-	cout(14:35)='glu_gaba_ratio_right'
+	cout(13:13)='-'
+	cout(14:35)='glu-gaba-ratio-right'
 	clabels(iright) = cout
 
 	do i=1,isize1
