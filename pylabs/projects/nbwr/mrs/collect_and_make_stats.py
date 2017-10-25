@@ -53,6 +53,7 @@ exclude_data = ['Scan', 'Hemisphere', 'short_FWHM', 'short_SNR', 'short_TE', 'lo
 right_col_map = {'NAA+NAAG': 'right-NAAplusNAAG', 'GPC+PCh': 'right-GPCplusPCh', 'Cr+PCr': 'right-CrplusPCr', 'mIns': 'right-mIns', 'Glu': 'right-Glu-80ms'}
 left_col_map = {'NAA+NAAG': 'left-NAAplusNAAG', 'GPC+PCh': 'left-GPCplusPCh', 'Cr+PCr': 'left-CrplusPCr', 'mIns': 'left-mIns', 'Glu': 'left-Glu-80ms'}
 ftran2py_col_map = dict(zip(ftran_cols, corr_cols))
+#fcsf_corr.columns.str.strip().str.replace('_', '-') use this to change and map new fortran df cols
 left_metab = ['left-GABA', 'left-NAAplusNAAG', 'left-GPCplusPCh', 'left-CrplusPCr', 'left-mIns', 'left-Glu-80ms']
 right_metab = [ 'right-GABA', 'right-NAAplusNAAG', 'right-GPCplusPCh', 'right-CrplusPCr', 'right-mIns', 'right-Glu-80ms']
 
@@ -227,7 +228,7 @@ with WorkingContext(str(stats_dir)):
         print("working on "+'_'.join(mb)+" correlations")
         rlog += run_subprocess(str(corr_fpgm))
         rlog += run_subprocess(str(plot_fpgm))
-        rlog += run_subprocess(['octave GenSpec.m'])
+        rlog += eng.GenSpec(nargout=0)
         # now save results to new file names
         newname = stats_dir / ('_'.join(mb)+'_corr_plot_{:%Y%m%d%H%M}.jpg'.format(datetime.datetime.now()))
         Path(stats_dir / 'mrsbehav.jpg').rename(newname)
