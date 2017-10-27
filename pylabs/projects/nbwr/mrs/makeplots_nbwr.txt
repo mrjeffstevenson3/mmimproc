@@ -57,7 +57,6 @@ echo "saveas(h,'mrsbehav.jpg') ; " >> GenSpec.m
 echo "end;  " >> GenSpec.m
 
 echo "%print -djpg 'mrsbehav.jpg' ; " >> GenSpec.m
-
 echo "%pause; " >> GenSpec.m
 
 
