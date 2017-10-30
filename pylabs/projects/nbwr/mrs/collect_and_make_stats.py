@@ -190,6 +190,8 @@ corr_metab.to_hdf(hdf_fname, 'CSFcorrected_mrs_data', mode='a', format='t', appe
 
 asd_grp = corr_metab.index.str.replace('sub-nbwr', '').astype('int') < 400  # ASD only
 tvalues, pvalues = ss.ttest_ind(corr_metab[asd_grp], corr_metab[~asd_grp], equal_var=False)
+
+# generate descriptive stats DF
 descriptives = corr_metab.groupby(asd_grp.astype(int)).describe()
 descriptives.rename(index={0: 'control', 1: 'asd'}, inplace=True)
 descriptives.index.rename('descriptives', inplace=True)
@@ -233,6 +235,17 @@ with WorkingContext(str(stats_dir)):
         newname = stats_dir / ('_'.join(mb)+'_corr_plot_{:%Y%m%d%H%M}.jpg'.format(datetime.datetime.now()))
         Path(stats_dir / 'mrsbehav.jpg').rename(newname)
 
+''' 
+mrs data saved to hdf file:
+    uncorrected metabolites
+    raw behavior df
+    CSF corrected metab
+    fortran stats
+    fortran correlations
+    python stats
+    python correlations
+
+'''
 
 #write excel workbook and matching h5 dataframes
 writer = pd.ExcelWriter(str(excel_fname), engine='xlsxwriter')
@@ -253,9 +266,9 @@ data_format.set_align('vcenter')
 data_format.set_align('center')
 data_format.set_text_wrap(False)
 
-onerowpersubj.to_excel(writer, sheet_name='uncorr', columns=uncorr_cols, index=True, index_label='subject', header=True, startrow=1, na_rep=9999)
-
+# why write uncorrected to excel 1st?
 onerowpersubj.to_hdf(hdf_fname, 'uncorrected_mrs_data', mode='a', format='t', append=True, data_columns=onerowpersubj.columns)
+onerowpersubj.to_excel(writer, sheet_name='uncorr', columns=uncorr_cols, index=True, index_label='subject', header=True, startrow=1, na_rep=9999)
 
 uncorr_worksheet = writer.sheets['uncorr']
 uncorr_worksheet.set_default_row(25)
@@ -263,21 +276,29 @@ uncorr_worksheet.set_column('B:O', 24, data_format)
 uncorr_worksheet.set_column('A:A', 18, labels_format)
 uncorr_worksheet.write_string(0,0,'Uncorrected fit data and CSF correction factor', title_format)
 
+# write csf corrected data
 corr_metab.to_excel(writer, sheet_name='corr_metab', columns=corr_cols, index=True, index_label='subject', header=True, startrow=1, na_rep=9999)
+
 corr_worksheet = writer.sheets['corr_metab']
 corr_worksheet.set_default_row(25)
 corr_worksheet.set_column('B:O', 24, data_format)
 corr_worksheet.set_column('A:A', 18, labels_format)
 corr_worksheet.write_string(0,0,'Corrected Metabolite Concentration after CSF correction factor applied', title_format)
+
+# write fortran corrected data
 fcsf_corr.to_excel(writer, sheet_name='fortran_corr', index=True, index_label='subject', header=True, startrow=1, na_rep=9999)
 fcsf_worksheet = writer.sheets['fortran_corr']
 fcsf_worksheet.set_default_row(25)
 fcsf_worksheet.set_column('B:O', 24, data_format)
 fcsf_worksheet.set_column('A:A', 18, labels_format)
 fcsf_worksheet.write_string(0,0,'Corrected Metabolite Concentration after CSF correction factor applied', title_format)
+
+
 stats_results.T.to_excel(writer, sheet_name='stats', index_label='stats', header=True, startrow=2, startcol=0)
 stats_results.T.to_hdf(hdf_fname, 'CSFcorrected_mrs_stats', mode='a', format='t', append=True, data_columns=stats_results.T.columns)
 fstats.to_excel(writer, sheet_name='stats', index_label='stats', header=True, startrow=9, startcol=0)
+
+# format destiptives as 2 col LT/RT loop
 descriptives.to_excel(writer, sheet_name='stats', index_label='stats', header=True, startrow=22, startcol=0)
 descriptives.to_hdf(hdf_fname, 'CSFcorrected_mrs_descriptive_stats', mode='a', format='t', append=True, data_columns=descriptives.columns)
 
@@ -291,6 +312,10 @@ stats_worksheet.write_string(20,0,'Additional descriptive stats from pandas', ti
 stats_worksheet.write_string(28,0,'Selected Correlations:', title_format)
 stats_worksheet.set_row(18, {'align': 'left'})
 stats_worksheet.set_row(19, {'align': 'left'})
+
+stats_worksheet = writer.sheets['fortran_stats']
+
+
 #stats_worksheet.conditional_format('B4:O4', {'type': 'cell', 'criteria': '<=', 'value': 0.05, 'bg_color': '#FFC7CE'})
 writer.save()
 
