@@ -111,10 +111,8 @@ def get_freesurf_names(subjids_picks):
     b1_ftempl = removesuffix(str(genz_conv['_B1MAP_']['fname_template']))
     fs_ftempl = removesuffix(str(genz_conv['_MEMP_FS_TI1100_']['fname_template']))
     for subjid in subjids_picks.subjids:
-        b1map_fname_dd['subj'], b1map_fname_dd['session'], b1map_fname_dd['scan_name'], b1map_fname_dd['scan_info'], b1map_fname_dd['run'] = ('sub-' + project + subjid,) + b1map_fname_tail
-        fs_fname_dd['subj'], fs_fname_dd['session'], fs_fname_dd['scan_name'], fs_fname_dd['scan_info'], fs_fname_dd['run'] =  ('sub-' + project + subjid,) + fs_rms_fname_tail
-        b1map_fs_fnames.append(str(b1_ftempl).format(**b1map_fname_dd))
-        freesurf_fnames.append(str(fs_ftempl).format(**fs_fname_dd))
+        b1map_fs_fnames.append(str(b1_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=genz_conv['_B1MAP_'])))
+        freesurf_fnames.append(str(fs_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=genz_conv['_MEMP_FS_TI1100_'])))
     return b1map_fs_fnames, freesurf_fnames
 
 def get_dwi_names(subjids_picks):
@@ -138,7 +136,7 @@ def get_5spgr_names(subjids_picks):
         b1map5_fnames.append(str(b1_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=genz_conv['_B1MAP_'])))
         fa_list_fnames = defaultdict()
         for fa in spgr_fa:
-            fad = {'fa': fa, }     #'tr': spgr_tr,}
+            fad = {'fa': fa, }
             fa_list_fnames['fa_%(fa)s' % fad] = str(spgr_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=genz_conv['_T1_MAP_'], dict3=fad))
         spgr5_fa5_fnames.append(fa_list_fnames['fa_05'])
         spgr5_fa10_fnames.append(fa_list_fnames['fa_10'])
