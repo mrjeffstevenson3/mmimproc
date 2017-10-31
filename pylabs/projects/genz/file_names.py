@@ -17,7 +17,7 @@ project = 'genz'
 class SubjIdPicks(object):
     pass
 
-# known or expected from protocol
+# known or expected from genz protocol
 spgr_tr = '12p0'
 spgr_fa = ['05', '10', '15', '20', '30']
 gaba_te = 80
@@ -58,7 +58,7 @@ t2_fnames = []
 topup_fnames = []
 topdn_fnames= []
 dwi_fnames = []
-# 3 flip qT1 file name lists
+# 3 flip qT1 file name lists for testing purposes
 spgr_fa5_fnames = []
 spgr_fa15_fnames = []
 spgr_fa30_fnames = []
@@ -88,18 +88,15 @@ def get_freesurf_names(subjids_picks):
         freesurf_fnames.append(str(fs_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=genz_conv['_MEMP_FS_TI1100_'])))
     return b1map_fs_fnames, freesurf_fnames
 
-# def get_dwi_names(subjids_picks):
-#     topup_ftempl = removesuffix(str(genz_conv['_DWI_B0_TOPUP_']['fname_template']))
-#     topdn_ftempl = removesuffix(str(genz_conv['_DWI_B0_TOPDN_']['fname_template']))
-#     dwi_ftempl = removesuffix(str(genz_conv['_DWI64_3SH_B0_B800_B2000_TOPUP_']['fname_template']))
-#     for subjid in subjids_picks.subjids:
-#         topup_fname_dd['subj'], topup_fname_dd['session'], topup_fname_dd['scan_name'], topup_fname_dd['scan_info'], topup_fname_dd['run'] = ('sub-' + project + subjid,) + topup_fname_tail
-#         topdn_fname_dd['subj'], topdn_fname_dd['session'], topdn_fname_dd['scan_name'], topdn_fname_dd['scan_info'], topdn_fname_dd['run'] =  ('sub-' + project + subjid,) + topdn_fname_tail
-#         dwi_fname_dd['subj'], dwi_fname_dd['session'], dwi_fname_dd['scan_name'], dwi_fname_dd['scan_info'], dwi_fname_dd['run'] =  ('sub-' + project + subjid,) + dwi_fname_tail
-#         topup_fnames.append(str(topup_ftempl).format(**topup_fname_dd))
-#         topdn_fnames.append(str(topdn_ftempl).format(**topdn_fname_dd))
-#         dwi_fnames.append(str(dwi_ftempl).format(**dwi_fname_dd))
-#     return topup_fnames, topdn_fnames, dwi_fnames
+def get_dwi_names(subjids_picks):
+    topup_ftempl = removesuffix(str(genz_conv['_DWI_B0_TOPUP_']['fname_template']))
+    topdn_ftempl = removesuffix(str(genz_conv['_DWI_B0_TOPDN_']['fname_template']))
+    dwi_ftempl = removesuffix(str(genz_conv['_DWI64_3SH_B0_B800_B2000_TOPUP_']['fname_template']))
+    for subjid in subjids_picks.subjids:
+        topup_fnames.append(str(topup_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=genz_conv['_DWI_B0_TOPUP_'])))
+        topdn_fnames.append(str(topdn_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=genz_conv['_DWI_B0_TOPDN_'])))
+        dwi_fnames.append(str(dwi_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=genz_conv['_AX_MATCH_RIGHT_MEMP_VBM_TI1100_'])))
+    return topup_fnames, topdn_fnames, dwi_fnames
 
 def get_5spgr_names(subjids_picks):
     b1_ftempl = removesuffix(str(genz_conv['_B1MAP_']['fname_template']))
@@ -125,34 +122,26 @@ def get_3dt2_names(subjids_picks):
         t2_fnames.append(str(t2_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=genz_conv['_3DT2W_'])))
     return t2_fnames
 
-# def get_gaba_names(subjids_picks):
-#     for subjid in subjids_picks.subjids:
-#         gaba_fname_dd['sid'] = subjid
-#         gaba_fname_dd['side'] = 'RT'
-#         gaba_fname_dd['type'] = 'act'
-#         source_path = Path(str(subjids_picks.source_path) % gaba_fname_dd)
-#         if not source_path.is_dir():
-#             raise ValueError('source_parrec dir with mrs SDAT not found. ' + str(source_path))
-#         rt_act.append(list(source_path.glob(gaba_ftempl.format(**gaba_fname_dd)))[0])
-#         gaba_fname_dd['side'] = 'LT'
-#         lt_act.append(list(source_path.glob(gaba_ftempl.format(**gaba_fname_dd)))[0])
-#         gaba_fname_dd['type'] = 'ref'
-#         lt_ref.append(list(source_path.glob(gaba_ftempl.format(**gaba_fname_dd)))[0])
-#         gaba_fname_dd['side'] = 'RT'
-#         rt_ref.append(list(source_path.glob(gaba_ftempl.format(**gaba_fname_dd)))[0])
-#     return rt_act, rt_ref, lt_act, lt_ref
-#
-# def get_matching_voi_names(subjids_picks):
-#     lt_match_ftempl = removesuffix(str(genz_conv['_AX_MATCH_LEFT_MEMP_VBM_TI1100_']['fname_template']))
-#     rt_match_ftempl = removesuffix(str(genz_conv['_AX_MATCH_RIGHT_MEMP_VBM_TI1100_']['fname_template']))
-#     for subjid in subjids_picks.subjids:
-#         gaba_fname_dd['sid'] = subjid
-#         gaba_fname_dd['side'] = 'right'
-#         gaba_fname_dd['subj'], gaba_fname_dd['session'], gaba_fname_dd['scan_name'], gaba_fname_dd['scan_info'], gaba_fname_dd['run'] =  ('sub-' + project + subjid,) + mrs_matching_voi_tail
-#         gaba_fname_dd['scan_name'] = gaba_fname_dd['scan_name'] % gaba_fname_dd
-#         rt_matching.append(str(rt_match_ftempl).format(**gaba_fname_dd))
-#         gaba_fname_dd['side'] = 'left'
-#         gaba_fname_dd['subj'], gaba_fname_dd['session'], gaba_fname_dd['scan_name'], gaba_fname_dd['scan_info'], gaba_fname_dd['run'] =  ('sub-' + project + subjid,) + mrs_matching_voi_tail
-#         gaba_fname_dd['scan_name'] = gaba_fname_dd['scan_name'] % gaba_fname_dd
-#         lt_matching.append(str(lt_match_ftempl).format(**gaba_fname_dd))
-#     return rt_matching, lt_matching
+def get_gaba_names(subjids_picks):
+    for subjid in subjids_picks.subjids:
+        source_path = Path(str(subjids_picks.source_path).format(**subjid))
+        if not source_path.is_dir():
+            raise ValueError('source_sparsdat directory for mrs SDAT not set properly in subjids_picks.source_path. Currently ' + str(source_path))
+        # make dict to update
+        mrs_dd = {'side': 'RT', 'type': 'act', 'wild': '*'}
+        rt_act.append(list(source_path.glob(gaba_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=mrs_dd)))[0]))
+        mrs_dd.update({'side': 'LT'})
+        lt_act.append(list(source_path.glob(gaba_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=mrs_dd)))[0]))
+        mrs_dd.update({'type': 'ref'})
+        lt_ref.append(list(source_path.glob(gaba_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=mrs_dd)))[0]))
+        mrs_dd.update({'side': 'RT'})
+        rt_ref.append(list(source_path.glob(gaba_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=mrs_dd)))[0]))
+    return rt_act, rt_ref, lt_act, lt_ref
+
+def get_matching_voi_names(subjids_picks):
+    lt_match_ftempl = removesuffix(str(genz_conv['_AX_MATCH_LEFT_MEMP_VBM_TI1100_']['fname_template']))
+    rt_match_ftempl = removesuffix(str(genz_conv['_AX_MATCH_RIGHT_MEMP_VBM_TI1100_']['fname_template']))
+    for subjid in subjids_picks.subjids:
+        rt_matching.append(str(rt_match_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=genz_conv['_AX_MATCH_RIGHT_MEMP_VBM_TI1100_'])))
+        lt_matching.append(str(lt_match_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=genz_conv['_AX_MATCH_LEFT_MEMP_VBM_TI1100_'])))
+    return rt_matching, lt_matching
