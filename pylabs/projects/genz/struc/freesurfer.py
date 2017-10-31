@@ -1,11 +1,11 @@
-# first runs for nbwr freesurf script. now includes making bem surfs
+# first runs for genz freesurf script. now includes making bem surfs
 import pylabs
 pylabs.datadir.target = 'jaba'
 import os, copy
 from pathlib import *
 import datetime
 import mne, json
-from pylabs.projects.nbwr.file_names import project, SubjIdPicks, get_freesurf_names
+from pylabs.projects.genz.file_names import project, SubjIdPicks, get_freesurf_names
 from pylabs.utils.paths import getnetworkdataroot, get_antsregsyn_cmd
 from pylabs.fmap_correction.b1_map_corr import correct4b1
 from pylabs.utils import run_subprocess, WorkingContext, appendposix, replacesuffix
@@ -22,7 +22,7 @@ antsRegistrationSyN = get_antsregsyn_cmd()
 # instantiate subject id list container
 subjids_picks = SubjIdPicks()
 # list of subject ids to operate on
-picks = [ '421', '426',]
+picks = [{'subj': 'sub-genz996', 'session': 'ses-1', 'run': '1',}, {'subj': 'sub-genz996', 'session': 'ses-2', 'run': '1',},{'subj': 'sub-genz997', 'session': 'ses-1', 'run': '1'}, {'subj': 'sub-genz997', 'session': 'ses-2', 'run': '1',}]
 
 setattr(subjids_picks, 'subjids', picks)
 

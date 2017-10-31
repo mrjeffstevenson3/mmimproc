@@ -122,7 +122,7 @@ def get_5spgr_names(subjids_picks):
 def get_3dt2_names(subjids_picks):
     t2_ftempl = removesuffix(str(genz_conv['_3DT2W_']['fname_template']))
     for subjid in subjids_picks.subjids:
-        t2_fnames.append(str(t2_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=genz_conv['_3DT2W_']))
+        t2_fnames.append(str(t2_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=genz_conv['_3DT2W_'])))
     return t2_fnames
 
 # def get_gaba_names(subjids_picks):
