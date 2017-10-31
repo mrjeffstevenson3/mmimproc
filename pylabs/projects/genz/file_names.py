@@ -128,14 +128,14 @@ def get_gaba_names(subjids_picks):
         if not source_path.is_dir():
             raise ValueError('source_sparsdat directory for mrs SDAT not set properly in subjids_picks.source_path. Currently ' + str(source_path))
         # make dict to update
-        mrs_dd = {'side': 'RT', 'type': 'act', 'wild': '*'}
-        rt_act.append(list(source_path.glob(gaba_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=mrs_dd)))[0]))
+        mrs_dd = {'side': 'RT', 'type': 'act', 'wild': '*', 'te': gaba_te, 'dyn': gaba_dyn}
+        rt_act.append(list(source_path.glob(gaba_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=mrs_dd))))[0])
         mrs_dd.update({'side': 'LT'})
-        lt_act.append(list(source_path.glob(gaba_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=mrs_dd)))[0]))
+        lt_act.append(list(source_path.glob(gaba_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=mrs_dd))))[0])
         mrs_dd.update({'type': 'ref'})
-        lt_ref.append(list(source_path.glob(gaba_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=mrs_dd)))[0]))
+        lt_ref.append(list(source_path.glob(gaba_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=mrs_dd))))[0])
         mrs_dd.update({'side': 'RT'})
-        rt_ref.append(list(source_path.glob(gaba_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=mrs_dd)))[0]))
+        rt_ref.append(list(source_path.glob(gaba_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=mrs_dd))))[0])
     return rt_act, rt_ref, lt_act, lt_ref
 
 def get_matching_voi_names(subjids_picks):
