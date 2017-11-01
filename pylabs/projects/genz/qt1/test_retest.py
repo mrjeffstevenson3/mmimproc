@@ -14,15 +14,3 @@
 
 
 
-
-
-if not Path(os.environ.get('ANTSPATH'), 'WarpImageMultiTransform').is_file():
-    raise ValueError('must have ants installed with WarpImageMultiTransform in $ANTSPATH directory.')
-if not Path(os.environ.get('ANTSPATH'), 'WarpTimeSeriesImageMultiTransform').is_file():
-    raise ValueError('must have ants installed with WarpTimeSeriesImageMultiTransform in $ANTSPATH directory.')
-if not (Path(*Path(os.environ.get('ANTSPATH')).parts[:-2]) / 'ANTs' / 'Scripts' / 'antsRegistrationSyN.sh').is_file():
-    raise ValueError('must have ants installed with antsRegistrationSyN.sh in '+str(Path(*Path(os.environ.get('ANTSPATH')).parts[:-2]) / 'ANTs' / 'Scripts')+'or $ANTSPATH directory.')
-elif not (Path(os.environ.get('ANTSPATH')) / 'antsRegistrationSyN.sh').is_file():
-    raise ValueError('must have ants installed with antsRegistrationSyN.sh in $ANTSPATH directory.')
-else:
-    antsRegistrationSyN = Path(*Path(os.environ.get('ANTSPATH')).parts[:-2]) / 'ANTs' / 'Scripts' / 'antsRegistrationSyN.sh'
