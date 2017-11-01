@@ -97,11 +97,22 @@ def test4working_gpu():
         print('current hostname not in working gpu list in pylabs.utils.paths. using un-accelerated methods.')
         return False
 
-def get_antsregsyn_cmd():
-    if not Path(os.environ.get('ANTSPATH'), 'WarpImageMultiTransform').is_file():
-        raise ValueError('must have ants installed with WarpImageMultiTransform in $ANTSPATH directory.')
-    if not Path(os.environ.get('ANTSPATH'), 'WarpTimeSeriesImageMultiTransform').is_file():
-        raise ValueError('must have ants installed with WarpTimeSeriesImageMultiTransform in $ANTSPATH directory.')
+def get_antsregsyn_cmd(quick=False, warps=False, warpts=False):
+    if warps:
+        if not Path(os.environ.get('ANTSPATH'), 'WarpImageMultiTransform').is_file():
+            raise ValueError('must have ants installed with WarpImageMultiTransform in $ANTSPATH directory.')
+        else:
+            return Path(os.environ.get('ANTSPATH'), 'WarpImageMultiTransform')
+    if warpts:
+        if not Path(os.environ.get('ANTSPATH'), 'WarpTimeSeriesImageMultiTransform').is_file():
+            raise ValueError('must have ants installed with WarpTimeSeriesImageMultiTransform in $ANTSPATH directory.')
+        else:
+            return Path(os.environ.get('ANTSPATH'), 'WarpTimeSeriesImageMultiTransform')
+    if quick:
+        if not (Path(os.environ.get('ANTSPATH')) / 'antsRegistrationSyNQuick.sh').is_file():
+            raise ValueError('must have ants installed with antsRegistrationSyNQuick.sh in $ANTSPATH directory.')
+        else:
+            return Path(os.environ.get('ANTSPATH'), 'antsRegistrationSyNQuick.sh')
     if not (Path(os.environ.get('ANTSPATH')) / 'antsRegistrationSyN.sh').is_file():
         raise ValueError('must have ants installed with antsRegistrationSyN.sh in $ANTSPATH directory.')
     else:
