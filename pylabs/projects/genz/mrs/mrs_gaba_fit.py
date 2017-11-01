@@ -16,7 +16,13 @@ gannettpath = pylabs.utils.paths.getgannettpath()
 # instantiate subject id list container
 subjids_picks = SubjIdPicks()
 # list of subject ids to operate on
-picks = ['081',] # only does one subj until bug fix
+
+picks = [{'subj': 'sub-genz996', 'session': 'ses-1', 'run': '1',},
+         {'subj': 'sub-genz996', 'session': 'ses-2', 'run': '1',},
+         {'subj': 'sub-genz997', 'session': 'ses-1', 'run': '1'},
+         {'subj': 'sub-genz997', 'session': 'ses-2', 'run': '1',}
+         ]
+
 setattr(subjids_picks, 'subjids', picks)
 setattr(subjids_picks, 'source_path', fs / project / '{subj}' / '{session}' / 'source_sparsdat')
 # setattr(subjids_picks, 'source_path', fs / project / 'sub-tadpole%(sid)s' / 'ses-%(ses)s' / 'source_sparsdat')

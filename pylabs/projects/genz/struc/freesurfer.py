@@ -22,10 +22,11 @@ antsRegistrationSyN = get_antsregsyn_cmd()
 # instantiate subject id list container
 subjids_picks = SubjIdPicks()
 # list of subject ids to operate on
-picks = [{'subj': 'sub-genz996', 'session': 'ses-1', 'run': '1',},
-         #{'subj': 'sub-genz996', 'session': 'ses-2', 'run': '1',},
-         #{'subj': 'sub-genz997', 'session': 'ses-1', 'run': '1'},
-         #{'subj': 'sub-genz997', 'session': 'ses-2', 'run': '1',},
+picks = [
+         #{'subj': 'sub-genz996', 'session': 'ses-1', 'run': '1',},
+         {'subj': 'sub-genz996', 'session': 'ses-2', 'run': '1',},
+         {'subj': 'sub-genz997', 'session': 'ses-1', 'run': '1'},
+         {'subj': 'sub-genz997', 'session': 'ses-2', 'run': '1',},
          ]
 
 setattr(subjids_picks, 'subjids', picks)
@@ -92,8 +93,7 @@ for fsf, b1map in zip(freesurf_fnames, b1map_fnames):
                 results += ('starting hi resolution freesurfer run for '+fs_sid+' at {:%H:%M on %m %d %Y}.'.format(datetime.datetime.now()),)
                 results += run_subprocess(['recon-all -hires -all -subjid '+fs_sid+' -i '+str(subjects_dir / 'anat'/ appendposix(fs_fname, '.nii.gz'))+' -expert freesurf_expert_opts.txt -parallel -openmp 8'])
                 print('hi resolution freesurfer run finished for ' + fs_sid + ' at {:%H:%M on %m %d %Y}.'.format(datetime.datetime.now()))
-                results += ('hi resolution freesurfer run finished for ' + fs_sid + ' at {:%H:%M on %m %d %Y}.'.format(
-                    datetime.datetime.now()),)
+                results += ('hi resolution freesurfer run finished for ' + fs_sid + ' at {:%H:%M on %m %d %Y}.'.format(datetime.datetime.now()),)
             else:
                 print('starting 1mm3 freesurfer run for ' + fs_sid + ' at {:%H:%M on %m %d %Y}.'.format(datetime.datetime.now()))
                 results += ('starting 1mm3 freesurfer run for ' + fs_sid + ' at {:%H:%M on %m %d %Y}.'.format(datetime.datetime.now()),)
