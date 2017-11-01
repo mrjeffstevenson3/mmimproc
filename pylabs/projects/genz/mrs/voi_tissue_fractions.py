@@ -16,7 +16,7 @@ from pylabs.mrs.tissue_fractions import make_voi_mask, calc_tissue_fractions
 from pylabs.structural.brain_extraction import extract_brain
 from pylabs.utils import ProvenanceWrapper, run_subprocess, WorkingContext, getnetworkdataroot, appendposix, replacesuffix, \
     prependposix, getspmpath, pylabs_dir
-from pylabs.projects.nbwr.file_names import project, SubjIdPicks, get_matching_voi_names, get_gaba_names
+from pylabs.projects.genz.file_names import project, SubjIdPicks, get_matching_voi_names, get_gaba_names
 prov = ProvenanceWrapper()
 
 os.environ['FSLOUTPUTTYPE'] = pylabs.opts.nii_ftype
