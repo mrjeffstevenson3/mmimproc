@@ -43,8 +43,8 @@ subjids_picks = SubjIdPicks()
 # list of dicts with subject ids, session, scan info to operate on
 picks = [
          #{'subj': 'sub-genz996', 'session': 'ses-1', 'run': '1',},
-         {'subj': 'sub-genz996', 'session': 'ses-2', 'run': '1',},
-         #{'subj': 'sub-genz997', 'session': 'ses-1', 'run': '1'},
+         #{'subj': 'sub-genz996', 'session': 'ses-2', 'run': '1',},
+         {'subj': 'sub-genz997', 'session': 'ses-1', 'run': '1'},
          #{'subj': 'sub-genz997', 'session': 'ses-2', 'run': '1',}
          ]
 
@@ -54,16 +54,8 @@ flip5 = True
 overwrite = True
 reg_dir_name = 'b1spgr2spgr30'
 
-#b1map5_fnames, spgr5_fa5_fnames, spgr5_fa10_fnames, spgr5_fa15_fnames, spgr5_fa20_fnames, spgr5_fa30_fnames = get_5spgr_names(subjids_picks)
-
-if flip5:
-    b1map_fnames, spgr5_fa5_fnames, spgr5_fa10_fnames, spgr5_fa15_fnames, spgr5_fa20_fnames, spgr5_fa30_fnames = get_5spgr_names(subjids_picks)
-    assert len(b1map_fnames) == len(spgr5_fa5_fnames) == len(spgr5_fa10_fnames) == len(spgr5_fa15_fnames) == len(spgr5_fa20_fnames) == len(spgr5_fa30_fnames)
-    #spgrs = [spgr5_fa5_fnames, spgr5_fa10_fnames, spgr5_fa15_fnames, spgr5_fa20_fnames, spgr5_fa30_fnames]
-# else:
-#     b1map_fnames, spgr_fa5_fnames, spgr_fa15_fnames, spgr_fa30_fnames = get_3spgr_names(subjids_picks)
-#     assert len(b1map_fnames) == len(spgr_fa5_fnames) == len(spgr_fa15_fnames) == len(spgr_fa30_fnames)
-#     #spgrs = [spgr_fa5_fnames, spgr_fa15_fnames, spgr_fa30_fnames]
+b1map_fnames, spgr5_fa5_fnames, spgr5_fa10_fnames, spgr5_fa15_fnames, spgr5_fa20_fnames, spgr5_fa30_fnames = get_5spgr_names(subjids_picks)
+assert len(b1map_fnames) == len(spgr5_fa5_fnames) == len(spgr5_fa10_fnames) == len(spgr5_fa15_fnames) == len(spgr5_fa20_fnames) == len(spgr5_fa30_fnames)
 
 TR = float(spgr5_fa5_fnames[0].split('_')[3].split('-')[-1].replace('p','.'))
 results = ()
@@ -71,8 +63,6 @@ results = ()
 # # for testing purposes. comment out to run full loop.
 # i = 3
 # b1map, spgr05, spgr10, spgr15, spgr20, spgr30 = b1map_fnames[i], spgr5_fa5_fnames[i], spgr5_fa10_fnames[i], spgr5_fa15_fnames[i], spgr5_fa20_fnames[i], spgr5_fa30_fnames[i]
-
-#for b1map, spgr05, spgr15, spgr30 in zip(b1map_fnames, spgr_fa5_fnames, spgr_fa15_fnames, spgr_fa30_fnames):
 
 for spgr05, spgr10, spgr15, spgr20, spgr30 in zip(spgr5_fa5_fnames, spgr5_fa10_fnames, spgr5_fa15_fnames, spgr5_fa20_fnames, spgr5_fa30_fnames):
     spgr_dir = fs/project/spgr30.split('_')[0] / spgr30.split('_')[1] / 'qt1'
