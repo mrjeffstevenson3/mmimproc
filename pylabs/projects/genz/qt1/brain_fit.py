@@ -87,6 +87,7 @@ for b1map, spgr05, spgr10, spgr15, spgr20, spgr30 in zip(b1map_fnames, spgr5_fa5
     results += run_subprocess(b1regcmd)
     if not (b1map_dir/str(b1map+'_phase'+ext)).is_file():
         b1phasecmd = ['fslroi '+str(b1map_dir/str(b1map+'.nii'))+' '+str(replacesuffix(b1map_dir/b1map, '_phase'+ext))+' 2 1']
+        results += run_subprocess(b1phasecmd)
     mov = replacesuffix(b1map_dir/b1map, '_phase'+ext)
     outf = replacesuffix(reg_dir/b1map, '_phase_' + reg_dir_name + ext)
     # need to point to reg dir
