@@ -1,11 +1,13 @@
 import numpy, math, pandas
+from pylabs.utils import pylabs_datadir
 
 vialsInOrder = range(18,6,-1)
 
 def calculate_model(scanner):
     ## read in constants (concentrations per vial etc)
-    concentrationsFile = 'data/T1_phantom_vials_percGel_gdEDTA_concentrations.csv'
-    concentrations = numpy.loadtxt(concentrationsFile)
+    concentrationsFile_name = 'T1_phantom_vials_percGel_gdEDTA_concentrations.csv'
+    concentrationsFile = pylabs_datadir/concentrationsFile_name
+    concentrations = numpy.loadtxt(str(concentrationsFile))
 
     ## read in temperature values by session
     from pylabs.qt1.temperaturedata import getSessionRecords
@@ -27,8 +29,8 @@ def calculate_model(scanner):
             expectedByDate[date].append(expected[d, v])
 
     ## Save by date to tab-separated values file
-    expectedT1filepath = 'data/expectedT1_by_session_and_vial_{0}.tsv'.format(scanner)
-    with open(expectedT1filepath, 'w') as expectedT1file:
+    expectedT1filepath = pylabs_datadir/'expectedT1_by_session_and_vial_{0}.tsv'.format(scanner)
+    with open(str(expectedT1filepath), 'w') as expectedT1file:
         expectedT1file.write('\t{0}\n'.format('\t'.join(
             [str(vialno) for vialno in vialsInOrder])))
         for d, date in enumerate(sessions.keys()):
