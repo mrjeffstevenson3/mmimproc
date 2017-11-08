@@ -39,7 +39,7 @@ slicer_path = getslicercmd()
 subjids_picks = SubjIdPicks()
 # list of subject ids to operate on
 picks = [
-         {'subj': 'sub-acdc999', 'session': 'ses-2', 'run': '1',},
+         {'subj': 'sub-acdc999', 'session': 'ses-1', 'run': '1',},
          ]
 
 setattr(subjids_picks, 'subjids', picks)
