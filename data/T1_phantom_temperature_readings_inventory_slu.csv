@@ -7,3 +7,6 @@ date,datetime before,temp before,datetime after,temp after,project
 3/2/2016,12:00:00 PM,24.02,12:40:00 PM,24.7,tadpole
 3/11/2016,2:00:00 PM,23.8,3:00:00 PM,23.8,tadpole
 7/27/2016,6:00:00 PM,22.5,7:00 PM,23.4,rotated 90 degrees to the left. actual data 7/29.
+10/19/2017,3:00:00 PM,22.7,3:30:00 PM,23.7,genz
+10/24/2017,5:40:00 PM,22.9,6:30:00 PM,24,genz
+10/26/2017,12:45:00 PM,22.8,1:25:00 PM,23.7,nbwr
