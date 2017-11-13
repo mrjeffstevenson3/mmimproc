@@ -20,6 +20,7 @@ from dipy.segment.mask import applymask
 from scipy.ndimage.morphology import binary_erosion as ero
 from pylabs.alignment.resample import reslice_roi
 from pylabs.qt1.fitting import t1fit
+from pylabs.qt1.model_pipeline import calculate_model
 from pylabs.io.images import savenii
 from pylabs.utils import run_subprocess, WorkingContext, appendposix, replacesuffix, getnetworkdataroot
 from scipy.ndimage.filters import median_filter as medianf
@@ -31,12 +32,15 @@ fs = Path(getnetworkdataroot())
 scanner = 'slu'
 scanner_dir = fs/'phantom_qT1_{}'.format(scanner)
 
+phant_act = pd.DataFrame(calculate_model(scanner))
+
 def get_exam_date_time(parfile):
     par_date_time = nib.load(str(parfile)).header.general_info['exam_date']
     return pd.to_datetime(par_date_time)
 
 
-par_file = fs/'genz'/'sub-genz996/ses-2/phantom_parrec/sub-genz996_oct24_2017_phantom_WIP_T1_MAP_05_SENSE_4_1.PAR'
+#par_file = fs/'genz'/'sub-genz996/ses-2/phantom_parrec/sub-genz996_oct24_2017_phantom_WIP_T1_MAP_05_SENSE_4_1.PAR'
+par_file = fs/'phantom_qT1_slu/sub-phant2017-10-19/source_parrec/sub-genz996_PHANTOM_WIP_T1_MAP_05_SENSE_4_1.PAR'
 
 phant_name = 'sub-phant{}'.format(get_exam_date_time(par_file).strftime('%Y'+'-'+'%m'+'-'+'%d'))
 
