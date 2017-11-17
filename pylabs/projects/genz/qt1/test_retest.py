@@ -88,7 +88,7 @@ for par_file in par_files:
     for a in spgr_files:
         X.append(int(a.name.split('_')[3]))
     files = []
-    for f in spgr_files:
+    for f in spgr_files:  # already sorted by flip angle
         files.append(f.as_posix())
 
     kwargs = {}
