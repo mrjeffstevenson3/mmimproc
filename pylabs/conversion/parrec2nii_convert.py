@@ -71,7 +71,7 @@ def brain_proc_file(opts, scandict):
     if '__missing__' not in dir(scandict):
         raise TypeError('Dictionary not a collections.defaultdict, please fix.')
     subpath = join(fs, opts.proj, opts.subj)
-    if opts.multisession[0] == 0:
+    if 0 in opts.multisession:
         setattr(opts, 'session', '')
         fpath = join(subpath, 'source_parrec')
         infiles = sortedParGlob(join(fpath, '*' + opts.scan + '*.PAR'))
@@ -97,8 +97,8 @@ def brain_proc_file(opts, scandict):
         pr_hdr = pr_img.header
         affine = pr_hdr.get_affine(origin=opts.origin)
         slope, intercept = pr_hdr.get_data_scaling(scaling)
-        setattr(opts, 'fa', np.unique(pr_hdr.image_defs['image_flip_angle']))
-        setattr(opts, 'ti', np.unique(np.round(pr_hdr.image_defs['Inversion delay'])))
+        setattr(opts, 'fa', int(np.round(np.unique(pr_hdr.image_defs['image_flip_angle']), 0)))
+        setattr(opts, 'ti', int(np.round(np.unique(np.round(pr_hdr.image_defs['Inversion delay'])), 0)))
         setattr(opts, 'tr', np.round(np.unique(pr_hdr.general_info['repetition_time']), 1))
         setattr(opts, 'exam_date', pr_examdate2pydatetime(pr_hdr.general_info['exam_date']))
         setattr(opts, 'acq_time', pr_examdate2BIDSdatetime(pr_hdr.general_info['exam_date']))
@@ -196,8 +196,8 @@ def brain_proc_file(opts, scandict):
 
         # figure out the output filename, and see if it exists
         run = 1
-        basefilename = str(opts.fname_template).format(subj=opts.subj, fa=str(int(opts.fa[0])).zfill(2),
-                            tr=str(opts.tr[0]).replace('.', 'p'), ti=str(opts.ti[0]).zfill(4), run=str(run),
+        basefilename = str(opts.fname_template).format(subj=opts.subj, fa=str(opts.fa).zfill(2),
+                            tr=str(opts.tr[0]).replace('.', 'p'), ti=str(opts.ti).zfill(4), run=str(run),
                             session=opts.session_id, scan_name=opts.scan_name, scan_info=opts.scan_info)
         outerkey = (opts.subj, opts.session_id, opts.outdir)
         middlekey = basefilename.split('.')[0]
@@ -212,8 +212,8 @@ def brain_proc_file(opts, scandict):
                         scandict[outerkey][middlekey[:-1]+str(run)]['exam_date'] == opts.exam_date:
                     run += 1
 
-        basefilename = str(opts.fname_template).format(subj=opts.subj, fa=str(int(opts.fa[0])).zfill(2),
-                            tr=str(opts.tr[0]).replace('.', 'p'), ti=str(opts.ti[0]).zfill(4), run=str(run),
+        basefilename = str(opts.fname_template).format(subj=opts.subj, fa=str(opts.fa).zfill(2),
+                            tr=str(opts.tr[0]).replace('.', 'p'), ti=str(opts.ti).zfill(4), run=str(run),
                             session=opts.session_id, scan_name=opts.scan_name, scan_info=opts.scan_info)
         middlekey = basefilename.split('.')[0]
         if opts.rms:

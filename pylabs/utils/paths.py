@@ -61,6 +61,9 @@ def getnetworkdataroot(verbose=True):
             return '/Users/mrjeffs/Documents/Research/data'
         else:
             raise ValueError('Dont know where jaba network root data dir is on this computer.')
+    if pylabs.datadir.target == 'kl4' and any(x in hostname for x in ['Jeffs-MacBook-Pro-3.local', 'Jeffs-MBP-3', '.dhcp4.washington.edu']):
+        print('found mrjeffs laptop. using jump drive datadir. datadir=/Volumes/KUHL_LAB4')
+        return '/Volumes/KUHL_LAB4'
 
 
 def tempfile(extension='.tmp'):

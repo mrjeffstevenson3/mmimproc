@@ -75,7 +75,7 @@ for rt_matchfname, lt_matchfname, rt_actfname, lt_actfname in zip(rt_matchfnames
     mrs_dir = fs / project / subject / session / 'mrs'
     if not mrs_dir.is_dir():
         raise ValueError('cant find mrs directory '+str(mrs_dir))
-    # get gaba data from gannett fits json
+    # get gaba data from most recent gannett fits json
     if len(list(mrs_dir.glob('mrs_gaba_log*.json'))) > 0:
         gaba_fits_logf = sorted(list(mrs_dir.glob('mrs_gaba_log*.json')), key=lambda date: int(date.stem.split('_')[-1].replace('log','')))[-1]
     # first do right side

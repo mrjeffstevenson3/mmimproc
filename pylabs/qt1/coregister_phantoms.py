@@ -3,6 +3,8 @@ from os.path import join
 import pylabs.alignment.phantom
 from pylabs.utils.paths import getlocaldataroot
 from pylabs.qt1.naming import qt1filepath
+from pylabs.utils.provenance import ProvenanceWrapper
+
 
 targetfile = join(getlocaldataroot(),'phantom_qT1_slu',
     'phantom_alignment_target.nii.gz')

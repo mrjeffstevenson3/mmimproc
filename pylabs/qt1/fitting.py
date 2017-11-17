@@ -1,3 +1,4 @@
+from pathlib import *
 import os, warnings
 import numpy
 import nibabel
@@ -5,6 +6,7 @@ from scipy.optimize import curve_fit
 from numpy import exp, cos, sin
 from pylabs.utils import progress
 from datetime import datetime
+
 
 
 def irformula(x, a, b, c):
@@ -48,7 +50,7 @@ def t1fit(files, X, TR=None, maskfile=None, b1file=None, scantype='IR', t1filena
 
     voisByIndex = {}
 
-    affine = anImg.get_affine()
+    affine = anImg.affine
     X = numpy.array(X)
     if scantype == 'SPGR':
         X = numpy.radians(X)
