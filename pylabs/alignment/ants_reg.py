@@ -3,21 +3,21 @@ from pathlib import *
 from os.path import join
 import json
 import datetime
-from nibabel.filename_parser import parse_filename
-from pylabs.utils.provenance import ProvenanceWrapper
-from pylabs.utils import run_subprocess
-from pylabs.utils import WorkingContext
+from pylabs.conversion.brain_convert import img_conv
+from pylabs.utils import ProvenanceWrapper, run_subprocess, get_antsregsyn_cmd, WorkingContext
 provenance = ProvenanceWrapper()
-if not Path(os.environ.get('ANTSPATH'), 'WarpImageMultiTransform').is_file():
-    raise ValueError('must have ants installed with WarpImageMultiTransform in $ANTSPATH directory.')
-if not Path(os.environ.get('ANTSPATH'), 'WarpTimeSeriesImageMultiTransform').is_file():
-    raise ValueError('must have ants installed with WarpTimeSeriesImageMultiTransform in $ANTSPATH directory.')
-if not (Path(*Path(os.environ.get('ANTSPATH')).parts[:-2]) / 'ANTs' / 'Scripts' / 'antsRegistrationSyN.sh').is_file():
-    raise ValueError('must have ants installed with antsRegistrationSyN.sh in '+str(Path(*Path(os.environ.get('ANTSPATH')).parts[:-2]) / 'ANTs' / 'Scripts')+'or $ANTSPATH directory.')
-elif not (Path(os.environ.get('ANTSPATH')) / 'antsRegistrationSyN.sh').is_file():
-    raise ValueError('must have ants installed with antsRegistrationSyN.sh in $ANTSPATH directory.')
-else:
-    antsRegistrationSyN = Path(*Path(os.environ.get('ANTSPATH')).parts[:-2]) / 'ANTs' / 'Scripts' / 'antsRegistrationSyN.sh'
+
+regd = { # first key is reg_fn called inside antsreg function
+        'regspgrs2fa05': { # file names, fa, tr
+            'inftempl': 'img_conv[\'%(project)s\'][\'_T1_MAP_\'][\'fname_template\']'}
+        }
+
+def antsreg(project, reg_fn, subjects, args=['-n 12'] ,quick=False):
+    # make antscmd_spgr to reg list of spgr to 1 ref.
+    antsRegistrationSyN = get_antsregsyn_cmd(quick)
+    spgr_fntempl = eval(regd[reg_fn]['inftempl'] % {'project': project})
+
+    return spgr_fntempl, antsRegistrationSyN
 
 
 def subj2templ_applywarp(moving, ref_img, outfile, warpfiles, execwdir, dims=3, affine_xform=None, inv=False, args=['--use-NN']):
@@ -68,6 +68,7 @@ def subj2templ_applywarp(moving, ref_img, outfile, warpfiles, execwdir, dims=3, 
     return tuple([(k, v) for k, v in params.iteritems()])
 
 def subj2T1(moving, ref_img, outfile, inargs=None):
+    antsRegistrationSyN = get_antsregsyn_cmd()
     args = []
     if inargs == None:
         args += ['-n 10', '-t s']
