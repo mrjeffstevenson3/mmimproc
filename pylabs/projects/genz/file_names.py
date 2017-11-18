@@ -10,7 +10,7 @@
 from pathlib import *
 from collections import defaultdict
 from pylabs.utils import removesuffix
-from pylabs.conversion.brain_convert import genz_conv, img_conv
+from pylabs.conversion.brain_convert import img_conv
 
 project = 'genz'
 
@@ -47,6 +47,7 @@ def merge_ftempl_dicts(dict1={}, dict2={}, dict3={}, base_dd=fname_templ_dd):
     nd.update(dict3)  # modifies base dict with dict1 2 and 3 keys and values
     return nd
 
+#unused sofar
 mod_map = {'T2': '_3DT2W_', 'lt_match': '_AX_MATCH_LEFT_MEMP_VBM_TI1100_', 'rt_match': '_AX_MATCH_RIGHT_MEMP_VBM_TI1100_', 'b1map': '_B1MAP_',
           'dwi': '_DWI64_3SH_B0_B800_B2000_TOPUP_', 's0_up': '_DWI_B0_TOPDN_', 's0_dn': '_DWI_B0_TOPUP_', 'mpr': '_MEMP_FS_TI1100_', 'spgr': '_T1_MAP_'}
 
