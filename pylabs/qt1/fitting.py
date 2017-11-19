@@ -145,3 +145,58 @@ def plotFit(formula, popt, X, Y, filepath, coords):
 # 46,30,0   688
 
 # zerocrossing = c * ln(a/b) 
+
+# more todo: add linearization options for least sq and linear regression to SPGR multi flip angle
+# from jasper:
+
+# from os.path import join
+# import glob
+# import numpy
+# import nibabel
+# import matplotlib
+# matplotlib.use('TkAgg')
+# import matplotlib.pyplot as plt
+# import seaborn
+# from pylabs.utils import progress
+# import datetime
+#
+# #high T1 116 135      27975
+#
+# datadir = '/Users/rubi/Data/qt1'
+# fafilefilter = 'sub-phant2017-10-19_spgr_fa_*_tr_12p0_1.nii'
+# maskfilename = 'sub-phant2017-10-19_spgr_mask.nii'
+#
+# TR = 12.0
+# faFiles = glob.glob(join(datadir, fafilefilter))
+# flipAngles = [float(f.split('_')[-4]) for f in faFiles]
+
+# k = 200*240*1 # total nr of voxels
+# dims = [200, 240]
+# data = numpy.full([len(flipAngles), k], numpy.nan)
+# anImg = nibabel.load(faFiles[0])
+# for f, fpath in enumerate(faFiles):
+#     data[f, :] = nibabel.load(fpath).get_data()[:,:,120].flatten()
+#
+# t1 = numpy.full([k,], numpy.nan)
+# start = datetime.datetime.now()
+# for v in range(k):
+#
+#
+#     if v % 10 == 0:
+#         progress.progressbar(v, k, start)
+#     Sa = data[:, v]
+#     a = numpy.radians(flipAngles)
+#
+#     #a = numpy.tile(numpy.atleast_2d(flipAngles).T, [1, k])
+#
+#     y = Sa / numpy.sin(a)
+#     x = Sa / numpy.tan(a)
+#     A = numpy.vstack([x, numpy.ones(len(x))]).T
+#     m, c = numpy.linalg.lstsq(A, y)[0]
+#     t1[v] = -TR/numpy.log(m)
+#
+#
+#
+# t1data = t1.reshape(dims)
+# t1img = nibabel.Nifti1Image(t1data, anImg.affine)
+# nibabel.save(t1img, 't1.nii')

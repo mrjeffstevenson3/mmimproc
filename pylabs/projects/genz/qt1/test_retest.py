@@ -27,6 +27,7 @@ from pylabs.qt1.model_pipeline import calculate_model, vialsInOrder
 from pylabs.io.images import savenii
 from pylabs.utils import run_subprocess, WorkingContext, appendposix, replacesuffix, getnetworkdataroot
 from scipy.ndimage.filters import median_filter as medianf
+from pylabs.projects.genz.file_names import project, get_5spgr_names, SubjIdPicks
 from pylabs.utils.provenance import ProvenanceWrapper
 prov = ProvenanceWrapper()
 
@@ -151,4 +152,39 @@ with WorkingContext(str(fs/'phantom_qT1_{}'.format(scanner)/ref_phant/'qt1')):
         phant_spgr_dt.loc[i,pd.to_datetime('2017-10-19')] = phant1019_data_1slice[phant_mask_data == i].mean()
         print 'vial '+ str(i) + ' for 10-19:  '+str(stats.describe(phant1019_data_1slice[phant_mask_data == i]))
 
+
+####  =====================    test of linearization for brain fiting ======================
+# instantiate subject id list container
+subjids_picks = SubjIdPicks()
+# list of subject ids to operate on
+picks = [
+         {'subj': 'sub-genz996', 'session': 'ses-1', 'run': '1',},
+         ]
+setattr(subjids_picks, 'subjids', picks)
+
+b1map5_fnames, spgr5_fa05_fnames, spgr5_fa10_fnames, spgr5_fa15_fnames, spgr5_fa20_fnames, spgr5_fa30_fnames = get_5spgr_names(subjids_picks)
+datadir = fs/project/picks[0]['subj']/picks[0]['session']/'qt1'/'reg2spgr05_br'
+faFiles = [spgr5_fa05_fnames[0], spgr5_fa10_fnames[0], spgr5_fa15_fnames[0], spgr5_fa20_fnames[0], spgr5_fa30_fnames[0]]
+for i, fa in enumerate(faFiles):
+    faFiles[i] = str(datadir/appendposix(fa, '_thr2000_brain_maskedfa20.nii.gz'))
+
+TR = float(str(Path(faFiles[0]).name).split('_')[3].split('-')[3].replace('p','.'))
+flipAngles = [float(str(Path(fa).name).split('_')[3].split('-')[1]) for fa in faFiles]
+dims = nib.load(faFiles[0]).header.get_data_shape()
+k = np.prod(np.array(dims))
+data = np.full([len(flipAngles), k], np.nan)
+t1 = np.full([k,], np.nan)
+# need to add b1 correction and masking here
+for v in range(k):
+    Sa = data[:, v]
+    a = np.radians(flipAngles)
+    y = Sa / np.sin(a)
+    x = Sa / np.tan(a)
+    A = np.vstack([x, np.ones(len(x))]).T
+    m, c = np.linalg.lstsq(A, y)[0]
+    t1[v] = -TR / np.log(m)
+
+t1data = t1.reshape(dims)
+t1img = nib.Nifti1Image(t1data, nib.load(faFiles[0]).affine)
+nib.save(t1img, str(datadir/'sub-genz996_ses-1_qt1_noreg_nob1corr_lstsq-fit.nii'))
 
