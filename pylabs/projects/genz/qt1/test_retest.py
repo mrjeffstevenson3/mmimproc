@@ -33,6 +33,8 @@ prov = ProvenanceWrapper()
 
 fs = Path(getnetworkdataroot())
 
+# fit methods options are direct, linlstsq, and linregr
+
 scanner = 'slu'
 scanner_dir = fs/'phantom_qT1_{}'.format(scanner)
 vials_incr_t1 = [8, 7, 10, 9, 11, 13, 14, 15, 17, 16, 18, 12]
@@ -81,45 +83,49 @@ for par_file in par_files:
     phase_data_mf_rs, new_affine = reslice_roi(phase_data_mf, b1map_affine, b1map_zooms[:3], mask_affine, mask_zooms)
     savenii(phase_data_mf_rs, mask_affine, str(appendposix(b1map_file, '_phase_mf')))
 
-    outfile = str(spgr_dir / '{phant}_qT1_b1corr_5flip.nii'.format(phant=phant_name))
+
 
     TR = float(str(spgr_files[0].name).split('_')[5].replace('p','.'))
 
-    X = []
-    for a in spgr_files:
-        X.append(int(a.name.split('_')[3]))
-    files = []
-    for f in spgr_files:  # already sorted by flip angle
-        files.append(f.as_posix())
+    if method == 'direct':
+        outfile = str(spgr_dir / '{phant}_qT1_b1corr_5flip_direct.nii'.format(phant=phant_name))
+        X = []
+        for a in spgr_files:
+            X.append(int(a.name.split('_')[3]))
+        files = []
+        for f in spgr_files:  # already sorted by flip angle
+            files.append(f.as_posix())
 
-    kwargs = {}
-    kwargs['scantype'] = str(spgr_files[0].name).split('_')[1].upper()
-    kwargs['TR'] = TR
-    kwargs['t1filename'] = outfile
-    if appendposix(b1map_file, '_phase_mf').is_file():
-        kwargs['b1file'] = str(appendposix(b1map_file, '_phase_mf'))
-    else:
-        print('No B1 file for phantom {0}'.format(phant_name))
-    if mask_fname.is_file():
-        kwargs['maskfile'] = str(mask_fname)
+        kwargs = {}
+        kwargs['scantype'] = str(spgr_files[0].name).split('_')[1].upper()
+        kwargs['TR'] = TR
+        kwargs['t1filename'] = outfile
+        if appendposix(b1map_file, '_phase_mf').is_file():
+            kwargs['b1file'] = str(appendposix(b1map_file, '_phase_mf'))
+        else:
+            print('No B1 file for phantom {0}'.format(phant_name))
+        if mask_fname.is_file():
+            kwargs['maskfile'] = str(mask_fname)
 
-    try:
-        t1fit(files, X, **kwargs)
-        kwargs['clamp'] = '1 to 6000'
-        kwargs['erosion structure'] = (2,2,2)
-        kwargs['flips'] = X
-        kwargs['files'] = files
-        qt1_data = nib.load(kwargs['t1filename']).get_data()
-        mask_data = nib.load(kwargs['maskfile']).get_data().astype(int)
-        qt1_data[qt1_data < 1] = 0
-        qt1_data[qt1_data > 6000] = 6000
-        mask_data = ero(mask_data, structure=np.ones((2,2,2))).astype(mask_data.dtype)
-        qt1_clamped = applymask(qt1_data, mask_data)
-        savenii(qt1_clamped, nib.load(kwargs['t1filename']).affine, str(appendposix(kwargs['t1filename'], '_clamped')))
-        prov.log(str(appendposix(kwargs['t1filename'], '_clamped')), 'clamping qT1 fit', kwargs['t1filename'], #script=__file__,
-                 provenance=dict(**kwargs))
-    except Exception as ex:
-        print('\n--> Error during fitting: ', ex)
+        try:
+            t1fit(files, X, **kwargs)
+            kwargs['clamp'] = '1 to 6000'
+            kwargs['erosion structure'] = (2,2,2)
+            kwargs['flips'] = X
+            kwargs['files'] = files
+            qt1_data = nib.load(kwargs['t1filename']).get_data()
+            mask_data = nib.load(kwargs['maskfile']).get_data().astype(int)
+            qt1_data[qt1_data < 1] = 0
+            qt1_data[qt1_data > 6000] = 6000
+            mask_data = ero(mask_data, structure=np.ones((2,2,2))).astype(mask_data.dtype)
+            qt1_clamped = applymask(qt1_data, mask_data)
+            savenii(qt1_clamped, nib.load(kwargs['t1filename']).affine, str(appendposix(kwargs['t1filename'], '_clamped')))
+            prov.log(str(appendposix(kwargs['t1filename'], '_clamped')), 'clamping qT1 fit', kwargs['t1filename'], #script=__file__,
+                     provenance=dict(**kwargs))
+        except Exception as ex:
+            print('\n--> Error during fitting: ', ex)
+
+
 
 with WorkingContext(str(fs/'phantom_qT1_{}'.format(scanner)/ref_phant/'qt1')):
 
@@ -173,6 +179,8 @@ flipAngles = [float(str(Path(fa).name).split('_')[3].split('-')[1]) for fa in fa
 dims = nib.load(faFiles[0]).header.get_data_shape()
 k = np.prod(np.array(dims))
 data = np.full([len(flipAngles), k], np.nan)
+for f, fpath in enumerate(faFiles):
+    data[f, :] = nib.load(fpath).get_data()[:,:,:].flatten()
 t1 = np.full([k,], np.nan)
 # need to add b1 correction and masking here
 for v in range(k):
@@ -187,4 +195,24 @@ for v in range(k):
 t1data = t1.reshape(dims)
 t1img = nib.Nifti1Image(t1data, nib.load(faFiles[0]).affine)
 nib.save(t1img, str(datadir/'sub-genz996_ses-1_qt1_noreg_nob1corr_lstsq-fit.nii'))
+
+# b1 correction and masking:
+mask = nib.load(str(datadir/'sub-genz996_ses-1_spgr_fa-20-tr-12p0_1_thr2000_brain_mask.nii.gz')).get_data().astype('bool').flatten()
+b1map_data = nib.load(str(datadir/'sub-genz996_ses-1_b1map_1_phase_b1spgr2spgr30_mf_maskedfa20.nii.gz')).get_data().flatten()
+
+fa_uncorr = np.full(data.shape, np.nan)
+fa_b1corr = np.full(data.shape, np.nan)
+for i, fa in enumerate(flipAngles):
+    fa_uncorr[i,:] = fa
+    fa_b1corr[i,:] = fa_uncorr[i,:] / b1map_data[i] * 100
+
+# for linear regression:
+for v in range(k):
+    if mask[v]:
+        Sa = data[:, v]
+        a = np.radians(flipAngles)
+        y = Sa / np.sin(a)
+        x = Sa / np.tan(a)
+        m, intercept, r, p, std = stats.linregress(x, y)
+        t1[v] = -TR/np.log(m)
 
