@@ -10,7 +10,7 @@
 from pathlib import *
 from collections import defaultdict
 from pylabs.utils import removesuffix
-from pylabs.conversion.brain_convert import genz_conv
+from pylabs.conversion.brain_convert import img_conv
 
 project = 'genz'
 
@@ -47,6 +47,7 @@ def merge_ftempl_dicts(dict1={}, dict2={}, dict3={}, base_dd=fname_templ_dd):
     nd.update(dict3)  # modifies base dict with dict1 2 and 3 keys and values
     return nd
 
+#unused sofar
 mod_map = {'T2': '_3DT2W_', 'lt_match': '_AX_MATCH_LEFT_MEMP_VBM_TI1100_', 'rt_match': '_AX_MATCH_RIGHT_MEMP_VBM_TI1100_', 'b1map': '_B1MAP_',
           'dwi': '_DWI64_3SH_B0_B800_B2000_TOPUP_', 's0_up': '_DWI_B0_TOPDN_', 's0_dn': '_DWI_B0_TOPUP_', 'mpr': '_MEMP_FS_TI1100_', 'spgr': '_T1_MAP_'}
 
@@ -59,16 +60,13 @@ topup_fnames = []
 topdn_fnames= []
 dwi_fnames = []
 # 3 flip qT1 file name lists for testing purposes
-spgr_fa5_fnames = []
-spgr_fa15_fnames = []
-spgr_fa30_fnames = []
-b1map_fnames = []
+for fa in ['05', '15', '30']:
+    exec('spgr3_fa%(fa)s_fnames = []' % {'fa': fa})
+
+b1map3_fnames = []
 # 5 flip qT1 file name lists
-spgr5_fa5_fnames = []
-spgr5_fa10_fnames = []
-spgr5_fa15_fnames = []
-spgr5_fa20_fnames = []
-spgr5_fa30_fnames = []
+for fa in spgr_fa:
+    exec('spgr5_fa%(fa)s_fnames = []' % {'fa': fa})
 b1map5_fnames = []
 
 # gaba spectroscopy file lists
@@ -81,45 +79,46 @@ lt_matching = []
 
 
 def get_freesurf_names(subjids_picks):
-    b1_ftempl = removesuffix(str(genz_conv['_B1MAP_']['fname_template']))
-    fs_ftempl = removesuffix(str(genz_conv['_MEMP_FS_TI1100_']['fname_template']))
+    b1_ftempl = removesuffix(str(img_conv[project]['_B1MAP_']['fname_template']))
+    fs_ftempl = removesuffix(str(img_conv[project]['_MEMP_FS_TI1100_']['fname_template']))
     for subjid in subjids_picks.subjids:
-        b1map_fs_fnames.append(str(b1_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=genz_conv['_B1MAP_'])))
-        freesurf_fnames.append(str(fs_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=genz_conv['_MEMP_FS_TI1100_'], dict3={'scan_info': 'ti1100_rms'})))
+        b1map_fs_fnames.append(str(b1_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_B1MAP_'])))
+        freesurf_fnames.append(str(fs_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_MEMP_FS_TI1100_'], dict3={'scan_info': 'ti1100_rms'})))
     return b1map_fs_fnames, freesurf_fnames
 
 def get_dwi_names(subjids_picks):
-    topup_ftempl = removesuffix(str(genz_conv['_DWI_B0_TOPUP_']['fname_template']))
-    topdn_ftempl = removesuffix(str(genz_conv['_DWI_B0_TOPDN_']['fname_template']))
-    dwi_ftempl = removesuffix(str(genz_conv['_DWI64_3SH_B0_B800_B2000_TOPUP_']['fname_template']))
-    for subjid in subjids_picks.subjids:
-        topup_fnames.append(str(topup_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=genz_conv['_DWI_B0_TOPUP_'])))
-        topdn_fnames.append(str(topdn_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=genz_conv['_DWI_B0_TOPDN_'])))
-        dwi_fnames.append(str(dwi_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=genz_conv['_AX_MATCH_RIGHT_MEMP_VBM_TI1100_'])))
-    return topup_fnames, topdn_fnames, dwi_fnames
+    try:
+        topup_ftempl = removesuffix(str(img_conv[project]['_DWI_B0_TOPUP_']['fname_template']))
+        topdn_ftempl = removesuffix(str(img_conv[project]['_DWI_B0_TOPDN_']['fname_template']))
+        dwi_ftempl = removesuffix(str(img_conv[project]['_DWI64_3SH_B0_B800_B2000_TOPUP_']['fname_template']))
+        for subjid in subjids_picks.subjids:
+            topup_fnames.append(str(topup_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_DWI_B0_TOPUP_'])))
+            topdn_fnames.append(str(topdn_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_DWI_B0_TOPDN_'])))
+            dwi_fnames.append(str(dwi_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_AX_MATCH_RIGHT_MEMP_VBM_TI1100_'])))
+        return topup_fnames, topdn_fnames, dwi_fnames
+    except TypeError, e:
+            print('subjids needs to a dictionary.')
+
 
 def get_5spgr_names(subjids_picks):
-    b1_ftempl = removesuffix(str(genz_conv['_B1MAP_']['fname_template']))
-    spgr_ftempl = removesuffix(str(genz_conv['_T1_MAP_']['fname_template']))
-    for subjid in subjids_picks.subjids:
-        subjid.update({'tr': spgr_tr,})
-        b1map5_fnames.append(str(b1_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=genz_conv['_B1MAP_'])))
-        fa_list_fnames = defaultdict()
-        for fa in spgr_fa:
-            fad = {'fa': fa, }
-            fa_list_fnames['fa_%(fa)s' % fad] = str(spgr_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=genz_conv['_T1_MAP_'], dict3=fad))
-        spgr5_fa5_fnames.append(fa_list_fnames['fa_05'])
-        spgr5_fa10_fnames.append(fa_list_fnames['fa_10'])
-        spgr5_fa15_fnames.append(fa_list_fnames['fa_15'])
-        spgr5_fa20_fnames.append(fa_list_fnames['fa_20'])
-        spgr5_fa30_fnames.append(fa_list_fnames['fa_30'])
-    return b1map5_fnames, spgr5_fa5_fnames, spgr5_fa10_fnames, spgr5_fa15_fnames, spgr5_fa20_fnames, spgr5_fa30_fnames
-
+    try:
+        b1_ftempl = removesuffix(str(img_conv[project]['_B1MAP_']['fname_template']))
+        spgr_ftempl = removesuffix(str(img_conv[project]['_T1_MAP_']['fname_template']))
+        for subjid in subjids_picks.subjids:
+            b1map5_fnames.append(str(b1_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_B1MAP_'])))
+            fa_list_fnames = defaultdict()
+            for fa in spgr_fa:
+                fa_list_fnames['fa_%(fa)s' % {'fa': fa}] = str(spgr_ftempl).format(**merge_ftempl_dicts(
+                    dict1=subjid, dict2=img_conv[project]['_T1_MAP_'], dict3={'fa': fa, 'tr': spgr_tr,}))
+                exec('spgr5_fa%(fa)s_fnames.append(fa_list_fnames[\'fa_%(fa)s\'])' % {'fa': fa})
+        return b1map5_fnames, spgr5_fa05_fnames, spgr5_fa10_fnames, spgr5_fa15_fnames, spgr5_fa20_fnames, spgr5_fa30_fnames
+    except TypeError, e:
+            print('subjids needs to a dictionary.')
 
 def get_3dt2_names(subjids_picks):
-    t2_ftempl = removesuffix(str(genz_conv['_3DT2W_']['fname_template']))
+    t2_ftempl = removesuffix(str(img_conv[project]['_3DT2W_']['fname_template']))
     for subjid in subjids_picks.subjids:
-        t2_fnames.append(str(t2_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=genz_conv['_3DT2W_'])))
+        t2_fnames.append(str(t2_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_3DT2W_'])))
     return t2_fnames
 
 def get_gaba_names(subjids_picks):
@@ -139,9 +138,9 @@ def get_gaba_names(subjids_picks):
     return rt_act, rt_ref, lt_act, lt_ref
 
 def get_matching_voi_names(subjids_picks):
-    lt_match_ftempl = removesuffix(str(genz_conv['_AX_MATCH_LEFT_MEMP_VBM_TI1100_']['fname_template']))
-    rt_match_ftempl = removesuffix(str(genz_conv['_AX_MATCH_RIGHT_MEMP_VBM_TI1100_']['fname_template']))
+    lt_match_ftempl = removesuffix(str(img_conv[project]['_AX_MATCH_LEFT_MEMP_VBM_TI1100_']['fname_template']))
+    rt_match_ftempl = removesuffix(str(img_conv[project]['_AX_MATCH_RIGHT_MEMP_VBM_TI1100_']['fname_template']))
     for subjid in subjids_picks.subjids:
-        rt_matching.append(str(rt_match_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=genz_conv['_AX_MATCH_RIGHT_MEMP_VBM_TI1100_'])))
-        lt_matching.append(str(lt_match_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=genz_conv['_AX_MATCH_LEFT_MEMP_VBM_TI1100_'])))
+        rt_matching.append(str(rt_match_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_AX_MATCH_RIGHT_MEMP_VBM_TI1100_'])))
+        lt_matching.append(str(lt_match_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_AX_MATCH_LEFT_MEMP_VBM_TI1100_'])))
     return rt_matching, lt_matching

@@ -24,8 +24,8 @@ def evaluate(target, subject):
     diffmap = ztarget - zsubject
     return numpy.absolute(diffmap).mean()
 
-def transform(indata, tx, ty, rxy):
-    shifted = scipy.ndimage.interpolation.shift(indata, [tx, ty], order=1)
+def transform(indata, tx, ty, rxy, tz=0):
+    shifted = scipy.ndimage.interpolation.shift(indata, [tx, ty, tz], order=1)
     rot = scipy.ndimage.interpolation.rotate(shifted, rxy, reshape=False, order=1)
     return rot
 
