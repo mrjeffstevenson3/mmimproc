@@ -1,0 +1,73 @@
+#!/bin/sh
+
+function debug  { 
+if [ "1" = "0" ] ; then
+ echo $@
+fi
+ }
+
+
+# Save current location
+MYLOCAT=`pwd`
+#echo $MYLOCAT
+
+rm -f filesdat.txt
+rm -f filespar.txt
+rm -f filesloc.txt
+rm -f *xx*.txt
+rm -f *aver*.*
+
+SPECTOPROCESS=`ls *LTGABAMM_TE80_120DYN_*raw_act.SPAR`
+echo $SPECTOPROCESS
+debug SPECTOPROCESS: ${SPECTOPROCESS}
+
+for AFILE in ${SPECTOPROCESS}
+do
+
+debug AFILE: ${AFILE}
+
+#Strip off the extension
+AFILE=`echo ${AFILE} | awk ' { keep=index($0,".SPAR")-1 ; print substr($0, 1, keep) } ' ` ;
+
+
+	samp=`awk ' /samples / {print $3} ' ${AFILE}.SPAR ` ;
+#echo Volumes: $samp  
+	rows=`awk ' /rows / {print $3} ' ${AFILE}.SPAR ` ;
+#echo Volumes: $rows
+	sf=`awk ' /sample_frequency / {print $3} ' ${AFILE}.SPAR ` ;
+#echo Volumes: $sf
+	te=`awk ' /echo_time / {print $3} ' ${AFILE}.SPAR ` ;
+#echo Volumes: $te
+	tr=`awk ' /repetition_time / {print $3} ' ${AFILE}.SPAR ` ;
+#echo Volumes: $tr
+	t2m=`awk ' /t2_measurement_enable / {print $3} ' ${AFILE}.SPAR ` ;
+#echo Volumes: $t2m
+	tsm=`awk ' /time_series_enable / {print $3} ' ${AFILE}.SPAR ` ;
+#echo Volumes: $tsm
+
+	apoff=`awk ' /ap_off_center / {print $3} ' ${AFILE}.SPAR ` ;
+	lroff=`awk ' /lr_off_center / {print $3} ' ${AFILE}.SPAR ` ;
+	ccoff=`awk ' /cc_off_center / {print $3} ' ${AFILE}.SPAR ` ;
+	apsize=`awk ' /ap_size / {print $3} ' ${AFILE}.SPAR ` ;
+	lrsize=`awk ' /lr_size / {print $3} ' ${AFILE}.SPAR ` ;
+	ccsize=`awk ' /cc_size / {print $3} ' ${AFILE}.SPAR ` ;
+
+
+debug AFILE: ${AFILE}
+
+echo "${AFILE}.SDAT $samp $rows $sf $te $tr $t2m $tsm"  >> filesdat.txt
+echo "${AFILE}.SDAT $apoff $lroff $ccoff $apsize $lrsize $ccsize"  >> filesloc.txt
+#echo apoff: $apoff
+done
+
+./philgaba_nbwr
+
+
+# Now back to calling folder
+
+cd ${MYLOCAT}
+
+
+
+exit
+
