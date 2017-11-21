@@ -1,0 +1,7 @@
+currentdir=`pwd`
+cp te80.lcmo /mnt/home/toddr/testlcmodel
+cp water.lcmo /mnt/home/toddr/testlcmodel
+cd /mnt/home/toddr/testlcmodel
+bash te80_script_july13_2017.txt
+cp temp80* ${currentdir}
+cd ${currentdir}
