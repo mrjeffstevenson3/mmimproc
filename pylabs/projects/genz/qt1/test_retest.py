@@ -204,7 +204,8 @@ fa_uncorr = np.full(data.shape, np.nan)
 fa_b1corr = np.full(data.shape, np.nan)
 for i, fa in enumerate(flipAngles):
     fa_uncorr[i,:] = fa
-    fa_b1corr[i,:] = fa_uncorr[i,:] / b1map_data[i] * 100
+
+fa_b1corr = fa_uncorr / b1map_data[None, :] * 100
 
 # for linear regression:
 for v in range(k):
@@ -216,3 +217,12 @@ for v in range(k):
         m, intercept, r, p, std = stats.linregress(x, y)
         t1[v] = -TR/np.log(m)
 
+# 1st attempt at vectorizing
+fa_b1corr_rad = np.radians(fa_b1corr)
+y = data / np.sin(fa_b1corr_rad)
+x = data / np.tan(fa_b1corr_rad)
+m, intercept, r, p, std = stats.linregress(x, y)
+qT1_linregr = -TR/np.log(m)
+qT1_linregr_data = qT1_linregr.reshape(dims)
+qT1_linregr_img = nib.Nifti1Image(qT1_linregr_data, nib.load(faFiles[0]).affine)
+nib.save(qT1_linregr_img, str(datadir/'sub-genz996_ses-1_qt1_noreg_b1corr_vlinregr-fit.nii'))
