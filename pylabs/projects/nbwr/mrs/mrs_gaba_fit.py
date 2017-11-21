@@ -16,7 +16,7 @@ gannettpath = pylabs.utils.paths.getgannettpath()
 # instantiate subject id list container
 subjids_picks = SubjIdPicks()
 # list of subject ids to operate on
-picks = ['432', '428',] # only does one subj until bug fix
+picks = ['431', ] # only does one subj until bug fix
 setattr(subjids_picks, 'subjids', picks)
 setattr(subjids_picks, 'source_path', fs / project / 'sub-nbwr%(sid)s' / 'ses-1' / 'source_sparsdat')
 # setattr(subjids_picks, 'source_path', fs / project / 'sub-tadpole%(sid)s' / 'ses-%(ses)s' / 'source_sparsdat')
@@ -25,6 +25,9 @@ rt_actfnames, rt_reffnames, lt_actfnames, lt_reffnames = get_gaba_names(subjids_
 
 
 for rt_act, rt_ref, lt_act, lt_ref in zip(rt_actfnames, rt_reffnames, lt_actfnames, lt_reffnames):
+    # use only if rt side has motion like 215
+    #toddpath = rt_act.parent/'toddtest'
+    #rt_act = toddpath/'sub-nbwr215_WIP_RTGABAMM_TE80_120DYN_12_2_edited_dyn80_raw_act.SDAT'
 
     results_dir = rt_act.parents[1].joinpath('mrs')
 
