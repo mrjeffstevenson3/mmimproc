@@ -88,20 +88,19 @@ for fsf, b1map in zip(freesurf_fnames, b1map_fnames):
                 results += ('starting hi resolution freesurfer run for '+fs_sid+' at {:%H:%M on %m %d %Y}.'.format(datetime.datetime.now()),)
                 results += run_subprocess(['recon-all -hires -all -subjid '+fs_sid+' -i '+str(subjects_dir / 'anat'/ appendposix(fs_fname, '.nii.gz'))+' -expert freesurf_expert_opts.txt -parallel -openmp 8'])
                 print('hi resolution freesurfer run finished for ' + fs_sid + ' at {:%H:%M on %m %d %Y}.'.format(datetime.datetime.now()))
-                results += ('hi resolution freesurfer run finished for ' + fs_sid + ' at {:%H:%M on %m %d %Y}.'.format(
-                    datetime.datetime.now()),)
+                results += ('hi resolution freesurfer run finished for ' + fs_sid + ' at {:%H:%M on %m %d %Y}.'.format(datetime.datetime.now()),)
             else:
                 print('starting 1mm3 freesurfer run for ' + fs_sid + ' at {:%H:%M on %m %d %Y}.'.format(datetime.datetime.now()))
                 results += ('starting 1mm3 freesurfer run for ' + fs_sid + ' at {:%H:%M on %m %d %Y}.'.format(datetime.datetime.now()),)
                 results += run_subprocess(['recon-all -all -subjid '+fs_sid+' -i '+str(subjects_dir / 'anat'/ appendposix(fs_fname, '.nii.gz'))+' -parallel -openmp 8'])
-                results += ('finished 1mm3 freesurfer run for ' + fs_sid + ' at {:%H:%M on %m %d %Y}.'.format(
-                    datetime.datetime.now()),)
+                results += ('finished 1mm3 freesurfer run for ' + fs_sid + ' at {:%H:%M on %m %d %Y}.'.format(datetime.datetime.now()),)
                 print('finished 1mm3 freesurfer run for ' + fs_sid + ' at {:%H:%M on %m %d %Y}.'.format(datetime.datetime.now()))
         if not overwrite and hires:
             fs_sid += '_hires'
         results += mne_subprocess(['mne_setup_mri', '--mri', bem_from, '--subject', fs_sid, '--overwrite'], env=curr_env)
         results += mne_subprocess(['mne', 'watershed_bem', '--subject', fs_sid, '--overwrite'], env=curr_env)
         results += mne_subprocess(['mne_setup_source_space', '--subject', fs_sid, '--spacing', '%.0f' % meg_source_spacing, '--cps'], env=curr_env)
+        results += mne_subprocess(['mne', 'make_scalp_surfaces', '--overwrite', '--subject', fs_sid],  env=curr_env)
         with open(fs_sid+'/'+fs_sid+'_log{:%Y%m%d%H%M}.json'.format(datetime.datetime.now()), mode='a') as logr:
             json.dump(results, logr, indent=2)
     fs_subj_ln = fs/project/'freesurf_subjs'/fs_sid
