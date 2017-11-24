@@ -101,6 +101,12 @@ for fsf, b1map in zip(freesurf_fnames, b1map_fnames):
         results += mne_subprocess(['mne', 'watershed_bem', '--subject', fs_sid, '--overwrite'], env=curr_env)
         results += mne_subprocess(['mne_setup_source_space', '--subject', fs_sid, '--spacing', '%.0f' % meg_source_spacing, '--cps'], env=curr_env)
         results += mne_subprocess(['mne', 'make_scalp_surfaces', '--overwrite', '--subject', fs_sid],  env=curr_env)
+        # were missing
+        bem_head_fname = subjects_dir/fs_sid/'bem'/'{fssid}-head.fif'.format({'fssid': fs_sid})
+        if bem_head_fname.is_file():
+            bem_head_fname.rename(appendposix(bem_head_fname, '-sparse'))
+        appendposix(bem_head_fname, '-dense').symlink_to(bem_head_fname)
+        # end missing
         with open(fs_sid+'/'+fs_sid+'_log{:%Y%m%d%H%M}.json'.format(datetime.datetime.now()), mode='a') as logr:
             json.dump(results, logr, indent=2)
     fs_subj_ln = fs/project/'freesurf_subjs'/fs_sid
