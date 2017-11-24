@@ -197,19 +197,20 @@ t1img = nib.Nifti1Image(t1data, nib.load(faFiles[0]).affine)
 nib.save(t1img, str(datadir/'sub-genz996_ses-1_qt1_noreg_nob1corr_lstsq-fit.nii'))
 
 # b1 correction and masking:
-mask = nib.load(str(datadir/'sub-genz996_ses-1_spgr_fa-20-tr-12p0_1_thr2000_brain_mask.nii.gz')).get_data().astype('bool')
-b1map_data = nib.load(str(datadir/'sub-genz996_ses-1_b1map_1_phase_b1spgr2spgr30_mf_maskedfa20.nii.gz')).get_data()
-datav = np.full([len(flipAngles), dims[0], dims[1], dims[2]], np.nan)
+mask = nib.load(str(datadir/'sub-genz996_ses-1_spgr_fa-20-tr-12p0_1_thr2000_brain_mask.nii.gz')).get_data().astype('bool').flatten()
+b1map_data = nib.load(str(datadir/'sub-genz996_ses-1_b1map_1_phase_b1spgr2spgr30_mf_maskedfa20.nii.gz')).get_data().flatten()
+datav = np.full([len(flipAngles), np.prod(np.array(dims))], np.nan)
 for f, fpath in enumerate(faFiles):
-    datav[f, ::] = nib.load(fpath).get_data()
+    datav[f, :] = nib.load(fpath).get_data().flatten()
 
 
 fa_uncorr = np.full(datav.shape, np.nan)
 fa_b1corr = np.full(datav.shape, np.nan)
 for i, fa in enumerate(flipAngles):
-    fa_uncorr[i,::] = fa
-
+    # use np.tile
+    fa_uncorr[i,:] = fa
 fa_b1corr = fa_uncorr / b1map_data * 100
+fa_b1corr[fa_b1corr == np.inf] = np.nan
 
 # for bad unvectorised linear regression:
 for v in range(k):
@@ -222,9 +223,11 @@ for v in range(k):
         t1[v] = -TR/np.log(m)
 
 # 1st attempt at vectorizing
+
 fa_b1corr_rad = np.radians(fa_b1corr)
-y = data / np.sin(fa_b1corr_rad)
-x = data / np.tan(fa_b1corr_rad)
+fa_b1corr_rad[:,~mask] = np.nan
+y = datav / np.sin(fa_b1corr_rad)
+x = datav / np.tan(fa_b1corr_rad)
 m, intercept, r, p, std = stats.linregress(x, y)
 qT1_linregr = -TR/np.log(m)
 qT1_linregr_data = qT1_linregr.reshape(dims)
