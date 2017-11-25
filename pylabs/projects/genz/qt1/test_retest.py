@@ -57,6 +57,7 @@ def get_exam_date_time(parfile):
 par_files = [fs/'genz'/'sub-genz996/ses-2/phantom_parrec/sub-genz996_oct24_2017_phantom_WIP_T1_MAP_05_SENSE_4_1.PAR',
     fs/'phantom_qT1_slu/sub-phant2017-10-19/source_parrec/sub-genz996_PHANTOM_WIP_T1_MAP_05_SENSE_4_1.PAR',]
 
+# phantoms processed
 for par_file in par_files:
 
     phant_name = 'sub-phant{}'.format(get_exam_date_time(par_file).strftime('%Y'+'-'+'%m'+'-'+'%d'))
@@ -178,58 +179,52 @@ TR = float(str(Path(faFiles[0]).name).split('_')[3].split('-')[3].replace('p','.
 flipAngles = [float(str(Path(fa).name).split('_')[3].split('-')[1]) for fa in faFiles]
 dims = nib.load(faFiles[0]).header.get_data_shape()
 k = np.prod(np.array(dims))
-data = np.full([len(flipAngles), k], np.nan)
+data = np.zeros([len(flipAngles), k])
 for f, fpath in enumerate(faFiles):
-    data[f, :] = nib.load(fpath).get_data()[:,:,:].flatten()
-t1 = np.full([k,], np.nan)
-# need to add b1 correction and masking here
-for v in range(k):
-    Sa = data[:, v]
-    a = np.radians(flipAngles)
-    y = Sa / np.sin(a)
-    x = Sa / np.tan(a)
-    A = np.vstack([x, np.ones(len(x))]).T
-    m, c = np.linalg.lstsq(A, y)[0]
-    t1[v] = -TR / np.log(m)
-
-t1data = t1.reshape(dims)
-t1img = nib.Nifti1Image(t1data, nib.load(faFiles[0]).affine)
-nib.save(t1img, str(datadir/'sub-genz996_ses-1_qt1_noreg_nob1corr_lstsq-fit.nii'))
-
+    data[f, :] = nib.load(fpath).get_data().flatten()
 # b1 correction and masking:
 mask = nib.load(str(datadir/'sub-genz996_ses-1_spgr_fa-20-tr-12p0_1_thr2000_brain_mask.nii.gz')).get_data().astype('bool').flatten()
+mask2d = np.tile(mask, [len(flipAngles), 1])
 b1map_data = nib.load(str(datadir/'sub-genz996_ses-1_b1map_1_phase_b1spgr2spgr30_mf_maskedfa20.nii.gz')).get_data().flatten()
-datav = np.full([len(flipAngles), np.prod(np.array(dims))], np.nan)
-for f, fpath in enumerate(faFiles):
-    datav[f, :] = nib.load(fpath).get_data().flatten()
-
-
-fa_uncorr = np.full(datav.shape, np.nan)
-fa_b1corr = np.full(datav.shape, np.nan)
+fa_uncorr = np.zeros(data.shape)
+fa_b1corr = np.zeros(data.shape)
 for i, fa in enumerate(flipAngles):
-    # use np.tile
     fa_uncorr[i,:] = fa
 fa_b1corr = fa_uncorr / b1map_data * 100
 fa_b1corr[fa_b1corr == np.inf] = np.nan
-
-# for bad unvectorised linear regression:
+fa_b1corr_rad = np.radians(fa_b1corr)
+fa_b1corr_rad[~mask2d] = np.nan
+t1 = np.zeros([k,])
+# need to add b1 correction and masking here
 for v in range(k):
     if mask[v]:
-        Sa = data[:, v]
-        a = np.radians(flipAngles)
-        y = Sa / np.sin(a)
-        x = Sa / np.tan(a)
-        m, intercept, r, p, std = stats.linregress(x, y)
-        t1[v] = -TR/np.log(m)
+        try:
+            Sa = data[:, v]
+            a = fa_b1corr_rad[:, v]
+            y = Sa / np.sin(a)
+            x = Sa / np.tan(a)
+            A = np.vstack([x, np.ones(len(x))]).T
+            m, c = np.linalg.lstsq(A, y)[0]
+            t1[v] = -TR / np.log(m)
+        except:
+            print('forced nan for voxel '+str(v))
+            t1[v] = np.nan
 
-# 1st attempt at vectorizing
-
-fa_b1corr_rad = np.radians(fa_b1corr)
-fa_b1corr_rad[:,~mask] = np.nan
-y = datav / np.sin(fa_b1corr_rad)
-x = datav / np.tan(fa_b1corr_rad)
-m, intercept, r, p, std = stats.linregress(x, y)
+t1data = t1.reshape(dims)
+t1data[(t1data < 1) | (t1data == np.nan)] = 0
+t1data[t1data > 6000] = 6000
+t1img = nib.Nifti1Image(t1data, nib.load(faFiles[0]).affine)
+nib.save(t1img, str(datadir/'sub-genz996_ses-1_qt1_noreg_b1corr_lstsq-fit_clamped.nii'))
+# linear regression
+y = data / np.sin(fa_b1corr_rad)
+x = data / np.tan(fa_b1corr_rad)
+m = np.zeros(k)
+for v in range(k):
+    if mask[v]:
+        m[v], intercept, r, p, std = stats.linregress(x[:,v], y[:,v])
 qT1_linregr = -TR/np.log(m)
 qT1_linregr_data = qT1_linregr.reshape(dims)
+qT1_linregr_data[(qT1_linregr_data < 1) | (qT1_linregr_data == np.nan)] = 0
+qT1_linregr_data[qT1_linregr_data > 6000] = 6000
 qT1_linregr_img = nib.Nifti1Image(qT1_linregr_data, nib.load(faFiles[0]).affine)
-nib.save(qT1_linregr_img, str(datadir/'sub-genz996_ses-1_qt1_noreg_b1corr_vlinregr-fit.nii'))
+nib.save(qT1_linregr_img, str(datadir/'sub-genz996_ses-1_qt1_noreg_b1corr_vlinregr-fit_clamped.nii'))
