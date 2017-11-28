@@ -25,13 +25,16 @@ from pylabs.alignment.phantom import align, transform
 from pylabs.qt1.fitting import t1fit
 from pylabs.qt1.model_pipeline import calculate_model, vialsInOrder
 from pylabs.io.images import savenii
-from pylabs.utils import run_subprocess, WorkingContext, appendposix, replacesuffix, getnetworkdataroot
+from pylabs.utils import run_subprocess, WorkingContext, appendposix, replacesuffix, getnetworkdataroot, get_antsregsyn_cmd
 from scipy.ndimage.filters import median_filter as medianf
 from pylabs.projects.genz.file_names import project, get_5spgr_names, SubjIdPicks
 from pylabs.utils.provenance import ProvenanceWrapper
 prov = ProvenanceWrapper()
 
 fs = Path(getnetworkdataroot())
+
+bias_corr_cmd = get_antsregsyn_cmd(N4bias=True)
+bias_corr_cmd += ' -d 3 -i '
 
 # fit methods options are direct, linlstsq, and linregr
 
