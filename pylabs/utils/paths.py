@@ -100,7 +100,12 @@ def test4working_gpu():
         print('current hostname not in working gpu list in pylabs.utils.paths. using un-accelerated methods.')
         return False
 
-def get_antsregsyn_cmd(quick=False, warps=False, warpts=False):
+def get_antsregsyn_cmd(quick=False, warps=False, warpts=False, N4bias=False):
+    if N4bias:
+        if not Path(os.environ.get('ANTSPATH'), 'N4BiasFieldCorrection').is_file():
+            raise ValueError('must have ants installed with N4BiasFieldCorrection in $ANTSPATH directory.')
+        else:
+            return Path(os.environ.get('ANTSPATH'), 'N4BiasFieldCorrection')
     if warps:
         if not Path(os.environ.get('ANTSPATH'), 'WarpImageMultiTransform').is_file():
             raise ValueError('must have ants installed with WarpImageMultiTransform in $ANTSPATH directory.')
