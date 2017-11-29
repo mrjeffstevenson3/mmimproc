@@ -16,24 +16,32 @@ from pathlib import *
 import pandas as pd
 import numpy as np
 import nibabel as nib
+import matlab.engine
 from scipy import stats
 from dipy.segment.mask import applymask
 from scipy.ndimage.morphology import binary_erosion as ero
 from scipy.ndimage.measurements import center_of_mass as com
 from pylabs.alignment.resample import reslice_roi
 from pylabs.alignment.phantom import align, transform
+from pylabs.structural.brain_extraction import extract_brain
 from pylabs.qt1.fitting import t1fit
 from pylabs.qt1.model_pipeline import calculate_model, vialsInOrder
 from pylabs.io.images import savenii
-from pylabs.utils import run_subprocess, WorkingContext, appendposix, replacesuffix, getnetworkdataroot, get_antsregsyn_cmd
+from pylabs.utils import run_subprocess, WorkingContext, appendposix, replacesuffix, getnetworkdataroot, get_antsregsyn_cmd, getspmpath, pylabs_dir
 from scipy.ndimage.filters import median_filter as medianf
 from pylabs.projects.genz.file_names import project, get_5spgr_names, SubjIdPicks
 from pylabs.utils.provenance import ProvenanceWrapper
 prov = ProvenanceWrapper()
 
 fs = Path(getnetworkdataroot())
+spm_dir, tpm_path = getspmpath()
 
-bias_corr_cmd = get_antsregsyn_cmd(N4bias=True)
+eng = matlab.engine.start_matlab()
+eng.addpath(eng.genpath(str(pylabs_dir)))
+eng.addpath(eng.genpath(str(spm_dir)))
+
+
+bias_corr_cmd = str(get_antsregsyn_cmd(N4bias=True))
 bias_corr_cmd += ' -d 3 -i '
 
 # fit methods options are direct, linlstsq, and linregr
@@ -168,15 +176,28 @@ with WorkingContext(str(fs/'phantom_qT1_{}'.format(scanner)/ref_phant/'qt1')):
 subjids_picks = SubjIdPicks()
 # list of subject ids to operate on
 picks = [
-         {'subj': 'sub-genz996', 'session': 'ses-1', 'run': '1',},
+         {'subj': 'sub-genz996', 'session': 'ses-2', 'run': '1',},
          ]
 setattr(subjids_picks, 'subjids', picks)
-
+results = ()
 b1map5_fnames, spgr5_fa05_fnames, spgr5_fa10_fnames, spgr5_fa15_fnames, spgr5_fa20_fnames, spgr5_fa30_fnames = get_5spgr_names(subjids_picks)
 datadir = fs/project/picks[0]['subj']/picks[0]['session']/'qt1'/'reg2spgr05_br'
 faFiles = [spgr5_fa05_fnames[0], spgr5_fa10_fnames[0], spgr5_fa15_fnames[0], spgr5_fa20_fnames[0], spgr5_fa30_fnames[0]]
+fa_brains = ['',] * len(faFiles)
+fa_brain_masks = ['',] * len(faFiles)
 for i, fa in enumerate(faFiles):
-    faFiles[i] = str(datadir/appendposix(fa, '_thr2000_brain_maskedfa20.nii.gz'))
+    fa_brains[i], fa_brain_masks[i] = extract_brain(str(datadir/appendposix(fa,'_thr2000.nii.gz')))
+mask_spgr20 = fa_brain_masks[3]
+b1map_masked = datadir/appendposix(b1map5_fnames[0], '_phase_b1spgr2spgr30_mf_masked.nii.gz')
+results += run_subprocess('fslmaths '+str(datadir/appendposix(b1map5_fnames[0], '_phase_b1spgr2spgr30_mf.nii.gz'))+' -mas '+str(datadir/mask_spgr20)+' '+str(b1map_masked))
+for i, br in enumerate(fa_brains):
+    spgr_b1corr_cmd = 'fslmaths '+str(datadir/br)+' -div '+str(b1map_masked)+' -mul 100 '+str(datadir/appendposix(br, '_b1corr'))
+    spgr_bc_cmd = bias_corr_cmd + str(datadir/appendposix(br, '_b1corr'))+' -x '+str(mask_spgr20)+' -o '+str(datadir/appendposix(br, '_b1corr_N4bc'))
+    spgr_susan_cmd = 'susan '+str(datadir/appendposix(br, '_b1corr_N4bc'))+' -1 1 3 1 0 '+str(datadir/appendposix(br, '_b1corr_N4bc_susan'))
+    results += run_subprocess(spgr_b1corr_cmd)
+    results += run_subprocess(spgr_bc_cmd)
+    results += run_subprocess(spgr_susan_cmd)
+    faFiles[i] = str(datadir/appendposix(br, '_b1corr_N4bc_susan'))
 
 TR = float(str(Path(faFiles[0]).name).split('_')[3].split('-')[3].replace('p','.'))
 flipAngles = [float(str(Path(fa).name).split('_')[3].split('-')[1]) for fa in faFiles]
@@ -186,10 +207,12 @@ data = np.zeros([len(flipAngles), k])
 for f, fpath in enumerate(faFiles):
     data[f, :] = nib.load(fpath).get_data().flatten()
 # b1 correction and masking:
-mask = nib.load(str(datadir/'sub-genz996_ses-1_spgr_fa-20-tr-12p0_1_thr2000_brain_mask.nii.gz')).get_data().astype('bool').flatten()
+mask = nib.load(str(mask_spgr20)).get_data().astype('bool').flatten()
 mask2d = np.tile(mask, [len(flipAngles), 1])
-b1map_data = nib.load(str(datadir/'sub-genz996_ses-1_b1map_1_phase_b1spgr2spgr30_mf_maskedfa20.nii.gz')).get_data().flatten()
+b1map_data = nib.load(str(b1map_masked)).get_data().flatten()
 fa_uncorr = np.zeros(data.shape)
+
+# skip if b1 correction already done in image space or skipping altogether
 fa_b1corr = np.zeros(data.shape)
 for i, fa in enumerate(flipAngles):
     fa_uncorr[i,:] = fa
@@ -203,7 +226,8 @@ for v in range(k):
     if mask[v]:
         try:
             Sa = data[:, v]
-            a = fa_b1corr_rad[:, v]
+            #a = fa_b1corr_rad[:, v]
+            a = np.radians(np.array(flipAngles))
             y = Sa / np.sin(a)
             x = Sa / np.tan(a)
             A = np.vstack([x, np.ones(len(x))]).T
@@ -217,7 +241,9 @@ t1data = t1.reshape(dims)
 t1data[(t1data < 1) | (t1data == np.nan)] = 0
 t1data[t1data > 6000] = 6000
 t1img = nib.Nifti1Image(t1data, nib.load(faFiles[0]).affine)
-nib.save(t1img, str(datadir/'sub-genz996_ses-1_qt1_noreg_b1corr_lstsq-fit_clamped.nii'))
+nib.save(t1img, str(datadir/'sub-genz996_ses-2_qt1_noreg_b1corr_lstsq-fit_clamped.nii'))
+
+
 # linear regression
 y = data / np.sin(fa_b1corr_rad)
 x = data / np.tan(fa_b1corr_rad)
@@ -231,3 +257,5 @@ qT1_linregr_data[(qT1_linregr_data < 1) | (qT1_linregr_data == np.nan)] = 0
 qT1_linregr_data[qT1_linregr_data > 6000] = 6000
 qT1_linregr_img = nib.Nifti1Image(qT1_linregr_data, nib.load(faFiles[0]).affine)
 nib.save(qT1_linregr_img, str(datadir/'sub-genz996_ses-1_qt1_noreg_b1corr_vlinregr-fit_clamped.nii'))
+
+# now segment using spm

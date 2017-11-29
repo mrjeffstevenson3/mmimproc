@@ -1,7 +1,8 @@
 import pylabs
 import nibabel, numpy
-from pylabs.utils import run_subprocess
+from pylabs.utils import run_subprocess, replacesuffix
 from pathlib import *
+import shutil, gzip
 
 def loadStack(files):
     data = []
@@ -71,3 +72,7 @@ def paired_sub(niifiles, outfname, minuend=0):
     sub_data = numpy.subtract(data[:,:,:,minuend],  data[:,:,:,subtrahend])
     savenii(sub_data, affine, outfname)
 
+
+def gz2nii(file):
+    with gzip.open(str(file), 'rb') as src, open(str(replacesuffix(file, '.nii')), 'wb') as dest:
+        shutil.copyfileobj(src, dest)
