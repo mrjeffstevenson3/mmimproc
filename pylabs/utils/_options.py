@@ -21,7 +21,7 @@ class PylabsOptions(object):
         nii_fext = '.nii'
     else:
         nii_fext = None
-    fslmultifilequit = 'TRUE'
+    fslmultifilequit = 'FALSE'
     orientation = 'LAS+'
     overwrite = False
     fsldir = str(os.environ.get('FSLDIR'))

@@ -1,5 +1,7 @@
-import pylabs
-import os, socket, inspect, platform
+import pylabs, os
+#pylabs.opts.fslmultifilequit = 'FALSE'
+os.environ["FSLMULTIFILEQUIT"] = 'FALSE'
+import socket, inspect, platform
 import petname
 from os.path import expanduser, join
 from pathlib import *

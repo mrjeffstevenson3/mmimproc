@@ -85,7 +85,7 @@ topup_fname_tail = ('ses-1', 'dwi-topup', '6S0', 1)
 topdn_fname_tail = ('ses-1', 'dwi-topdn', '6S0', 1)
 dwi_fname_tail = ('ses-1', 'dwi-topup', '64dir-3sh-800-2000', 1)
 t2_fname_tail = (1, '3dt2', '', 1)
-spgr5_fname_tail = (1, 'spgr', '%(fa)s', '%(tr)s', 1)
+spgr5_fname_tail = ('ses-1', 'spgr', '%(fa)s', '%(tr)s', 1)
 mrs_matching_voi_tail = ('ses-1', '%(side)s_match_mrs', 'ti1100', 1)
 
 gaba_fname_dd = {'proj': project, 'wild': '*', 'te': gaba_te, 'dyn': gaba_dyn, 'side': 'RT', 'type': 'act', 'sid': ''}
