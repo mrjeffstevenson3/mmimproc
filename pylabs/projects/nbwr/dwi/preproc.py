@@ -144,15 +144,17 @@ for i, (topup, topdn, dwif) in enumerate(zip(topup_fnames, topdn_fnames, dwi_fna
 
     topup_numlines = (nib.load(str(topup_fname))).header['dim'][4]
     topdn_numlines = (nib.load(str(topdn_fname))).header['dim'][4]
-
-    with open(str(dwipath / 'acq_params.txt'), 'w') as ap:
+    bvals, bvecs = read_bvals_bvecs(str(dwi_bvals_fname), str(dwi_bvecs_fname))
+    gtab = gradient_table(bvals, bvecs)
+    acqparams_fname = dwipath / 'acq_params.txt'
+    index_fname = dwipath / 'index.txt'
+    with open(str(acqparams_fname), 'w') as ap:
         for x in range(topup_numlines):
             ap.write('0 1 0 ' + topup_dwellt + '\n')
         for x in range(topdn_numlines):
             ap.write('0 -1 0 ' + topdn_dwellt + '\n')
 
-    bvals, bvecs = read_bvals_bvecs(str(dwi_bvals_fname), str(dwi_bvecs_fname))
-    gtab = gradient_table(bvals, bvecs)
+
     # topup distortion correction
     if not test4file(dwipath / str(topup + '_topdn_concat_unwarped_mean.nii.gz')) or (test4file(dwipath / str(topup + '_topdn_concat_unwarped_mean.nii.gz')) & overwrite):
         topup_img = nib.load(str(topup_fname))
@@ -169,11 +171,11 @@ for i, (topup, topdn, dwif) in enumerate(zip(topup_fnames, topdn_fnames, dwi_fna
         prov.log(str(dwipath / str(topup + '_topdn_concat.nii.gz')), 'concatenated topup-dn S0 vols', [str(topup_fname), str(topdn_fname)])
 
         with WorkingContext(str(dwipath)):
-            with open('index.txt', 'w') as f:
+            with open(str(index_fname), 'w') as f:
                 f.write('1 ' * len(gtab.bvals))
             if overwrite or not Path(topup + '_topdn_concat_unwarped_mean.nii.gz').is_file():
                 cmd = 'topup --imain=' + str(dwipath / str(topup + '_topdn_concat.nii.gz'))
-                cmd += ' --datain=acq_params.txt --config=b02b0.cnf --out='
+                cmd += ' --datain='+str(acqparams_fname)+' --config=b02b0.cnf --out='
                 cmd += str(dwipath / str(topup + '_topdn_concat'))
                 cmd += ' --iout=' + str(dwipath / str(topup + '_topdn_concat_unwarped.nii.gz'))
                 cmd += ' --fout=' + str(dwipath / str(topup + '_topdn_concat_warp_field.nii.gz'))
@@ -187,7 +189,7 @@ for i, (topup, topdn, dwif) in enumerate(zip(topup_fnames, topdn_fnames, dwi_fna
         with WorkingContext(str(ec_dir)):
             b0_brain_fname, b0_brain_mask_fname = extract_brain(dwipath/str(topup + '_topdn_concat_unwarped_mean.nii.gz'))
             eddy_cmd = 'eddy_cuda7.5 --imain='+str(orig_dwif_fname)+' --mask='+str(b0_brain_mask_fname)
-            eddy_cmd += ' --acqp=acq_params.txt  --index=index.txt --bvecs='+str(dwi_bvecs_fname)
+            eddy_cmd += ' --acqp='+str(acqparams_fname)+'  --index='+str(index_fname)+' --bvecs='+str(dwi_bvecs_fname)
             eddy_cmd += ' --bvals='+str(dwi_bvals_fname)+' --topup='+str(dwipath / str(topup + '_topdn_concat'))
             eddy_cmd += '  --repol --out='+str(ec_dwi_name)
             result += run_subprocess(eddy_cmd)
