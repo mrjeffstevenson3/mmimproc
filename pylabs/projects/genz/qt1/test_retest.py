@@ -23,6 +23,7 @@ from scipy.ndimage.morphology import binary_erosion as ero
 from scipy.ndimage.measurements import center_of_mass as com
 from pylabs.alignment.resample import reslice_roi
 from pylabs.alignment.phantom import align, transform
+from pylabs.fmap_correction.b1_map_corr import correct4b1
 from pylabs.structural.brain_extraction import extract_brain
 from pylabs.qt1.fitting import t1fit
 from pylabs.qt1.model_pipeline import calculate_model, vialsInOrder
@@ -176,18 +177,30 @@ with WorkingContext(str(fs/'phantom_qT1_{}'.format(scanner)/ref_phant/'qt1')):
 subjids_picks = SubjIdPicks()
 # list of subject ids to operate on
 picks = [
-         {'subj': 'sub-genz996', 'session': 'ses-2', 'run': '1',},
+         {'subj': 'sub-genz996', 'session': 'ses-3', 'run': '1',},
          ]
 setattr(subjids_picks, 'subjids', picks)
 results = ()
 b1map5_fnames, spgr5_fa05_fnames, spgr5_fa10_fnames, spgr5_fa15_fnames, spgr5_fa20_fnames, spgr5_fa30_fnames = get_5spgr_names(subjids_picks)
-datadir = fs/project/picks[0]['subj']/picks[0]['session']/'qt1'/'reg2spgr05_br'
+datadir = fs/project/picks[0]['subj']/picks[0]['session']/'qt1'/'reg2spgr20_br'
+if not datadir.is_dir():
+    datadir.mkdir(parents=True)
 faFiles = [spgr5_fa05_fnames[0], spgr5_fa10_fnames[0], spgr5_fa15_fnames[0], spgr5_fa20_fnames[0], spgr5_fa30_fnames[0]]
 fa_brains = ['',] * len(faFiles)
 fa_brain_masks = ['',] * len(faFiles)
 for i, fa in enumerate(faFiles):
+    results += run_subprocess(['fslmaths ' + str(datadir.parent / str(fa + '.nii')) + ' -thr 2000 ' + str(datadir / appendposix(fa, '_thr2000.nii.gz'))])
     fa_brains[i], fa_brain_masks[i] = extract_brain(str(datadir/appendposix(fa,'_thr2000.nii.gz')))
+
+# reg all to spgr5
+
+# b1 correct in image space:
+for i, fa in fa_brains:
+    results += correct4b1(project, picks['subj'], picks['session'], )
+
+
 mask_spgr20 = fa_brain_masks[3]
+
 b1map_masked = datadir/appendposix(b1map5_fnames[0], '_phase_b1spgr2spgr30_mf_masked.nii.gz')
 results += run_subprocess('fslmaths '+str(datadir/appendposix(b1map5_fnames[0], '_phase_b1spgr2spgr30_mf.nii.gz'))+' -mas '+str(datadir/mask_spgr20)+' '+str(b1map_masked))
 for i, br in enumerate(fa_brains):
@@ -201,11 +214,11 @@ for i, br in enumerate(fa_brains):
 
 TR = float(str(Path(faFiles[0]).name).split('_')[3].split('-')[3].replace('p','.'))
 flipAngles = [float(str(Path(fa).name).split('_')[3].split('-')[1]) for fa in faFiles]
-dims = nib.load(faFiles[0]).header.get_data_shape()
+dims = nib.load(str(faFiles[0])).header.get_data_shape()
 k = np.prod(np.array(dims))
 data = np.zeros([len(flipAngles), k])
 for f, fpath in enumerate(faFiles):
-    data[f, :] = nib.load(fpath).get_data().flatten()
+    data[f, :] = nib.load(str(fpath)).get_data().flatten()
 # b1 correction and masking:
 mask = nib.load(str(mask_spgr20)).get_data().astype('bool').flatten()
 mask2d = np.tile(mask, [len(flipAngles), 1])
@@ -240,7 +253,7 @@ for v in range(k):
 t1data = t1.reshape(dims)
 t1data[(t1data < 1) | (t1data == np.nan)] = 0
 t1data[t1data > 6000] = 6000
-t1img = nib.Nifti1Image(t1data, nib.load(faFiles[0]).affine)
+t1img = nib.Nifti1Image(t1data, nib.load(str(faFiles[0])).affine)
 nib.save(t1img, str(datadir/'sub-genz996_ses-2_qt1_noreg_b1corr_lstsq-fit_clamped.nii'))
 
 

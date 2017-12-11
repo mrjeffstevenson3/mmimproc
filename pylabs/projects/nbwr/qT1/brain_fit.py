@@ -50,7 +50,7 @@ pool = Pool(20)
 subjids_picks = SubjIdPicks()
 flip5 = True
 overwrite = False
-picks = ['144']
+picks = ['136',]
 
 setattr(subjids_picks, 'subjids', picks)
 
