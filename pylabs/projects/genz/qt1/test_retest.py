@@ -187,19 +187,25 @@ if not datadir.is_dir():
     datadir.mkdir(parents=True)
 faFiles = [spgr5_fa05_fnames[0], spgr5_fa10_fnames[0], spgr5_fa15_fnames[0], spgr5_fa20_fnames[0], spgr5_fa30_fnames[0]]
 fa_brains = ['',] * len(faFiles)
+fa_brains_masked = ['',] * len(faFiles)
 fa_brain_masks = ['',] * len(faFiles)
 for i, fa in enumerate(faFiles):
     results += run_subprocess(['fslmaths ' + str(datadir.parent / str(fa + '.nii')) + ' -thr 2000 ' + str(datadir / appendposix(fa, '_thr2000.nii.gz'))])
-    fa_brains[i], fa_brain_masks[i] = extract_brain(str(datadir/appendposix(fa,'_thr2000.nii.gz')))
+    fa_brains[i], fa_brain_masks[i] = extract_brain(str(datadir/appendposix(fa, '_thr2000.nii.gz')))
+mask_spgr20 = fa_brain_masks[3]
 
-# reg all to spgr5
+# since we are not reg all the spgr we simply mask using spgr20 mask.
+for i, fa in enumerate(fa_brains):
+    results += run_subprocess(['fslmaths ' + str(fa) + ' -mas ' + str(mask_spgr20)+ ' ' + str(appendposix(fa, '_maskedspgr20'))])
+    fa_brains_masked[i] = appendposix(fa, '_maskedspgr20')
 
 # b1 correct in image space:
+
 for i, fa in fa_brains:
     results += correct4b1(project, picks['subj'], picks['session'], )
 
 
-mask_spgr20 = fa_brain_masks[3]
+
 
 b1map_masked = datadir/appendposix(b1map5_fnames[0], '_phase_b1spgr2spgr30_mf_masked.nii.gz')
 results += run_subprocess('fslmaths '+str(datadir/appendposix(b1map5_fnames[0], '_phase_b1spgr2spgr30_mf.nii.gz'))+' -mas '+str(datadir/mask_spgr20)+' '+str(b1map_masked))
