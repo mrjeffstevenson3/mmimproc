@@ -182,15 +182,17 @@ picks = [
          ]
 setattr(subjids_picks, 'subjids', picks)
 results = ()
+b1corr = 'image'  # or 'fit' or None
 b1map5_fnames, spgr5_fa05_fnames, spgr5_fa10_fnames, spgr5_fa15_fnames, spgr5_fa20_fnames, spgr5_fa30_fnames = get_5spgr_names(subjids_picks)
-reg_str = 'regb1map2spgr20'
+reg_str = 'reg2spgr20'
 datadir = fs/project/picks[0]['subj']/picks[0]['session']/'qt1'/reg_str
 fmap_dir = datadir.parent.parent/'fmap'
-reg_dir = fs/project/picks[0]['subj']/picks[0]['session']/'reg'/reg_str
+reg_dir_ses = fs/project/picks[0]['subj']/picks[0]['session']/'reg'/reg_str
+reg_dir_subj = fs/project/picks[0]['subj']/'reg'/'spgr20reg2ses1'
 if not datadir.is_dir():
     datadir.mkdir(parents=True)
-if not reg_dir.is_dir():
-    reg_dir.mkdir(parents=True)
+if not reg_dir_ses.is_dir():
+    reg_dir_ses.mkdir(parents=True)
 faFiles = [spgr5_fa05_fnames[0], spgr5_fa10_fnames[0], spgr5_fa15_fnames[0], spgr5_fa20_fnames[0], spgr5_fa30_fnames[0]]
 fa_brains = ['',] * len(faFiles)
 fa_brains_masked = ['',] * len(faFiles)
@@ -209,25 +211,27 @@ for i, fa in enumerate(fa_brains):
 
 results += run_subprocess(['fslroi '+str(fmap_dir/appendposix(b1map5_fnames[0],'.nii'))+' '+str(appendposix(fmap_dir/b1map5_fnames[0],'_mag.nii.gz'))+' 0 1'])
 results += run_subprocess(['fslroi '+str(fmap_dir/appendposix(b1map5_fnames[0],'.nii'))+' '+str(fmap_dir/appendposix(b1map5_fnames[0],'_phase.nii.gz'))+' 2 1'])
-regcmd = str(get_antsregsyn_cmd())+' -d 3 -m '+str(appendposix(fmap_dir/b1map5_fnames[0],'_mag.nii.gz'))+' -f '+str(fa_brain[3])+' -o '+str(appendposix(reg_dir/b1map5_fnames[0],'_mag_'+reg_str))+' -n 30 -t s -p f -j 1 -s 10 -r 1'
+regcmd = str(get_antsregsyn_cmd())+' -d 3 -m '+str(appendposix(fmap_dir/b1map5_fnames[0],'_mag.nii.gz'))+' -f '+str(fa_brains[3])+' -o '+str(appendposix(reg_dir_ses/b1map5_fnames[0],'_mag_'+reg_str+'_'))+' -n 30 -t s -p f -j 1 -s 10 -r 1'
 results += run_subprocess([regcmd])
-results += subj2templ_applywarp(str(fmap_dir/appendposix(b1map5_fnames[0],'_phase.nii.gz')), str(fa_brain[3]), str(appendposix(reg_dir/b1map5_fnames[0],'_phase_'+reg_str+'.nii.gz')), [str(replacesuffix(reg_dir/b1map5_fnames[0],'_mag_'+reg_str+'_1Warp.nii.gz'))],
-                                str(reg_dir), affine_xform=[str(replacesuffix(reg_dir/b1map5_fnames[0],'_mag_'+reg_str+'_0GenericAffine.mat'))])
+results += subj2templ_applywarp(str(fmap_dir/appendposix(b1map5_fnames[0],'_phase.nii.gz')), str(fa_brains[3]), str(appendposix(reg_dir_ses/b1map5_fnames[0],'_phase_'+reg_str+'.nii.gz')), [str(replacesuffix(reg_dir_ses/b1map5_fnames[0],'_mag_'+reg_str+'_1Warp.nii.gz'))],
+                                str(reg_dir_ses), affine_xform=[str(replacesuffix(reg_dir_ses/b1map5_fnames[0],'_mag_'+reg_str+'_0GenericAffine.mat'))])
 reg_b1map_fmap = appendposix(fmap_dir/b1map5_fnames[0],'_phase_'+reg_str+'.nii.gz')
-reg_b1map_fmap.symlink_to(appendposix(reg_dir/b1map5_fnames[0],'_phase_'+reg_str+'.nii.gz'))
+reg_b1map_fmap.symlink_to(appendposix(reg_dir_ses/b1map5_fnames[0],'_phase_'+reg_str+'.nii.gz'))
 reg_b1map_qt1 = appendposix(datadir/b1map5_fnames[0],'_phase_'+reg_str+'.nii.gz')
-reg_b1map_qt1.symlink_to(appendposix(reg_dir/b1map5_fnames[0],'_phase_'+reg_str+'.nii.gz'))
+reg_b1map_qt1.symlink_to(appendposix(reg_dir_ses/b1map5_fnames[0],'_phase_'+reg_str+'.nii.gz'))
 b1map_masked = datadir/appendposix(reg_b1map_qt1, '_mf_masked')
 results += run_subprocess(['fslmaths '+str(reg_b1map_qt1)+' -fmedian -mas '+str(mask_spgr20)+' '+str(b1map_masked)])
 
-for i, br in enumerate(fa_brains):
-    spgr_b1corr_cmd = 'fslmaths '+str(datadir/br)+' -div '+str(b1map_masked)+' -mul 100 '+str(datadir/appendposix(br, '_b1corr'))
-    spgr_bc_cmd = bias_corr_cmd + str(datadir/appendposix(br, '_b1corr'))+' -x '+str(mask_spgr20)+' -o '+str(datadir/appendposix(br, '_b1corr_N4bc'))
-    spgr_susan_cmd = 'susan '+str(datadir/appendposix(br, '_b1corr_N4bc'))+' -1 1 3 1 0 '+str(datadir/appendposix(br, '_b1corr_N4bc_susan'))
-    results += run_subprocess(spgr_b1corr_cmd)
-    results += run_subprocess(spgr_bc_cmd)
-    results += run_subprocess(spgr_susan_cmd)
-    faFiles[i] = str(datadir/appendposix(br, '_b1corr_N4bc_susan'))
+# skip this if doing b1corr in fitting
+if b1corr == 'image':
+    for i, br in enumerate(fa_brains):
+        spgr_b1corr_cmd = 'fslmaths '+str(datadir/br)+' -div '+str(b1map_masked)+' -mul 100 '+str(datadir/appendposix(br, '_b1corr'))
+        spgr_bc_cmd = bias_corr_cmd + str(datadir/appendposix(br, '_b1corr'))+' -x '+str(mask_spgr20)+' -o '+str(datadir/appendposix(br, '_b1corr_N4bc'))
+        spgr_susan_cmd = 'susan '+str(datadir/appendposix(br, '_b1corr_N4bc'))+' -1 1 3 1 0 '+str(datadir/appendposix(br, '_b1corr_N4bc_susan'))
+        results += run_subprocess([spgr_b1corr_cmd])
+        results += run_subprocess([spgr_bc_cmd])
+        results += run_subprocess([spgr_susan_cmd])
+        faFiles[i] = str(datadir/appendposix(br, '_b1corr_N4bc_susan'))
 
 TR = float(str(Path(faFiles[0]).name).split('_')[3].split('-')[3].replace('p','.'))
 flipAngles = [float(str(Path(fa).name).split('_')[3].split('-')[1]) for fa in faFiles]
@@ -236,33 +240,39 @@ k = np.prod(np.array(dims))
 data = np.zeros([len(flipAngles), k])
 for f, fpath in enumerate(faFiles):
     data[f, :] = nib.load(str(fpath)).get_data().flatten()
-# b1 correction and masking:
+
+# masking:
 mask = nib.load(str(mask_spgr20)).get_data().astype('bool').flatten()
 mask2d = np.tile(mask, [len(flipAngles), 1])
-b1map_data = nib.load(str(b1map_masked)).get_data().flatten()
-fa_uncorr = np.zeros(data.shape)
 
-# skip if b1 correction already done in image space or skipping altogether
-fa_b1corr = np.zeros(data.shape)
-for i, fa in enumerate(flipAngles):
-    fa_uncorr[i,:] = fa
-fa_b1corr = fa_uncorr / b1map_data * 100
-fa_b1corr[fa_b1corr == np.inf] = np.nan
-fa_b1corr_rad = np.radians(fa_b1corr)
-fa_b1corr_rad[~mask2d] = np.nan
+# b1 correction for fits skipped if b1 correction already done in image space or skipping altogether
+if b1corr == 'fit':
+    b1map_data = nib.load(str(b1map_masked)).get_data().flatten()
+    fa_uncorr = np.zeros(data.shape)
+    fa_b1corr = np.zeros(data.shape)
+    for i, fa in enumerate(flipAngles):
+        fa_uncorr[i,:] = fa
+    fa_b1corr = fa_uncorr / b1map_data * 100
+    fa_b1corr[fa_b1corr == np.inf] = np.nan
+    fa_b1corr_rad = np.radians(fa_b1corr)
+    fa_b1corr_rad[~mask2d] = np.nan
+
+# assumes image based b1 corr. need to add masking here
 t1 = np.zeros([k,])
-# need to add b1 correction and masking here
 for v in range(k):
     if mask[v]:
         try:
-            Sa = data[:, v]
-            #a = fa_b1corr_rad[:, v]
-            a = np.radians(np.array(flipAngles))
-            y = Sa / np.sin(a)
-            x = Sa / np.tan(a)
-            A = np.vstack([x, np.ones(len(x))]).T
-            m, c = np.linalg.lstsq(A, y)[0]
-            t1[v] = -TR / np.log(m)
+            if np.alltrue(mask2d[:, v]):
+                Sa = data[:, v]
+                #a = fa_b1corr_rad[:, v]
+                a = np.radians(np.array(flipAngles))
+                y = Sa / np.sin(a)
+                x = Sa / np.tan(a)
+                A = np.vstack([x, np.ones(len(x))]).T
+                m, c = np.linalg.lstsq(A, y)[0]
+                t1[v] = -TR / np.log(m)
+            else:
+                t1[v] = 0
         except:
             print('forced nan for voxel '+str(v))
             t1[v] = np.nan
@@ -271,7 +281,7 @@ t1data = t1.reshape(dims)
 t1data[(t1data < 1) | (t1data == np.nan)] = 0
 t1data[t1data > 6000] = 6000
 t1img = nib.Nifti1Image(t1data, nib.load(str(faFiles[0])).affine)
-nib.save(t1img, str(datadir/'sub-genz996_ses-2_qt1_noreg_b1corr_lstsq-fit_clamped.nii'))
+nib.save(t1img, str(datadir/'sub-genz996_ses-3_qt1_noreg_ib1corr_N4bc_susan_lstsq-fit_clamped.nii'))
 
 
 # linear regression
@@ -286,6 +296,6 @@ qT1_linregr_data = qT1_linregr.reshape(dims)
 qT1_linregr_data[(qT1_linregr_data < 1) | (qT1_linregr_data == np.nan)] = 0
 qT1_linregr_data[qT1_linregr_data > 6000] = 6000
 qT1_linregr_img = nib.Nifti1Image(qT1_linregr_data, nib.load(faFiles[0]).affine)
-nib.save(qT1_linregr_img, str(datadir/'sub-genz996_ses-1_qt1_noreg_b1corr_vlinregr-fit_clamped.nii'))
+nib.save(qT1_linregr_img, str(datadir/'sub-genz996_ses-1_qt1_noreg_fb1corr_vlinregr-fit_clamped.nii'))
 
 # now segment using spm
