@@ -22,6 +22,7 @@ from dipy.segment.mask import applymask
 from scipy.ndimage.morphology import binary_erosion as ero
 from scipy.ndimage.measurements import center_of_mass as com
 from pylabs.alignment.resample import reslice_roi
+from pylabs.alignment.ants_reg import subj2templ_applywarp
 from pylabs.alignment.phantom import align, transform
 from pylabs.fmap_correction.b1_map_corr import correct4b1
 from pylabs.structural.brain_extraction import extract_brain
@@ -182,9 +183,14 @@ picks = [
 setattr(subjids_picks, 'subjids', picks)
 results = ()
 b1map5_fnames, spgr5_fa05_fnames, spgr5_fa10_fnames, spgr5_fa15_fnames, spgr5_fa20_fnames, spgr5_fa30_fnames = get_5spgr_names(subjids_picks)
-datadir = fs/project/picks[0]['subj']/picks[0]['session']/'qt1'/'reg2spgr20_br'
+reg_str = 'regb1map2spgr20'
+datadir = fs/project/picks[0]['subj']/picks[0]['session']/'qt1'/reg_str
+fmap_dir = datadir.parent.parent/'fmap'
+reg_dir = fs/project/picks[0]['subj']/picks[0]['session']/'reg'/reg_str
 if not datadir.is_dir():
     datadir.mkdir(parents=True)
+if not reg_dir.is_dir():
+    reg_dir.mkdir(parents=True)
 faFiles = [spgr5_fa05_fnames[0], spgr5_fa10_fnames[0], spgr5_fa15_fnames[0], spgr5_fa20_fnames[0], spgr5_fa30_fnames[0]]
 fa_brains = ['',] * len(faFiles)
 fa_brains_masked = ['',] * len(faFiles)
@@ -201,14 +207,19 @@ for i, fa in enumerate(fa_brains):
 
 # b1 correct in image space:
 
-for i, fa in fa_brains:
-    results += correct4b1(project, picks['subj'], picks['session'], )
+results += run_subprocess(['fslroi '+str(fmap_dir/appendposix(b1map5_fnames[0],'.nii'))+' '+str(appendposix(fmap_dir/b1map5_fnames[0],'_mag.nii.gz'))+' 0 1'])
+results += run_subprocess(['fslroi '+str(fmap_dir/appendposix(b1map5_fnames[0],'.nii'))+' '+str(fmap_dir/appendposix(b1map5_fnames[0],'_phase.nii.gz'))+' 2 1'])
+regcmd = str(get_antsregsyn_cmd())+' -d 3 -m '+str(appendposix(fmap_dir/b1map5_fnames[0],'_mag.nii.gz'))+' -f '+str(fa_brain[3])+' -o '+str(appendposix(reg_dir/b1map5_fnames[0],'_mag_'+reg_str))+' -n 30 -t s -p f -j 1 -s 10 -r 1'
+results += run_subprocess([regcmd])
+results += subj2templ_applywarp(str(fmap_dir/appendposix(b1map5_fnames[0],'_phase.nii.gz')), str(fa_brain[3]), str(appendposix(reg_dir/b1map5_fnames[0],'_phase_'+reg_str+'.nii.gz')), [str(replacesuffix(reg_dir/b1map5_fnames[0],'_mag_'+reg_str+'_1Warp.nii.gz'))],
+                                str(reg_dir), affine_xform=[str(replacesuffix(reg_dir/b1map5_fnames[0],'_mag_'+reg_str+'_0GenericAffine.mat'))])
+reg_b1map_fmap = appendposix(fmap_dir/b1map5_fnames[0],'_phase_'+reg_str+'.nii.gz')
+reg_b1map_fmap.symlink_to(appendposix(reg_dir/b1map5_fnames[0],'_phase_'+reg_str+'.nii.gz'))
+reg_b1map_qt1 = appendposix(datadir/b1map5_fnames[0],'_phase_'+reg_str+'.nii.gz')
+reg_b1map_qt1.symlink_to(appendposix(reg_dir/b1map5_fnames[0],'_phase_'+reg_str+'.nii.gz'))
+b1map_masked = datadir/appendposix(reg_b1map_qt1, '_mf_masked')
+results += run_subprocess(['fslmaths '+str(reg_b1map_qt1)+' -fmedian -mas '+str(mask_spgr20)+' '+str(b1map_masked)])
 
-
-
-
-b1map_masked = datadir/appendposix(b1map5_fnames[0], '_phase_b1spgr2spgr30_mf_masked.nii.gz')
-results += run_subprocess('fslmaths '+str(datadir/appendposix(b1map5_fnames[0], '_phase_b1spgr2spgr30_mf.nii.gz'))+' -mas '+str(datadir/mask_spgr20)+' '+str(b1map_masked))
 for i, br in enumerate(fa_brains):
     spgr_b1corr_cmd = 'fslmaths '+str(datadir/br)+' -div '+str(b1map_masked)+' -mul 100 '+str(datadir/appendposix(br, '_b1corr'))
     spgr_bc_cmd = bias_corr_cmd + str(datadir/appendposix(br, '_b1corr'))+' -x '+str(mask_spgr20)+' -o '+str(datadir/appendposix(br, '_b1corr_N4bc'))
