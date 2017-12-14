@@ -48,7 +48,7 @@ only_spm = True
 # instantiate subject id list container
 subjids_picks = SubjIdPicks()
 # list of subject ids to operate on
-picks = ['444', '215', '431', '437', ]
+picks = ['427', ]
 setattr(subjids_picks, 'subjids', picks)
 setattr(subjids_picks, 'source_path', fs / project / 'sub-nbwr%(sid)s' / 'ses-1' / 'source_sparsdat')
 
@@ -182,3 +182,6 @@ for rt_matchfname, lt_matchfname, rt_actfname, lt_actfname in zip(rt_matchfnames
 
         except:
             raise
+
+eng.quit()
+

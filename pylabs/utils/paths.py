@@ -21,7 +21,7 @@ JHUMNIatlas = pylabs_atlasdir/'ilabsJHUtracts0_atlas.nii.gz'
 MNI1mm_T1 = pylabs_atlasdir/'MNI152_T1_1mm.nii.gz'
 MNI1mm_T1_brain = pylabs_atlasdir/'MNI152_T1_1mm_brain.nii.gz'
 MNI1mm_T1_brain_mask = pylabs_atlasdir/'MNI152_T1_1mm_brain_mask.nii.gz'
-MNI1mm_T2 = pylabs_atlasdir/'MNI152_T2_1mm.nii.gz'
+#MNI1mm_T2 = pylabs_atlasdir/'MNI152_T2_1mm.nii.gz'
 MNI1mm_T2_brain = pylabs_atlasdir/'MNI152_T2_1mm_brain.nii.gz'
 MNI1mm_T1_qa_mask = pylabs_atlasdir/'MNI152_T1_1mm_qa_mask.nii.gz'
 

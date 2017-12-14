@@ -23,7 +23,7 @@ plot_fpgm = pylabs_dir / 'pylabs/projects/nbwr/mrs/makeplots_nbwr.txt'
 
 # define input/output file names
 stats_dir = fs/project/'stats'/'mrs'
-glu_fname = 'Paros_Chemdata_tablefile_Neva.txt'
+glu_fname = 'Paros_Chemdata_tablefile_20171128.txt'
 jonah_glu_fname = 'jonah_Chemdata_tablefile_reformat2017-10-4.csv'
 base_fname = fs / project / 'stats' / 'mrs' / 'all_nbwr_mrs'
 uncorr_csv_fname = appendposix(base_fname, '_uncorr_fits.csv')
@@ -48,7 +48,7 @@ for file in [uncorr_csv_fname, csfcorr_csv_fname, excel_fname, hdf_fname, fcsf_c
 uncorr_cols = [u'left-percCSF', u'left-GABA', u'left-NAAplusNAAG', u'left-GPCplusPCh', u'left-CrplusPCr', u'left-mIns', u'left-Glu-80ms', u'right-percCSF', u'right-GABA', u'right-NAAplusNAAG', u'right-GPCplusPCh', u'right-CrplusPCr', u'right-mIns', u'right-Glu-80ms']
 corr_cols = [u'left-GABA', u'left-NAAplusNAAG', u'left-GPCplusPCh', u'left-CrplusPCr', u'left-mIns', u'left-Glu-80ms', u'left-GluOverGABA', u'right-GABA', u'right-NAAplusNAAG', u'right-GPCplusPCh', u'right-CrplusPCr', u'right-mIns', u'right-Glu-80ms', u'right-GluOverGABA']
 ftran_cols = [u'csfcorrected_left-GABA             ', u'csfcorrected_left-NAAplusNAAG      ', u'csfcorrected_left-GPCplusPCh       ', u'csfcorrected_left-CrplusPCr        ', u'csfcorrected_left-mIns             ', u'csfcorrected_left-Glu-80ms         ', u'csfcorrected_glu_gaba_ratio_left   ', u'csfcorrected_right-GABA            ', u'csfcorrected_right-NAAplusNAAG     ', u'csfcorrected_right-GPCplusPCh      ', u'csfcorrected_right-CrplusPCr       ', u'csfcorrected_right-mIns            ', u'csfcorrected_right-Glu-80ms        ', u'csfcorrected_glu_gaba_ratio_right  ']
-exclude_subj = ['sub-nbwr997', 'sub-nbwr998', 'sub-nbwr999',]
+exclude_subj = ['sub-nbwr997', 'sub-nbwr998', 'sub-nbwr999', ]  # 'sub-nbwr136', 'sub-nbwr447']
 exclude_data = ['Scan', 'Hemisphere', 'short_FWHM', 'short_SNR', 'short_TE', 'long_FWHM', 'long_SNR', 'long_TE']
 right_col_map = {'NAA+NAAG': 'right-NAAplusNAAG', 'GPC+PCh': 'right-GPCplusPCh', 'Cr+PCr': 'right-CrplusPCr', 'mIns': 'right-mIns', 'Glu': 'right-Glu-80ms'}
 left_col_map = {'NAA+NAAG': 'left-NAAplusNAAG', 'GPC+PCh': 'left-GPCplusPCh', 'Cr+PCr': 'left-CrplusPCr', 'mIns': 'left-mIns', 'Glu': 'left-Glu-80ms'}
@@ -319,4 +319,5 @@ stats_worksheet = writer.sheets['fortran_stats']
 #stats_worksheet.conditional_format('B4:O4', {'type': 'cell', 'criteria': '<=', 'value': 0.05, 'bg_color': '#FFC7CE'})
 writer.save()
 
+eng.quit()
 
