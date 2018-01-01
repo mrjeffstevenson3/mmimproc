@@ -23,7 +23,7 @@ plot_fpgm = pylabs_dir / 'pylabs/projects/nbwr/mrs/makeplots_nbwr.txt'
 
 # define input/output file names
 stats_dir = fs/project/'stats'/'mrs'
-glu_fname = 'Paros_Chemdata_tablefile_20171128.txt'
+glu_fname = 'Paros_Chemdata_tablefile_20171215.txt'
 jonah_glu_fname = 'jonah_Chemdata_tablefile_reformat2017-10-4.csv'
 base_fname = fs / project / 'stats' / 'mrs' / 'all_nbwr_mrs'
 uncorr_csv_fname = appendposix(base_fname, '_uncorr_fits.csv')
@@ -148,8 +148,8 @@ for s in onerowpersubj.columns:
     onerowpersubj.loc['right-percCSF', s] = csf_frac.loc['right-percCSF'][0]
 
 # behavior data
-behav_fname = stats_dir / 'GABA.xlsx'
-behav_raw = pd.read_excel(str(behav_fname), sheetname='ASD tracking')
+behav_fname = stats_dir / 'GABA_subject_information.xlsx'      #'GABA.xlsx'
+behav_raw = pd.read_excel(str(behav_fname), sheetname='ASD Tracking')
 behav_raw['subject'] = behav_raw['Subject #'].str.replace('GABA_', 'sub-nbwr')
 behav_raw.set_index(['subject'], inplace=True)
 behav_data = behav_raw[behav_cols_of_interest]
@@ -230,10 +230,10 @@ with WorkingContext(str(stats_dir)):
         print("working on "+'_'.join(mb)+" correlations")
         rlog += run_subprocess(str(corr_fpgm))
         rlog += run_subprocess(str(plot_fpgm))
-        rlog += eng.GenSpec(nargout=0)
+        #rlog += eng.GenSpec(nargout=0)
         # now save results to new file names
         newname = stats_dir / ('_'.join(mb)+'_corr_plot_{:%Y%m%d%H%M}.jpg'.format(datetime.datetime.now()))
-        Path(stats_dir / 'mrsbehav.jpg').rename(newname)
+        #Path(stats_dir / 'mrsbehav.jpg').rename(newname)
 
 ''' 
 mrs data saved to hdf file:
@@ -298,9 +298,9 @@ stats_results.T.to_excel(writer, sheet_name='stats', index_label='stats', header
 stats_results.T.to_hdf(hdf_fname, 'CSFcorrected_mrs_stats', mode='a', format='t', append=True, data_columns=stats_results.T.columns)
 fstats.to_excel(writer, sheet_name='stats', index_label='stats', header=True, startrow=9, startcol=0)
 
-# format destiptives as 2 col LT/RT loop
+# format descriptives as 2 col LT/RT loop
 descriptives.to_excel(writer, sheet_name='stats', index_label='stats', header=True, startrow=22, startcol=0)
-descriptives.to_hdf(hdf_fname, 'CSFcorrected_mrs_descriptive_stats', mode='a', format='t', append=True, data_columns=descriptives.columns)
+#descriptives.to_hdf(hdf_fname, 'CSFcorrected_mrs_descriptive_stats', mode='a', format='t', append=True, data_columns=descriptives.columns)
 
 stats_worksheet = writer.sheets['stats']
 stats_worksheet.set_column('B:O', 24, data_format)
@@ -313,7 +313,7 @@ stats_worksheet.write_string(28,0,'Selected Correlations:', title_format)
 stats_worksheet.set_row(18, {'align': 'left'})
 stats_worksheet.set_row(19, {'align': 'left'})
 
-stats_worksheet = writer.sheets['fortran_stats']
+#stats_worksheet = writer.sheets['fortran_stats']
 
 
 #stats_worksheet.conditional_format('B4:O4', {'type': 'cell', 'criteria': '<=', 'value': 0.05, 'bg_color': '#FFC7CE'})

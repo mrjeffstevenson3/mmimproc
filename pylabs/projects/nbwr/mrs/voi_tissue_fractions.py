@@ -43,12 +43,12 @@ fast = fsl.FAST(
             )
 fast.inputs.environ['FSLMULTIFILEQUIT'] = pylabs.opts.fslmultifilequit
 ext = pylabs.opts.nii_fext
-results_file = fs/project/'test_mrs_tissue_fractions.h5' # results of segmentation
+results_file = fs/project/'nbwr_mrs_tissue_fractions.h5' # results of segmentation
 only_spm = True
 # instantiate subject id list container
 subjids_picks = SubjIdPicks()
 # list of subject ids to operate on
-picks = ['427', ]
+picks = ['447', ]
 setattr(subjids_picks, 'subjids', picks)
 setattr(subjids_picks, 'source_path', fs / project / 'sub-nbwr%(sid)s' / 'ses-1' / 'source_sparsdat')
 
