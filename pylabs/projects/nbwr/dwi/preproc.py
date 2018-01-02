@@ -20,11 +20,9 @@ from pylabs.conversion.nifti2nrrd import nii2nrrd
 from pylabs.alignment.ants_reg import subj2templ_applywarp
 from pylabs.correlation.atlas import mori_network_regions
 from pylabs.io.images import savenii
-from pylabs.utils import run_subprocess, WorkingContext, appendposix, replacesuffix
-from pylabs.utils.paths import getnetworkdataroot, test4working_gpu, get_antsregsyn_cmd, MNI1mm_T2_brain, getslicercmd, \
-        moriMNIatlas, MNI1mm_T1_brain
-
-from pylabs.utils.provenance import ProvenanceWrapper
+from pylabs.utils import ProvenanceWrapper, run_subprocess, WorkingContext, appendposix, replacesuffix, getnetworkdataroot, test4working_gpu, get_antsregsyn_cmd, MNI1mm_T2_brain, getslicercmd, \
+        moriMNIatlas, MNI1mm_T1_brain, getslicercmd
+from pylabs.projects.nbwr.file_names import project, SubjIdPicks, subjs_h5_info_fname, get_dwi_names
 prov = ProvenanceWrapper()
 
 
@@ -47,16 +45,16 @@ from pylabs.projects.nbwr.file_names import project, SubjIdPicks, get_dwi_names
 # instantiate subject id list container
 subjids_picks = SubjIdPicks()
 # list of subject ids to operate on
-picks = ['132', '317', '401', '404', '107']
+picks = ['447', ]
 
 setattr(subjids_picks, 'subjids', picks)
 
 topup_fnames, topdn_fnames, dwi_fnames = get_dwi_names(subjids_picks)
 
-eddy_corr_dir = 'eddy_cuda_repol_v2'   # output dir for eddy
+eddy_corr_dir = 'eddy_cuda_repol_v1'   # output dir for eddy
 fits_dir_name = 'fits_v1'    # dir for all fitting methods
 filterS0_string = '_mf'
-niipickle = fs / project / 'nbwrniftiDict_{:%Y%M%d%H%M}.pickle'.format(datetime.datetime.now())
+
 #stages to run
 overwrite = True
 convert = False
@@ -98,6 +96,7 @@ def test4file(file):
     else:
         raise ValueError(str(file) + ' not found.')
 
+topup_fnames, topdn_fnames, dwi_fnames = get_dwi_names(subjids_picks)
 
 #run conversion if needed
 # if convert:

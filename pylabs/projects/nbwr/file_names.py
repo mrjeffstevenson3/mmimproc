@@ -7,14 +7,17 @@
 
 # class object to pass list of subject ids and passed to functions here using the SubjIdPicks class object.
 # defaults for session and run numbers are set here as  well as exceptions to those defaults called out by subject and modality.
+import pylabs
+pylabs.datadir.target = 'jaba'
 from pathlib import *
 from collections import defaultdict
-from pylabs.utils import removesuffix
+from pylabs.utils import removesuffix, getnetworkdataroot
 from pylabs.conversion.brain_convert import nbwr_conv
 
 class SubjIdPicks(object):
     pass
 
+fs = Path(getnetworkdataroot())
 
 project = 'nbwr'
 # known from protocol
@@ -29,6 +32,7 @@ ftempl = 'sub-nbwr{}_ses-{}_{}_{}'
 gaba_ftempl = 'sub-{proj}{sid}_WIP_{side}GABAMM_TE{te}_{dyn}DYN_{wild}_raw_{type}.SDAT'
 
 '''
+ref file names:
 sub-nbwr407_WIP_LTGABAMM_TE80_120DYN_7_2_raw_act.SDAT
 sub-nbwr407_WIP_RTGABAMM_TE80_120DYN_8_2_raw_act.SDAT
 sub-nbwr144_ses-1_right_match_mrs_ti1100_1.nii
@@ -38,6 +42,8 @@ gaba_ftempl = '{proj}_{sid2}_WIP_GABAMM_TE{te}_{dyn}DYN_{wild}_raw_{type}.SDAT'
 gaba_fname_dd = {'proj': 'TADPOLE', 'wild': '*', 'te': gaba_te, 'dyn': gaba_dyn, 'side': 'RT', 'type': 'act', 'sid2': 'PR20160803', 'ses': '1'}
 '''
 
+# hdf info file name
+subjs_h5_info_fname = fs/project/('all_'+project+'_subjects_info.h5')
 
 b1map_fname_dd = defaultdict()
 fs_fname_dd = defaultdict()

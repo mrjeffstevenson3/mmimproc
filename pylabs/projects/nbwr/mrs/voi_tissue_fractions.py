@@ -16,7 +16,7 @@ from pylabs.mrs.tissue_fractions import make_voi_mask, calc_tissue_fractions
 from pylabs.structural.brain_extraction import extract_brain
 from pylabs.utils import ProvenanceWrapper, run_subprocess, WorkingContext, getnetworkdataroot, appendposix, replacesuffix, \
     prependposix, getspmpath, pylabs_dir
-from pylabs.projects.nbwr.file_names import project, SubjIdPicks, get_matching_voi_names, get_gaba_names
+from pylabs.projects.nbwr.file_names import project, SubjIdPicks, subjs_h5_info_fname, get_matching_voi_names, get_gaba_names
 prov = ProvenanceWrapper()
 
 os.environ['FSLOUTPUTTYPE'] = pylabs.opts.nii_ftype
@@ -43,7 +43,7 @@ fast = fsl.FAST(
             )
 fast.inputs.environ['FSLMULTIFILEQUIT'] = pylabs.opts.fslmultifilequit
 ext = pylabs.opts.nii_fext
-results_file = fs/project/'nbwr_mrs_tissue_fractions.h5' # results of segmentation
+ # results of segmentation
 only_spm = True
 # instantiate subject id list container
 subjids_picks = SubjIdPicks()
@@ -166,7 +166,7 @@ for rt_matchfname, lt_matchfname, rt_actfname, lt_actfname in zip(rt_matchfnames
                     'right-percCSF': fractions.loc['frac_CSF', 'right_SPM']}
             csf_data = pd.Series(data, index=indx, name=data['subject'])
             csf_data.to_csv(str(mrs_dir / str(subject + '_csf_fractions.csv')))
-            # fractions.to_hdf(str(results_file), subject, append=True, format = 'table')
+            fractions.to_hdf(str(subjs_h5_info_fname), subject/session/'mrs'/'CSF_correction_factors', append=True, format = 'table')
             prov.log(str(mrs_dir / str(subject + '_sv_voi_tissue_proportions.csv')),
                      'csv text file containing percent CSF, GM, WM', str(lt_match_brain),
                      provenance={'thresh': thresh, 'side': 'left', 'method': 'SPM', 'tissue': 'GM'}, script=__file__)
