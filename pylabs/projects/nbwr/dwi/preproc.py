@@ -106,6 +106,8 @@ def test4file(file):
 
 for i, (topup, topdn, dwif) in enumerate(zip(topup_fnames, topdn_fnames, dwi_fnames)):
     result = ()
+    subjid = dwif.split('_')[0]
+    session = dwif.split('_')[1]
     dwipath = fs / project / dwif.split('_')[0] / dwif.split('_')[1] / 'dwi'
     regpath = fs / project / dwif.split('_')[0] / dwif.split('_')[1] / 'reg' / 'MNI2dwi'
     ec_dir = dwipath / eddy_corr_dir
@@ -204,7 +206,7 @@ for i, (topup, topdn, dwif) in enumerate(zip(topup_fnames, topdn_fnames, dwi_fna
             # add fsl fits here
 
     # bedpost input files and execute (hopefully) on gpu
-    if not test4file(appendposix(bedpost_dir, '.bedpostX') / 'mean_S0samples.nii.gz') or (test4file(appendposix(bedpost_dir, '.bedpostX') / 'mean_S0samples.nii.gz') & overwrite):
+    if overwrite or not test4file(appendposix(bedpost_dir, '.bedpostX') / 'mean_S0samples.nii.gz'):
         with WorkingContext(str(dwipath)):
             # set up files in bedpost dir
             shutil.copy(str(ec_dwi_name) + filterS0_string + '_clamp1.nii.gz', str(bedpost_dir))
@@ -215,7 +217,11 @@ for i, (topup, topdn, dwif) in enumerate(zip(topup_fnames, topdn_fnames, dwi_fna
             os.rename(str(bedpost_dir/dwi_bvals_fname.name), str(bedpost_dir/'bvals'))
             shutil.copy(str(dwipath/str(topup + '_topdn_concat_unwarped_mean_brain_mask.nii.gz')), str(bedpost_dir))
             os.rename(str(bedpost_dir/str(topup + '_topdn_concat_unwarped_mean_brain_mask.nii.gz')), str(bedpost_dir/'nodif_brain_mask.nii.gz'))
-            # run bedpost, probtracks, network, UKF, NODDI, and DKI here
+            # run dtifit, bedpost, probtracks, network, UKF, NODDI, and DKI here
+            if not (dwipath/'fsldtifit').is_dir():
+                (dwipath / 'fsldtifit').mkdir(parents=True)
+            with WorkingContext(str(bedpost_dir)):
+                result += run_subprocess(['dtifit -k data.nii.gz -o ../fsldtifit/'+subjid+'_'+session+'_dwi_topupdn_ec_fsl'+' -m nodif_brain_mask.nii.gz -r bvecs -b bvals --save_tensor --sse -w'])
             if test4working_gpu():
                 result += run_subprocess('bedpostx_gpu bedpost -n 3 --model=2')
                 # what cleanup is required?
@@ -224,14 +230,14 @@ for i, (topup, topdn, dwif) in enumerate(zip(topup_fnames, topdn_fnames, dwi_fna
 
     # use ants to warp mori atlas into subj space
     if not test4file(regpath/replacesuffix(moriMNIatlas.name, '_reg2dwi.nii.gz')) or (test4file(regpath/replacesuffix(moriMNIatlas.name, '_reg2dwi.nii.gz')) & overwrite):
-        with WorkingContext(regpath):
+        with WorkingContext(str(regpath)):
             MNI2b0_brain_antscmd = [str(antsRegistrationSyN), '-d 3 -m', str(MNI1mm_T2_brain), '-f',str(b0_brain_fname), '-o',
                                     str(regpath / replacesuffix(MNI1mm_T2_brain, '_reg2dwi_').name),'-n 30 -t s -p f -j 1 -s 10 -r 1']
-            result += run_subprocess(' '.join(MNI2b0_brain_antscmd))
-            warpfiles = [regpath/replacesuffix(moriMNIatlas, '_reg2dwi_1Warp.nii.gz'),]
-            affines = [regpath/replacesuffix(moriMNIatlas, '_reg2dwi_0GenericAffine.mat'),]
-            subj2templ_applywarp(str(moriMNIatlas), str(b0_brain_fname), str(regpath/replacesuffix(moriMNIatlas.name, '_reg2dwi.nii.gz')), warpfiles=warpfiles, regpath, affine_xform=affines)
-            subj2templ_applywarp(str(MNI1mm_T1_brain), str(b0_brain_fname), str(regpath/replacesuffix(MNI1mm_T1_brain.name, '_reg2dwi.nii.gz')), warpfiles=warpfiles, regpath, affine_xform=affines)
+            result += run_subprocess([' '.join(MNI2b0_brain_antscmd)])
+            warpfiles = [str(regpath/replacesuffix(moriMNIatlas, '_reg2dwi_1Warp.nii.gz')),]
+            affines = [str(regpath/replacesuffix(moriMNIatlas, '_reg2dwi_0GenericAffine.mat')),]
+            subj2templ_applywarp(str(moriMNIatlas), str(b0_brain_fname), str(regpath/replacesuffix(moriMNIatlas.name, '_reg2dwi.nii.gz')), warpfiles, regpath, affine_xform=affines)
+            subj2templ_applywarp(str(MNI1mm_T1_brain), str(b0_brain_fname), str(regpath/replacesuffix(MNI1mm_T1_brain.name, '_reg2dwi.nii.gz')), warpfiles, regpath, affine_xform=affines)
 
 
 
