@@ -236,8 +236,8 @@ for i, (topup, topdn, dwif) in enumerate(zip(topup_fnames, topdn_fnames, dwi_fna
             result += run_subprocess([' '.join(MNI2b0_brain_antscmd)])
             warpfiles = [str(regpath/replacesuffix(moriMNIatlas, '_reg2dwi_1Warp.nii.gz')),]
             affines = [str(regpath/replacesuffix(moriMNIatlas, '_reg2dwi_0GenericAffine.mat')),]
-            subj2templ_applywarp(str(moriMNIatlas), str(b0_brain_fname), str(regpath/replacesuffix(moriMNIatlas.name, '_reg2dwi.nii.gz')), warpfiles, regpath, affine_xform=affines)
-            subj2templ_applywarp(str(MNI1mm_T1_brain), str(b0_brain_fname), str(regpath/replacesuffix(MNI1mm_T1_brain.name, '_reg2dwi.nii.gz')), warpfiles, regpath, affine_xform=affines)
+            subj2templ_applywarp(str(moriMNIatlas), str(b0_brain_fname), str(regpath/replacesuffix(moriMNIatlas.name, '_reg2dwi.nii.gz')), warpfiles, str(regpath), affine_xform=affines)
+            subj2templ_applywarp(str(MNI1mm_T1_brain), str(b0_brain_fname), str(regpath/replacesuffix(MNI1mm_T1_brain.name, '_reg2dwi.nii.gz')), warpfiles, str(regpath), affine_xform=affines)
 
 
 
