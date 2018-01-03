@@ -22,7 +22,6 @@ from pylabs.correlation.atlas import mori_network_regions
 from pylabs.io.images import savenii
 from pylabs.utils import ProvenanceWrapper, run_subprocess, WorkingContext, appendposix, replacesuffix, getnetworkdataroot, test4working_gpu, get_antsregsyn_cmd, MNI1mm_T2_brain, getslicercmd, \
         moriMNIatlas, MNI1mm_T1_brain, getslicercmd
-from pylabs.projects.nbwr.file_names import project, SubjIdPicks, subjs_h5_info_fname, get_dwi_names
 prov = ProvenanceWrapper()
 
 
@@ -41,14 +40,14 @@ antsRegistrationSyN = get_antsregsyn_cmd()
 slicer_path = getslicercmd()
 
 # project and subjects and files to run on
-from pylabs.projects.nbwr.file_names import project, SubjIdPicks, get_dwi_names
+from pylabs.projects.nbwr.file_names import project, SubjIdPicks, get_dwi_names, subjs_h5_info_fname
 # instantiate subject id list container
 subjids_picks = SubjIdPicks()
 # list of subject ids to operate on
 picks = ['447', ]
 
 setattr(subjids_picks, 'subjids', picks)
-
+# get file names
 topup_fnames, topdn_fnames, dwi_fnames = get_dwi_names(subjids_picks)
 
 eddy_corr_dir = 'eddy_cuda_repol_v1'   # output dir for eddy
@@ -94,9 +93,7 @@ def test4file(file):
     if file.is_file():
         return True
     else:
-        raise ValueError(str(file) + ' not found.')
-
-topup_fnames, topdn_fnames, dwi_fnames = get_dwi_names(subjids_picks)
+        return False
 
 #run conversion if needed
 # if convert:
@@ -183,7 +180,7 @@ for i, (topup, topdn, dwif) in enumerate(zip(topup_fnames, topdn_fnames, dwi_fna
 
     # eddy current correction
     ec_dwi_name = ec_dir / str(dwif + '_topdn_unwarped_ec')
-    dwi_bvecs_ec_rot_fname = str(ec_dwi_name) + '.eddy_rotated_bvecs'
+    dwi_bvecs_ec_rot_fname = Path(str(ec_dwi_name) + '.eddy_rotated_bvecs')
     if not test4file(replacesuffix(ec_dwi_name, filterS0_string+'_clamp1.nii.gz')) or (test4file(replacesuffix(ec_dwi_name, filterS0_string+'_clamp1.nii.gz')) & overwrite):
         with WorkingContext(str(ec_dir)):
             b0_brain_fname, b0_brain_mask_fname = extract_brain(dwipath/str(topup + '_topdn_concat_unwarped_mean.nii.gz'))
@@ -204,12 +201,14 @@ for i, (topup, topdn, dwif) in enumerate(zip(topup_fnames, topdn_fnames, dwi_fna
             ec_data[ec_data <= 1] = 0
             savenii(ec_data, ec_data_affine, str(ec_dwi_name)+filterS0_string+'_clamp1.nii.gz')
             nii2nrrd(str(ec_dwi_name)+filterS0_string+'_clamp1.nii.gz', str(ec_dwi_name)+filterS0_string+'_clamp1.nhdr', bvalsf=str(dwi_bvals_fname), bvecsf=str(dwi_bvecs_ec_rot_fname))
+            # add fsl fits here
 
     # bedpost input files and execute (hopefully) on gpu
     if not test4file(appendposix(bedpost_dir, '.bedpostX') / 'mean_S0samples.nii.gz') or (test4file(appendposix(bedpost_dir, '.bedpostX') / 'mean_S0samples.nii.gz') & overwrite):
-        with WorkingContext(str(bedpost_dir)):
-            shutil.copy(str(ec_dir/ec_dwi_name) + filterS0_string + '_clamp1.nii.gz', str(bedpost_dir))
-            os.rename(str(ec_dwi_name) + filterS0_string + '_clamp1.nii.gz', str(bedpost_dir/'data.nii.gz'))
+        with WorkingContext(str(dwipath)):
+            # set up files in bedpost dir
+            shutil.copy(str(ec_dwi_name) + filterS0_string + '_clamp1.nii.gz', str(bedpost_dir))
+            os.rename(str(bedpost_dir/ec_dwi_name.name) + filterS0_string + '_clamp1.nii.gz', str(bedpost_dir/'data.nii.gz'))
             shutil.copy(str(dwi_bvecs_ec_rot_fname), str(bedpost_dir))
             os.rename(str(bedpost_dir/dwi_bvecs_ec_rot_fname.name), str(bedpost_dir/'bvecs'))
             shutil.copy(str(dwi_bvals_fname), str(bedpost_dir))
