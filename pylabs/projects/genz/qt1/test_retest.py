@@ -252,7 +252,7 @@ if b1corr == 'fit':
     fa_b1corr = np.zeros(data.shape)
     for i, fa in enumerate(flipAngles):
         fa_uncorr[i,:] = fa
-    fa_b1corr = fa_uncorr / b1map_data * 100
+    fa_b1corr = fa_uncorr * (b1map_data * 100)
     fa_b1corr[fa_b1corr == np.inf] = np.nan
     fa_b1corr_rad = np.radians(fa_b1corr)
     fa_b1corr_rad[~mask2d] = np.nan
@@ -281,7 +281,7 @@ t1data = t1.reshape(dims)
 t1data[(t1data < 1) | (t1data == np.nan)] = 0
 t1data[t1data > 6000] = 6000
 t1img = nib.Nifti1Image(t1data, nib.load(str(faFiles[0])).affine)
-nib.save(t1img, str(datadir/'sub-genz996_ses-3_qt1_noreg_ib1corr_N4bc_susan_lstsq-fit_clamped.nii'))
+nib.save(t1img, str('sub-acdc997_ses-1_qt1_vfa3flip_b1corr_clamped.nii'))
 
 
 # linear regression
@@ -296,6 +296,123 @@ qT1_linregr_data = qT1_linregr.reshape(dims)
 qT1_linregr_data[(qT1_linregr_data < 1) | (qT1_linregr_data == np.nan)] = 0
 qT1_linregr_data[qT1_linregr_data > 6000] = 6000
 qT1_linregr_img = nib.Nifti1Image(qT1_linregr_data, nib.load(faFiles[0]).affine)
-nib.save(qT1_linregr_img, str(datadir/'sub-genz996_ses-1_qt1_noreg_fb1corr_vlinregr-fit_clamped.nii'))
+nib.save(qT1_linregr_img, str(datadir/'sub-acdc997_ses-1_qt1_vfa3flip_b1corr_vlinregr-fit_clamped.nii'))
+
+#######===========================
+from scipy import stats
+TR = 22.448
+session = 'ses-1'
+subjid = 'sub-acdc997'
+project = 'acdc'
+os.chdir(str(fs/project/subjid/session/'qt1'))
+uncorr_vfa_fnames = sorted(list(Path.cwd().glob('*_brain.nii.gz')))
+TR = float(np.unique(nib.load('acdc_vy_quiet_patch_test_WIP_VFA3flip_5-15-30-sans_quiet_incrsense_1mm_SENSE_18_1.PAR').header.general_info['repetition_time']))
+flipAngles = [float(str(Path(fa).name).split('_')[1].split('-')[1]) for fa in uncorr_vfa_fnames]
+
+mask = nib.load(str('sub-acdc997_vfa-15-tr-22p448_brain_mask.nii.gz')).get_data().astype('bool').flatten()
+mask2d = np.tile(mask, [len(flipAngles), 1])
+
+b1map_masked = 'sub-acdc997_b1map_phase_reg2vfa30_mf5_masked.nii.gz'
+b1map_data = nib.load(str(b1map_masked)).get_data().flatten()
+
+dims = nib.load(str(uncorr_vfa_fnames[0])).header.get_data_shape()
+k = np.prod(np.array(dims))
+data = np.zeros([len(flipAngles), k])
+for f, fpath in enumerate(uncorr_vfa_fnames):
+    data[f, :] = nib.load(str(fpath)).get_data().flatten()
+b1map_data = nib.load(str(b1map_masked)).get_data().flatten()
+fa_uncorr = np.zeros(data.shape)
+fa_b1corr = np.zeros(data.shape)
+for i, fa in enumerate(flipAngles):
+    fa_uncorr[i, :] = fa
+fa_b1corr = fa_uncorr * b1map_data
+fa_b1corr[fa_b1corr == np.inf] = np.nan
+fa_b1corr_rad = np.radians(fa_b1corr)
+fa_b1corr_rad[~mask2d] = np.nan
+
+data = np.zeros([len(flipAngles), k])
+for f, fpath in enumerate(uncorr_vfa_fnames):
+    data[f, :] = nib.load(str(fpath)).get_data().flatten()
+b1map_data = nib.load(str(b1map_masked)).get_data().flatten()
+fa_uncorr = np.zeros(data.shape)
+fa_b1corr = np.zeros(data.shape)
+for i, fa in enumerate(flipAngles):
+    fa_uncorr[i, :] = fa
+fa_b1corr = fa_uncorr * b1map_data
+fa_b1corr[fa_b1corr == np.inf] = np.nan
+fa_b1corr_rad = np.radians(fa_b1corr)
+fa_b1corr_rad[~mask2d] = np.nan
+
+# linear regression
+y = data / np.sin(fa_b1corr_rad)
+x = data / np.tan(fa_b1corr_rad)
+m = np.zeros(k)
+for v in range(k):
+    if mask[v]:
+        m[v], intercept, r, p, std = stats.linregress(x[:,v], y[:,v])
+qT1_linregr = -TR/np.log(m)
+qT1_linregr_data = qT1_linregr.reshape(dims)
+qT1_linregr_data[(qT1_linregr_data < 1) | (qT1_linregr_data == np.nan)] = 0
+qT1_linregr_data[qT1_linregr_data > 6000] = 6000
+qT1_linregr_img = nib.Nifti1Image(qT1_linregr_data, nib.load(str(uncorr_vfa_fnames[0])).affine)
+nib.save(qT1_linregr_img, str('sub-acdc997_ses-1_qt1_vfa3flip_b1corr_vlinregr-fit_clamped2.nii'))
+
+## example rms calc
+#in_data_rms = np.sqrt(np.sum(np.square(in_data), axis=3)/in_data.shape[3])
+
+vfa2_2ec_pr_img = nib.load('acdc_vy_quiet_patch_test_WIP_VFA3flip_5-15-30-sans_quiet_incrsense_1mm_SENSE_18_1.PAR')
+vfa2_2ec_pr_hdr = vfa2_2ec_pr_img.header
+TR = float(vfa2_2ec_pr_hdr.general_info['repetition_time'])
+vy_vfa2_2ec_data = nib.load('acdc_vy_quiet_patch_test_WIP_VFA-sans-QUIET_SENSE_14_1.nii').get_data()
+
+flipAngles = np.array([5.0, 25.0])
+
+
+## VASILY PROTO
+from scipy import stats
+from scipy.ndimage.filters import median_filter as medianf
+project = 'acdc'
+subjid = 'VY_PATCH_TEST_1-3-18'
+os.chdir(str(fs/project/subjid))
+vfa_fname = 'acdc_vy_quiet_patch_test_WIP_VFA-sans-QUIET_SENSE_14_1.nii'
+b1map_fname = 'acdc_vy_quiet_patch_test_WIP_B1-sans_SENSE_13_1.nii'
+vy_flipAngles = [4.0, 25.0]
+TR = float(np.unique(nib.load(str(replacesuffix(vfa_fname, '.PAR')).header.general_info['repetition_time'])))
+affine = nib.load(vfa_fname).affine
+vy_vfa2_2ec_data = nib.load(vfa_fname).get_data()  # scaled to float
+vy_b1map_data = nib.load(b1map_fname).get_data()   # scaled to dv
+vy_b1map_phase = vy_b1map_data[:,:,:,2]
+
+vy_b1map_phase_mf = medianf(vy_b1map_phase, size=5)
+nib.save(nib.Nifti1Image(vy_b1map_phase_mf, nib.load(b1map_fname).affine), 'vy_b1map_match14_phase_mf5.nii')
+
+vy_vfa2_ec1 = vy_vfa2_2ec_data[:,:,:,:2]
+vy_vfa2_ec2 = vy_vfa2_2ec_data[:,:,:,2:4]
+vy_vfa2_ec1_rms = np.sqrt(np.sum(np.square(vy_vfa2_ec1), axis=3)/vy_vfa2_ec1.shape[3])
+vy_vfa2_ec2_rms = np.sqrt(np.sum(np.square(vy_vfa2_ec2), axis=3)/vy_vfa2_ec2.shape[3])
+k = np.prod(vy_vfa2_ec1_rms.shape)
+data = np.zeros([len(vy_flipAngles), k])
+data[0,:] = vy_vfa2_ec1_rms.flatten()
+data[1,:] = vy_vfa2_ec2_rms.flatten()
+fa_uncorr = np.zeros(data.shape)
+fa_b1corr = np.zeros(data.shape)
+for i, fa in enumerate(vy_flipAngles):
+    fa_uncorr[i, :] = fa
+fa_b1corr = fa_uncorr * vy_b1map_phase_mf.flatten()  # uses broadcasting
+fa_b1corr[fa_b1corr == np.inf] = np.nan
+fa_b1corr_rad = np.radians(fa_b1corr)
+y = data / np.sin(fa_b1corr_rad)
+x = data / np.tan(fa_b1corr_rad)
+m = np.zeros(k)
+for v in range(k):        #uses no mask yet
+    m[v], intercept, r, p, std = stats.linregress(x[:, v], y[:, v])
+qT1_linregr = -TR/np.log(m)
+qT1_linregr_data = qT1_linregr.reshape(vy_vfa2_ec1_rms.shape)
+qT1_linregr_data[(qT1_linregr_data < 1) | (qT1_linregr_data == np.nan)] = 0
+qT1_linregr_data[qT1_linregr_data > 6000] = 6000
+qT1_linregr_img = nib.Nifti1Image(qT1_linregr_data, affine)
+nib.save(qT1_linregr_img, str('vy_qt1_vfa2flip_2echo_rms_scan14_b1corr13_vlinregr-fit_clamped.nii'))
+
 
 # now segment using spm
+
