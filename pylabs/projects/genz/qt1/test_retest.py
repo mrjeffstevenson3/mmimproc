@@ -377,7 +377,7 @@ os.chdir(str(fs/project/subjid))
 vfa_fname = 'acdc_vy_quiet_patch_test_WIP_VFA-sans-QUIET_SENSE_14_1.nii'
 b1map_fname = 'acdc_vy_quiet_patch_test_WIP_B1-sans_SENSE_13_1.nii'
 vy_flipAngles = [4.0, 25.0]
-TR = float(np.unique(nib.load(str(replacesuffix(vfa_fname, '.PAR')).header.general_info['repetition_time'])))
+TR = float(np.unique(nib.load(str(replacesuffix(vfa_fname, '.PAR'))).header.general_info['repetition_time']))
 affine = nib.load(vfa_fname).affine
 vy_vfa2_2ec_data = nib.load(vfa_fname).get_data()  # scaled to float
 vy_b1map_data = nib.load(b1map_fname).get_data()   # scaled to dv
@@ -411,7 +411,9 @@ qT1_linregr_data = qT1_linregr.reshape(vy_vfa2_ec1_rms.shape)
 qT1_linregr_data[(qT1_linregr_data < 1) | (qT1_linregr_data == np.nan)] = 0
 qT1_linregr_data[qT1_linregr_data > 6000] = 6000
 qT1_linregr_img = nib.Nifti1Image(qT1_linregr_data, affine)
-nib.save(qT1_linregr_img, str('vy_qt1_vfa2flip_2echo_rms_scan14_b1corr13_vlinregr-fit_clamped.nii'))
+nib.save(qT1_linregr_img, str('vy_qt1_vfa2flip_2echo_rms_jsscan18_0p64mm3_b1corr13_vlinregr-fit_clamped.nii'))
+
+
 
 
 # now segment using spm
