@@ -2,6 +2,7 @@
 from pathlib import *
 import os
 import nibabel as nib
+import numpy as np
 from scipy.ndimage.filters import median_filter as medianf
 from pylabs.utils.paths import getnetworkdataroot
 from pylabs.io.images import savenii
@@ -62,3 +63,11 @@ def correct4b1(project, subject, session, b1map_file, target, reg_dir_name):
                  'median filtered b1 phase map correction', str(target), script=__file__,
                  provenance={'filter': 'numpy median filter', 'filter size': '7', 'results': results})
     return results
+
+def calcb1map(S1, S2, TRs, T1mean=1000.0, FAnom=60.0, medfitl=True, outfile=None):
+    r = S2 / S1
+    E1 = np.exp(-TRs[0]/T1mean)
+    E2 = np.exp(-TRs[1]/T1mean)
+    C = (r - 1 - (E2 * r) + E1) /    (E1 - (E2 * r) + (E1 * E2 * (r - 1)))
+    FA = (np.arccos(C) * 180 / np.pi) / FAnom
+    return FA

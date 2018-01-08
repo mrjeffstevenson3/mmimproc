@@ -371,6 +371,7 @@ flipAngles = np.array([5.0, 25.0])
 ## VASILY PROTO
 from scipy import stats
 from scipy.ndimage.filters import median_filter as medianf
+matching_b1map = True
 project = 'acdc'
 subjid = 'VY_PATCH_TEST_1-3-18'
 os.chdir(str(fs/project/subjid))
@@ -380,11 +381,17 @@ vy_flipAngles = [4.0, 25.0]
 TR = float(np.unique(nib.load(str(replacesuffix(vfa_fname, '.PAR'))).header.general_info['repetition_time']))
 affine = nib.load(vfa_fname).affine
 vy_vfa2_2ec_data = nib.load(vfa_fname).get_data()  # scaled to float
-vy_b1map_data = nib.load(b1map_fname).get_data()   # scaled to dv
-vy_b1map_phase = vy_b1map_data[:,:,:,2]
 
-vy_b1map_phase_mf = medianf(vy_b1map_phase, size=5)
-nib.save(nib.Nifti1Image(vy_b1map_phase_mf, nib.load(b1map_fname).affine), 'vy_b1map_match14_phase_mf5.nii')
+## if using matching b1
+if matching_b1map:
+    vy_b1map_data = nib.load(b1map_fname).get_data()   # scaled to dv
+    vy_b1map_phase = vy_b1map_data[:,:,:,2]
+
+    vy_b1map_phase_mf = medianf(vy_b1map_phase, size=5)
+    nib.save(nib.Nifti1Image(vy_b1map_phase_mf, nib.load(b1map_fname).affine), 'vy_b1map_match14_phase_mf5.nii')
+else:    # assumes b1 map reg using ants and phase warped and masked
+    vy_b1map_phase_mf = nib.load(b1map_fname).get_data()
+
 
 vy_vfa2_ec1 = vy_vfa2_2ec_data[:,:,:,:2]
 vy_vfa2_ec2 = vy_vfa2_2ec_data[:,:,:,2:4]
