@@ -64,10 +64,23 @@ def correct4b1(project, subject, session, b1map_file, target, reg_dir_name):
                  provenance={'filter': 'numpy median filter', 'filter size': '7', 'results': results})
     return results
 
-def calcb1map(S1, S2, TRs, T1mean=1000.0, FAnom=60.0, medfitl=True, outfile=None):
+def calcb1map(S1, S2, TRs, T1mean=1000.0, FAnom=60.0, medfilt=True):
+    '''
+    based on vasily Yarnykh's 2007 B1map method. ref: Magnetic Resonance in Medicine 57:192–200 (2007)
+    :param S1: b1map magnitude signal ndarray of 1st (shortest) TR1 . matches TRs[0]. can be scaled as fp or dv but must be same for both.
+    :param S2: b1map magnitude signal ndarray of 2nd (offset) TR2. matches TRs[1]. same scaling as S1.
+    :param TRs: list with values of 2 TRs in magnitude b1map. (TR2 = TR1 + offset). parrec TR list is correct
+    :param T1mean: avg T1 of tissue. 1000ms for brain. should change for shorter T1 phantom vials.
+    :param FAnom: the flip angle of the b1 map sequence. default=60ms
+    :param medfilt: True/False filtering option
+    :returns: the array of decimal offsets to flip angles in spgr eg 1.07234 is a 7.234% overflip error for any spgr flip angle scan
+
+    '''
     r = S2 / S1
     E1 = np.exp(-TRs[0]/T1mean)
     E2 = np.exp(-TRs[1]/T1mean)
     C = (r - 1 - (E2 * r) + E1) /    (E1 - (E2 * r) + (E1 * E2 * (r - 1)))
     FA = (np.arccos(C) * 180 / np.pi) / FAnom
+    if medfilt:
+        FA = medianf(FA, size=5)
     return FA
