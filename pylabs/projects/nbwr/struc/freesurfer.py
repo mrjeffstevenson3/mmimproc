@@ -80,9 +80,9 @@ for fsf, b1map in zip(freesurf_fnames, b1map_fnames):
     fs_sid = fsf+'_freesurf'
     if overwrite and neck_chop:
 
-        fs_fname += '_nchop'
+        fs_fname += '_cropped'
     if not overwrite and neck_chop:
-        fs_fname += '_nchop'
+        fs_fname += '_cropped'
 
 
     with WorkingContext(str(subjects_dir)):

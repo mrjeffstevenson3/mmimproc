@@ -10,7 +10,7 @@ import nibabel as nib
 from scipy.ndimage.measurements import center_of_mass as com
 from dipy.segment.mask import applymask
 from pylabs.io.images import savenii
-from pylabs.utils import appendposix, replacesuffix, run_subprocess, getnetworkdataroot, ProvenanceWrapper
+from pylabs.utils import appendposix, replacesuffix, getnetworkdataroot, ProvenanceWrapper, meg_head_mask
 from nipype.interfaces import fsl
 flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo', output_type=pylabs.opts.nii_ftype)
 if nipype.__version__ == '0.12.0':
@@ -57,7 +57,7 @@ def extract_brain(file, f_factor=0.3):
     res = flt.run()
     # apply mat file to MNI mask file to cut off neck
     applyxfm.inputs.in_matrix_file = str(file.parent/appendposix(Path(file.stem).stem, '_comroi.mat'))
-    applyxfm.inputs.in_file = str(mnimask)
+    applyxfm.inputs.in_file = str(meg_head_mask)
     applyxfm.inputs.out_file = str(replacesuffix(file, '_mask'+ext))
     applyxfm.inputs.reference = str(file)
     applyxfm.inputs.apply_xfm = True
