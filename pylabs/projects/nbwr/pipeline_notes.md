@@ -10,3 +10,10 @@ make mrs group level hdf file called <project>_mrs_group_results.h5
     3. save right side corrected data  (done)   name: right_side_glutamate_and_other_metabolites
     4. save fortran stats and correlations      name: fortran/stats and /correlations and /figures
     5. save python stats and correlations       name: python/stats and /correlations and /figures
+    
+qT1 workflow:
+    1. bet TR1 and make b1 map from mag images using calcb1map
+    2. bet spgr's and reg to spgr20 (or highest fa) using ants
+    3. reg b1map phase to spgr using ants 
+    4. calc qT1 using non-linear exp fit
+    5. calc phantom equation for that day and apply
