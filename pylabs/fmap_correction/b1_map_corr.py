@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # wip b1 map correction functions used in fs, qT1, vbm, mrs
 from pathlib import *
 import os
@@ -76,11 +77,16 @@ def calcb1map(S1, S2, TRs, T1mean=1000.0, FAnom=60.0, medfilt=True):
     :returns: the array of decimal offsets to flip angles in spgr eg 1.07234 is a 7.234% overflip error for any spgr flip angle scan
 
     '''
-    r = S2 / S1
-    E1 = np.exp(-TRs[0]/T1mean)
-    E2 = np.exp(-TRs[1]/T1mean)
-    C = (r - 1 - (E2 * r) + E1) /    (E1 - (E2 * r) + (E1 * E2 * (r - 1)))
-    FA = (np.arccos(C) * 180 / np.pi) / FAnom
+    with np.errstate(divide='ignore'):
+        S1[S1 == 0] = np.nan
+        S2[S2 == 0] = np.nan
+        r = S2 / S1
+        E1 = np.exp(-TRs[0]/T1mean)
+        E2 = np.exp(-TRs[1]/T1mean)
+        C = (r - 1 - (E2 * r) + E1) / (E1 - (E2 * r) + (E1 * E2 * (r - 1)))
+        C[C == np.nan] = 0
+        FA = (np.arccos(C) * 180 / np.pi) / FAnom
+        FA[FA == np.nan] = 0
     if medfilt:
         FA = medianf(FA, size=5)
     return FA

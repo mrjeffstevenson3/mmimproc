@@ -35,6 +35,7 @@ b1corr = True         # for preprocess rms
 noise_filter = True   # for susan
 noise_thresh = -1     # for susan
 noise_kernel = 1      # for susan
+neck_chop = True
 meg_source_spacing = 5    # for mne source space
 bem_from = 'T1'       # or 'brain' if probs with overlapping boundaries in source space
 
@@ -77,6 +78,12 @@ for fsf, b1map in zip(freesurf_fnames, b1map_fnames):
     elif not overwrite and noise_filter:
         fs_fname += '_susanf'
     fs_sid = fsf+'_freesurf'
+    if overwrite and neck_chop:
+
+        fs_fname += '_nchop'
+    if not overwrite and neck_chop:
+        fs_fname += '_nchop'
+
 
     with WorkingContext(str(subjects_dir)):
         if overwrite:

@@ -4,14 +4,13 @@ from pathlib import *
 from collections import defaultdict
 import subprocess
 import inspect
-import niprov
 import nipype
 import numpy as np
 import nibabel as nib
 from scipy.ndimage.measurements import center_of_mass as com
 from dipy.segment.mask import applymask
-from pylabs.utils import appendposix, replacesuffix
-from pylabs.utils.paths import getnetworkdataroot
+from pylabs.io.images import savenii
+from pylabs.utils import appendposix, replacesuffix, run_subprocess, getnetworkdataroot, ProvenanceWrapper
 from nipype.interfaces import fsl
 flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo', output_type=pylabs.opts.nii_ftype)
 if nipype.__version__ == '0.12.0':
@@ -20,7 +19,7 @@ else:
     applyxfm = fsl.ApplyXFM(interp='nearestneighbour', output_type=pylabs.opts.nii_ftype)
 
 bet = fsl.BET(output_type=pylabs.opts.nii_ftype)
-prov = niprov.ProvenanceContext()
+prov = ProvenanceWrapper()
 fs = getnetworkdataroot()  # should pick up datadir.target
 ext = pylabs.opts.nii_fext
 
@@ -63,21 +62,17 @@ def extract_brain(file, f_factor=0.3):
     applyxfm.inputs.reference = str(file)
     applyxfm.inputs.apply_xfm = True
     result = applyxfm.run()
-    # crop neck with warped MNI mask
+    # crop neck with warped MNI mask and save
     file_data = nib.load(str(file)).get_data()
     com_data = nib.load(str(replacesuffix(file, '_comroi'+ext))).get_data()
     mask_data = nib.load(str(replacesuffix(file, '_mask'+ext))).get_data().astype(int)
     crop_file_data = applymask(file_data, mask_data)
+    savenii(crop_file_data, nib.load(str(file)).affine, str(replacesuffix(file, '_cropped'+ext)))
     # get com for fsl bet
     com_data_bmask = com_data > 2500
     com_data_mask = np.zeros(com_data.shape)
     com_data_mask[com_data_bmask] = 1
     bet_com = np.round(com(com_data_mask)).astype(int)
-    # save files
-    crop_img = nib.Nifti1Image(crop_file_data, nib.load(str(file)).affine)
-    crop_img.set_qform(crop_img.affine, code=1)
-    crop_img.set_sform(crop_img.affine, code=1)
-    nib.save(crop_img, str(replacesuffix(file, '_cropped'+ext)))
     # extract brain and make fsl brain mask
     brain_outfname = str(replacesuffix(file, '_brain'))
     bet.inputs.in_file = str(replacesuffix(file, '_cropped'+ext))
@@ -89,7 +84,9 @@ def extract_brain(file, f_factor=0.3):
     betres = bet.run()
     prov.log(brain_outfname+ext, 'generic fsl bet brain', str(file), script=__file__, provenance={'f factor': f_factor, 'com': list(bet_com), })
     prov.log(str(replacesuffix(file, '_brain_mask'+ext)), 'generic fsl bet brain mask', str(file), script=__file__, provenance={'f factor': f_factor, 'com': list(bet_com)})
-    return replacesuffix(file, '_brain'+ext), replacesuffix(file, '_brain_mask'+ext)
+    prov.log(str(replacesuffix(file, '_cropped'+ext)), 'generic fsl bet brain mask', str(file), script=__file__,
+             provenance={'f factor': f_factor, 'com': list(bet_com)})
+    return replacesuffix(file, '_brain'+ext), replacesuffix(file, '_brain_mask'+ext), replacesuffix(file, '_cropped'+ext)
 
 
 # old method with manual neck removal and center of mass
