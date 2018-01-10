@@ -7,6 +7,7 @@ import datetime
 import mne, json
 from pylabs.projects.nbwr.file_names import project, SubjIdPicks, get_freesurf_names
 from pylabs.utils.paths import getnetworkdataroot, get_antsregsyn_cmd
+from pylabs.structural.brain_extraction import extract_brain
 from pylabs.fmap_correction.b1_map_corr import correct4b1
 from pylabs.utils import run_subprocess, WorkingContext, appendposix, replacesuffix
 from mne.utils import run_subprocess as mne_subprocess
@@ -35,7 +36,8 @@ b1corr = True         # for preprocess rms
 noise_filter = True   # for susan
 noise_thresh = -1     # for susan
 noise_kernel = 1      # for susan
-neck_chop = True
+neck_chop = True      # chop neck off
+mmzshift = 20         # mm below foramen magnum to chop
 meg_source_spacing = 5    # for mne source space
 bem_from = 'T1'       # or 'brain' if probs with overlapping boundaries in source space
 
@@ -79,7 +81,7 @@ for fsf, b1map in zip(freesurf_fnames, b1map_fnames):
         fs_fname += '_susanf'
     fs_sid = fsf+'_freesurf'
     if overwrite and neck_chop:
-
+        brain, mask, crop = extract_brain(file, mmzshift=mmzshift)
         fs_fname += '_cropped'
     if not overwrite and neck_chop:
         fs_fname += '_cropped'
@@ -91,7 +93,7 @@ for fsf, b1map in zip(freesurf_fnames, b1map_fnames):
                 fs_sid += '_hires'
                 with open('freesurf_expert_opts.txt', mode='w') as optsf:
                     optsf.write('mris_inflate -n 15\n')
-                print('starting hi resolution freesurfer run for ' + fs_sid + ' at {:%H:%M on %m %d %Y}.'.format(datetime.datetime.now()))
+                print('starting hi resolution freesurfer run with input '+fs_name+' for fs subject ' + fs_sid + ' at {:%H:%M on %m %d %Y}.'.format(datetime.datetime.now()))
                 results += ('starting hi resolution freesurfer run for '+fs_sid+' at {:%H:%M on %m %d %Y}.'.format(datetime.datetime.now()),)
                 results += run_subprocess(['recon-all -hires -all -subjid '+fs_sid+' -i '+str(subjects_dir / 'anat'/ appendposix(fs_fname, '.nii.gz'))+' -expert freesurf_expert_opts.txt -parallel -openmp 8'])
                 print('hi resolution freesurfer run finished for ' + fs_sid + ' at {:%H:%M on %m %d %Y}.'.format(datetime.datetime.now()))
