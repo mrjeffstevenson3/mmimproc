@@ -23,7 +23,7 @@ antsRegistrationSyN = get_antsregsyn_cmd()
 # instantiate subject id list container
 subjids_picks = SubjIdPicks()
 # list of subject ids to operate on
-picks = ['427', '428', '432', '431', '437',]
+picks = ['144',]
 
 setattr(subjids_picks, 'subjids', picks)
 
@@ -81,7 +81,7 @@ for fsf, b1map in zip(freesurf_fnames, b1map_fnames):
         fs_fname += '_susanf'
     fs_sid = fsf+'_freesurf'
     if overwrite and neck_chop:
-        brain, mask, crop = extract_brain(file, mmzshift=mmzshift)
+        brain, mask, crop = extract_brain(subjects_dir / 'anat'/replacesuffix(fs_fname, '.nii.gz'), mmzshift=mmzshift)
         fs_fname += '_cropped'
     if not overwrite and neck_chop:
         fs_fname += '_cropped'
