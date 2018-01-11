@@ -10,7 +10,7 @@ import nibabel as nib
 from scipy.ndimage.measurements import center_of_mass as com
 from dipy.segment.mask import applymask
 from pylabs.io.images import savenii
-from pylabs.utils import appendposix, replacesuffix, run_subprocess, getnetworkdataroot, ProvenanceWrapper
+from pylabs.utils import appendposix, replacesuffix, getnetworkdataroot, ProvenanceWrapper, meg_head_mask
 from nipype.interfaces import fsl
 flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo', output_type=pylabs.opts.nii_ftype)
 if nipype.__version__ == '0.12.0':
@@ -28,7 +28,7 @@ mnicom = pylabs_basepath/'data'/'atlases'/'MNI152_T1_1mm_8kcomroi.nii'
 mnimask = pylabs_basepath/'data'/'atlases'/'MNI152_T1_1mm_mask.nii'
 
 # new universal (hopefully) brain extraction method
-def extract_brain(file, f_factor=0.3):
+def extract_brain(file, f_factor=0.3, mmzshift=0.0):
     '''
     simplest form pass a pathlib file name and brain extraction is performed
     :param file: pathlib path and file name to be extracted
@@ -56,8 +56,12 @@ def extract_brain(file, f_factor=0.3):
     flt.inputs.out_file = str(replacesuffix(file, '_comroi'+ext))
     res = flt.run()
     # apply mat file to MNI mask file to cut off neck
-    applyxfm.inputs.in_matrix_file = str(file.parent/appendposix(Path(file.stem).stem, '_comroi.mat'))
-    applyxfm.inputs.in_file = str(mnimask)
+    mat_fname = file.parent/appendposix(Path(file.stem).stem, '_comroi.mat')
+    affine_xfm = np.fromfile(str(mat_fname), dtype='float', count=-1, sep=' ').reshape(4, 4)
+    affine_xfm[2,3] = affine_xfm[2,3] - (mmzshift * nib.load(str(file)).header.get_zooms()[2])
+    np.savetxt(str(appendposix(mat_fname, '_zshift'+str(mmzshift))), affine_xfm, fmt='%.9f', delimiter=' ', newline='\n')
+    applyxfm.inputs.in_matrix_file = str(appendposix(mat_fname, '_zshift'+str(mmzshift)))
+    applyxfm.inputs.in_file = str(meg_head_mask)
     applyxfm.inputs.out_file = str(replacesuffix(file, '_mask'+ext))
     applyxfm.inputs.reference = str(file)
     applyxfm.inputs.apply_xfm = True

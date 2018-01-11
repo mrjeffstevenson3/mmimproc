@@ -56,7 +56,7 @@ source $FREESURFER_HOME/SetUpFreeSurfer.sh`
         export PYLABS PYLABSD DATADIR PATH FS MORIMNI JHUMNI
 
 23. install and start condor: `sudo apt install htcondor && sudo service condor start`
-24. do not use!_--- wait on this one-bugs! ----install sip, pyqt4, mayavi, pysurfer:_ 
+24xx. do not use!_--- wait on this one-bugs! ----install sip, pyqt4, mayavi, pysurfer:_ 
         cd ${HOME}/Software
         https://riverbankcomputing.com/software/sip/download
         example docs:
@@ -79,6 +79,11 @@ source $FREESURFER_HOME/SetUpFreeSurfer.sh`
         git clone https://github.com/nipy/PySurfer
         cd PySurfer
         python setup.py develop
+24. install vtk and mayavi and pysurfer as prereqs:
+        cd ${HOME}/Software
+        conda install vtk
+        pip install mayavi pysurfer
+        
 25. install into ${HOME}/Software the nightly build of mne-c from https://www.martinos.org/mne/stable/getting_started.html (need user name, pwd, and lic)
         library problems: libxp6, libquicktime, libgfortran (or gfortran installed above),
         sudo vim /etc/apt/sources.list
@@ -148,3 +153,5 @@ source $FREESURFER_HOME/SetUpFreeSurfer.sh`
 31. install inspector sw in ${HOME}/Software (depends on matlab R2013b )
 
 32. install spm12 sw in ${HOME}/Software (depends on matlab)
+
+33. install vtk and mayavi
