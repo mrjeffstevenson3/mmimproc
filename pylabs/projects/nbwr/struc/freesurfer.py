@@ -93,7 +93,7 @@ for fsf, b1map in zip(freesurf_fnames, b1map_fnames):
                 fs_sid += '_hires'
                 with open('freesurf_expert_opts.txt', mode='w') as optsf:
                     optsf.write('mris_inflate -n 15\n')
-                print('starting hi resolution freesurfer run with input '+fs_name+' for fs subject ' + fs_sid + ' at {:%H:%M on %m %d %Y}.'.format(datetime.datetime.now()))
+                print('starting hi resolution freesurfer run with input '+fs_fname+' for fs subject ' + fs_sid + ' at {:%H:%M on %m %d %Y}.'.format(datetime.datetime.now()))
                 results += ('starting hi resolution freesurfer run for '+fs_sid+' at {:%H:%M on %m %d %Y}.'.format(datetime.datetime.now()),)
                 results += run_subprocess(['recon-all -hires -all -subjid '+fs_sid+' -i '+str(subjects_dir / 'anat'/ appendposix(fs_fname, '.nii.gz'))+' -expert freesurf_expert_opts.txt -parallel -openmp 8'])
                 print('hi resolution freesurfer run finished for ' + fs_sid + ' at {:%H:%M on %m %d %Y}.'.format(datetime.datetime.now()))
