@@ -23,7 +23,7 @@ antsRegistrationSyN = get_antsregsyn_cmd()
 # instantiate subject id list container
 subjids_picks = SubjIdPicks()
 # list of subject ids to operate on
-picks = ['144',]
+picks = ['442', '440', '447', '451', '449', '448']
 
 setattr(subjids_picks, 'subjids', picks)
 
