@@ -110,7 +110,7 @@ for fsf, b1map in zip(freesurf_fnames, b1map_fnames):
             results += mne_subprocess(['mne_setup_mri', '--mri', bem_from, '--subject', fs_sid, '--overwrite'], env=curr_env)
             results += mne_subprocess(['mne', 'watershed_bem', '--subject', fs_sid, '--overwrite'], env=curr_env)
             results += mne_subprocess(['mne_setup_source_space', '--subject', fs_sid, '--spacing', '%.0f' % meg_source_spacing, '--cps'], env=curr_env)
-            results += mne_subprocess(['mne', 'make_scalp_surfaces', '--overwrite', '--subject', fs_sid],  env=curr_env)
+            results += mne_subprocess(['mne', 'make_scalp_surfaces', '--overwrite', '-f', '--subject', fs_sid],  env=curr_env)
         except Exception as ex:
             print('\n--> Error during bem: ', ex)
             continue
