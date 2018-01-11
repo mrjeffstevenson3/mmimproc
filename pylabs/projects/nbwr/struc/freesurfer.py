@@ -106,10 +106,14 @@ for fsf, b1map in zip(freesurf_fnames, b1map_fnames):
                 print('finished 1mm3 freesurfer run for ' + fs_sid + ' at {:%H:%M on %m %d %Y}.'.format(datetime.datetime.now()))
         if not overwrite and hires:
             fs_sid += '_hires'
-        results += mne_subprocess(['mne_setup_mri', '--mri', bem_from, '--subject', fs_sid, '--overwrite'], env=curr_env)
-        results += mne_subprocess(['mne', 'watershed_bem', '--subject', fs_sid, '--overwrite'], env=curr_env)
-        results += mne_subprocess(['mne_setup_source_space', '--subject', fs_sid, '--spacing', '%.0f' % meg_source_spacing, '--cps'], env=curr_env)
-        results += mne_subprocess(['mne', 'make_scalp_surfaces', '--overwrite', '--subject', fs_sid],  env=curr_env)
+        try:
+            results += mne_subprocess(['mne_setup_mri', '--mri', bem_from, '--subject', fs_sid, '--overwrite'], env=curr_env)
+            results += mne_subprocess(['mne', 'watershed_bem', '--subject', fs_sid, '--overwrite'], env=curr_env)
+            results += mne_subprocess(['mne_setup_source_space', '--subject', fs_sid, '--spacing', '%.0f' % meg_source_spacing, '--cps'], env=curr_env)
+            results += mne_subprocess(['mne', 'make_scalp_surfaces', '--overwrite', '--subject', fs_sid],  env=curr_env)
+        except Exception as ex:
+            print('\n--> Error during bem: ', ex)
+            continue
         # were missing
         bem_head_fname = subjects_dir/fs_sid/'bem'/'{fssid}-head.fif'.format({'fssid': fs_sid})
         if bem_head_fname.is_file():
