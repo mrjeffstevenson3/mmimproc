@@ -5,10 +5,9 @@ import os
 import nibabel as nib
 import numpy as np
 from scipy.ndimage.filters import median_filter as medianf
-from pylabs.utils.paths import getnetworkdataroot
 from pylabs.io.images import savenii
 from pylabs.alignment.ants_reg import subj2templ_applywarp
-from pylabs.utils import run_subprocess, WorkingContext, appendposix, replacesuffix
+from pylabs.utils import run_subprocess, WorkingContext, appendposix, replacesuffix, getnetworkdataroot
 # set up provenance
 from pylabs.utils.provenance import ProvenanceWrapper
 prov = ProvenanceWrapper()
@@ -65,7 +64,7 @@ def correct4b1(project, subject, session, b1map_file, target, reg_dir_name):
                  provenance={'filter': 'numpy median filter', 'filter size': '7', 'results': results})
     return results
 
-def calcb1map(S1, S2, TRs, T1mean=1000.0, FAnom=60.0, medfilt=True):
+def calcb1map(S1, S2, TRs, T1mean=1000.0, FAnom=60.0, medfilt=True, mfsize=9):
     '''
     based on vasily Yarnykh's 2007 B1map method. ref: Magnetic Resonance in Medicine 57:192–200 (2007)
     :param S1: b1map magnitude signal ndarray of 1st (shortest) TR1 . matches TRs[0]. can be scaled as fp or dv but must be same for both.
@@ -90,5 +89,5 @@ def calcb1map(S1, S2, TRs, T1mean=1000.0, FAnom=60.0, medfilt=True):
         FA = (np.arccos(C) * 180 / np.pi) / FAnom
         FA[FA == np.nan] = 0
     if medfilt:
-        FA = medianf(FA, size=9)
+        FA = medianf(FA, size=mfsize)
     return FA

@@ -369,6 +369,7 @@ flipAngles = np.array([5.0, 25.0])
 
 
 ## VASILY PROTO
+from dipy.align.reslice import reslice
 from scipy import stats
 from scipy.ndimage.filters import median_filter as medianf
 matching_b1map = True
@@ -418,7 +419,8 @@ qT1_linregr_data = qT1_linregr.reshape(vy_vfa2_ec1_rms.shape)
 qT1_linregr_data[(qT1_linregr_data < 1) | (qT1_linregr_data == np.nan)] = 0
 qT1_linregr_data[qT1_linregr_data > 6000] = 6000
 qT1_linregr_img = nib.Nifti1Image(qT1_linregr_data, affine)
-nib.save(qT1_linregr_img, str('vy_qt1_vfa2flip_2echo_rms_jsscan18_0p64mm3_b1corr13_vlinregr-fit_clamped.nii'))
+qt1out_fname = '/brainstudio/data/acdc/VY_PATCH_TEST_1-3-18/js_qt1_sc18vfa2flip_2echo_rms_b1corr13_mf9_vlinregr-fit_clamped.nii'
+nib.save(qT1_linregr_img, qt1out_fname)
 
 
 
