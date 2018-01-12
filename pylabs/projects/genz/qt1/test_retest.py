@@ -419,8 +419,29 @@ qT1_linregr_data = qT1_linregr.reshape(vy_vfa2_ec1_rms.shape)
 qT1_linregr_data[(qT1_linregr_data < 1) | (qT1_linregr_data == np.nan)] = 0
 qT1_linregr_data[qT1_linregr_data > 6000] = 6000
 qT1_linregr_img = nib.Nifti1Image(qT1_linregr_data, affine)
-qt1out_fname = '/brainstudio/data/acdc/VY_PATCH_TEST_1-3-18/js_qt1_sc18vfa2flip_2echo_rms_b1corr13_mf9_vlinregr-fit_clamped.nii'
+qt1out_fname = '/brainstudio/data/acdc/VY_PATCH_TEST_1-3-18/js_qt1_sc18vfa2flip_2echo_rms_b1corr13_mf_vlinregr-fit_clamped.nii'
 nib.save(qT1_linregr_img, qt1out_fname)
+
+
+# ##### direct approach
+from dipy.align.reslice import reslice
+from scipy import stats
+from scipy.ndimage.filters import median_filter as medianf
+matching_b1map = True
+project = 'acdc'
+subjid = 'VY_PATCH_TEST_1-3-18'
+os.chdir(str(fs/project/subjid))
+vfa_fname = 'acdc_vy_quiet_patch_test_WIP_VFA-sans-QUIET_SENSE_14_1.nii'
+vy_flipAngles = [4.0, 25.0]
+TR = float(np.unique(nib.load(str(replacesuffix(vfa_fname, '.PAR'))).header.general_info['repetition_time']))
+affine = nib.load(vfa_fname).affine
+vy_vfa2_2ec_data = nib.load(vfa_fname).get_data()  # scaled to float
+b1map11_fname = '/brainstudio/data/acdc/VY_PATCH_TEST_1-3-18/b1map_vy13_jsman_mf11.nii'
+b1map13_fname = '/brainstudio/data/acdc/VY_PATCH_TEST_1-3-18/b1map_vy13_jsman_mf13.nii'
+vy_b1map11_phase_mf = nib.load(b1map11_fname).get_data()
+vy_b1map13_phase_mf = nib.load(b1map13_fname).get_data()
+
+
 
 
 
