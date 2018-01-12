@@ -23,7 +23,7 @@ antsRegistrationSyN = get_antsregsyn_cmd()
 # instantiate subject id list container
 subjids_picks = SubjIdPicks()
 # list of subject ids to operate on
-picks = ['144',]
+picks = ['442', '440', '447', '451', '449', '448']
 
 setattr(subjids_picks, 'subjids', picks)
 
@@ -93,7 +93,7 @@ for fsf, b1map in zip(freesurf_fnames, b1map_fnames):
                 fs_sid += '_hires'
                 with open('freesurf_expert_opts.txt', mode='w') as optsf:
                     optsf.write('mris_inflate -n 15\n')
-                print('starting hi resolution freesurfer run with input '+fs_name+' for fs subject ' + fs_sid + ' at {:%H:%M on %m %d %Y}.'.format(datetime.datetime.now()))
+                print('starting hi resolution freesurfer run with input '+fs_fname+' for fs subject ' + fs_sid + ' at {:%H:%M on %m %d %Y}.'.format(datetime.datetime.now()))
                 results += ('starting hi resolution freesurfer run for '+fs_sid+' at {:%H:%M on %m %d %Y}.'.format(datetime.datetime.now()),)
                 results += run_subprocess(['recon-all -hires -all -subjid '+fs_sid+' -i '+str(subjects_dir / 'anat'/ appendposix(fs_fname, '.nii.gz'))+' -expert freesurf_expert_opts.txt -parallel -openmp 8'])
                 print('hi resolution freesurfer run finished for ' + fs_sid + ' at {:%H:%M on %m %d %Y}.'.format(datetime.datetime.now()))
@@ -106,10 +106,14 @@ for fsf, b1map in zip(freesurf_fnames, b1map_fnames):
                 print('finished 1mm3 freesurfer run for ' + fs_sid + ' at {:%H:%M on %m %d %Y}.'.format(datetime.datetime.now()))
         if not overwrite and hires:
             fs_sid += '_hires'
-        results += mne_subprocess(['mne_setup_mri', '--mri', bem_from, '--subject', fs_sid, '--overwrite'], env=curr_env)
-        results += mne_subprocess(['mne', 'watershed_bem', '--subject', fs_sid, '--overwrite'], env=curr_env)
-        results += mne_subprocess(['mne_setup_source_space', '--subject', fs_sid, '--spacing', '%.0f' % meg_source_spacing, '--cps'], env=curr_env)
-        results += mne_subprocess(['mne', 'make_scalp_surfaces', '--overwrite', '--subject', fs_sid],  env=curr_env)
+        try:
+            results += mne_subprocess(['mne_setup_mri', '--mri', bem_from, '--subject', fs_sid, '--overwrite'], env=curr_env)
+            results += mne_subprocess(['mne', 'watershed_bem', '--subject', fs_sid, '--overwrite'], env=curr_env)
+            results += mne_subprocess(['mne_setup_source_space', '--subject', fs_sid, '--spacing', '%.0f' % meg_source_spacing, '--cps'], env=curr_env)
+            results += mne_subprocess(['mne', 'make_scalp_surfaces', '--overwrite', '-f', '--subject', fs_sid],  env=curr_env)
+        except Exception as ex:
+            print('\n--> Error during bem: ', ex)
+            continue
         # were missing
         bem_head_fname = subjects_dir/fs_sid/'bem'/'{fssid}-head.fif'.format({'fssid': fs_sid})
         if bem_head_fname.is_file():
