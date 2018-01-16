@@ -67,7 +67,7 @@ def get_freesurf_names(subjids_picks):
     fs_ftempl = removesuffix(str(acdc_conv['_MEMP_FS_TI1400_']['fname_template']))
     for subjid in subjids_picks.subjids:
         b1map_fs_fnames.append(str(b1_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=acdc_conv['_B1MAP_'])))
-        freesurf_fnames.append(str(fs_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=acdc_conv['_MEMP_FS_TI1400_'], dict3={'scan_info': 'ti1100_rms'})))
+        freesurf_fnames.append(str(fs_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=acdc_conv['_MEMP_FS_TI1400_'], dict3={'scan_info': 'ti1400_rms'})))
     return b1map_fs_fnames, freesurf_fnames
 
 def get_dwi_names(subjids_picks):
