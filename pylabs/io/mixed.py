@@ -89,7 +89,7 @@ def conv_df2h5(df, h5_fname, append=True):
 
     with pd.HDFStore(str(h5_fname)) as storeh5:
         for subj in subject2store:
-            if not df.loc[subj].index.get_level_values(0).unique():
+            if not list(df.loc[subj].index.get_level_values(0).unique()):
                 raise ValueError('stopping now because df missing level 1 i.e. session for '+subj )
             for ses in df.loc[subj].index.get_level_values(0).unique():
                 if append:
