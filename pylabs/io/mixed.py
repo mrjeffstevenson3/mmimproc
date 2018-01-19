@@ -89,10 +89,12 @@ def conv_df2h5(df, h5_fname, append=True):
 
     with pd.HDFStore(str(h5_fname)) as storeh5:
         for subj in subject2store:
-            for ses in sessions2store:
+            if not df.loc[subj].index.get_level_values(0).unique():
+                raise ValueError('stopping now because df missing level 1 i.e. session for '+subj )
+            for ses in df.loc[subj].index.get_level_values(0).unique():
                 if append:
-                    storeh5.append(subj+'/'+ses+'/convert_info', df[subj,ses].applymap(str), format='t')
+                    storeh5.append(subj+'/'+ses+'/convert_info', df.loc[subj,ses].applymap(str), format='t')
                 else:
-                    storeh5.put(subj + '/' + ses + '/convert_info', df[subj,ses].applymap(str), format='t')
+                    storeh5.put(subj + '/' + ses + '/convert_info', df.loc[subj,ses].applymap(str), format='t')
     return
 
