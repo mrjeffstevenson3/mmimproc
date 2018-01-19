@@ -7,15 +7,19 @@
 
 # class object to pass list of subject ids and passed to functions here using the SubjIdPicks class object.
 # defaults for session and run numbers are set here as  well as exceptions to those defaults called out by subject and modality.
+import pylabs
+pylabs.datadir.target = 'jaba'
 from pathlib import *
 from collections import defaultdict
-from pylabs.utils import removesuffix
+from pylabs.utils import removesuffix, getnetworkdataroot
 from pylabs.conversion.brain_convert import img_conv
 
 project = 'genz'
 
 class SubjIdPicks(object):
     pass
+
+fs = Path(getnetworkdataroot())
 
 # known or expected from genz protocol
 spgr_tr = '12p0'
@@ -52,7 +56,7 @@ mod_map = {'T2': '_3DT2W_', 'lt_match': '_AX_MATCH_LEFT_MEMP_VBM_TI1100_', 'rt_m
           'dwi': '_DWI64_3SH_B0_B800_B2000_TOPUP_', 's0_up': '_DWI_B0_TOPDN_', 's0_dn': '_DWI_B0_TOPUP_', 'mpr': '_MEMP_FS_TI1100_', 'spgr': '_T1_MAP_'}
 
 # hdf info file name
-subjs_h5_info_fname = fs/project/'all_'+project+'_subjects_info.h5'
+subjs_h5_info_fname = fs/project/('all_'+project+'_subjects_info.h5')
 
 # freesurfer, VBM, T2 file name lists
 b1map_fs_fnames = []

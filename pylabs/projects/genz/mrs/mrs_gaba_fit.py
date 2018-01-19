@@ -1,4 +1,4 @@
-# nbwr mega press edited gaba spectroscopy processing script
+# genz mega press edited gaba spectroscopy processing script
 
 # first set global root data directory
 import pylabs

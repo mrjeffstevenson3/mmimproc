@@ -7,9 +7,10 @@
 
 # class object to pass list of subject ids and passed to functions here using the SubjIdPicks class object.
 # defaults for session and run numbers are set here as  well as exceptions to those defaults called out by subject and modality.
+import pylabs
 from pathlib import *
 from collections import defaultdict
-from pylabs.utils import removesuffix
+from pylabs.utils import removesuffix, getnetworkdataroot
 from pylabs.conversion.brain_convert import acdc_conv
 
 project = 'acdc'
