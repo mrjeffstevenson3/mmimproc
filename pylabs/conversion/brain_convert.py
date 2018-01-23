@@ -1,21 +1,22 @@
 from pylabs.conversion.parrec2nii_convert import BrainOpts
+from pathlib import *
 import pandas as pd
 import nibabel
 import nipype
 from nipype.interfaces import fsl
 from pylabs.conversion.parrec2nii_convert import brain_proc_file
 from pylabs.utils.sessions import make_sessions_fm_dict
-from cloud.serialization.cloudpickle import dumps
+from pylabs.io.mixed import conv_df2h5
 import os
 from os.path import join
 from datetime import datetime
 import subprocess
 from collections import defaultdict
 from pylabs.conversion.parrec2nii_convert import mergeddicts
-from pylabs.utils.paths import getnetworkdataroot
-from pylabs.utils.provenance import ProvenanceWrapper
+from pylabs.utils import getnetworkdataroot, ProvenanceWrapper
 provenance = ProvenanceWrapper()
-fs = getnetworkdataroot()
+fs = Path(getnetworkdataroot())
+
 print(fs)
 flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo', output_type='NIFTI')
 if nipype.__version__ == '0.12.0':
@@ -281,7 +282,7 @@ acdc_conv = pd.DataFrame({
                         'verbose': True, 'compressed': False, 'permit_truncated': True, 'bvs': True, 'dwell_time': True, 'b1corr': False,
                         'field_strength': 3.0, 'vol_info': False, 'origin': 'scanner', 'minmax': ('parse', 'parse'), 'store_header': True,
                         'scaling': 'dv', 'keep_trace': False, 'overwrite': True, 'strict_sort': False, 'multisession': (1, 2, 3), 'rms': False},
-            '_MEMP_FS_TI1400_': {'dirstruct': 'BIDS', 'outdir': 'anat', 'scan_name': 'fsmempr', 'scan_info': 'ti1400',
+            '_MEMP_IFS_0p5mm_TI1400_': {'dirstruct': 'BIDS', 'outdir': 'anat', 'scan_name': 'fsmempr', 'scan_info': 'ti1400',
                         'fname_template': '{subj}_{session}_{scan_name}_{scan_info}_{run}.nii', 'take_lowest_recon': True,
                         'verbose': True, 'compressed': False, 'permit_truncated': False, 'bvs': False,
                         'dwell_time': False, 'b1corr': False,
@@ -358,6 +359,7 @@ def conv_subjs(project, subjects, niftiDict):
             niftiDict = brain_proc_file(opts, niftiDict)
         subjDF = make_sessions_fm_dict(niftiDict, project, subject)
         niftiDF = niftiDF.append(subjDF)
+    conv_df2h5(niftiDF, Path(fs / project / ('all_'+project+'_info.h5')), append=False)
     return niftiDict, niftiDF
 
 def b1corr_anat(project, niftiDict):

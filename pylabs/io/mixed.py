@@ -87,7 +87,7 @@ def conv_df2h5(df, h5_fname, append=True):
     if not len(sessions2store) == len(df.index.get_level_values(1).unique()):
         raise ValueError('Not all sessions conform to BIDS conventions and begin with ses-. please check dataframe level 1.')
 
-    with pd.HDFStore(str(h5_fname)) as storeh5:
+    with pd.HDFStore(str(Path(h5_fname))) as storeh5:
         for subj in subject2store:
             if not list(df.loc[subj].index.get_level_values(0).unique()):
                 raise ValueError('stopping now because df missing level 1 i.e. session for '+subj )
