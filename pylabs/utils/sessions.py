@@ -24,7 +24,7 @@ def make_sessions_fm_dict(niidict, project, subject):
     subsessionsDF = sessionsDF[col_order+remain_cols].reset_index(drop=True)
 
     if all(subsessionsDF['multisession'] > 0) == True and os.path.isfile(join(fs, project, subject, str(subject) +'_sessions.tsv')):
-        orig_subsessionsDF = pd.DataFrame.from_csv(open(join(fs, project, subject, str(subject) +'_sessions.tsv')), sep='\t', header=1)
+        orig_subsessionsDF = pd.read_csv(open(join(fs, project, subject, str(subject) +'_sessions.tsv')), sep='\t', header=1)
         subsessionsDF = subsessionsDF.append(orig_subsessionsDF)
 
     subsessionsDF.to_csv(join(fs, project, subject, str(subject) +'_sessions.tsv'), columns=col_order+remain_cols,

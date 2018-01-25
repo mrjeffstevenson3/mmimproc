@@ -197,9 +197,10 @@ faFiles = [spgr5_fa05_fnames[0], spgr5_fa10_fnames[0], spgr5_fa15_fnames[0], spg
 fa_brains = ['',] * len(faFiles)
 fa_brains_masked = ['',] * len(faFiles)
 fa_brain_masks = ['',] * len(faFiles)
+fa_brain_cropped = ['',] * len(faFiles)
 for i, fa in enumerate(faFiles):
     results += run_subprocess(['fslmaths ' + str(datadir.parent / str(fa + '.nii')) + ' -thr 2000 ' + str(datadir / appendposix(fa, '_thr2000.nii.gz'))])
-    fa_brains[i], fa_brain_masks[i] = extract_brain(str(datadir/appendposix(fa, '_thr2000.nii.gz')))
+    fa_brains[i], fa_brain_masks[i], fa_brain_cropped[i] = extract_brain(str(datadir/appendposix(fa, '_thr2000.nii.gz')))
 mask_spgr20 = fa_brain_masks[3]
 
 # since we are not reg all the spgr we simply mask using spgr20 mask.

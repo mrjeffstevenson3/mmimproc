@@ -19,6 +19,7 @@ from pylabs.projects.nbwr.file_names import project, SubjIdPicks, get_5spgr_name
 from pylabs.utils.provenance import ProvenanceWrapper
 prov = ProvenanceWrapper()
 
+#needs to be updated to new pylabs object: pylabs.datadir.target = 'jaba'
 from pylabs.utils.paths import RootDataDir
 datadir = RootDataDir()
 setattr(datadir, 'target', 'jaba')

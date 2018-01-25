@@ -79,7 +79,7 @@ for rt_matchfname, lt_matchfname, rt_actfname, lt_actfname in zip(rt_matchfnames
             rt_match_pfname = mrs_dir / appendposix(rt_matchfname, ext)
             if pylabs.opts.overwrite: # and not only_spm:   ## or not Path(replacesuffix(rt_match_pfname, '_brain'+ext)).is_file():
                 print('running brain extraction on '+str(rt_match_pfname))
-                rt_match_brain, rt_match_mask = extract_brain(str(rt_match_pfname))
+                rt_match_brain, rt_match_mask, rt_match_cropped = extract_brain(str(rt_match_pfname))
             else:
                 rt_match_brain, rt_match_mask = replacesuffix(rt_match_pfname, '_brain'+ext), replacesuffix(rt_match_pfname, '_brain_mask'+ext)
             if pylabs.opts.overwrite: #  and not only_spm:  ## or not Path(replacesuffix(rt_match_pfname, '_brain_susanf'+ext)).is_file():
@@ -107,7 +107,7 @@ for rt_matchfname, lt_matchfname, rt_actfname, lt_actfname in zip(rt_matchfnames
             lt_match_pfname = mrs_dir / appendposix(lt_matchfname, ext)
             if pylabs.opts.overwrite: # and not only_spm:   ## or not Path(replacesuffix(lt_match_pfname, '_brain'+ext)).is_file():
                 print('running brain extraction on ' + str(lt_match_pfname))
-                lt_match_brain, lt_match_mask = extract_brain(str(lt_match_pfname))
+                lt_match_brain, lt_match_mask, lt_match_cropped = extract_brain(str(lt_match_pfname))
             else:
                 lt_match_brain, lt_match_mask = replacesuffix(lt_match_pfname, '_brain'+ext), replacesuffix(lt_match_pfname, '_brain_mask'+ext)
             if pylabs.opts.overwrite: # and not only_spm:   ##  or not Path(replacesuffix(lt_match_pfname, '_brain_susanf'+ext)).is_file():

@@ -1,4 +1,6 @@
-import json, pandas, datetime, dateutil.parser
+from pathlib import *
+import pandas as pd
+import json, datetime, dateutil.parser
 from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
 from pdfminer.converter import TextConverter
 from pdfminer.layout import LAParams
@@ -29,7 +31,7 @@ def listOfDictsFromJson(fpath):
     assert isinstance(toplevel, list)
     outlist = []
     for item in toplevel:
-        item['data'] = pandas.read_json(item['data'], orient='split')
+        item['data'] = pd.read_json(item['data'], orient='split')
         item['date'] = dateutil.parser.parse(item['date']).date()
         outlist.append(item)
     return outlist
@@ -67,3 +69,32 @@ def getgabavalue(fitpdf):
     if gaba_val == None:
         raise ValueError('could not find a gaba value in '+str(fitpdf))
     return float(gaba_val)
+
+def conv_df2h5(df, h5_fname, append=True):
+    """
+    This function is used by brain convert routine to store scan parameter info captured during conversion.
+    :param df:      multi index dataframe level0=subject id, level1=session, level2= convert info by anat and file
+    :param h5_fname: name of .h5 file. usually all_<project name>_info.h5 in project directory
+    :param append: safe is True but False will ovewrite the session with new info. use this for new or reworked data.
+    :return:
+    """
+    if not df.index.nlevels > 2:
+        raise ValueError('Dataframe has fewer than 3 levels. must have at least subject, session, and modality levels')
+    subject2store = [x for x in df.index.get_level_values(0).unique() if 'sub-' in x]
+    sessions2store = [x for x in df.index.get_level_values(1).unique() if 'ses-' in x]
+    if not len(subject2store) == len(df.index.get_level_values(0).unique()):
+        raise ValueError('Not all subjects conform to BIDS conventions and begin with sub-. please check dataframe level 0.')
+    if not len(sessions2store) == len(df.index.get_level_values(1).unique()):
+        raise ValueError('Not all sessions conform to BIDS conventions and begin with ses-. please check dataframe level 1.')
+
+    with pd.HDFStore(str(Path(h5_fname))) as storeh5:
+        for subj in subject2store:
+            if not list(df.loc[subj].index.get_level_values(0).unique()):
+                raise ValueError('stopping now because df missing level 1 i.e. session for '+subj )
+            for ses in df.loc[subj].index.get_level_values(0).unique():
+                if append:
+                    storeh5.append(subj+'/'+ses+'/convert_info', df.loc[subj,ses].applymap(str), format='t')
+                else:
+                    storeh5.put(subj + '/' + ses + '/convert_info', df.loc[subj,ses].applymap(str), format='t')
+    return
+
