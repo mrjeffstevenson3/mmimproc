@@ -115,7 +115,7 @@ for fsf, b1map in zip(freesurf_fnames, b1map_fnames):
             print('\n--> Error during bem: ', ex)
         finally:
             # were missing
-            bem_head_fname = subjects_dir/fs_sid/'bem'/'{fssid}-head.fif'.format({'fssid': fs_sid})
+            bem_head_fname = subjects_dir/fs_sid/'bem'/'{fssid}-head.fif'.format(**{'fssid': fs_sid})
             if bem_head_fname.is_file():
                 bem_head_fname.rename(appendposix(bem_head_fname, '-sparse'))
             appendposix(bem_head_fname, '-dense').symlink_to(bem_head_fname)
