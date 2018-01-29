@@ -21,6 +21,9 @@ class SubjIdPicks(object):
 
 fs = Path(getnetworkdataroot())
 
+info_fname = fs/project/('all_'+project+'_info.h5')
+
+
 # known or expected from genz protocol
 spgr_tr = '12p0'
 spgr_fa = ['05', '10', '15', '20', '30']
@@ -56,7 +59,7 @@ mod_map = {'T2': '_3DT2W_', 'lt_match': '_AX_MATCH_LEFT_MEMP_VBM_TI1100_', 'rt_m
           'dwi': '_DWI64_3SH_B0_B800_B2000_TOPUP_', 's0_up': '_DWI_B0_TOPDN_', 's0_dn': '_DWI_B0_TOPUP_', 'mpr': '_MEMP_FS_TI1100_', 'spgr': '_T1_MAP_'}
 
 # hdf info file name
-subjs_h5_info_fname = fs/project/('all_'+project+'_subjects_info.h5')
+subjs_h5_info_fname = fs/project/('all_'+project+'_info.h5')
 
 # freesurfer, VBM, T2 file name lists
 b1map_fs_fnames = []

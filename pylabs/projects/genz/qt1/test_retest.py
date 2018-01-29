@@ -457,9 +457,9 @@ from pylabs.fmap_correction.b1_map_corr import calcb1map
 from scipy import stats
 from scipy.ndimage.filters import median_filter as medianf
 
-os.chdir('/brainstudio/data/acdc/vy_patch_test_1-12-18')
-b1map_fname = 'testb1mt_jan12_WIP_B1-sans-QUIET_SENSE_16_1.nii'
-vfa_fname = 'testb1mt_jan12_WIP_VFA-sans-QUIET_SENSE_18_1.nii'
+os.chdir('/brainstudio/data/acdc/sub-acdc104/ses-1/source_parrec')
+b1map_fname = 'sub-acdc104_WIP_B1MAP-QUIET_FC_TR60-180_SP-100_SENSE_9_1.nii'
+vfa_fname = 'sub-acdc104_WIP_VFA_FA4-25_QUIET_SENSE_10_1.nii'
 
 b1TRs = nib.load(str(replacesuffix(b1map_fname, '.PAR'))).header.general_info['repetition_time']
 vfaTR = nib.load(str(replacesuffix(vfa_fname, '.PAR'))).header.general_info['repetition_time']
@@ -469,9 +469,12 @@ vfa_affine = nib.load(vfa_fname).affine
 b1_data = nib.load(b1map_fname).get_data()
 vfa_data = nib.load(vfa_fname).get_data()
 
-setting root data directory to jaba.
-S1 = medianf(b1_data[:,:,:,0], size=5); S2 = medianf(b1_data[:,:,:,1], size=5)
+
+S1 = medianf(b1_data[:,:,:,0], size=7)
+S2 = medianf(b1_data[:,:,:,1], size=7)
 b1map = calcb1map(S1, S2, b1TRs)
+b1map_out_fname = 'sub-acdc104_ses-1_b1map9_phase_mf7_9.nii'
+savenii(b1map, vfa_affine, b1map_out_fname)
 
 vy_vfa2_ec1 = vfa_data[:,:,:,:2]
 vy_vfa2_ec2 = vfa_data[:,:,:,2:4]
@@ -497,7 +500,7 @@ qT1_linregr = -vfaTR/np.log(m)
 qT1_linregr_data = qT1_linregr.reshape(vy_vfa2_ec1_rms.shape)
 qT1_linregr_data[(qT1_linregr_data < 1) | (qT1_linregr_data == np.nan)] = 0
 qT1_linregr_data[qT1_linregr_data > 6000] = 6000
-qt1out_fname = 'vy_qt1_scan18_b116_man_calc_mf9_vlinregr-fit_clamped.nii'
+qt1out_fname = 'sub-acdc104_ses-1_vfa_qt1_b1corr9_mf9_vlinregr-fit_clamped.nii'
 savenii(qT1_linregr_data, vfa_affine, qt1out_fname)
 
 

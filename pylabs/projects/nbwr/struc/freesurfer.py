@@ -23,7 +23,7 @@ antsRegistrationSyN = get_antsregsyn_cmd()
 # instantiate subject id list container
 subjids_picks = SubjIdPicks()
 # list of subject ids to operate on
-picks = ['443', '301']
+picks = ['301',]
 
 setattr(subjids_picks, 'subjids', picks)
 
@@ -114,11 +114,11 @@ for fsf, b1map in zip(freesurf_fnames, b1map_fnames):
         except Exception as ex:
             print('\n--> Error during bem: ', ex)
         finally:
-            # were missing
-            bem_head_fname = subjects_dir/fs_sid/'bem'/'{fssid}-head.fif'.format(**{'fssid': fs_sid})
-            if bem_head_fname.is_file():
-                bem_head_fname.rename(appendposix(bem_head_fname, '-sparse'))
-            appendposix(bem_head_fname, '-dense').symlink_to(bem_head_fname)
+            # obsolete with new mne version?
+            # bem_head_fname = subjects_dir/fs_sid/'bem'/'{fssid}-head.fif'.format(**{'fssid': fs_sid})
+            # if bem_head_fname.is_file():
+            #     bem_head_fname.rename(appendposix(bem_head_fname, '-sparse'))
+            #appendposix(bem_head_fname, '-dense').symlink_to(bem_head_fname)
             # end missing
             with open(fs_sid+'/'+fs_sid+'_log{:%Y%m%d%H%M}.json'.format(datetime.datetime.now()), mode='a') as logr:
                 json.dump(results, logr, indent=2)
