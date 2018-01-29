@@ -263,7 +263,7 @@ genz_conv = pd.DataFrame({
                          'scaling': 'dv', 'keep_trace': False, 'overwrite': True, 'strict_sort': False,
                          'multisession': (1, 2, 3), 'rms': False},
 
-            '_3DT2W_': {'dirstruct': 'BIDS', 'outdir': 'anat', 'scan_name': '3dt2', 'scan_info': '', 'fname_template': '{subj}_{session}_{scan_name}_{run}.nii',
+            '_QUIET_3DT2W_0p5mm3_': {'dirstruct': 'BIDS', 'outdir': 'anat', 'scan_name': '3dt2', 'scan_info': '', 'fname_template': '{subj}_{session}_{scan_name}_{run}.nii',
                         'take_lowest_recon': True, 'verbose': True, 'compressed': False, 'permit_truncated': False, 'bvs': False, 'dwell_time': False, 'b1corr': True,
                         'field_strength': False, 'vol_info': False, 'origin': 'scanner', 'minmax': ('parse', 'parse'), 'store_header': True,
                         'scaling': 'dv', 'keep_trace': False, 'overwrite': True, 'strict_sort': False, 'multisession': (1, 2, 3), 'rms': False},
@@ -359,15 +359,17 @@ def conv_subjs(project, subjects, niftiDict):
     scans = img_conv[project]
     # loops over subjects for a single project
     for subject in subjects:
+        subj_dd = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
         setattr(opts, 'subj', subject)
         for scan in scans:                 #col loop is individual scans
             if all(scans[scan].isnull()) == True:
                 continue
             setattr(opts, 'scan', scan)
             set_opts(scans[scan])
-            niftiDict = brain_proc_file(opts, niftiDict)
-        subjDF = make_sessions_fm_dict(niftiDict, project, subject)
+            subj_dd = brain_proc_file(opts, subj_dd)
+        subjDF = make_sessions_fm_dict(subj_dd, project, subject)
         niftiDF = niftiDF.append(subjDF)
+
     conv_df2h5(niftiDF, Path(fs / project / ('all_'+project+'_info.h5')), append=False)
     return niftiDict, niftiDF
 
