@@ -458,7 +458,7 @@ from scipy import stats
 from scipy.ndimage.filters import median_filter as medianf
 
 os.chdir('/brainstudio/data/acdc/sub-acdc104/ses-1/source_parrec')
-b1map_fname = 'sub-acdc104_WIP_B1MAP-QUIET_FC_TR60-180_SP-100_SENSE_9_1.nii'
+b1map_fname = 'sub-acdc104_WIP_B1MAP-QUIET_FC_TR70-210_SP-100_SENSE_13_1.nii'
 vfa_fname = 'sub-acdc104_WIP_VFA_FA4-25_QUIET_SENSE_10_1.nii'
 
 b1TRs = nib.load(str(replacesuffix(b1map_fname, '.PAR'))).header.general_info['repetition_time']
@@ -473,7 +473,7 @@ vfa_data = nib.load(vfa_fname).get_data()
 S1 = medianf(b1_data[:,:,:,0], size=7)
 S2 = medianf(b1_data[:,:,:,1], size=7)
 b1map = calcb1map(S1, S2, b1TRs)
-b1map_out_fname = 'sub-acdc104_ses-1_b1map9_phase_mf7_9.nii'
+b1map_out_fname = 'sub-acdc104_ses-1_b1map13_phase_mf7_9.nii'
 savenii(b1map, vfa_affine, b1map_out_fname)
 
 vy_vfa2_ec1 = vfa_data[:,:,:,:2]
@@ -498,10 +498,11 @@ for v in range(k):        #uses no mask yet
     m[v], intercept, r, p, std = stats.linregress(x[:, v], y[:, v])
 qT1_linregr = -vfaTR/np.log(m)
 qT1_linregr_data = qT1_linregr.reshape(vy_vfa2_ec1_rms.shape)
-qT1_linregr_data[(qT1_linregr_data < 1) | (qT1_linregr_data == np.nan)] = 0
+qT1_linregr_data[qT1_linregr_data < 1.0] = 0
 qT1_linregr_data[qT1_linregr_data > 6000] = 6000
+qT1_linregr_data_clean = np.nan_to_num(qT1_linregr_data, copy=True)
 qt1out_fname = 'sub-acdc104_ses-1_vfa_qt1_b1corr9_mf9_vlinregr-fit_clamped.nii'
-savenii(qT1_linregr_data, vfa_affine, qt1out_fname)
+savenii(qT1_linregr_data_clean, vfa_affine, qt1out_fname)
 
 
 
