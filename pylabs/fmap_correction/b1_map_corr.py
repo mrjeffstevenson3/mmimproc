@@ -65,7 +65,7 @@ def correct4b1(project, subject, session, b1map_file, target, reg_dir_name):
     return results
 
 def calcb1map(S1, S2, TRs, T1mean=1000.0, FAnom=60.0, medfilt=True, mfsize=9):
-    '''
+    """
     based on vasily Yarnykh's 2007 B1map method. ref: Magnetic Resonance in Medicine 57:192–200 (2007)
     :param S1: b1map magnitude signal ndarray of 1st (shortest) TR1 . matches TRs[0]. can be scaled as fp or dv but must be same for both.
     :param S2: b1map magnitude signal ndarray of 2nd (offset) TR2. matches TRs[1]. same scaling as S1.
@@ -75,18 +75,21 @@ def calcb1map(S1, S2, TRs, T1mean=1000.0, FAnom=60.0, medfilt=True, mfsize=9):
     :param medfilt: True/False filtering option
     :returns: the array of decimal offsets to flip angles in spgr eg 1.07234 is a 7.234% overflip error for any spgr flip angle scan
 
-    '''
+    """
     with np.errstate(divide='ignore'):
+        # set 0s to nan's so no divide by 0
         S1[S1 == 0] = np.nan
         S2[S2 == 0] = np.nan
         r = S2 / S1
+        # fix nan's
         nans_in_r = np.isnan(r)
         r[nans_in_r] = 0
+        # calculate B1 correction
         E1 = np.exp(-TRs[0]/T1mean)
         E2 = np.exp(-TRs[1]/T1mean)
         C = (r - 1 - (E2 * r) + E1) / (E1 - (E2 * r) + (E1 * E2 * (r - 1)))
-        #C[C == np.nan] = 0
         FA = (np.arccos(C) * 180 / np.pi) / FAnom
+        # clean up any nan's
         FA[FA == np.nan] = 0
     if medfilt:
         FA = medianf(FA, size=mfsize)
