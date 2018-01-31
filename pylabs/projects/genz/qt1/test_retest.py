@@ -473,8 +473,8 @@ vfaTR = nib.load(str(ses_dir/'source_parrec'/'{vfa_parf}'.format(**picks))).head
 vy_flipAngles = [4.0, 25.0]
 vfa_affine = nib.load(picks['vfa_fn']).affine
 
-b1_data = nib.load(picks['b1map_fn']).get_data()
-vfa_data = nib.load(picks['vfa_fn']).get_data()
+b1_data = nib.load(str(ses_dir/'fmap'/picks['b1map_fn'])).get_data()
+vfa_data = nib.load(str(ses_dir/'qt1'/picks['vfa_fn'])).get_data()
 
 
 S1 = medianf(b1_data[:,:,:,0], size=7)
