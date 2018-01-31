@@ -3,19 +3,20 @@ import pylabs
 pylabs.datadir.target = 'jaba'
 import os, copy
 from pathlib import *
+from pylabs.io.mixed import _copy
 import datetime
 import mne, json
 from pylabs.projects.nbwr.file_names import project, SubjIdPicks, get_freesurf_names
 from pylabs.utils.paths import getnetworkdataroot, get_antsregsyn_cmd
 from pylabs.structural.brain_extraction import extract_brain
 from pylabs.fmap_correction.b1_map_corr import correct4b1
-from pylabs.utils import run_subprocess, WorkingContext, appendposix, replacesuffix
+from pylabs.utils import run_subprocess, WorkingContext, appendposix, replacesuffix, ProvenanceWrapper
 from mne.utils import run_subprocess as mne_subprocess
 #set up provenance
-from pylabs.utils.provenance import ProvenanceWrapper
 prov = ProvenanceWrapper()
-#setup paths and file names to process
 
+#setup paths and file names to process
+Path.copy = _copy
 fs = Path(getnetworkdataroot())
 
 antsRegistrationSyN = get_antsregsyn_cmd()

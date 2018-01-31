@@ -12,6 +12,13 @@ json file, and load them back.
 And convert a pdf to text.
 """
 
+def _copy(self, target):
+    import shutil
+    assert self.is_file()
+    shutil.copy(str(self), str(target))  # str() only there for Python < (3, 6)
+
+Path.copy = _copy
+
 
 class JSONEncoder(json.JSONEncoder):
     def default(self, obj):

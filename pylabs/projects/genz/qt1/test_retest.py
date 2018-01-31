@@ -457,24 +457,31 @@ from pylabs.fmap_correction.b1_map_corr import calcb1map
 from scipy import stats
 from scipy.ndimage.filters import median_filter as medianf
 
-os.chdir('/brainstudio/data/acdc/sub-acdc104/ses-1/source_parrec')
-b1map_fname = 'sub-acdc104_WIP_B1MAP-QUIET_FC_TR70-210_SP-100_SENSE_13_1.nii'
-vfa_fname = 'sub-acdc104_WIP_VFA_FA4-25_QUIET_SENSE_10_1.nii'
+picks = {'project': 'genz',
+         'subject': 'sub-genz921',
+         'session': 'ses-2',
+         'vfa_fn': 'sub-genz921_ses-2_vfa_fa-4-25-tr-21p0_1.nii',
+         'vfa_parf': 'sub-genz921_ses-2_WIP_VFA_FA4-25_QUIET_SENSE_5_1.PAR',
+         'b1map_fn': 'sub-genz921_ses-2_b1map_fc_1.nii',
+         'b1map_parf': 'sub-genz921_ses-2_WIP_B1MAP-QUIET_FC_TR60-180_SP-100_SENSE_4_1.PAR'}
 
-b1TRs = nib.load(str(replacesuffix(b1map_fname, '.PAR'))).header.general_info['repetition_time']
-vfaTR = nib.load(str(replacesuffix(vfa_fname, '.PAR'))).header.general_info['repetition_time']
+ses_dir = fs/'{project}/{subject}/{session}'.format(**picks)
+os.chdir(str(ses_dir/'qt1'))
+
+b1TRs = nib.load(str(ses_dir/'source_parrec'/'{b1map_parf}'.format(**picks))).header.general_info['repetition_time']
+vfaTR = nib.load(str(ses_dir/'source_parrec'/'{vfa_parf}'.format(**picks))).header.general_info['repetition_time']
 vy_flipAngles = [4.0, 25.0]
-vfa_affine = nib.load(vfa_fname).affine
+vfa_affine = nib.load(picks['vfa_fn']).affine
 
-b1_data = nib.load(b1map_fname).get_data()
-vfa_data = nib.load(vfa_fname).get_data()
+b1_data = nib.load(picks['b1map_fn']).get_data()
+vfa_data = nib.load(picks['vfa_fn']).get_data()
 
 
 S1 = medianf(b1_data[:,:,:,0], size=7)
 S2 = medianf(b1_data[:,:,:,1], size=7)
 b1map = calcb1map(S1, S2, b1TRs)
-b1map_out_fname = 'sub-acdc104_ses-1_b1map13_phase_mf7_9.nii'
-savenii(b1map, vfa_affine, b1map_out_fname)
+b1map_out_fname = ses_dir/'fmap'/'{subject}_{session}_b1map_phase_mf7_9.nii'.format(**picks)
+savenii(b1map, vfa_affine, str(b1map_out_fname))
 
 vy_vfa2_ec1 = vfa_data[:,:,:,:2]
 vy_vfa2_ec2 = vfa_data[:,:,:,2:4]
@@ -501,12 +508,8 @@ qT1_linregr_data = qT1_linregr.reshape(vy_vfa2_ec1_rms.shape)
 qT1_linregr_data[qT1_linregr_data < 1.0] = 0
 qT1_linregr_data[qT1_linregr_data > 6000] = 6000
 qT1_linregr_data_clean = np.nan_to_num(qT1_linregr_data, copy=True)
-qt1out_fname = 'sub-acdc104_ses-1_vfa_qt1_b1corr9_mf9_vlinregr-fit_clamped.nii'
-savenii(qT1_linregr_data_clean, vfa_affine, qt1out_fname)
-
-
-
-
+qt1out_fname = ses_dir/'qt1'/'{subject}_{session}_vfa_qt1_b1corrmf9_vlinregr-fit_clamped.nii'.format(**picks)
+savenii(qT1_linregr_data_clean, vfa_affine, str(qt1out_fname))
 
 
 

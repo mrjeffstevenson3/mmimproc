@@ -357,6 +357,7 @@ def conv_subjs(project, subjects, niftiDict):
         raise ValueError(project+" not in img_conv Panel. Please check")
     setattr(opts, 'proj', project)
     scans = img_conv[project]
+    scans.dropna(axis=1, how='all', inplace=True)
     # loops over subjects for a single project
     for subject in subjects:
         subj_dd = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))

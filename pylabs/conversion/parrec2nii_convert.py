@@ -211,7 +211,7 @@ def brain_proc_file(opts, scandict):
                 while scandict[outerkey].has_key(middlekey[:-1]+str(run)) and \
                         scandict[outerkey][middlekey[:-1]+str(run)]['exam_date'] == opts.exam_date:
                     run += 1
-
+        # what is this repeated for from line 199?
         basefilename = str(opts.fname_template).format(subj=opts.subj, fa=str(opts.fa).zfill(2),
                             tr=str(opts.tr[0]).replace('.', 'p'), ti=str(opts.ti).zfill(4), run=str(run),
                             session=opts.session_id, scan_name=opts.scan_name, scan_info=opts.scan_info)
