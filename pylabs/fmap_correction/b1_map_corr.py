@@ -7,9 +7,8 @@ import numpy as np
 from scipy.ndimage.filters import median_filter as medianf
 from pylabs.io.images import savenii
 from pylabs.alignment.ants_reg import subj2templ_applywarp
-from pylabs.utils import run_subprocess, WorkingContext, appendposix, replacesuffix, getnetworkdataroot
+from pylabs.utils import *
 # set up provenance
-from pylabs.utils.provenance import ProvenanceWrapper
 prov = ProvenanceWrapper()
 # setup paths and file names to process
 fs = Path(getnetworkdataroot())
@@ -17,19 +16,14 @@ fs = Path(getnetworkdataroot())
 if not os.environ['FSLOUTPUTTYPE'] == 'NIFTI_GZ':
     os.environ['FSLOUTPUTTYPE'] = 'NIFTI_GZ'
 
-if not Path(os.environ.get('ANTSPATH'), 'WarpImageMultiTransform').is_file():
-    raise ValueError('must have ants installed with WarpImageMultiTransform in $ANTSPATH directory.')
-if not Path(os.environ.get('ANTSPATH'), 'WarpTimeSeriesImageMultiTransform').is_file():
-    raise ValueError('must have ants installed with WarpTimeSeriesImageMultiTransform in $ANTSPATH directory.')
-if not (Path(os.environ.get('ANTSPATH')) / 'antsRegistrationSyN.sh').is_file():
-    raise ValueError('must have ants installed with antsRegistrationSyN.sh in $ANTSPATH directory.')
-else:
-    antsRegistrationSyN = Path(os.environ.get('ANTSPATH'), 'antsRegistrationSyN.sh')
+antsRegistrationSyN = get_antsregsyn_cmd()
 
-def correct4b1(project, subject, session, b1map_file, target, reg_dir_name):
+def correct_img4b1(project, subject, session, b1map_file, target, reg_dir_name, patch=False):
     reg_dir = fs/project/subject/session/'reg'/reg_dir_name
     if not reg_dir.is_dir():
         reg_dir.mkdir(parents=True)
+    if patch:
+        # calculate b1map
     b1magcmd = ['fslroi '+str(b1map_file)+' '+str(replacesuffix(b1map_file, '_mag.nii.gz'))+' 0 1']
     b1phasecmd = ['fslroi '+str(b1map_file)+' '+str(replacesuffix(b1map_file, '_phase.nii.gz'))+' 2 1']
     b1totarget_antscmd = [str(antsRegistrationSyN)+' -d 3 -m '+str(replacesuffix(b1map_file, '_mag.nii.gz'))+' -f '+
@@ -37,8 +31,10 @@ def correct4b1(project, subject, session, b1map_file, target, reg_dir_name):
     results = ()
     with WorkingContext(str(reg_dir)):
         results += run_subprocess(b1magcmd)
-        results += run_subprocess(b1phasecmd)
         results += run_subprocess(b1totarget_antscmd)
+
+        results += run_subprocess(b1phasecmd)
+
         mov = replacesuffix(b1map_file, '_phase.nii.gz')
         ref = target
         outf = replacesuffix(b1map_file.name, '_phase_'+reg_dir_name+'.nii.gz')
@@ -64,7 +60,7 @@ def correct4b1(project, subject, session, b1map_file, target, reg_dir_name):
                  provenance={'filter': 'numpy median filter', 'filter size': '7', 'results': results})
     return results
 
-def calcb1map(S1, S2, TRs, T1mean=1000.0, FAnom=60.0, medfilt=True, mfsize=9):
+def calcb1map(S1, S2, TRs, T1mean=1000.0, FAnom=60.0, medfilt=True, mfsize=9, patch=True):
     """
     based on vasily Yarnykh's 2007 B1map method. ref: Magnetic Resonance in Medicine 57:192–200 (2007)
     :param S1: b1map magnitude signal ndarray of 1st (shortest) TR1 . matches TRs[0]. can be scaled as fp or dv but must be same for both.

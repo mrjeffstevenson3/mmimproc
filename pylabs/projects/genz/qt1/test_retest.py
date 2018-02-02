@@ -457,7 +457,8 @@ from pylabs.fmap_correction.b1_map_corr import calcb1map
 from scipy import stats
 from scipy.ndimage.filters import median_filter as medianf
 
-picks = {'project': 'genz',
+picks = {'patch': True,
+         'project': 'genz',
          'subject': 'sub-genz921',
          'session': 'ses-2',
          'vfa_fn': 'sub-genz921_ses-2_vfa_fa-4-25-tr-21p0_1.nii',
