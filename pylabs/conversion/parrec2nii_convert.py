@@ -1,4 +1,4 @@
-#from nibabel parrec2nii
+from pathlib import *
 from __future__ import division, print_function, absolute_import
 
 from optparse import OptionParser, Option
@@ -24,10 +24,8 @@ import pandas as pd
 from nibabel.mriutils import calculate_dwell_time
 from os.path import join, isfile
 from glob import glob
-from pylabs.utils.files import sortedParGlob
-from pylabs.utils.paths import getlocaldataroot, getnetworkdataroot
-from pylabs.utils import pr_examdate2pydatetime, pr_examdate2BIDSdatetime
-from pylabs.utils.provenance import ProvenanceWrapper
+from pylabs.utils.files import sortedParGlob, SesScanRecFsort
+from pylabs.utils import pr_examdate2pydatetime, pr_examdate2BIDSdatetime, ProvenanceWrapper, getnetworkdataroot
 prov = ProvenanceWrapper()
 fs = getnetworkdataroot()
 import dill #to use as pickle replacement of lambda dict
@@ -70,26 +68,27 @@ def brain_proc_file(opts, scandict):
     verbose.switch = opts.verbose
     if '__missing__' not in dir(scandict):
         raise TypeError('Dictionary not a collections.defaultdict, please fix.')
-    subpath = join(fs, opts.proj, opts.subj)
+    subpath = fs / opts.proj / opts.subj
     if 0 in opts.multisession:
         setattr(opts, 'session', '')
-        fpath = join(subpath, 'source_parrec')
-        infiles = sortedParGlob(join(fpath, '*' + opts.scan + '*.PAR'))
+        fpath = subpath / 'source_parrec'
+        infiles = sortedParGlob(str(fpath / ('*' + opts.scan + '*.PAR')))
     if any(opts.multisession) > 0:
         infiles = []
         for s in opts.multisession:
             ses = 'ses-'+str(s)
-            fpath = join(subpath, ses, 'source_parrec')
-            infiles += sortedParGlob(join(fpath, '*'+opts.scan+'*.PAR'))
+            fpath = subpath / ses / 'source_parrec'
+            files = SesScanRecFsort(fpath, '*'+opts.scan+'*.PAR')
+            infiles += files
     for infile in infiles:
-        prov.add(infile)
+        prov.add(str(infile))
         # load the PAR header and data
         setattr(opts, 'bvals', '')
         setattr(opts, 'bvecs', '')
         setattr(opts, 'run', '')
         setattr(opts, 'outpath', '')
         scaling = 'dv' if opts.scaling == 'off' else opts.scaling
-        infile = fname_ext_ul_case(infile)
+        infile = fname_ext_ul_case(str(infile))
         pr_img = pr.load(infile,
                          permit_truncated=opts.permit_truncated,
                          scaling=scaling,
@@ -136,7 +135,7 @@ def brain_proc_file(opts, scandict):
         setattr(opts, 'TURBO_factor', np.unique(pr_hdr.image_defs['TURBO factor']))
 
         if any(opts.multisession) > 0:
-            setattr(opts, 'session_id', str(infile.split('/')[-3]))
+            setattr(opts, 'session_id', str(str(infile).split('/')[-3]))
         else:
             setattr(opts, 'session_id', '')
 
@@ -278,7 +277,7 @@ def brain_proc_file(opts, scandict):
         # container for potential NIfTI1 header extensions
         if opts.store_header:
             # dump the full PAR header content into an extension
-            with open(infile, 'rb') as fobj:  # contents must be bytes
+            with open(str(infile), 'rb') as fobj:  # contents must be bytes
                 hdr_dump = fobj.read()
                 dump_ext = nifti1.Nifti1Extension('comment', hdr_dump)
             nhdr.extensions.append(dump_ext)
@@ -289,7 +288,7 @@ def brain_proc_file(opts, scandict):
         setattr(opts, 'qform', nhdr.get_qform())
         verbose('Writing %s' % outfilename)
         nibabel.save(nimg, outfilename)
-        prov.log(outfilename, 'nifti file created by parrec2nii_convert', infile, script=__file__)
+        prov.log(outfilename, 'nifti file created by parrec2nii_convert', str(infile), script=__file__)
 
         # write out bvals/bvecs if requested
         if opts.bvs:
@@ -314,13 +313,13 @@ def brain_proc_file(opts, scandict):
                     for val in bvals:
                         fid.write('%s ' % val)
                     fid.write('\n')
-                prov.log(outfilename.split('.')[0] + '.bvals', 'bvalue file created by parrec2nii_convert', infile, script=__file__)
+                prov.log(outfilename.split('.')[0] + '.bvals', 'bvalue file created by parrec2nii_convert', str(infile), script=__file__)
                 with open(outfilename.split('.')[0] + '.bvecs', 'w') as fid:
                     for row in bvecs.T:
                         for val in row:
                             fid.write('%s ' % val)
                         fid.write('\n')
-                prov.log(outfilename.split('.')[0] + '.bvecs', 'bvectors file created by parrec2nii_convert', infile, script=__file__)
+                prov.log(outfilename.split('.')[0] + '.bvecs', 'bvectors file created by parrec2nii_convert', str(infile), script=__file__)
                 setattr(opts, 'bvals', bvals)
                 setattr(opts, 'bvecs', bvecs)
 
@@ -350,7 +349,7 @@ def brain_proc_file(opts, scandict):
                 with open(outfilename.split('.')[0] + '.dwell_time', 'w') as fid:
                     fid.write('%r\n' % dwell_time)
                 setattr(opts, 'dwell_time', dwell_time)
-                prov.log(outfilename.split('.')[0] + '.dwell_time', 'dwell time file created by parrec2nii_convert', infile, script=__file__)
+                prov.log(outfilename.split('.')[0] + '.dwell_time', 'dwell time file created by parrec2nii_convert', str(infile), script=__file__)
 
         setattr(opts, 'converted', True)
         setattr(opts, 'QC', False)
@@ -372,5 +371,5 @@ def brain_proc_file(opts, scandict):
             np.testing.assert_almost_equal(affine, rmshdr.get_qform(), 3,
                                            err_msg='output qform in rms header does not match input qform')
             nibabel.save(rmsimg, rms_outfilename)
-            prov.log(rms_outfilename, 'rms file created by parrec2nii_convert', infile, script=__file__)
+            prov.log(rms_outfilename, 'rms file created by parrec2nii_convert', str(infile), script=__file__)
     return scandict

@@ -1,3 +1,5 @@
+# todo: break apart individual project dataframes into file in each project folder.
+# todo: refactor conv_subjs to put in hdf file name and remove niftiDict
 from pylabs.conversion.parrec2nii_convert import BrainOpts
 from pathlib import *
 import pandas as pd
@@ -349,10 +351,9 @@ def default_to_regular(d):
         d = {k: default_to_regular(v) for k, v in d.iteritems()}
     return d
 
-def conv_subjs(project, subjects, niftiDict):
+def conv_subjs(project, subjects, hdf_fname=None):
+    niftiDict = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
     niftiDF = pd.DataFrame()
-    if not isinstance(niftiDict, defaultdict):
-        raise TypeError('Dictionary not a nested 3 level collections.defaultdict, please fix.')
     if project not in img_conv:
         raise ValueError(project+" not in img_conv Panel. Please check")
     setattr(opts, 'proj', project)
@@ -370,8 +371,13 @@ def conv_subjs(project, subjects, niftiDict):
             subj_dd = brain_proc_file(opts, subj_dd)
         subjDF = make_sessions_fm_dict(subj_dd, project, subject)
         niftiDF = niftiDF.append(subjDF)
-
-    conv_df2h5(niftiDF, Path(fs / project / ('all_'+project+'_info.h5')), append=False)
+        niftiDict = mergeddicts(niftiDict, subj_dd)
+    if not hdf_fname == None:
+        conv_df2h5(niftiDF, Path(hdf_fname), append=False)
+    elif hdf_fname == None:
+        conv_df2h5(niftiDF, Path(fs / project / ('all_'+project+'_info.h5')), append=False)
+    else:
+        raise ValueError('missing hdf file name.')
     return niftiDict, niftiDF
 
 def b1corr_anat(project, niftiDict):
