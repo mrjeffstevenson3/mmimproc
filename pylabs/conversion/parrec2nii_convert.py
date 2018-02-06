@@ -24,7 +24,7 @@ import pandas as pd
 from nibabel.mriutils import calculate_dwell_time
 from os.path import join, isfile
 from glob import glob
-from pylabs.utils.files import sortedParGlob, SesScanRecFsort
+from pylabs.utils.files import sortedParGlob, ScanReconSort
 from pylabs.utils import pr_examdate2pydatetime, pr_examdate2BIDSdatetime, ProvenanceWrapper, getnetworkdataroot
 prov = ProvenanceWrapper()
 fs = getnetworkdataroot()
@@ -78,7 +78,7 @@ def brain_proc_file(opts, scandict):
         for s in opts.multisession:
             ses = 'ses-'+str(s)
             fpath = subpath / ses / 'source_parrec'
-            files = SesScanRecFsort(fpath, '*'+opts.scan+'*.PAR')
+            files = ScanReconSort(fpath, '*'+opts.scan+'*.PAR')
             infiles += files
     for infile in infiles:
         prov.add(str(infile))

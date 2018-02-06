@@ -53,7 +53,7 @@ def deconstructFullRandparFiles(corrPfiles, matdir=None, imgdir=None):
 def sortedParGlob (filefilter):
     return sorted(glob.glob(filefilter), key=lambda f: int(f.split('_')[-2]))
 
-def SesScanRecFsort (globpath, pattern):
+def ScanReconSort (globpath, pattern):
     """
     sorts posix pathlib list of PAR files by session, scan, and recon. same session and scan means increase run number.
     higher recons with same session and scan are treated as additional runs.
