@@ -1,6 +1,5 @@
-from pathlib import *
 from __future__ import division, print_function, absolute_import
-
+from pathlib import *
 from optparse import OptionParser, Option
 import numpy as np
 import numpy.linalg as npl
@@ -27,7 +26,7 @@ from glob import glob
 from pylabs.utils.files import sortedParGlob, ScanReconSort
 from pylabs.utils import pr_examdate2pydatetime, pr_examdate2BIDSdatetime, ProvenanceWrapper, getnetworkdataroot
 prov = ProvenanceWrapper()
-fs = getnetworkdataroot()
+fs = Path(getnetworkdataroot())
 import dill #to use as pickle replacement of lambda dict
 
 class BrainOpts(object):
@@ -68,7 +67,7 @@ def brain_proc_file(opts, scandict):
     verbose.switch = opts.verbose
     if '__missing__' not in dir(scandict):
         raise TypeError('Dictionary not a collections.defaultdict, please fix.')
-    subpath = fs / opts.proj / opts.subj
+    subpath = fs / str(opts.proj) / str(opts.subj)
     if 0 in opts.multisession:
         setattr(opts, 'session', '')
         fpath = subpath / 'source_parrec'
@@ -225,27 +224,27 @@ def brain_proc_file(opts, scandict):
                 rms_basefilename = rms_basefilename + '.gz'
         #set path for output
         if any(opts.multisession) != 0:
-            outpath = join(fs, opts.proj, opts.subj, opts.session_id, opts.outdir)
+            outpath = fs / opts.proj / opts.subj / opts.session_id / opts.outdir
         else:
-            outpath = join(fs, opts.proj, opts.subj, opts.outdir)
-        if not os.path.isdir(outpath):
-            os.mkdir(outpath)
-        outfilename = os.path.join(outpath, basefilename)
+            outpath = fs / opts.proj / opts.subj / opts.outdir
+        if not outpath.is_dir():
+            outpath.mkdir(parents=True, exist_ok=True)
+        outfilename = outpath / basefilename
         if opts.rms:
-            rms_outfilename = os.path.join(outpath, rms_basefilename)
-        if not opts.compressed and outfilename.count('.') > 1:
-            raise ValueError('more than one . was found in '+outfilename+ '! stopping now.!')
+            rms_outfilename = outpath / rms_basefilename
+        if not opts.compressed and str(outfilename).count('.') > 1:
+            raise ValueError('more than one . was found in '+str(outfilename)+ '! stopping now.!')
         elif opts.compressed and outfilename.count('.') > 2:
-            raise ValueError('more than two . were found in ' + outfilename + '! stopping now.!')
+            raise ValueError('more than two . were found in ' + str(outfilename) + '! stopping now.!')
         # prep a file
 
-        if os.path.isfile(outfilename) and not opts.overwrite:
+        if outfilename.is_file() and not opts.overwrite:
             raise IOError('Output file "%s" exists, use \'overwrite\': True to '
-                          'overwrite it' % outfilename)
+                          'overwrite it' % str(outfilename))
         setattr(opts, 'run', run)
-        setattr(opts, 'outpath', outpath)
-        setattr(opts, 'outfilename', outfilename)
-        setattr(opts, 'basefilename', basefilename)
+        setattr(opts, 'outpath', str(outpath))
+        setattr(opts, 'outfilename', str(outfilename))
+        setattr(opts, 'basefilename', str(basefilename))
         setattr(opts, 'zooms', pr_hdr.get_zooms())
         # Make corresponding NIfTI image
         nimg = nifti1.Nifti1Image(in_data, affine, pr_hdr)
@@ -286,9 +285,9 @@ def brain_proc_file(opts, scandict):
         np.testing.assert_almost_equal(affine, nhdr.get_qform(), 2,
                                        err_msg='output qform in header does not match input qform')
         setattr(opts, 'qform', nhdr.get_qform())
-        verbose('Writing %s' % outfilename)
-        nibabel.save(nimg, outfilename)
-        prov.log(outfilename, 'nifti file created by parrec2nii_convert', str(infile), script=__file__)
+        verbose('Writing %s' % str(outfilename))
+        nibabel.save(nimg, str(outfilename))
+        prov.log(str(outfilename), 'nifti file created by parrec2nii_convert', str(infile), script=__file__)
 
         # write out bvals/bvecs if requested
         if opts.bvs:
@@ -297,7 +296,7 @@ def brain_proc_file(opts, scandict):
             elif bvecs is None:
                 verbose('DTI volumes detected, but no diffusion direction info was'
                         'found.  Writing .bvals file only.')
-                with open(outfilename.split('.')[0] + '.bvals', 'w') as fid:
+                with open(str(outfilename).split('.')[0] + '.bvals', 'w') as fid:
                     # np.savetxt could do this, but it's just a loop anyway
                     for val in bvals:
                         fid.write('%s ' % val)
@@ -308,18 +307,18 @@ def brain_proc_file(opts, scandict):
                 orig2new = npl.inv(t_aff)
                 bv_reorient = from_matvec(to_matvec(orig2new)[0], [0, 0, 0])
                 bvecs = apply_affine(bv_reorient, bvecs)
-                with open(outfilename.split('.')[0] + '.bvals', 'w') as fid:
+                with open(str(outfilename).split('.')[0] + '.bvals', 'w') as fid:
                     # np.savetxt could do this, but it's just a loop anyway
                     for val in bvals:
                         fid.write('%s ' % val)
                     fid.write('\n')
-                prov.log(outfilename.split('.')[0] + '.bvals', 'bvalue file created by parrec2nii_convert', str(infile), script=__file__)
-                with open(outfilename.split('.')[0] + '.bvecs', 'w') as fid:
+                prov.log(str(outfilename).split('.')[0] + '.bvals', 'bvalue file created by parrec2nii_convert', str(infile), script=__file__)
+                with open(str(outfilename).split('.')[0] + '.bvecs', 'w') as fid:
                     for row in bvecs.T:
                         for val in row:
                             fid.write('%s ' % val)
                         fid.write('\n')
-                prov.log(outfilename.split('.')[0] + '.bvecs', 'bvectors file created by parrec2nii_convert', str(infile), script=__file__)
+                prov.log(str(outfilename).split('.')[0] + '.bvecs', 'bvectors file created by parrec2nii_convert', str(infile), script=__file__)
                 setattr(opts, 'bvals', bvals)
                 setattr(opts, 'bvecs', bvecs)
 
@@ -328,7 +327,7 @@ def brain_proc_file(opts, scandict):
             labels = pr_img.header.get_volume_labels()
             if len(labels) > 0:
                 vol_keys = list(labels.keys())
-                with open(outfilename.split('.')[0] + '.ordering.csv', 'w') as csvfile:
+                with open(str(outfilename).split('.')[0] + '.ordering.csv', 'w') as csvfile:
                     csvwriter = csv.writer(csvfile, delimiter=',')
                     csvwriter.writerow(vol_keys)
                     for vals in zip(*[labels[k] for k in vol_keys]):
@@ -346,10 +345,10 @@ def brain_proc_file(opts, scandict):
             else:
                 verbose('Writing dwell time (%r sec) calculated assuming %sT '
                         'magnet' % (dwell_time, opts.field_strength))
-                with open(outfilename.split('.')[0] + '.dwell_time', 'w') as fid:
+                with open(str(outfilename).split('.')[0] + '.dwell_time', 'w') as fid:
                     fid.write('%r\n' % dwell_time)
                 setattr(opts, 'dwell_time', dwell_time)
-                prov.log(outfilename.split('.')[0] + '.dwell_time', 'dwell time file created by parrec2nii_convert', str(infile), script=__file__)
+                prov.log(str(outfilename).split('.')[0] + '.dwell_time', 'dwell time file created by parrec2nii_convert', str(infile), script=__file__)
 
         setattr(opts, 'converted', True)
         setattr(opts, 'QC', False)
@@ -361,8 +360,8 @@ def brain_proc_file(opts, scandict):
             rms_middlekey = rms_basefilename.split('.')[0]
             scandict[outerkey][rms_middlekey] = opts2dict(opts)
             rms_dict = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
-            rms_dict[outerkey][rms_middlekey]['outfilename'] = rms_outfilename
-            rms_dict[outerkey][rms_middlekey]['basefilename'] = rms_basefilename
+            rms_dict[outerkey][rms_middlekey]['outfilename'] = str(rms_outfilename)
+            rms_dict[outerkey][rms_middlekey]['basefilename'] = str(rms_basefilename)
             rms_dict[outerkey][rms_middlekey]['qform'] = rmshdr.get_qform()
             rms_dict[outerkey][rms_middlekey]['zooms'] = rmshdr.get_zooms()
             rms_dict[outerkey][rms_middlekey]['b1corr'] = True
@@ -370,6 +369,6 @@ def brain_proc_file(opts, scandict):
             mergeddicts(scandict, rms_dict)
             np.testing.assert_almost_equal(affine, rmshdr.get_qform(), 3,
                                            err_msg='output qform in rms header does not match input qform')
-            nibabel.save(rmsimg, rms_outfilename)
-            prov.log(rms_outfilename, 'rms file created by parrec2nii_convert', str(infile), script=__file__)
+            nibabel.save(rmsimg, str(rms_outfilename))
+            prov.log(str(rms_outfilename), 'rms file created by parrec2nii_convert', str(infile), script=__file__)
     return scandict
