@@ -459,19 +459,33 @@ from scipy.ndimage.filters import median_filter as medianf
 
 picks = {'patch': True,
          'project': 'genz',
-         'subject': 'sub-genz921',
+         'subj': 'sub-genz921',
          'session': 'ses-2',
+         'run': '1',
+         # must set fas mannually when patch used. not reported.
+         'fas': [4.0, 25.0],
+         # maybe use conv templates here?
          'vfa_fn': 'sub-genz921_ses-2_vfa_fa-4-25-tr-21p0_1.nii',
          'vfa_parf': 'sub-genz921_ses-2_WIP_VFA_FA4-25_QUIET_SENSE_5_1.PAR',
          'b1map_fn': 'sub-genz921_ses-2_b1map_fc_1.nii',
          'b1map_parf': 'sub-genz921_ses-2_WIP_B1MAP-QUIET_FC_TR60-180_SP-100_SENSE_4_1.PAR'}
 
+
 ses_dir = fs/'{project}/{subject}/{session}'.format(**picks)
 os.chdir(str(ses_dir/'qt1'))
+#get conversion info
+subjDF = pd.HDFStore(str(fs/project/('all_'+picks['project']+'_info.h5'))).select('/{subj}/{session}/convert_info'.format(**picks))
+pd.HDFStore(str(fs/project/('all_'+picks['project']+'_info.h5'))).close()
+# get b1map TRs
+picks['b1map_TRs'] = subjDF.loc[('fmap', '{subj}_{session}_b1map-fp_1'.format(**picks)) , 'tr']
+    #pd.HDFStore(str(fs/project/('all_'+picks['project']+'_info.h5'))).select('/{subj}/{session}/convert_info'.format(**picks)).loc[('fmap', '{subj}_{session}_b1map-fp_1'.format(**picks)), 'tr']
+# get and validate vfa tr
+picks['vfa_tr'] = np.round(np.unique(subjDF.xs('qt1', level=0).iloc[0, subjDF.columns.get_loc('tr')]), 1)  # 1st guess
+picks['vfa_tr'] = str(picks.vfa_tr[0]).replace('.', 'p')
+vfaTR = subjDF.loc[('qt1', '{subj}_{session}_vfa_fa-4-25-tr-{vfa_tr}_{run}'.format(**picks)), 'tr']
+    #pd.HDFStore(str(fs/project/('all_'+picks['project']+'_info.h5'))).select('/{subj}/{session}/convert_info'.format(**picks)).loc[('qt1', '{subj}_{session}_b1map-fp_1'.format(**picks)), 'tr']
 
-b1TRs = nib.load(str(ses_dir/'source_parrec'/'{b1map_parf}'.format(**picks))).header.general_info['repetition_time']
-vfaTR = nib.load(str(ses_dir/'source_parrec'/'{vfa_parf}'.format(**picks))).header.general_info['repetition_time']
-vy_flipAngles = [4.0, 25.0]
+
 vfa_affine = nib.load(picks['vfa_fn']).affine
 
 b1_data = nib.load(str(ses_dir/'fmap'/picks['b1map_fn'])).get_data()
@@ -489,12 +503,12 @@ vy_vfa2_ec2 = vfa_data[:,:,:,2:4]
 vy_vfa2_ec1_rms = np.sqrt(np.sum(np.square(vy_vfa2_ec1), axis=3)/vy_vfa2_ec1.shape[3])
 vy_vfa2_ec2_rms = np.sqrt(np.sum(np.square(vy_vfa2_ec2), axis=3)/vy_vfa2_ec2.shape[3])
 k = np.prod(vy_vfa2_ec1_rms.shape)
-data = np.zeros([len(vy_flipAngles), k])
+data = np.zeros([len(picks['fas']), k])
 data[0,:] = vy_vfa2_ec1_rms.flatten()
 data[1,:] = vy_vfa2_ec2_rms.flatten()
 fa_uncorr = np.zeros(data.shape)
 fa_b1corr = np.zeros(data.shape)
-for i, fa in enumerate(vy_flipAngles):
+for i, fa in enumerate(picks['fas']):
     fa_uncorr[i, :] = fa
 fa_b1corr = fa_uncorr * b1map.flatten()  # uses broadcasting
 fa_b1corr[fa_b1corr == np.inf] = np.nan
