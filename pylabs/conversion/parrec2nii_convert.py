@@ -228,7 +228,7 @@ def brain_proc_file(opts, scandict):
         else:
             outpath = fs / opts.proj / opts.subj / opts.outdir
         if not outpath.is_dir():
-            outpath.mkdir(parents=True, exist_ok=True)
+            outpath.mkdir(parents=True)
         outfilename = outpath / basefilename
         if opts.rms:
             rms_outfilename = outpath / rms_basefilename

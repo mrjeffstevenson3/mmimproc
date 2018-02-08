@@ -454,6 +454,7 @@ vy_b1map13_phase_mf = nib.load(b1map13_fname).get_data()
 from dipy.align.reslice import reslice
 from pylabs.io.images import savenii
 from pylabs.fmap_correction.b1_map_corr import calcb1map
+from pylabs.conversion.brain_convert import img_conv
 from scipy import stats
 from scipy.ndimage.filters import median_filter as medianf
 
@@ -478,13 +479,10 @@ subjDF = pd.HDFStore(str(fs/project/('all_'+picks['project']+'_info.h5'))).selec
 pd.HDFStore(str(fs/project/('all_'+picks['project']+'_info.h5'))).close()
 # get b1map TRs
 picks['b1map_TRs'] = subjDF.loc[('fmap', '{subj}_{session}_b1map-fp_1'.format(**picks)) , 'tr']
-    #pd.HDFStore(str(fs/project/('all_'+picks['project']+'_info.h5'))).select('/{subj}/{session}/convert_info'.format(**picks)).loc[('fmap', '{subj}_{session}_b1map-fp_1'.format(**picks)), 'tr']
 # get and validate vfa tr
 picks['vfa_tr'] = np.round(np.unique(subjDF.xs('qt1', level=0).iloc[0, subjDF.columns.get_loc('tr')]), 1)  # 1st guess
 picks['vfa_tr'] = str(picks.vfa_tr[0]).replace('.', 'p')
 vfaTR = subjDF.loc[('qt1', '{subj}_{session}_vfa_fa-4-25-tr-{vfa_tr}_{run}'.format(**picks)), 'tr']
-    #pd.HDFStore(str(fs/project/('all_'+picks['project']+'_info.h5'))).select('/{subj}/{session}/convert_info'.format(**picks)).loc[('qt1', '{subj}_{session}_b1map-fp_1'.format(**picks)), 'tr']
-
 
 vfa_affine = nib.load(picks['vfa_fn']).affine
 

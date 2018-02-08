@@ -23,11 +23,11 @@ fs = Path(getnetworkdataroot())
 
 info_fname = fs/project/('all_'+project+'_info.h5')
 
-def test_info_file(subjids_picks):
-    if not info_fname.is_file():
-        raise ValueError('hdf info file '+ info_fname + ' not found.')
-    with pd.HDFStore(str(info_fname)) as storeh5:
-        for subj in subjids_picks:
+# def test_info_file(subjids_picks):
+#     if not info_fname.is_file():
+#         raise ValueError('hdf info file '+ info_fname + ' not found.')
+#     with pd.HDFStore(str(info_fname)) as storeh5:
+#         for subj in subjids_picks:
 
 
 
