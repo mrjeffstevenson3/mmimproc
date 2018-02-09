@@ -1,8 +1,4 @@
 load dimensionsgood1.txt
-filename = "report_title.txt";
-fid = fopen (filename, "r");
-m_s = fscanf(fid,'%s');
-fclose (fid);
 
 
 fkern = 'plotgood1'; 
@@ -79,13 +75,11 @@ plot(1:1+dimensionsbad1(:,3)-1,I(pos1:pos2),sprintf ('.-;%d;',Ib(it:it)-1), 'Lin
  endif
 
 
-hold ("on"); 
+hold on; 
 end;
 plot(1:75,(1:75)/10000);
 xlabel('slice number ','fontsize',20)
 ylabel('Interlace Correlation ','fontsize',20)
-title(m_s,'fontsize',20)
 set(gca,'fontsize',15);
 print('qcreport1.jpg','-djpg',"-S3000,1500");
-pause;
 
