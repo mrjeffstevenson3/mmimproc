@@ -98,7 +98,9 @@ def test4file(file):
 #run conversion if needed
 # if convert:
 #     niftiDict = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
-#     niftiDict, niftiDF = conv_subjs(project, subjects, niftiDict)
+#
+#     hdf_fname = fs / project / 'test.h5'
+#     niftiDict, niftiDF = conv_subjs(project, subjects, hdf_fname)
 # else:
 #     with open(niipickle, 'rb') as f:
 #         niftiDict = cPickle.load(f)

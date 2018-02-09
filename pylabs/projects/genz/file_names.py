@@ -21,6 +21,9 @@ class SubjIdPicks(object):
 
 fs = Path(getnetworkdataroot())
 
+info_fname = fs/project/('all_'+project+'_info.h5')
+
+
 # known or expected from genz protocol
 spgr_tr = '12p0'
 spgr_fa = ['05', '10', '15', '20', '30']
@@ -56,7 +59,7 @@ mod_map = {'T2': '_3DT2W_', 'lt_match': '_AX_MATCH_LEFT_MEMP_VBM_TI1100_', 'rt_m
           'dwi': '_DWI64_3SH_B0_B800_B2000_TOPUP_', 's0_up': '_DWI_B0_TOPDN_', 's0_dn': '_DWI_B0_TOPUP_', 'mpr': '_MEMP_FS_TI1100_', 'spgr': '_T1_MAP_'}
 
 # hdf info file name
-subjs_h5_info_fname = fs/project/('all_'+project+'_subjects_info.h5')
+subjs_h5_info_fname = fs/project/('all_'+project+'_info.h5')
 
 # freesurfer, VBM, T2 file name lists
 b1map_fs_fnames = []
@@ -86,11 +89,11 @@ lt_matching = []
 
 
 def get_freesurf_names(subjids_picks):
-    b1_ftempl = removesuffix(str(img_conv[project]['_B1MAP_']['fname_template']))
-    fs_ftempl = removesuffix(str(img_conv[project]['_MEMP_FS_TI1100_']['fname_template']))
+    b1_ftempl = removesuffix(str(img_conv[project]['_B1MAP-QUIET_FC_TR60-180_SP-100_']['fname_template']))
+    fs_ftempl = removesuffix(str(img_conv[project]['_MEMP_IFS_0p5mm_TI1100_']['fname_template']))
     for subjid in subjids_picks.subjids:
-        b1map_fs_fnames.append(str(b1_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_B1MAP_'])))
-        freesurf_fnames.append(str(fs_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_MEMP_FS_TI1100_'], dict3={'scan_info': 'ti1100_rms'})))
+        b1map_fs_fnames.append(str(b1_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_B1MAP-QUIET_FC_TR60-180_SP-100_'])))
+        freesurf_fnames.append(str(fs_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_MEMP_IFS_0p5mm_TI1100_'], dict3={'scan_info': 'ti1100_rms'})))
     return b1map_fs_fnames, freesurf_fnames
 
 def get_dwi_names(subjids_picks):
@@ -123,9 +126,9 @@ def get_5spgr_names(subjids_picks):
             print('subjids needs to a dictionary.')
 
 def get_3dt2_names(subjids_picks):
-    t2_ftempl = removesuffix(str(img_conv[project]['_3DT2W_']['fname_template']))
+    t2_ftempl = removesuffix(str(img_conv[project]['_QUIET_3DT2W_0p5mm3_']['fname_template']))
     for subjid in subjids_picks.subjids:
-        t2_fnames.append(str(t2_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_3DT2W_'])))
+        t2_fnames.append(str(t2_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_QUIET_3DT2W_0p5mm3_'])))
     return t2_fnames
 
 def get_gaba_names(subjids_picks):

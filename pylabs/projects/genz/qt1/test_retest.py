@@ -454,36 +454,59 @@ vy_b1map13_phase_mf = nib.load(b1map13_fname).get_data()
 from dipy.align.reslice import reslice
 from pylabs.io.images import savenii
 from pylabs.fmap_correction.b1_map_corr import calcb1map
+from pylabs.conversion.brain_convert import img_conv
 from scipy import stats
 from scipy.ndimage.filters import median_filter as medianf
 
-os.chdir('/brainstudio/data/acdc/vy_patch_test_1-12-18')
-b1map_fname = 'testb1mt_jan12_WIP_B1-sans-QUIET_SENSE_16_1.nii'
-vfa_fname = 'testb1mt_jan12_WIP_VFA-sans-QUIET_SENSE_18_1.nii'
+picks = {'patch': True,
+         'project': 'genz',
+         'subj': 'sub-genz921',
+         'session': 'ses-2',
+         'run': '1',
+         # must set fas mannually when patch used. not reported.
+         'fas': [4.0, 25.0],
+         # maybe use conv templates here?
+         'vfa_fn': 'sub-genz921_ses-2_vfa_fa-4-25-tr-21p0_1.nii',
+         'vfa_parf': 'sub-genz921_ses-2_WIP_VFA_FA4-25_QUIET_SENSE_5_1.PAR',
+         'b1map_fn': 'sub-genz921_ses-2_b1map_fc_1.nii',
+         'b1map_parf': 'sub-genz921_ses-2_WIP_B1MAP-QUIET_FC_TR60-180_SP-100_SENSE_4_1.PAR'}
 
-b1TRs = nib.load(str(replacesuffix(b1map_fname, '.PAR'))).header.general_info['repetition_time']
-vfaTR = nib.load(str(replacesuffix(vfa_fname, '.PAR'))).header.general_info['repetition_time']
-vy_flipAngles = [4.0, 25.0]
-vfa_affine = nib.load(vfa_fname).affine
 
-b1_data = nib.load(b1map_fname).get_data()
-vfa_data = nib.load(vfa_fname).get_data()
+ses_dir = fs/'{project}/{subject}/{session}'.format(**picks)
+os.chdir(str(ses_dir/'qt1'))
+#get conversion info
+subjDF = pd.HDFStore(str(fs/project/('all_'+picks['project']+'_info.h5'))).select('/{subj}/{session}/convert_info'.format(**picks))
+pd.HDFStore(str(fs/project/('all_'+picks['project']+'_info.h5'))).close()
+# get b1map TRs
+picks['b1map_TRs'] = subjDF.loc[('fmap', '{subj}_{session}_b1map-fp_1'.format(**picks)) , 'tr']
+# get and validate vfa tr
+picks['vfa_tr'] = np.round(np.unique(subjDF.xs('qt1', level=0).iloc[0, subjDF.columns.get_loc('tr')]), 1)  # 1st guess
+picks['vfa_tr'] = str(picks.vfa_tr[0]).replace('.', 'p')
+vfaTR = subjDF.loc[('qt1', '{subj}_{session}_vfa_fa-4-25-tr-{vfa_tr}_{run}'.format(**picks)), 'tr']
 
-setting root data directory to jaba.
-S1 = medianf(b1_data[:,:,:,0], size=5); S2 = medianf(b1_data[:,:,:,1], size=5)
+vfa_affine = nib.load(picks['vfa_fn']).affine
+
+b1_data = nib.load(str(ses_dir/'fmap'/picks['b1map_fn'])).get_data()
+vfa_data = nib.load(str(ses_dir/'qt1'/picks['vfa_fn'])).get_data()
+
+
+S1 = medianf(b1_data[:,:,:,0], size=7)
+S2 = medianf(b1_data[:,:,:,1], size=7)
 b1map = calcb1map(S1, S2, b1TRs)
+b1map_out_fname = ses_dir/'fmap'/'{subject}_{session}_b1map_phase_mf7_9.nii'.format(**picks)
+savenii(b1map, vfa_affine, str(b1map_out_fname))
 
 vy_vfa2_ec1 = vfa_data[:,:,:,:2]
 vy_vfa2_ec2 = vfa_data[:,:,:,2:4]
 vy_vfa2_ec1_rms = np.sqrt(np.sum(np.square(vy_vfa2_ec1), axis=3)/vy_vfa2_ec1.shape[3])
 vy_vfa2_ec2_rms = np.sqrt(np.sum(np.square(vy_vfa2_ec2), axis=3)/vy_vfa2_ec2.shape[3])
 k = np.prod(vy_vfa2_ec1_rms.shape)
-data = np.zeros([len(vy_flipAngles), k])
+data = np.zeros([len(picks['fas']), k])
 data[0,:] = vy_vfa2_ec1_rms.flatten()
 data[1,:] = vy_vfa2_ec2_rms.flatten()
 fa_uncorr = np.zeros(data.shape)
 fa_b1corr = np.zeros(data.shape)
-for i, fa in enumerate(vy_flipAngles):
+for i, fa in enumerate(picks['fas']):
     fa_uncorr[i, :] = fa
 fa_b1corr = fa_uncorr * b1map.flatten()  # uses broadcasting
 fa_b1corr[fa_b1corr == np.inf] = np.nan
@@ -495,14 +518,11 @@ for v in range(k):        #uses no mask yet
     m[v], intercept, r, p, std = stats.linregress(x[:, v], y[:, v])
 qT1_linregr = -vfaTR/np.log(m)
 qT1_linregr_data = qT1_linregr.reshape(vy_vfa2_ec1_rms.shape)
-qT1_linregr_data[(qT1_linregr_data < 1) | (qT1_linregr_data == np.nan)] = 0
+qT1_linregr_data[qT1_linregr_data < 1.0] = 0
 qT1_linregr_data[qT1_linregr_data > 6000] = 6000
-qt1out_fname = 'vy_qt1_scan18_b116_man_calc_mf9_vlinregr-fit_clamped.nii'
-savenii(qT1_linregr_data, vfa_affine, qt1out_fname)
-
-
-
-
+qT1_linregr_data_clean = np.nan_to_num(qT1_linregr_data, copy=True)
+qt1out_fname = ses_dir/'qt1'/'{subject}_{session}_vfa_qt1_b1corrmf9_vlinregr-fit_clamped.nii'.format(**picks)
+savenii(qT1_linregr_data_clean, vfa_affine, str(qt1out_fname))
 
 
 
