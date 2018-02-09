@@ -145,7 +145,7 @@ c
 	alphacheck = abs(dnmr(it) -aver)/stdev
 	if(alphacheck.gt.alphalevel)then
 c	if(dnmr(it).lt.0.9)then
-	write(6,*)'this is bad gradient ',alphacheck,k,it,ibad
+	write(6,*)'this is bad gradient ',alphacheck,k,it-1,ibad
 	plotbada(ibad,1,isort) = k
 	plotbada(ibad,2,isort) = it
 	plotbada(ibad,3,isort) = alphacheck
@@ -153,7 +153,7 @@ c	if(dnmr(it).lt.0.9)then
 	ibad = ibad +1
 	else
 	plotgooda(igood,1,isort) = k
-	plotgooda(igood,2,isort) = it
+	plotgooda(igood,2,isort) = it-1
 	plotgooda(igood,3,isort) = alphacheck
 
 	plotgood(igood,isort)= plotindex(it,isort)
@@ -252,10 +252,10 @@ c
 	if(iflag.eq.0)then  ! found a good volume
 	igoodv(igoodvolume,1) = plotindex(it,isort)
 	igoodv(igoodvolume,2) = it
-	write(21,*)it, '0'
+	write(21,*)it-1, '0'
 	igoodvolume = igoodvolume+1
 	endif  !found a good volume
-	if(iflag.eq.1)write(21,*)it,'1'
+	if(iflag.eq.1)write(21,*)it-1,'1'
 	enddo
 
 	if(isort.eq.1)open(13,file ='plotgood1',form='unformatted')
