@@ -1,8 +1,10 @@
 import pylabs
 import nibabel, numpy
-from pylabs.utils import run_subprocess, replacesuffix
+from pylabs.utils import run_subprocess, replacesuffix, ProvenanceWrapper
 from pathlib import *
 import shutil, gzip
+#set up provenance
+prov = ProvenanceWrapper()
 
 def loadStack(files):
     data = []
@@ -53,6 +55,7 @@ def savenii(data, affine, outfile, header=None, minmax=('parse', 'parse'), qform
     numpy.testing.assert_almost_equal(affine, img.get_qform(), 3,
                                    err_msg='output qform in header does not match input qform')
     nibabel.save(img, str(outfile))
+    return
 
 def paired_sub(niifiles, outfname, minuend=0):
     if int(minuend) not in [0,1]:
