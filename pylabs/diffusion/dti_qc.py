@@ -4,8 +4,7 @@ from os.path import join
 import nibabel as nib
 from collections import defaultdict
 from nipype.interfaces import fsl
-from pylabs.utils import run_subprocess, getqccmd
-from pylabs.utils.paths import getnetworkdataroot, getpylabspath
+from pylabs.utils import *
 prov = ProvenanceWrapper()
 flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo')
 applyxfm = fsl.ApplyXFM()

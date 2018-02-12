@@ -26,7 +26,7 @@ from pylabs.utils.paths import getnetworkdataroot, test4working_gpu, get_antsreg
 # project and subjects and files to run on
 from pylabs.projects.acdc.file_names import project, SubjIdPicks, get_dwi_names
 #set up provenance
-from pylabs.utils.provenance import ProvenanceWrapper
+from pylabs.utils import ProvenanceWrapper
 prov = ProvenanceWrapper()
 #setup paths and file names to process
 

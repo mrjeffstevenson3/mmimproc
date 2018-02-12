@@ -20,13 +20,12 @@ from pylabs.conversion.nifti2nrrd import nii2nrrd
 from pylabs.alignment.ants_reg import subj2templ_applywarp
 from pylabs.correlation.atlas import mori_network_regions
 from pylabs.io.images import savenii
-from pylabs.utils import run_subprocess, WorkingContext, appendposix, replacesuffix
-from pylabs.utils.paths import getnetworkdataroot, test4working_gpu, get_antsregsyn_cmd, MNI1mm_T2_brain, getslicercmd, \
-        moriMNIatlas, MNI1mm_T1_brain
+
+from pylabs.utils import *
 # project and subjects and files to run on
 from pylabs.projects.acdc.file_names import project, SubjIdPicks, get_dwi_names
+from pylabs.diffusion.dti_qc import dwi_qc_1bv
 #set up provenance
-from pylabs.utils.provenance import ProvenanceWrapper
 prov = ProvenanceWrapper()
 #setup paths and file names to process
 
