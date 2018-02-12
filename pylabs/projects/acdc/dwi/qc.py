@@ -40,7 +40,7 @@ subjids_picks = SubjIdPicks()
 # list of subject ids to operate on
 picks = [
          {'subj': 'sub-acdc103', 'session': 'ses-1', 'run': '1',  # subject selection info
-          'dwi_badvols': np.array([1, 3, 4, 5, 10, 53]), 'topup_badvols': np.array([]), 'topdn_badvols': np.array([]),  # remove bad vols identified in qc
+          'dwi_badvols': np.array([]), 'topup_badvols': np.array([]), 'topdn_badvols': np.array([]),  # remove bad vols identified in qc
           },
          ]
 

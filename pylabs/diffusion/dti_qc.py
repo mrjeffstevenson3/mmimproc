@@ -1,8 +1,10 @@
+from pathlib import *
 import glob, os, pandas, numpy, nibabel, cPickle, shutil, pylabs
 from os.path import join
+import nibabel as nib
 from collections import defaultdict
 from nipype.interfaces import fsl
-from pylabs.utils._run import run_subprocess
+from pylabs.utils import run_subprocess, getqccmd
 from pylabs.utils.paths import getnetworkdataroot, getpylabspath
 prov = ProvenanceWrapper()
 flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo')
@@ -32,4 +34,21 @@ def dti_motion_qc(project, subjects, alpha=3.4):
             run_subprocess(cmd)
             run_subprocess(join(diffdir, 'dti_qc_correlation_bval1000'))
     os.chdir(origdir)
+    return
+
+def dwi_qc_1bv(dwi_data, affine, output_pname, hdf_fname, alpha=3.4):
+    results = ()
+    dwi_qc, plot_vols = getqccmd()
+    if not Path(hdf_fname).is_file():
+        raise ValueError('No hdf file found. '+str(hdf_fname))
+    if not output_pname.parent.is_dir():
+        output_pname.parent.mkdir(parents=True)
+    nib.save(nib.AnalyzeImage(dwi_data, affine), str(output_pname.parent/'dtishort.hdr'))
+    # make alpha_level.txt parameter file
+    with open(str(output_pname.parent / 'alpha_level.txt'), 'w') as f:
+        f.write(str(alpha)+'\n')
+    results += run_subprocess([str(dwi_qc)])
+    results += run_subprocess(['octave '+str(plot_vols)])
+    # clean up files save info to hdf
+
     return
