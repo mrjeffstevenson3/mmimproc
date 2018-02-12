@@ -56,3 +56,32 @@ print(os.environ['FSLOUTPUTTYPE'])
 
 
 topup_fnames, topdn_fnames, dwi_fnames = get_dwi_names(subjids_picks)
+
+# for testing
+i = 0
+topup, topdn, dwif = topup_fnames[i], topdn_fnames[i], dwi_fnames[i]
+
+
+qc_str = ''
+dwipath = fs / project / dwif.split('_')[0] / dwif.split('_')[1] / 'dwi'
+orig_dwif_fname = dwipath / str(dwif + qc_str + '.nii')
+orig_dwi_bvals_fname = dwipath / str(dwif + qc_str + '.bvals')
+orig_dwi_bvecs_fname = dwipath / str(dwif + qc_str + '.bvecs')
+topup_fname = dwipath / str(topup + qc_str + '.nii')
+topdn_fname = dwipath / str(topdn + qc_str + '.nii')
+bvals, bvecs = read_bvals_bvecs(str(orig_dwi_bvals_fname), str(orig_dwi_bvecs_fname))
+gtab = gradient_table(bvals, bvecs)
+orig_dwi_data = nib.load(str(orig_dwif_fname)).get_data()
+orig_topup_data = nib.load(str(topup_fname)).get_data()
+orig_topdn_data = nib.load(str(topdn_fname)).get_data()
+affine = nib.load(str(orig_dwif_fname)).affine
+#for testing
+b = np.unique(gtab.bvals)[1]
+
+for b in np.unique(gtab.bvals):
+    if b == 0:
+        continue
+    ixb = np.isin(gtab.bvals, b)
+    select_vols = orig_dwi_data[:,:,:,np.where(ixb)[0]]
+
+
