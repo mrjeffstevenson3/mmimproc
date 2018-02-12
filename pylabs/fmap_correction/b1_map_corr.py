@@ -22,7 +22,7 @@ def correct_img4b1(project, subject, session, b1map_file, target, reg_dir_name, 
     reg_dir = fs/project/subject/session/'reg'/reg_dir_name
     if not reg_dir.is_dir():
         reg_dir.mkdir(parents=True)
-    if patch:
+    #if patch:
         # calculate b1map
     b1magcmd = ['fslroi '+str(b1map_file)+' '+str(replacesuffix(b1map_file, '_mag.nii.gz'))+' 0 1']
     b1phasecmd = ['fslroi '+str(b1map_file)+' '+str(replacesuffix(b1map_file, '_phase.nii.gz'))+' 2 1']
@@ -86,7 +86,8 @@ def calcb1map(S1, S2, TRs, T1mean=1000.0, FAnom=60.0, medfilt=True, mfsize=9, pa
         C = (r - 1 - (E2 * r) + E1) / (E1 - (E2 * r) + (E1 * E2 * (r - 1)))
         FA = (np.arccos(C) * 180 / np.pi) / FAnom
         # clean up any nan's
-        FA[FA == np.nan] = 0
+        nans_in_fa = np.isnan(FA)
+        FA[nans_in_fa] = 0
     if medfilt:
         FA = medianf(FA, size=mfsize)
     return FA

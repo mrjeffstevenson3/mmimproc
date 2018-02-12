@@ -3,6 +3,7 @@ import pylabs, os
 os.environ["FSLMULTIFILEQUIT"] = 'FALSE'
 import socket, inspect, platform
 import petname
+from pylabs.utils import which, run_subprocess
 from os.path import expanduser, join
 from pathlib import *
 
@@ -26,7 +27,7 @@ MNI1mm_T1_brain_mask = pylabs_atlasdir/'MNI152_T1_1mm_brain_mask.nii.gz'
 MNI1mm_T2_brain = pylabs_atlasdir/'MNI152_T2_1mm_brain.nii.gz'
 MNI1mm_T1_qa_mask = pylabs_atlasdir/'MNI152_T1_1mm_qa_mask.nii.gz'
 meg_head_mask = pylabs_atlasdir/'MNI152_T1_1mm_meg_mask.nii'
-dwi_qc = pylabs_dir / 'diffusion' / 'dti_qc_correlation_single_feb2018'
+
 
 def getlocaldataroot():
     hostname = socket.gethostname()
@@ -152,3 +153,19 @@ def getspmpath():
 
     tpm_path = spm_path / 'tpm' / 'TPM.nii'
     return spm_path, tpm_path
+
+def getqccmd():
+    if platform.system() == 'Linux':
+        dwi_qc = pylabs_dir / 'diffusion' / 'dti_qc_correlation_single_feb2018'
+
+    if platform.system() == 'Darwin':
+        raise ValueError('not implemented for Mac os yet.')
+        #dwi_qc = pylabs_dir / 'diffusion' / 'mac_dti_qc_correlation_single_feb2018'
+        #if not dwi_qc.is_file():
+        #    run_subprocess(['gfortran '+str(dwi_qc.parents/'dti_qc_correlation_single_feb2018.f')+' -o '+str(dwi_qc)+' -ffixed-line-length-none'])
+
+    if not 'octave' in which('octave'):
+        raise ValueError('Dependency error. Cannot find working copy of octave in PATH.')
+    if not 'dti_qc_correlation_single_feb2018' in which('dti_qc_correlation_single_feb2018'):
+        raise ValueError('Error finding todds fortran qc program in pylabs/diffusion.')
+    return dwi_qc

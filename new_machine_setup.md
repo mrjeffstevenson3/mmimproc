@@ -154,4 +154,27 @@ source $FREESURFER_HOME/SetUpFreeSurfer.sh`
 
 32. install spm12 sw in ${HOME}/Software (depends on matlab)
 
-33. install vtk and mayavi
+##33. install vtk and mayavi
+
+33. install octave:
+    linux: sudo apt-get install octave
+    mac: make sure xquratz and xcode command line tools are installed from apple. then
+        # install Homebrew http://brew.sh/ if you don't already have it 
+        /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" 
+        # install some Octave dependencies, the update/upgrade command below could take a while
+        brew update && brew upgrade
+        brew install gcc # or 'brew reinstall gcc' if you have an older gcc without gfortran in it
+        # skip for now...
+                # You may also need to install mactex (see http://tex.stackexchange.com/questions/97183/what-are-the-practical-differences-between-installing-latex-from-mactex-or-macpo)
+                # The download here takes a while...
+                brew cask install mactex 
+                export PATH=$PATH:/usr/texbin
+                
+                # install X11 -> should use apple xqurartz site
+                brew cask install xquartz
+        
+        # install gnuplot
+        brew install gnuplot --with-x11
+        
+        # install octave
+        brew install octave --with-x11

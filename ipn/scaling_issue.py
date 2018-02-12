@@ -35,38 +35,31 @@ nbwr144_mpr_rms = nib.load('sub-nbwr144_ses-1_fsmempr_ti1100_rms_1.nii').get_dat
 nbwr144_dwi = nib.load('sub-nbwr144_ses-1_dwi-topup_64dir-3sh-800-2000_1_topdn_unwarped_ec_mf_clamp1.nii.gz').get_data()
 nbwr144_fa05 = nib.load('sub-nbwr144_ses-1_spgr_fa-05-tr-12p0_1.nii').get_data()
 nbwr144_fa30 = nib.load('sub-nbwr144_ses-1_spgr_fa-30-tr-12p0_1.nii').get_data()
-
 acdc103_mpr_rms = nib.load('sub-acdc103_ses-1_fsmempr_ti1400_rms_1.nii').get_data()
 acdc103_dwi = nib.load('sub-acdc103_ses-1_dwi-topup_64dir-3sh-800-2000_1.nii').get_data()
 acdc103_vfa = nib.load('sub-acdc103_ses-1_vfa_fa-4-25-tr-21p0_1.nii').get_data()
 
 
-# In[17]:
+# In[4]:
 
 
-acdc103_vfa[acdc103_vfa < 1] = np.nan
+sns.distplot(nbwr144_fa05[:,107,128], bins=256, rug=True, hist_kws={'range': (1, 40000)},            kde_kws={'clip': (1, 40000)})
 
 
-# In[13]:
+# In[5]:
 
 
-np.array(acdc103_vfa.shape) / 2
+sns.distplot(nbwr144_fa30[:,107,128], bins=256, rug=True, hist_kws={'range': (1, 40000)},            kde_kws={'clip': (1, 40000)})
 
 
-# In[27]:
+# In[6]:
 
 
-sns.distplot(nbwr144_fa05[:,120,120], bins=256, rug=True, hist_kws={'range': (1, nbwr144_fa05.max())},            kde_kws={'clip': (1, nbwr144_fa05.max())})
+sns.distplot(acdc103_vfa[:, 183, 193, 0], bins=256, rug=True, hist_kws={'range': (1, 40000)},            kde_kws={'clip': (1, 40000)})
 
 
-# In[21]:
+# In[7]:
 
 
-sns.distplot(nbwr144_fa30[:,120,120], bins=256, rug=True, hist_kws={'range': (1, nbwr144_fa30.max())},            kde_kws={'clip': (1, nbwr144_fa30.max())})
-
-
-# In[25]:
-
-
-sns.distplot(acdc103_vfa[156, :, 192, 3], bins=256, rug=True, hist_kws={'range': (1, 15000)},            kde_kws={'clip': (1, 15000)})
+sns.distplot(acdc103_vfa[:, 183, 193, 3], bins=256, rug=True, hist_kws={'range': (1, 40000)},            kde_kws={'clip': (1, 40000)})
 
