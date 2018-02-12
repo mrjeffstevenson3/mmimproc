@@ -18,16 +18,13 @@ if not os.environ['FSLOUTPUTTYPE'] == 'NIFTI_GZ':
 
 antsRegistrationSyN = get_antsregsyn_cmd()
 
-def correct_img4b1(project, subject, session, b1map_file, target, reg_dir_name, patch=False):
+def correct_img4b1(project, subject, session, b1map_file, target, reg_dir_name):
     reg_dir = fs/project/subject/session/'reg'/reg_dir_name
     if not reg_dir.is_dir():
         reg_dir.mkdir(parents=True)
-    #if patch:
-        # calculate b1map
     b1magcmd = ['fslroi '+str(b1map_file)+' '+str(replacesuffix(b1map_file, '_mag.nii.gz'))+' 0 1']
     b1phasecmd = ['fslroi '+str(b1map_file)+' '+str(replacesuffix(b1map_file, '_phase.nii.gz'))+' 2 1']
-    b1totarget_antscmd = [str(antsRegistrationSyN)+' -d 3 -m '+str(replacesuffix(b1map_file, '_mag.nii.gz'))+' -f '+
-                str(target)+' -o '+str(replacesuffix(reg_dir/b1map_file.name, '_mag_'+reg_dir_name+'_'))+' -n 30 -t s -p f -j 1 -s 10 -r 1']
+    b1totarget_antscmd = [str(antsRegistrationSyN)+' -d 3 -m '+str(replacesuffix(b1map_file, '_mag.nii.gz'))+' -f '+ str(target)+' -o '+str(replacesuffix(reg_dir/b1map_file.name, '_mag_'+reg_dir_name+'_'))+' -n 30 -t s -p f -j 1 -s 10 -r 1']
     results = ()
     with WorkingContext(str(reg_dir)):
         results += run_subprocess(b1magcmd)

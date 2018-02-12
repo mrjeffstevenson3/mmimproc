@@ -8,7 +8,7 @@ import mne, json
 from pylabs.projects.acdc.file_names import project, SubjIdPicks, get_freesurf_names
 from pylabs.utils.paths import getnetworkdataroot, get_antsregsyn_cmd
 from pylabs.structural.brain_extraction import extract_brain
-from pylabs.fmap_correction.b1_map_corr import correct4b1
+from pylabs.fmap_correction.b1_map_corr import correct_img4b1
 from pylabs.utils import run_subprocess, WorkingContext, appendposix, replacesuffix
 from mne.utils import run_subprocess as mne_subprocess
 #set up provenance
@@ -24,7 +24,7 @@ antsRegistrationSyN = get_antsregsyn_cmd()
 subjids_picks = SubjIdPicks()
 # list of subject ids to operate on
 picks = [
-         {'subj': 'sub-acdc903', 'session': 'ses-1', 'run': '1',},
+         {'subj': 'sub-acdc103', 'session': 'ses-1', 'run': '1',},
          ]
 
 setattr(subjids_picks, 'subjids', picks)
@@ -34,7 +34,7 @@ setattr(subjids_picks, 'subjids', picks)
 reg_dir_name = 'b1map2fsrms'   # for ants warp files
 overwrite = True
 hires = True          # for freesurfer
-b1corr = True         # for preprocess rms
+b1corr = False         # for preprocess rms
 noise_filter = True   # for susan
 noise_thresh = -1     # for susan
 noise_kernel = 1      # for susan
