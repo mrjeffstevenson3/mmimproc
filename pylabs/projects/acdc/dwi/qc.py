@@ -66,20 +66,32 @@ for i, (topup, topdn, dwif) in enumerate(zip(topup_fnames, topdn_fnames, dwi_fna
     orig_topup_data = nib.load(str(topup_fname)).get_data()
     orig_topdn_data = nib.load(str(topdn_fname)).get_data()
     affine = nib.load(str(orig_dwi_fname)).affine
+    qc_DF = pd.DataFrame(data=gtab.bvecs, index=[range(len(gtab.bvals))], columns=['x_bvec', 'y_bvec', 'z_bvec'])
+    qc_DF['bvals'] = gtab.bvals
+    qc_DF.loc[:orig_topdn_data.shape[3], 'itopdn'] = range(orig_topdn_data.shape[3] + 1)
+    qc_DF.loc[:orig_topup_data.shape[3], 'itopup'] = range(orig_topup_data.shape[3] + 1)
+    qc_DF.loc[:orig_topup_data.shape[3]+1, 'alltopup_idx'] = range(orig_topup_data.shape[3] + 2)
+
     #for testing
     #b = np.unique(gtab.bvals)[1]
     output = dwipath / 'qc' / (subject+'_'+session+'_topdn_dwiqc')
-    dwi_qc_1bv(orig_topdn_data, affine, output, hdf_fname, subject/session/'dwi_qc')
+    topdn_badvols = dwi_qc_1bv(orig_topdn_data, affine, output)
     all_topup_data = np.append(orig_dwi_data[:,:,:,0, None] , orig_topup_data, axis=3)
     output = dwipath / 'qc' / (subject+'_'+session+'_topup_dwiqc')
-    dwi_qc_1bv(all_topup_data, affine, output, hdf_fname, subject/session/'dwi_qc')
-
-
+    topup_badvols = dwi_qc_1bv(all_topup_data, affine, output)
+    if topup_badvols.iloc[0,1] == 1:
+        qc_DF.loc[0, 'dwi_qc'] = 1
+    else:
+        qc_DF.loc[0, 'dwi_qc'] = 0
+    qc_DF.loc[:topup_badvols.shape, 'topup_qc'] = topup_badvols.loc[1:, 1]
+    qc_DF.loc[:topdn_badvols.shape, 'topdn_qc'] = topup_badvols[1]
     for b in np.unique(gtab.bvals):
         if b == 0:
             continue
         ixb = np.isin(gtab.bvals, b)
         select_vols = orig_dwi_data[:,:,:,np.where(ixb)[0]]
         output = dwipath / 'qc' / (subject+'_'+session+'_dwiqc_b' + str(int(b)))
-        dwi_qc_1bv(select_vols, affine, output,  info_fname, subject/session/'dwi_qc', alpha=3.0)
+        dwi_badvols = dwi_qc_1bv(select_vols, affine, output)
+        qc_DF.loc[ixb, 'dwi_qc'] = dwi_badvols[1]
 
+    qc_DF.to_hdf(str(info_fname), subject/session/'dwi_qc', mode='w', append=False, format='t')

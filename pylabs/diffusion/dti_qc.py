@@ -35,7 +35,7 @@ def dti_motion_qc(project, subjects, alpha=3.0):
     os.chdir(origdir)
     return
 
-def dwi_qc_1bv(dwi_data, affine, output_pname, outputDF, hdf_fname, key, alpha=3.4):
+def dwi_qc_1bv(dwi_data, affine, output_pname, alpha=3.0):
     results = ()
     dwi_qc, plot_vols = getqccmd()
     if not Path(hdf_fname).is_file():
@@ -50,6 +50,6 @@ def dwi_qc_1bv(dwi_data, affine, output_pname, outputDF, hdf_fname, key, alpha=3
             f.write(str(alpha) + '\n')
         results += run_subprocess([str(dwi_qc)])
         results += run_subprocess(['octave '+str(plot_vols)])
-    # clean up files save info to hdf
-
-    return    # results dataframe
+        badvols = pd.read_csv('bad_vols_index.txt', header=None, delim_whitespace=True,
+                              index_col=0)
+    return badvols  # results dataframe
