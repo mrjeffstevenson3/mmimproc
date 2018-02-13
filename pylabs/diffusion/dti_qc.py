@@ -10,7 +10,7 @@ flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo')
 applyxfm = fsl.ApplyXFM()
 fs = getnetworkdataroot()
 
-def dti_motion_qc(project, subjects, alpha=3.4):
+def dti_motion_qc(project, subjects, alpha=3.0):
     origdir = os.getcwd()
     diffdir = join(getpylabspath(), 'pylabs', 'diffusion')
     for subject in subjects:

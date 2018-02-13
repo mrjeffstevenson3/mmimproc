@@ -15,6 +15,7 @@ from pylabs.utils import removesuffix, getnetworkdataroot
 from pylabs.conversion.brain_convert import img_conv
 
 project = 'genz'
+qc_str = '_passqc'
 
 class SubjIdPicks(object):
     pass
@@ -58,8 +59,6 @@ def merge_ftempl_dicts(dict1={}, dict2={}, dict3={}, base_dd=fname_templ_dd):
 mod_map = {'T2': '_3DT2W_', 'lt_match': '_AX_MATCH_LEFT_MEMP_VBM_TI1100_', 'rt_match': '_AX_MATCH_RIGHT_MEMP_VBM_TI1100_', 'b1map': '_B1MAP_',
           'dwi': '_DWI64_3SH_B0_B800_B2000_TOPUP_', 's0_up': '_DWI_B0_TOPDN_', 's0_dn': '_DWI_B0_TOPUP_', 'mpr': '_MEMP_FS_TI1100_', 'spgr': '_T1_MAP_'}
 
-# hdf info file name
-subjs_h5_info_fname = fs/project/('all_'+project+'_info.h5')
 
 # freesurfer, VBM, T2 file name lists
 b1map_fs_fnames = []

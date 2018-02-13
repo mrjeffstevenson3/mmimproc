@@ -15,6 +15,7 @@ from pylabs.utils import removesuffix, getnetworkdataroot
 from pylabs.conversion.brain_convert import acdc_conv
 
 project = 'acdc'
+qc_str = '_passqc'
 
 class SubjIdPicks(object):
     pass
