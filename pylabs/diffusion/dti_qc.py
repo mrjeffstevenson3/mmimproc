@@ -42,7 +42,7 @@ def dwi_qc_1bv(dwi_data, affine, output_pname, outputDF, hdf_fname, key, alpha=3
         raise ValueError('No hdf file found. '+str(hdf_fname))
     if not output_pname.parent.is_dir():
         output_pname.parent.mkdir(parents=True)
-    nib.save(nib.AnalyzeImage(dwi_data, affine), str(output_pname.parent/'dtishort.hdr'))
+    nib.save(nib.AnalyzeImage(dwi_data.astype('float32'), affine), str(output_pname.parent/'dtishort.hdr'))
 
     with WorkingContext(str(output_pname.parent)):
         # make alpha_level.txt parameter file
