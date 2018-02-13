@@ -1,24 +1,12 @@
 # first set global root data directory
 import pylabs
 pylabs.datadir.target = 'jaba'
-import os, cPickle
 from pathlib import *
-from collections import defaultdict
-import nipype
-from nipype.interfaces import fsl
 import nibabel as nib
 import numpy as np
+import pandas as pd
 from dipy.io import read_bvals_bvecs
 from dipy.core.gradients import gradient_table
-import shutil
-import datetime
-from cloud.serialization.cloudpickle import dumps
-from scipy.ndimage.filters import median_filter as medianf
-from pylabs.structural.brain_extraction import extract_brain
-from pylabs.conversion.brain_convert import conv_subjs
-from pylabs.conversion.nifti2nrrd import nii2nrrd
-from pylabs.alignment.ants_reg import subj2templ_applywarp
-from pylabs.correlation.atlas import mori_network_regions
 from pylabs.io.images import savenii
 
 from pylabs.utils import *
@@ -46,9 +34,14 @@ picks = [
 setattr(subjids_picks, 'subjids', picks)
 
 qc_str = ''
-hdf_fname = 'all_acdc_info.h5'
+hdf_fname = fs / project / 'all_acdc_info.h5'
 
 topup_fnames, topdn_fnames, dwi_fnames = get_dwi_names(subjids_picks)
+
+# make multiindex DF for results by subj/ses/ivol index and ['iact_dwi', ivol_dwi_qc, iact_topup, ivol_topup_qc, iact_topdn, ivol_topdn_qc] cols
+for p in picks:
+    pd.MultiIndex()
+
 
 # for testing
 i = 0
@@ -70,7 +63,13 @@ for i, (topup, topdn, dwif) in enumerate(zip(topup_fnames, topdn_fnames, dwi_fna
     orig_topdn_data = nib.load(str(topdn_fname)).get_data()
     affine = nib.load(str(orig_dwif_fname)).affine
     #for testing
-    b = np.unique(gtab.bvals)[1]
+    #b = np.unique(gtab.bvals)[1]
+    output = dwipath / 'qc' / (subject+'_'+session+'_topdn_dwiqc')
+    dwi_qc_1bv(orig_topdn_data, affine, output, hdf_fname, subject/session/'dwi_qc')
+    all_topup_data = np.append(orig_dwi_data[:,:,:,0, None] , orig_topup_data, axis=3)
+    output = dwipath / 'qc' / (subject+'_'+session+'_topup_dwiqc')
+    dwi_qc_1bv(all_topup_data, affine, output, hdf_fname, subject/session/'dwi_qc')
+
 
     for b in np.unique(gtab.bvals):
         if b == 0:
@@ -78,5 +77,5 @@ for i, (topup, topdn, dwif) in enumerate(zip(topup_fnames, topdn_fnames, dwi_fna
         ixb = np.isin(gtab.bvals, b)
         select_vols = orig_dwi_data[:,:,:,np.where(ixb)[0]]
         output = dwipath / 'qc' / (subject+'_'+session+'_dwiqc_b' + str(int(b)))
-        dwi_qc_1bv(select_vols, affine, output, (fs / project / hdf_fname))
+        dwi_qc_1bv(select_vols, affine, output, hdf_fname, subject/session/'dwi_qc')
 
