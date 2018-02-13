@@ -45,15 +45,8 @@ picks = [
 
 setattr(subjids_picks, 'subjids', picks)
 
-#  define hostnames with working gpus for processing
-flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo', output_type='NIFTI_GZ')
-if nipype.__version__ == '0.12.0':
-    applyxfm = fsl.ApplyXfm(interp='nearestneighbour', output_type='NIFTI_GZ')
-else:
-    applyxfm = fsl.ApplyXFM(interp='nearestneighbour', output_type='NIFTI_GZ')
-
-print(os.environ['FSLOUTPUTTYPE'])
-
+qc_str = ''
+hdf_fname = 'all_acdc_info.h5'
 
 topup_fnames, topdn_fnames, dwi_fnames = get_dwi_names(subjids_picks)
 
@@ -61,27 +54,29 @@ topup_fnames, topdn_fnames, dwi_fnames = get_dwi_names(subjids_picks)
 i = 0
 topup, topdn, dwif = topup_fnames[i], topdn_fnames[i], dwi_fnames[i]
 
+for i, (topup, topdn, dwif) in enumerate(zip(topup_fnames, topdn_fnames, dwi_fnames)):
+    subject = dwif.split('_')[0]
+    session = dwif.split('_')[1]
+    dwipath = fs / project / subject / session / 'dwi'
+    orig_dwif_fname = dwipath / str(dwif + qc_str + '.nii')
+    orig_dwi_bvals_fname = dwipath / str(dwif + qc_str + '.bvals')
+    orig_dwi_bvecs_fname = dwipath / str(dwif + qc_str + '.bvecs')
+    topup_fname = dwipath / str(topup + qc_str + '.nii')
+    topdn_fname = dwipath / str(topdn + qc_str + '.nii')
+    bvals, bvecs = read_bvals_bvecs(str(orig_dwi_bvals_fname), str(orig_dwi_bvecs_fname))
+    gtab = gradient_table(bvals, bvecs)
+    orig_dwi_data = nib.load(str(orig_dwif_fname)).get_data()
+    orig_topup_data = nib.load(str(topup_fname)).get_data()
+    orig_topdn_data = nib.load(str(topdn_fname)).get_data()
+    affine = nib.load(str(orig_dwif_fname)).affine
+    #for testing
+    b = np.unique(gtab.bvals)[1]
 
-qc_str = ''
-dwipath = fs / project / dwif.split('_')[0] / dwif.split('_')[1] / 'dwi'
-orig_dwif_fname = dwipath / str(dwif + qc_str + '.nii')
-orig_dwi_bvals_fname = dwipath / str(dwif + qc_str + '.bvals')
-orig_dwi_bvecs_fname = dwipath / str(dwif + qc_str + '.bvecs')
-topup_fname = dwipath / str(topup + qc_str + '.nii')
-topdn_fname = dwipath / str(topdn + qc_str + '.nii')
-bvals, bvecs = read_bvals_bvecs(str(orig_dwi_bvals_fname), str(orig_dwi_bvecs_fname))
-gtab = gradient_table(bvals, bvecs)
-orig_dwi_data = nib.load(str(orig_dwif_fname)).get_data()
-orig_topup_data = nib.load(str(topup_fname)).get_data()
-orig_topdn_data = nib.load(str(topdn_fname)).get_data()
-affine = nib.load(str(orig_dwif_fname)).affine
-#for testing
-b = np.unique(gtab.bvals)[1]
-
-for b in np.unique(gtab.bvals):
-    if b == 0:
-        continue
-    ixb = np.isin(gtab.bvals, b)
-    select_vols = orig_dwi_data[:,:,:,np.where(ixb)[0]]
-
+    for b in np.unique(gtab.bvals):
+        if b == 0:
+            continue
+        ixb = np.isin(gtab.bvals, b)
+        select_vols = orig_dwi_data[:,:,:,np.where(ixb)[0]]
+        output = dwipath / 'qc' / (subject+'_'+session+'_dwiqc_b' + str(int(b)))
+        dwi_qc_1bv(select_vols, affine, output, (fs / project / hdf_fname))
 
