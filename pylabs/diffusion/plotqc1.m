@@ -9,7 +9,7 @@ fkern = 'plotgood1';
 clf;
 h = figure('Position',[1,1,4000,2048]);
 dimensionsgood1
-for it = 1:dimensionsgood1(:,4)-1
+for it = 1:dimensionsgood1(:,4)
 pos1 = ((it-1)*(dimensionsgood1(:,3)-1))+1;
 pos2 = pos1+dimensionsgood1(:,3)-1;
 plot(1:1+dimensionsgood1(:,3)-1,I(pos1:pos2));
@@ -31,8 +31,8 @@ fkern = 'badvolumes1';
 
 
 dimensionsbad1
-map=rainbow(dimensionsbad1(:,4)-1);
-for it = 1:dimensionsbad1(:,4)-1
+map=rainbow(dimensionsbad1(:,4));
+for it = 1:dimensionsbad1(:,4)
 pos1 = ((it-1)*(dimensionsbad1(:,3)-1))+1;
 pos2 = pos1+dimensionsbad1(:,3)-1;
 [R, G, B] = ind2rgb (it, map);

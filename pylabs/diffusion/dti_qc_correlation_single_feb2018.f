@@ -70,7 +70,7 @@ c
 c
 	isort = 1
 	incit = 1
-	do it=1,nvecs-1
+	do it=1,nvecs
 	do k=5,izsize-1
 	suma = 0
 	sumb = 0
@@ -116,7 +116,7 @@ c	write(6,*) 'plot(k,it) ',plot(k,incit,1),k,it,incit
 
 c
 	if(isort.eq.1)open(12,file ='plotqc1',form='unformatted')
-	do it =1,nvecs-1
+	do it =1,nvecs
 	do k=1,izsize-1
 	out(k) = plot(k,it,isort)
 	enddo
@@ -135,14 +135,16 @@ c
 	itotal = 0
 	do k=1,izsize-1
 
-	do it=1,nvecs-1
+	do it=1,nvecs
 	dnmr(it) = plot(k,it,isort)
+c	if(k.eq.37)write(6,*)'dnmr(it) ',dnmr(it),it
 	enddo
-	isize = nvecs-1
+	isize = nvecs
 	call average(aver,stdev,stem)
-	write(6,*)'aver stdev ', aver,k,it
-	do it=1,nvecs-1
+c	write(6,*)'aver stdev ', aver,k,it
+	do it=1,nvecs
 	alphacheck = abs(dnmr(it) -aver)/stdev
+c	if(k.ge.36.and.k.le.40)write(6,*)'alphacheck ',alphacheck,it,k
 	if(alphacheck.gt.alphalevel)then
 c	if(dnmr(it).lt.0.9)then
 	write(6,*)'this is bad gradient ',alphacheck,k,it-1,ibad
@@ -176,9 +178,9 @@ c	if(dnmr(it).lt.0.9)then
 
 
 	ibadvolume = 1
-	do i=1,ibad-1
+	do i=1,ibad
 	rmax = 0.0
-	do ii=1,ibad-1
+	do ii=1,ibad
 	rmax = max(plotbada(ii,3,isort),rmax)
 	if(rmax.eq.plotbada(ii,3,isort))isavebad = ii
 	enddo   ! ii part 1 find the worse slice and volume
@@ -192,7 +194,7 @@ c
 c output plotbad one volume at a time
 c
 
-	do ii=1,ibad-1
+	do ii=1,ibad
 	if(plotbad(isavebad,isort).eq.plotbad(ii,isort))then
 	write(11,*)'bad slice volume',plotbada(ii,3,isort),plotbada(ii,1,isort),plotbada(ii,2,isort)
 c	write(6,*)'bad slice ',plotbada(ii,3),plotbada(ii,1)
@@ -209,7 +211,7 @@ c	write(6,*)'bad slice ',plotbada(ii,3),plotbada(ii,1)
 	close(11)
 	close(13)
 	if(isort.eq.1)open(13,file ='plotbad1',form='unformatted')
-	do it=1,ibadvolume-1
+	do it=1,ibadvolume
 	do k=1,izsize-1
 	out(k) = plot(k,ibadv(it,2),isort)
 	enddo
@@ -220,18 +222,18 @@ c	write(6,*)'bad slice ',plotbada(ii,3),plotbada(ii,1)
 	close(13)
 
 	if(isort.eq.1)open(13,file = 'badvolumes1',form = 'unformatted')
-	do i=1,ibadvolume-1
+	do i=1,ibadvolume
 	ib(i)=ibadv(i,1)
 c	write(6,*)'bad out ',ib,i
 	out(i) = ib(i)
 	enddo
-	do i=1,(ibadvolume-1)*4
+	do i=1,(ibadvolume)*4
 	call fputc(13,cout(i),istate)
 	enddo
 	close(13)
-	do i=1,ibadvolume-1
+	do i=1,ibadvolume
 	imin = 10000
-	do ii=1,ibadvolume-1
+	do ii=1,ibadvolume
 	imin = min(ib(ii),imin)
 	if(imin.eq.ib(ii))iset = ii
 	enddo  !ii
@@ -244,7 +246,7 @@ c  now do the good volumes and plots
 c
 
 	igoodvolume = 1
-	do it=1,nvecs-1
+	do it=1,nvecs
 	iflag = 0  ! means no bad slices
 	do ii=1,ibad-1
 	if(it.eq.plotbada(ii,2,isort))iflag = 1
@@ -259,7 +261,7 @@ c
 	enddo
 
 	if(isort.eq.1)open(13,file ='plotgood1',form='unformatted')
-	do it=1,igoodvolume-1
+	do it=1,igoodvolume
 	do k=1,izsize-1
 	out(k) = plot(k,igoodv(it,2),isort)
 	enddo
@@ -272,10 +274,10 @@ c
 
 
 	if(isort.eq.1)open(13,file = 'goodvolumes1',form = 'unformatted')
-	do i=1,igoodvolume-1
+	do i=1,igoodvolume
 	out(i) = igoodv(i,1)
 	enddo
-	do i=1,(igoodvolume-1)*4
+	do i=1,(igoodvolume)*4
 	call fputc(13,cout(i),istate)
 	enddo
 	close(13)
