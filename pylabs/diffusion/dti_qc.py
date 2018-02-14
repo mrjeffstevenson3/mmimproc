@@ -2,6 +2,7 @@ from pathlib import *
 import glob, os, pandas, numpy, nibabel, cPickle, shutil, pylabs
 from os.path import join
 import nibabel as nib
+import pandas as pd
 from collections import defaultdict
 from nipype.interfaces import fsl
 from pylabs.utils import *
@@ -38,8 +39,6 @@ def dti_motion_qc(project, subjects, alpha=3.0):
 def dwi_qc_1bv(dwi_data, affine, output_pname, alpha=3.0):
     results = ()
     dwi_qc, plot_vols = getqccmd()
-    if not Path(hdf_fname).is_file():
-        raise ValueError('No hdf file found. '+str(hdf_fname))
     if not output_pname.parent.is_dir():
         output_pname.parent.mkdir(parents=True)
     nib.save(nib.AnalyzeImage(dwi_data.astype('float32'), affine), str(output_pname.parent/'dtishort.hdr'))

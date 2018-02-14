@@ -42,14 +42,9 @@ else:
 
 topup_fnames, topdn_fnames, dwi_fnames = get_dwi_names(subjids_picks)
 
-# make multiindex DF for results by subj/ses/ivol index and ['iact_dwi', ivol_dwi_qc, iact_topup, ivol_topup_qc, iact_topdn, ivol_topdn_qc] cols
-for p in picks:
-    pd.MultiIndex()
-
-
 # for testing
-i = 0
-topup, topdn, dwif = topup_fnames[i], topdn_fnames[i], dwi_fnames[i]
+#i = 0
+#topup, topdn, dwif = topup_fnames[i], topdn_fnames[i], dwi_fnames[i]
 
 for i, (topup, topdn, dwif) in enumerate(zip(topup_fnames, topdn_fnames, dwi_fnames)):
     subject = dwif.split('_')[0]
@@ -74,17 +69,30 @@ for i, (topup, topdn, dwif) in enumerate(zip(topup_fnames, topdn_fnames, dwi_fna
 
     #for testing
     #b = np.unique(gtab.bvals)[1]
+    jpg_out = dwipath / 'qc' / 'qcreport1.jpg'
+    report_out = dwipath / 'qc' / 'qc_report.txt'
     output = dwipath / 'qc' / (subject+'_'+session+'_topdn_dwiqc')
     topdn_badvols = dwi_qc_1bv(orig_topdn_data, affine, output)
+    try:
+        jpg_out.rename(appendposix(output, '.jpg'))
+    except OSError:
+        print('topdown jpg file not found. moving on.')
+    report_out.rename(appendposix(output, '_report.txt'))
     all_topup_data = np.append(orig_dwi_data[:,:,:,0, None] , orig_topup_data, axis=3)
     output = dwipath / 'qc' / (subject+'_'+session+'_topup_dwiqc')
     topup_badvols = dwi_qc_1bv(all_topup_data, affine, output)
-    if topup_badvols.iloc[0,1] == 1:
+    try:
+        jpg_out.rename(appendposix(output, '.jpg'))
+    except OSError:
+        print('topup jpg file not found. moving on.')
+    report_out.rename(appendposix(output, '_report.txt'))
+    if topup_badvols.iloc[0,0] == 1:
         qc_DF.loc[0, 'dwi_qc'] = 1
     else:
         qc_DF.loc[0, 'dwi_qc'] = 0
-    qc_DF.loc[:topup_badvols.shape, 'topup_qc'] = topup_badvols.loc[1:, 1]
-    qc_DF.loc[:topdn_badvols.shape, 'topdn_qc'] = topup_badvols[1]
+
+    qc_DF.loc[:topdn_badvols.shape[0], 'topdn_qc'] = topdn_badvols.loc[:, 1]
+    qc_DF.loc[:topup_badvols.shape[0], 'topup_qc'] = topup_badvols.loc[1:, 1]
     for b in np.unique(gtab.bvals):
         if b == 0:
             continue
@@ -93,5 +101,10 @@ for i, (topup, topdn, dwif) in enumerate(zip(topup_fnames, topdn_fnames, dwi_fna
         output = dwipath / 'qc' / (subject+'_'+session+'_dwiqc_b' + str(int(b)))
         dwi_badvols = dwi_qc_1bv(select_vols, affine, output)
         qc_DF.loc[ixb, 'dwi_qc'] = dwi_badvols[1]
+        try:
+            jpg_out.rename(appendposix(output, '.jpg'))
+        except OSError:
+            print('dwi jpg file for b'+str(b)+' not found. moving on.')
+        report_out.rename(appendposix(output, '_report.txt'))
 
-    qc_DF.to_hdf(str(info_fname), subject/session/'dwi_qc', mode='w', append=False, format='t')
+    #qc_DF.to_hdf(str(info_fname), subject+'/'+session+'/dwi_qc', mode='a', append=False, format='t')
