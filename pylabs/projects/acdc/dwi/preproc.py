@@ -62,7 +62,7 @@ overwrite = True
 convert = False
 dti_qc = True
 if dti_qc:
-    qc_str = '_selected_vols' # set to blank string '' when not in use
+    from pylabs.projects.acdc.dwi.qc import qc_str   # set to blank string '' when not in use
 else:
     qc_str = ''
 run_topup = True

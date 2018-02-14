@@ -2,6 +2,7 @@ from pathlib import *
 import glob, os, pandas, numpy, nibabel, cPickle, shutil, pylabs
 from os.path import join
 import nibabel as nib
+import pandas as pd
 from collections import defaultdict
 from nipype.interfaces import fsl
 from pylabs.utils import *
@@ -10,7 +11,7 @@ flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo')
 applyxfm = fsl.ApplyXFM()
 fs = getnetworkdataroot()
 
-def dti_motion_qc(project, subjects, alpha=3.4):
+def dti_motion_qc(project, subjects, alpha=3.0):
     origdir = os.getcwd()
     diffdir = join(getpylabspath(), 'pylabs', 'diffusion')
     for subject in subjects:
@@ -35,14 +36,12 @@ def dti_motion_qc(project, subjects, alpha=3.4):
     os.chdir(origdir)
     return
 
-def dwi_qc_1bv(dwi_data, affine, output_pname, hdf_fname, alpha=3.4):
+def dwi_qc_1bv(dwi_data, affine, output_pname, alpha=3.0):
     results = ()
     dwi_qc, plot_vols = getqccmd()
-    if not Path(hdf_fname).is_file():
-        raise ValueError('No hdf file found. '+str(hdf_fname))
     if not output_pname.parent.is_dir():
         output_pname.parent.mkdir(parents=True)
-    nib.save(nib.AnalyzeImage(dwi_data, affine), str(output_pname.parent/'dtishort.hdr'))
+    nib.save(nib.AnalyzeImage(dwi_data.astype('float32'), affine), str(output_pname.parent/'dtishort.hdr'))
 
     with WorkingContext(str(output_pname.parent)):
         # make alpha_level.txt parameter file
@@ -50,6 +49,6 @@ def dwi_qc_1bv(dwi_data, affine, output_pname, hdf_fname, alpha=3.4):
             f.write(str(alpha) + '\n')
         results += run_subprocess([str(dwi_qc)])
         results += run_subprocess(['octave '+str(plot_vols)])
-    # clean up files save info to hdf
-
-    return
+        badvols = pd.read_csv('bad_vols_index.txt', header=None, delim_whitespace=True,
+                              index_col=0)
+    return badvols  # results dataframe
