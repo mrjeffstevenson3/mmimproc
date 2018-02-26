@@ -291,6 +291,8 @@ def brain_proc_file(opts, scandict):
         prov.log(str(outfilename), 'nifti file created by parrec2nii_convert', str(infile), script=__file__)
         with WorkingContext(str(fs / opts.proj)):
             try:
+                if not Path(fs / opts.proj / 'tesla_backups').is_dir():
+                    Path(fs / opts.proj / 'tesla_backups').mkdir(parents=True)
                 if Path(fs / opts.proj / 'tesla_backups', Path(outfilename).name).is_symlink():
                     Path(fs / opts.proj / 'tesla_backups', Path(outfilename).name).unlink()
                 if any(opts.multisession) > 0:
