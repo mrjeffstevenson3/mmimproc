@@ -24,7 +24,7 @@ from nibabel.mriutils import calculate_dwell_time
 from os.path import join, isfile
 from glob import glob
 from pylabs.utils.files import sortedParGlob, ScanReconSort
-from pylabs.utils import pr_examdate2pydatetime, pr_examdate2BIDSdatetime, ProvenanceWrapper, getnetworkdataroot
+from pylabs.utils import pr_examdate2pydatetime, pr_examdate2BIDSdatetime, ProvenanceWrapper, getnetworkdataroot, WorkingContext, replacesuffix
 prov = ProvenanceWrapper()
 fs = Path(getnetworkdataroot())
 import dill #to use as pickle replacement of lambda dict
@@ -81,6 +81,7 @@ def brain_proc_file(opts, scandict):
             infiles += files
     for infile in infiles:
         prov.add(str(infile))
+        print('working on '+str(infile))
         # load the PAR header and data
         setattr(opts, 'bvals', '')
         setattr(opts, 'bvecs', '')
@@ -288,6 +289,19 @@ def brain_proc_file(opts, scandict):
         verbose('Writing %s' % str(outfilename))
         nibabel.save(nimg, str(outfilename))
         prov.log(str(outfilename), 'nifti file created by parrec2nii_convert', str(infile), script=__file__)
+        with WorkingContext(str(fs / opts.proj)):
+            try:
+                if not Path(fs / opts.proj / 'tesla_backups').is_dir():
+                    Path(fs / opts.proj / 'tesla_backups').mkdir(parents=True)
+                if Path(fs / opts.proj / 'tesla_backups', Path(outfilename).name).is_symlink():
+                    Path(fs / opts.proj / 'tesla_backups', Path(outfilename).name).unlink()
+                if any(opts.multisession) > 0:
+                    Path('tesla_backups', Path(outfilename).name).symlink_to(Path('../' + '/'.join(list(Path(outfilename).parts[-4:]))))
+                else:
+                    Path('tesla_backups', Path(outfilename).name).symlink_to(Path('../' + '/'.join(list(Path(outfilename).parts[-3:]))))
+            except OSError as e:
+                if 'File exists' in e:
+                    raise ValueError('unable to set backup relative symbolic link for '+infile+' in '+opts.proj+'/tesla_backups/.')
 
         # write out bvals/bvecs if requested
         if opts.bvs:
@@ -321,6 +335,25 @@ def brain_proc_file(opts, scandict):
                 prov.log(str(outfilename).split('.')[0] + '.bvecs', 'bvectors file created by parrec2nii_convert', str(infile), script=__file__)
                 setattr(opts, 'bvals', bvals)
                 setattr(opts, 'bvecs', bvecs)
+                with WorkingContext(str(fs / opts.proj)):
+                    try:
+                        if Path(fs / opts.proj / 'tesla_backups', (replacesuffix(outfilename, '.bvecs').name)).is_symlink():
+                            Path(fs / opts.proj / 'tesla_backups', (replacesuffix(outfilename, '.bvecs').name)).unlink()
+                        if Path(fs / opts.proj / 'tesla_backups', (replacesuffix(outfilename, '.bvals').name)).is_symlink():
+                            Path(fs / opts.proj / 'tesla_backups', (replacesuffix(outfilename, '.bvals').name)).unlink()
+                        if any(opts.multisession) > 0:
+                            Path('tesla_backups', (replacesuffix(outfilename, '.bvecs')).name).symlink_to(Path('../' + '/'.join(list((replacesuffix(outfilename, '.bvecs').parts[-4:])))))
+                            Path('tesla_backups', (replacesuffix(outfilename, '.bvals')).name).symlink_to(Path('../' + '/'.join(list((replacesuffix(outfilename, '.bvals').parts[-4:])))))
+                        else:
+                            Path('tesla_backups', (replacesuffix(outfilename, '.bvecs')).name).symlink_to(Path('../' + '/'.join(list((replacesuffix(outfilename, '.bvecs').parts[-3:])))))
+                            Path('tesla_backups', (replacesuffix(outfilename, '.bvals')).name).symlink_to(Path('../' + '/'.join(list((replacesuffix(outfilename, '.bvals').parts[-3:])))))
+                    except OSError as e:
+                        if 'File exists' in e:
+                            raise ValueError('unable to set backup relative symbolic link for '+infile+' in '+opts.proj+'/tesla_backups/')
+                    else:
+                        print('bvecs backup link created for '+str(outfilename)+' = ' +str(Path('tesla_backups', (replacesuffix(outfilename, '.bvecs')).name).is_symlink()))
+                        print('bvals backup link created for '+str(outfilename)+' = ' +str(Path('tesla_backups', (replacesuffix(outfilename, '.bvals')).name).is_symlink()))
+
 
         # export data labels varying along the 4th dimensions if requested
         if opts.vol_info:
@@ -371,4 +404,15 @@ def brain_proc_file(opts, scandict):
                                            err_msg='output qform in rms header does not match input qform')
             nibabel.save(rmsimg, str(rms_outfilename))
             prov.log(str(rms_outfilename), 'rms file created by parrec2nii_convert', str(infile), script=__file__)
+            with WorkingContext(str(fs / opts.proj)):
+                try:
+                    if Path(fs / opts.proj / 'tesla_backups', Path(rms_outfilename).name).is_symlink():
+                        Path(fs / opts.proj / 'tesla_backups', Path(rms_outfilename).name).unlink()
+                    if any(opts.multisession) > 0:
+                        Path('tesla_backups', Path(rms_outfilename).name).symlink_to(Path('../' + '/'.join(list(Path(rms_outfilename).parts[-4:]))))
+                    else:
+                        Path('tesla_backups', Path(rms_outfilename).name).symlink_to(Path('../' + '/'.join(list(Path(rms_outfilename).parts[-3:]))))
+                except OSError as e:
+                    if 'File exists' in e:
+                        raise ValueError('unable to set backup relative symbolic link for '+rms_outfilename+' in '+opts.proj+'/tesla_backups/.')
     return scandict
