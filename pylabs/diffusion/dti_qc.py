@@ -50,5 +50,5 @@ def dwi_qc_1bv(dwi_data, affine, output_pname, alpha=3.0):
         results += run_subprocess([str(dwi_qc)])
         results += run_subprocess(['octave '+str(plot_vols)])
         badvols = pd.read_csv('bad_vols_index.txt', header=None, delim_whitespace=True,
-                              index_col=0)
+                              index_col=0, dtype={1: 'int64'})
     return badvols  # results dataframe

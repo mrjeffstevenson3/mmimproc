@@ -372,12 +372,13 @@ def conv_subjs(project, subjects, hdf_fname=None):
         subjDF = make_sessions_fm_dict(subj_dd, project, subject)
         niftiDF = niftiDF.append(subjDF)
         niftiDict = mergeddicts(niftiDict, subj_dd)
-    if not hdf_fname == None:
-        conv_df2h5(niftiDF, Path(hdf_fname), append=False)
-    elif hdf_fname == None:
-        conv_df2h5(niftiDF, Path(fs / project / ('all_'+project+'_info.h5')), append=False)
-    else:
-        raise ValueError('missing hdf file name.')
+        if not hdf_fname == None:
+            conv_df2h5(subjDF, Path(hdf_fname), append=False)
+        elif hdf_fname == None:
+            conv_df2h5(subjDF, Path(fs / project / ('all_'+project+'_info.h5')), append=False)
+        else:
+            raise ValueError('missing hdf file name.')
+        # use `symlinks -c tesla_backups` to make absolute links relative.
     return niftiDict, niftiDF
 
 def b1corr_anat(project, niftiDict):

@@ -81,6 +81,7 @@ def brain_proc_file(opts, scandict):
             infiles += files
     for infile in infiles:
         prov.add(str(infile))
+        print('working on '+str(infile))
         # load the PAR header and data
         setattr(opts, 'bvals', '')
         setattr(opts, 'bvecs', '')
