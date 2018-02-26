@@ -1,16 +1,25 @@
+import pylabs
+pylabs.datadir.target = 'jaba'
 from pathlib import *
 import pandas as pd
+import numpy as np
 import json, datetime, dateutil.parser
 from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
 from pdfminer.converter import TextConverter
 from pdfminer.layout import LAParams
 from pdfminer.pdfpage import PDFPage
 from cStringIO import StringIO
+from pylabs.conversion.parrec2nii_convert import BrainOpts
+from pylabs.utils import getnetworkdataroot, WorkingContext
+fs = Path(getnetworkdataroot())
+
 """
 Tools to save a list of dictionaries with pandas Dataframes in them to a 
 json file, and load them back.
 And convert a pdf to text.
 """
+
+opts = BrainOpts()
 
 def _copy(self, target):
     import shutil
@@ -104,4 +113,66 @@ def conv_df2h5(df, h5_fname, append=True):
                 else:
                     storeh5.put(subj + '/' + ses + '/convert_info', df.loc[subj,ses].applymap(str), format='t')
     return
+
+def gen_df_extract(key, var):
+    if hasattr(var,'iteritems'):
+        for k, v in var.iteritems():
+            #print k, v, isinstance(v, dict)
+            if k == key:
+                yield v
+            if isinstance(v, dict) or isinstance(v, pd.DataFrame) or isinstance(v, pd.Series):
+                #print('found sub item')
+                for result in gen_df_extract(key, v):
+                    yield result
+            elif isinstance(v, list):
+                for d in v:
+                    for result in gen_df_extract(key, d):
+                        yield result
+
+def backup_source_dirs(project, subjects):
+    from pylabs.conversion.brain_convert import img_conv
+    if project not in img_conv:
+        raise ValueError(project+" not in img_conv Panel. Please check")
+    setattr(opts, 'proj', project)
+    scans = img_conv[project]
+    scans.dropna(axis=1, how='all', inplace=True)
+    if not Path(fs / opts.proj / 'tesla_backups').is_dir():
+        Path(fs / opts.proj / 'tesla_backups').mkdir(parents=True)
+    with WorkingContext(str(fs / opts.proj)):
+        for subject in subjects:
+            setattr(opts, 'subj', subject)
+            if all(list(gen_df_extract('multisession', scans))) != 0:
+                setattr(opts, 'multisession', np.unique(list(gen_df_extract('multisession', scans))))
+                for s in opts.multisession:
+                    ses = 'ses-' + str(s)
+                    if Path('tesla_backups', subject+'_'+ses+'_source_parrec').is_symlink():
+                        Path('tesla_backups',subject+'_'+ses+'_source_parrec').unlink()
+                    if Path('../', subject, ses, 'source_parrec').is_dir():
+                        Path('tesla_backups', subject + '_' + ses + '_source_parrec').symlink_to(Path('../', subject, ses, 'source_parrec'))
+                    else:
+                        print('did not find source_parrec directory for backup for '+subject+' in '+ses)
+
+                    if Path('tesla_backups', subject+'_'+ses+'_source_dicom').is_symlink():
+                        Path('tesla_backups',subject+'_'+ses+'_source_dicom').unlink()
+                    if Path('../', subject, ses, 'source_dicom').is_dir():
+                        Path('tesla_backups', subject + '_' + ses + '_source_dicom').symlink_to(Path('../', subject, ses, 'source_dicom'))
+                    else:
+                        print('did not find source_dicom directory for backup for '+subject+' in '+ses)
+
+                    if Path('tesla_backups', subject+'_'+ses+'_source_sparsdat').is_symlink():
+                        Path('tesla_backups',subject+'_'+ses+'_source_sparsdat').unlink()
+                    if Path('../', subject, ses, 'source_sparsdat').is_dir():
+                        Path('tesla_backups', subject + '_' + ses + '_source_sparsdat').symlink_to(Path('../', subject, ses, 'source_sparsdat'))
+                    else:
+                        print('did not find source_sparsdat directory for backup for '+subject+' in '+ses)
+
+                    if Path('tesla_backups', subject+'_'+ses+'_phantom_parrec').is_symlink():
+                        Path('tesla_backups',subject+'_'+ses+'_phantom_parrec').unlink()
+                    if Path('../', subject, ses, 'phantom_parrec').is_dir():
+                        Path('tesla_backups', subject + '_' + ses + '_phantom_parrec').symlink_to(Path('../', subject, ses, 'phantom_parrec'))
+                    else:
+                        print('did not find phantom_parrec directory for backup for '+subject+' in '+ses)
+
+
+
 

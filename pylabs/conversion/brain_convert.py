@@ -1,5 +1,7 @@
 # todo: break apart individual project dataframes into file in each project folder.
 # todo: refactor conv_subjs to put in hdf file name and remove niftiDict
+import pylabs
+pylabs.datadir.target = 'jaba'
 from pylabs.conversion.parrec2nii_convert import BrainOpts
 from pathlib import *
 import pandas as pd
@@ -8,7 +10,7 @@ import nipype
 from nipype.interfaces import fsl
 from pylabs.conversion.parrec2nii_convert import brain_proc_file
 from pylabs.utils.sessions import make_sessions_fm_dict
-from pylabs.io.mixed import conv_df2h5
+from pylabs.io.mixed import conv_df2h5, backup_source_dirs
 import os
 from os.path import join
 from datetime import datetime
@@ -41,6 +43,7 @@ slu_phant_conv = pd.DataFrame({
                         'field_strength': False, 'vol_info': False, 'origin': 'scanner', 'minmax': ('parse', 'parse'), 'store_header': True,
                         'scaling': 'fp', 'keep_trace': False, 'overwrite': True, 'strict_sort': False, 'multisession': (0,), 'rms': False},
             })
+
 disc_phant_conv = pd.DataFrame({
             '_B1MAP_': {'dirstruct': 'BIDS', 'outdir': 'fmap', 'scan_name': 'b1map', 'scan_info': '', 'fname_template': '{subj}_{scan_name}_{scan_info}_{run}.nii',
                         'verbose': True, 'compressed': False, 'permit_truncated': False, 'bvs': False, 'dwell_time': False, 'b1corr': False,
@@ -326,8 +329,6 @@ tadpole_conv = pd.DataFrame({
                          'multisession': (1, 2, 3), 'rms': False},
             })
 
-
-
 #new project DataFrame objects to be added to Panel here
 img_conv = pd.Panel({'phantom_qT1_slu': slu_phant_conv,
             'phantom_qT1_disc': disc_phant_conv,
@@ -378,10 +379,17 @@ def conv_subjs(project, subjects, hdf_fname=None):
             conv_df2h5(subjDF, Path(fs / project / ('all_'+project+'_info.h5')), append=False)
         else:
             raise ValueError('missing hdf file name.')
-        # use `symlinks -c tesla_backups` to make absolute links relative.
+        backup_source_dirs(project, subjects)
     return niftiDict, niftiDF
 
+# this is now obsolete with new b1map
 def b1corr_anat(project, niftiDict):
+    """
+    now obsolete with new b1map methods
+    :param project:
+    :param niftiDict:
+    :return:
+    """
     for akey in niftiDict.keys():
         if akey[2] == 'anat':
             for bkey in niftiDict[akey].keys():

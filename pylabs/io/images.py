@@ -79,5 +79,3 @@ def paired_sub(niifiles, outfname, minuend=0):
 def gz2nii(file):
     with gzip.open(str(file), 'rb') as src, open(str(replacesuffix(file, '.nii')), 'wb') as dest:
         shutil.copyfileobj(src, dest)
-
-def make_bakup_link(file):
