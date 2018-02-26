@@ -360,7 +360,9 @@ def conv_subjs(project, subjects, hdf_fname=None):
     setattr(opts, 'proj', project)
     scans = img_conv[project]
     scans.dropna(axis=1, how='all', inplace=True)
-    # loops over subjects for a single project
+    # 1st make backup links
+    backup_source_dirs(project, subjects)
+    # loop over subjects in project
     for subject in subjects:
         subj_dd = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
         setattr(opts, 'subj', subject)
@@ -373,13 +375,13 @@ def conv_subjs(project, subjects, hdf_fname=None):
         subjDF = make_sessions_fm_dict(subj_dd, project, subject)
         niftiDF = niftiDF.append(subjDF)
         niftiDict = mergeddicts(niftiDict, subj_dd)
+        # save scan info to hdf info file for pipelines
         if not hdf_fname == None:
             conv_df2h5(subjDF, Path(hdf_fname), append=False)
         elif hdf_fname == None:
             conv_df2h5(subjDF, Path(fs / project / ('all_'+project+'_info.h5')), append=False)
         else:
             raise ValueError('missing hdf file name.')
-        backup_source_dirs(project, subjects)
     return niftiDict, niftiDF
 
 # this is now obsolete with new b1map
