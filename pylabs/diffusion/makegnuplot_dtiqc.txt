@@ -1,0 +1,37 @@
+rm gnuplot_for_dtiqc.txt
+echo "#!/usr/bin/gnuplot" >> gnuplot_for_dtiqc.txt
+echo "reset" >> gnuplot_for_dtiqc.txt
+echo "set title 'DTI QC plot key shows bad volume number' font \"Helvetica,24\" " >> gnuplot_for_dtiqc.txt
+echo "set xlabel 'Slice number' font \"Helvetica,24\" " >> gnuplot_for_dtiqc.txt
+echo "set xtics font \"Helvetica,18\" " >> gnuplot_for_dtiqc.txt
+echo "set ytics font \"Helvetica,18\" " >> gnuplot_for_dtiqc.txt
+echo "set border lw 4" >> gnuplot_for_dtiqc.txt
+echo "set ylabel 'DTI intensity' font \"Helvetica,16\"" >> gnuplot_for_dtiqc.txt
+echo "set xrange [0:90]" >> gnuplot_for_dtiqc.txt
+echo "set pointsize 3.0" >> gnuplot_for_dtiqc.txt
+echo "set key top right" >> gnuplot_for_dtiqc.txt
+echo "set key autotitle columnheader" >> gnuplot_for_dtiqc.txt
+echo "set timestamp" >> gnuplot_for_dtiqc.txt
+numbad=`cat dimensionsbad1.txt | awk '{ print $4 }'`
+echo $numbad
+numgood=5
+num=${numbad}+${numgood}
+echo "plot for [n=2:${num}] './plotbad1.txt' u 1:(column(n)) w lines lw 4" >> gnuplot_for_dtiqc.txt
+echo "set terminal png size 1200, 800 font 12" >> gnuplot_for_dtiqc.txt
+echo "set output 'gnuplot_for_dtiqc.png'" >> gnuplot_for_dtiqc.txt
+echo "replot" >> gnuplot_for_dtiqc.txt
+gnuplot gnuplot_for_dtiqc.txt
+firefox gnuplot_for_dtiqc.png
+
+
+
+
+
+
+
+
+
+
+
+
+
