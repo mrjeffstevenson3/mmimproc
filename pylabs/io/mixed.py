@@ -148,28 +148,28 @@ def backup_source_dirs(project, subjects):
                     if Path('tesla_backups', subject+'_'+ses+'_source_parrec').is_symlink():
                         Path('tesla_backups',subject+'_'+ses+'_source_parrec').unlink()
                     if Path('../', subject, ses, 'source_parrec').is_dir():
-                        Path('tesla_backups', subject + '_' + ses + '_source_parrec').symlink_to(Path('../', subject, ses, 'source_parrec'))
+                        Path('tesla_backups', subject + '_' + ses + '_source_parrec').symlink_to(Path('../', subject, ses, 'source_parrec'), target_is_directory=True)
                     else:
                         print('did not find source_parrec directory for backup for '+subject+' in '+ses)
 
                     if Path('tesla_backups', subject+'_'+ses+'_source_dicom').is_symlink():
                         Path('tesla_backups',subject+'_'+ses+'_source_dicom').unlink()
                     if Path('../', subject, ses, 'source_dicom').is_dir():
-                        Path('tesla_backups', subject + '_' + ses + '_source_dicom').symlink_to(Path('../', subject, ses, 'source_dicom'))
+                        Path('tesla_backups', subject + '_' + ses + '_source_dicom').symlink_to(Path('../', subject, ses, 'source_dicom'), target_is_directory=True)
                     else:
                         print('did not find source_dicom directory for backup for '+subject+' in '+ses)
 
                     if Path('tesla_backups', subject+'_'+ses+'_source_sparsdat').is_symlink():
                         Path('tesla_backups',subject+'_'+ses+'_source_sparsdat').unlink()
                     if Path('../', subject, ses, 'source_sparsdat').is_dir():
-                        Path('tesla_backups', subject + '_' + ses + '_source_sparsdat').symlink_to(Path('../', subject, ses, 'source_sparsdat'))
+                        Path('tesla_backups', subject + '_' + ses + '_source_sparsdat').symlink_to(Path('../', subject, ses, 'source_sparsdat'), target_is_directory=True)
                     else:
                         print('did not find source_sparsdat directory for backup for '+subject+' in '+ses)
 
                     if Path('tesla_backups', subject+'_'+ses+'_phantom_parrec').is_symlink():
                         Path('tesla_backups',subject+'_'+ses+'_phantom_parrec').unlink()
                     if Path('../', subject, ses, 'phantom_parrec').is_dir():
-                        Path('tesla_backups', subject + '_' + ses + '_phantom_parrec').symlink_to(Path('../', subject, ses, 'phantom_parrec'))
+                        Path('tesla_backups', subject + '_' + ses + '_phantom_parrec').symlink_to(Path('../', subject, ses, 'phantom_parrec'), target_is_directory=True)
                     else:
                         print('did not find phantom_parrec directory for backup for '+subject+' in '+ses)
 
