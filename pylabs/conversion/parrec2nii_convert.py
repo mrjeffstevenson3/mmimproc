@@ -24,7 +24,7 @@ from nibabel.mriutils import calculate_dwell_time
 from os.path import join, isfile
 from glob import glob
 from pylabs.utils.files import sortedParGlob, ScanReconSort
-from pylabs.utils import pr_examdate2pydatetime, pr_examdate2BIDSdatetime, ProvenanceWrapper, getnetworkdataroot
+from pylabs.utils import pr_examdate2pydatetime, pr_examdate2BIDSdatetime, ProvenanceWrapper, getnetworkdataroot, WorkingContext
 prov = ProvenanceWrapper()
 fs = Path(getnetworkdataroot())
 import dill #to use as pickle replacement of lambda dict
