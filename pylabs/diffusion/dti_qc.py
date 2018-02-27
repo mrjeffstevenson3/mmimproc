@@ -48,7 +48,12 @@ def dwi_qc_1bv(dwi_data, affine, output_pname, alpha=3.0):
         with open('alphalevel.txt', 'w') as f:
             f.write(str(alpha) + '\n')
         results += run_subprocess([str(dwi_qc)])
-        results += run_subprocess(['octave '+str(plot_vols)])
-        badvols = pd.read_csv('bad_vols_index.txt', header=None, delim_whitespace=True,
-                              index_col=0, dtype={1: 'int64'})
+        results += run_subprocess(['bash '+str(plot_vols)])
+        badvols = pd.read_csv('bad_vols_index.txt', header=None, delim_whitespace=True, index_col=0, dtype={1: 'int64'})
+        try:
+            Path('gnuplot_for_dtiqc_good.png').rename(appendposix(output_pname, '_good_plot.png'))
+            Path('gnuplot_for_dtiqc_bad.png').rename(appendposix(output_pname, '_bad_plot.png'))
+            Path('qc_report.txt').rename(appendposix(output_pname, '_report.txt'))
+        except OSError:
+            print(str(output_pname)+' files not found. moving on.')
     return badvols  # results dataframe

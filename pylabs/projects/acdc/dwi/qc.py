@@ -22,9 +22,9 @@ fs = Path(getnetworkdataroot())
 antsRegistrationSyN = get_antsregsyn_cmd()
 slicer_path = getslicercmd()
 
-# instantiate subject id list container
+# instantiate subject id list object
 subjids_picks = SubjIdPicks()
-# list of subject ids to operate on
+# list of dicts of subject ids and info to operate on
 picks = [
          {'subj': 'sub-acdc103', 'session': 'ses-1', 'run': '1',  # subject selection info
           'dwi_badvols': np.array([]), 'topup_badvols': np.array([]), 'topdn_badvols': np.array([]),  # remove bad vols identified in qc
@@ -43,10 +43,11 @@ else:
 topup_fnames, topdn_fnames, dwi_fnames = get_dwi_names(subjids_picks)
 
 # for testing
-#i = 0
-#topup, topdn, dwif = topup_fnames[i], topdn_fnames[i], dwi_fnames[i]
+i = 0
+topup, topdn, dwif = topup_fnames[i], topdn_fnames[i], dwi_fnames[i]
 
 for i, (topup, topdn, dwif) in enumerate(zip(topup_fnames, topdn_fnames, dwi_fnames)):
+    # read in data and prep results df
     subject = dwif.split('_')[0]
     session = dwif.split('_')[1]
     dwipath = fs / project / subject / session / 'dwi'
@@ -67,25 +68,39 @@ for i, (topup, topdn, dwif) in enumerate(zip(topup_fnames, topdn_fnames, dwi_fna
     qc_DF.loc[:orig_topup_data.shape[3], 'itopup'] = range(orig_topup_data.shape[3] + 1)
     qc_DF.loc[:orig_topup_data.shape[3]+1, 'alltopup_idx'] = range(orig_topup_data.shape[3] + 2)
 
-    #for testing
-    #b = np.unique(gtab.bvals)[1]
-    jpg_out = dwipath / 'qc' / 'qcreport1.jpg'
-    report_out = dwipath / 'qc' / 'qc_report.txt'
-    output = dwipath / 'qc' / (subject+'_'+session+'_topdn_dwiqc')
-    topdn_badvols = dwi_qc_1bv(orig_topdn_data, affine, output)
-    try:
-        jpg_out.rename(appendposix(output, '.jpg'))
-    except OSError:
-        print('topdown jpg file not found. moving on.')
-    report_out.rename(appendposix(output, '_report.txt'))
-    all_topup_data = np.append(orig_dwi_data[:,:,:,0, None] , orig_topup_data, axis=3)
-    output = dwipath / 'qc' / (subject+'_'+session+'_topup_dwiqc')
-    topup_badvols = dwi_qc_1bv(all_topup_data, affine, output)
-    try:
-        jpg_out.rename(appendposix(output, '.jpg'))
-    except OSError:
-        print('topup jpg file not found. moving on.')
-    report_out.rename(appendposix(output, '_report.txt'))
+    output_pname = dwipath / 'qc' / '_'.join([subject, session, 'b800_qc'])
+    b800_dwi_data = orig_dwi_data[:, :, :, gtab.bvals == 800.0]
+    b800_badvols = dwi_qc_1bv(b800_dwi_data, affine, output_pname)
+
+    output_pname = dwipath / 'qc' / '_'.join([subject, session, 'b2000_qc'])
+    b800_dwi_data = orig_dwi_data[:, :, :, gtab.bvals == 2000.0]
+    b800_badvols = dwi_qc_1bv(b800_dwi_data, affine, output_pname)
+
+    output_pname = dwipath / 'qc' / '_'.join([subject, session, 'topup8b0_qc'])
+    all_topup_data = np.append(orig_dwi_data[:, :, :, 0, None], orig_topup_data, axis=3)
+    topup_badvols = dwi_qc_1bv(all_topup_data, affine, output_pname)
+    output_pname = dwipath / 'qc' / '_'.join([subject, session, 'topdn7b0_qc'])
+    topdn_badvols = dwi_qc_1bv(orig_topdn_data, affine, output_pname)
+
+    # jpg_out = dwipath / 'qc' / 'qcreport1.jpg'
+    # report_out = dwipath / 'qc' / 'qc_report.txt'
+    # output = dwipath / 'qc' / (subject+'_'+session+'_topdn_dwiqc')
+    # topdn_badvols = dwi_qc_1bv(orig_topdn_data, affine, output)
+    # try:
+    #     jpg_out.rename(appendposix(output, '.jpg'))
+    # except OSError:
+    #     print('topdown jpg file not found. moving on.')
+    # report_out.rename(appendposix(output, '_report.txt'))
+    # all_topup_data = np.append(orig_dwi_data[:,:,:,0, None] , orig_topup_data, axis=3)
+    # output = dwipath / 'qc' / (subject+'_'+session+'_topup_dwiqc')
+    # topup_badvols = dwi_qc_1bv(all_topup_data, affine, output)
+    # try:
+    #     jpg_out.rename(appendposix(output, '.jpg'))
+    # except OSError:
+    #     print('topup jpg file not found. moving on.')
+    # report_out.rename(appendposix(output, '_report.txt'))
+
+    #fill in qc results into df
     if topup_badvols.iloc[0,0] == 1:
         qc_DF.loc[0, 'dwi_qc'] = 1
     else:
@@ -107,4 +122,5 @@ for i, (topup, topdn, dwif) in enumerate(zip(topup_fnames, topdn_fnames, dwi_fna
             print('dwi jpg file for b'+str(int(b))+' not found. moving on.')
         report_out.rename(appendposix(output, '_report.txt'))
 
+    # write to hdf info file
     #qc_DF.to_hdf(str(info_fname), subject+'/'+session+'/dwi_qc', mode='a', append=False, format='t')
