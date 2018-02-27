@@ -1,3 +1,4 @@
+#todo: need to trap empty scans dict otherwise concat fails line 23
 import pandas as pd
 import os
 from os.path import join

@@ -156,16 +156,16 @@ def getspmpath():
 
 def getqccmd():
     if platform.system() == 'Linux':
-        dwi_qc = pylabs_dir / 'pylabs' / 'diffusion' / 'dti_qc_correlation_single_feb2018'
-        plot_vols = pylabs_dir / 'pylabs' / 'diffusion' / 'plotqc1.m'
+        dwi_qc = pylabs_dir / 'pylabs' / 'diffusion' / 'dti_qc_correlation_single_feb2018_gnuplot'
+        plot_vols = pylabs_dir / 'pylabs' / 'diffusion' / 'makegnuplot_dtiqc.txt'
     if platform.system() == 'Darwin':
         raise ValueError('not implemented for Mac os yet.')
         #dwi_qc = pylabs_dir / 'diffusion' / 'mac_dti_qc_correlation_single_feb2018'
         #if not dwi_qc.is_file():
         #    run_subprocess(['gfortran '+str(dwi_qc.parents/'dti_qc_correlation_single_feb2018.f')+' -o '+str(dwi_qc)+' -ffixed-line-length-none'])
 
-    if not 'octave' in which('octave'):
-        raise ValueError('Dependency error. Cannot find working copy of octave in PATH.')
+    if not 'gnuplot' in which('gnuplot'):
+        raise ValueError('Dependency error. Cannot find working copy of gnuplot in PATH.')
 #    if not 'dti_qc_correlation_single_feb2018' in which('dti_qc_correlation_single_feb2018'):
 #        raise ValueError('Error finding todds fortran qc program in pylabs/diffusion.')
     return dwi_qc, plot_vols

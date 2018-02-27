@@ -73,6 +73,7 @@ mf_str = '_mf'    # set to blank string '' to disable
 """
 i = 0
 topup, topdn, dwif = topup_fnames[i], topdn_fnames[i], dwi_fnames[i]
+
 dwipath = fs / project / picks[i]['subj'] / picks[i]['session'] / 'dwi'
 orig_dwi_data = nib.load(str(dwipath / (dwi_fnames[i]+'.nii'))).get_data()
 voli = range(orig_dwi_data.shape[3])
