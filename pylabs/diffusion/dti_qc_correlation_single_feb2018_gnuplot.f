@@ -7,9 +7,10 @@ c
 	character*6 c6
 	character*1 cnmr(1000),chead(348),cout(1000)
 	integer*2 ihead(174),plotindex(160,4),plotbad(10000,4),plotgood(10000,4)
-	integer*2 ibadv(160,2),igoodv(160,2),ib(100)
-	real plotbada(10000,3,4),plotgooda(10000,3,4),rmax,nmr(250)
+	integer*2 ibadv(160,2),igoodv(160,2),ib(100),igoodworst(1000)
+	real plotbada(10000,3,4),plotgooda(10000,3,4),rmax,nmr(250),rgoodsort(10000,3,4)
 	real imagef(160,160,90,128), plot(160,10000,4),out(250)
+	real alphasave(160,160)
 	equivalence (out,cout)
 	equivalence (nmr,cnmr)
 	equivalence (ihead,chead)
@@ -144,6 +145,7 @@ c	if(k.eq.37)write(6,*)'dnmr(it) ',dnmr(it),it
 c	write(6,*)'aver stdev ', aver,k,it
 	do it=1,nvecs
 	alphacheck = abs(dnmr(it) -aver)/stdev
+	alphasave(it,k)= alphacheck
 c	if(k.ge.36.and.k.le.40)write(6,*)'alphacheck ',alphacheck,it,k
 	if(alphacheck.gt.alphalevel)then
 c	if(dnmr(it).lt.0.9)then
@@ -155,7 +157,7 @@ c	if(dnmr(it).lt.0.9)then
 	ibad = ibad +1
 	else
 	plotgooda(igood,1,isort) = k
-	plotgooda(igood,2,isort) = it-1
+	plotgooda(igood,2,isort) = it
 	plotgooda(igood,3,isort) = alphacheck
 
 	plotgood(igood,isort)= plotindex(it,isort)
@@ -165,6 +167,10 @@ c	if(dnmr(it).lt.0.9)then
 
 	enddo  !it
 	enddo  !k
+c
+c now find the good volumes with alpha index greater than 2.5
+c
+	
 	open(11,file = 'qc_report.txt')
 	open(21,file = 'bad_vols_index.txt')
 	write(6,*)'qc dti report '
@@ -196,7 +202,7 @@ c
 
 	do ii=1,ibad
 	if(plotbad(isavebad,isort).eq.plotbad(ii,isort))then
-	write(11,*)'bad slice volume',plotbada(ii,3,isort),plotbada(ii,1,isort),plotbada(ii,2,isort)
+	write(11,*)'bad slice volume',plotbada(ii,3,isort),plotbada(ii,1,isort),plotbada(ii,2,isort)-1
 c	write(6,*)'bad slice ',plotbada(ii,3),plotbada(ii,1)
 	plotbada(ii,3,isort) = 0   ! set to 0 so it doesnt get recounted
 	endif
@@ -212,16 +218,9 @@ c	write(6,*)'bad slice ',plotbada(ii,3),plotbada(ii,1)
 	close(13)
 	if(ibadvolume.gt.0)then
 	if(isort.eq.1)open(13,file ='plotbad1.txt')
-	write(13,*)(ibadv(it,2),it=1,ibadvolume),'good1 ','good2 ','good3 ','good4 '
+	write(13,*)'slice ',(ibadv(it,2)-1,it=1,ibadvolume)
 	do k=1,izsize-1
-	write(13,*)k,(plot(k,ibadv(it,2),isort),it=1,ibadvolume),(plot(k,igoodv(it,2),isort)+0.2,it=1,4)
-	enddo  !k
-	close(13)
-	else
-	if(isort.eq.1)open(13,file ='plotbad1.txt')
-	write(13,*)(ibadv(it,2),it=1,ibadvolume),'good1 ','good2 ','good3 ','good4 '
-	do k=1,izsize-1
-	write(13,*)k,(plot(k,igoodv(it,2),isort)+0.2,it=1,4)
+	write(13,*)k,(plot(k,ibadv(it,2),isort),it=1,ibadvolume)
 	enddo  !k
 	close(13)
 	endif
@@ -254,29 +253,33 @@ c
 	igoodvolume = 1
 	do it=1,nvecs
 	iflag = 0  ! means no bad slices
+	iflag2 = 0  !means alphaindex gt threshold
 	do ii=1,ibad-1
 	if(it.eq.plotbada(ii,2,isort))iflag = 1
 	enddo
 	if(iflag.eq.0)then  ! found a good volume
+	do k=1,izsize-1
+	if(alphasave(it,k).gt.2.0)iflag2 = 1
+	enddo
+	if(iflag2.eq.1)then
 	igoodv(igoodvolume,1) = plotindex(it,isort)
 	igoodv(igoodvolume,2) = it
 	write(21,*)it-1, '0'
 	igoodvolume = igoodvolume+1
+	endif   !found a good alphaindex
 	endif  !found a good volume
 	if(iflag.eq.1)write(21,*)it-1,'1'
 	enddo
-	if(isort.eq.1)open(13,file ='plotbad1.txt')
-	write(13,*)(ibadv(it,2),it=1,ibadvolume),'good1 ','good2 ','good3 ','good4 '
-	do k=1,izsize-1
-	write(13,*)k,(plot(k,ibadv(it,2),isort),it=1,ibadvolume-1),(plot(k,igoodv(it,2),isort)+0.2,it=1,4)
-	enddo  !k
-	close(13)
+
+	if(igoodvolumes.gt.0)then
 
 	if(isort.eq.1)open(13,file ='plotgood1.txt')
+	write(13,*)'slice ',(igoodv(it,2)-1,it=1,igoodvolume)
 	do k=1,izsize-1
 	write(13,*)k,(plot(k,igoodv(it,2),isort),it=1,igoodvolume)
 	enddo  !k
 	close(13)
+	endif
 
 
 
