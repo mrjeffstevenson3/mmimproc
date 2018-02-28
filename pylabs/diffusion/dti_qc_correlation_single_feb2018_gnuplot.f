@@ -218,7 +218,7 @@ c	write(6,*)'bad slice ',plotbada(ii,3),plotbada(ii,1)
 	close(13)
 	if(ibadvolume.gt.0)then
 	if(isort.eq.1)open(13,file ='plotbad1.txt')
-	write(13,*)'slice ',(ibadv(it,2),it=1,ibadvolume)
+	write(13,*)'slice ',(ibadv(it,2)-1,it=1,ibadvolume)
 	do k=1,izsize-1
 	write(13,*)k,(plot(k,ibadv(it,2),isort),it=1,ibadvolume)
 	enddo  !k
@@ -274,7 +274,7 @@ c
 	if(igoodvolumes.gt.0)then
 
 	if(isort.eq.1)open(13,file ='plotgood1.txt')
-	write(13,*)'slice ',(igoodv(it,2),it=1,igoodvolume)
+	write(13,*)'slice ',(igoodv(it,2)-1,it=1,igoodvolume)
 	do k=1,izsize-1
 	write(13,*)k,(plot(k,igoodv(it,2),isort),it=1,igoodvolume)
 	enddo  !k
