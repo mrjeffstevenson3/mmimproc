@@ -1,3 +1,4 @@
+#todo: finish writing qc results to df
 # first set global root data directory
 import pylabs
 pylabs.datadir.target = 'jaba'
@@ -73,32 +74,14 @@ for i, (topup, topdn, dwif) in enumerate(zip(topup_fnames, topdn_fnames, dwi_fna
     b800_badvols = dwi_qc_1bv(b800_dwi_data, affine, output_pname)
 
     output_pname = dwipath / 'qc' / '_'.join([subject, session, 'b2000_qc'])
-    b800_dwi_data = orig_dwi_data[:, :, :, gtab.bvals == 2000.0]
-    b800_badvols = dwi_qc_1bv(b800_dwi_data, affine, output_pname)
+    b2000_dwi_data = orig_dwi_data[:, :, :, gtab.bvals == 2000.0]
+    b2000_badvols = dwi_qc_1bv(b2000_dwi_data, affine, output_pname)
 
     output_pname = dwipath / 'qc' / '_'.join([subject, session, 'topup8b0_qc'])
     all_topup_data = np.append(orig_dwi_data[:, :, :, 0, None], orig_topup_data, axis=3)
     topup_badvols = dwi_qc_1bv(all_topup_data, affine, output_pname)
     output_pname = dwipath / 'qc' / '_'.join([subject, session, 'topdn7b0_qc'])
     topdn_badvols = dwi_qc_1bv(orig_topdn_data, affine, output_pname)
-
-    # jpg_out = dwipath / 'qc' / 'qcreport1.jpg'
-    # report_out = dwipath / 'qc' / 'qc_report.txt'
-    # output = dwipath / 'qc' / (subject+'_'+session+'_topdn_dwiqc')
-    # topdn_badvols = dwi_qc_1bv(orig_topdn_data, affine, output)
-    # try:
-    #     jpg_out.rename(appendposix(output, '.jpg'))
-    # except OSError:
-    #     print('topdown jpg file not found. moving on.')
-    # report_out.rename(appendposix(output, '_report.txt'))
-    # all_topup_data = np.append(orig_dwi_data[:,:,:,0, None] , orig_topup_data, axis=3)
-    # output = dwipath / 'qc' / (subject+'_'+session+'_topup_dwiqc')
-    # topup_badvols = dwi_qc_1bv(all_topup_data, affine, output)
-    # try:
-    #     jpg_out.rename(appendposix(output, '.jpg'))
-    # except OSError:
-    #     print('topup jpg file not found. moving on.')
-    # report_out.rename(appendposix(output, '_report.txt'))
 
     #fill in qc results into df
     if topup_badvols.iloc[0,0] == 1:

@@ -33,7 +33,7 @@ info_fname = fs/project/('all_'+project+'_info.h5')
 
 
 
-# known or expected from genz protocol
+# known or expected from acdc protocol. should get now from info file
 spgr_tr = '12p0'
 spgr_fa = ['05', '15', '30']
 gaba_te = 80
