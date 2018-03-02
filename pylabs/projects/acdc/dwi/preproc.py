@@ -227,7 +227,7 @@ topup, topdn, dwif = topup_fnames[i], topdn_fnames[i], dwi_fnames[i]
             eddy_cmd = 'eddy_cuda7.5 --imain='+str(orig_dwif_fname)+' --mask='+str(b0_brain_mask_fname)
             eddy_cmd += ' --acqp=../acq_params.txt  --index=../index.txt --bvecs='+str(dwi_bvecs_fname)
             eddy_cmd += ' --bvals='+str(dwi_bvals_fname)+' --topup='+str(dwipath / str(topup + '_topdn_concat_mf'))
-            eddy_cmd += '  --repol --olnstd=1.96 --out='+str(ec_dwi_name)
+            eddy_cmd += '  --repol --ol_nstd=1.96 --out='+str(ec_dwi_name)
             result += run_subprocess(eddy_cmd)
             # clamp, filter, and make nrrd
             ec_data = nib.load(str(ec_dwi_name)+'.nii.gz').get_data()
