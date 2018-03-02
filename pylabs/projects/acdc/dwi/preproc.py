@@ -24,7 +24,7 @@ from pylabs.utils import run_subprocess, WorkingContext, appendposix, replacesuf
 from pylabs.utils.paths import getnetworkdataroot, test4working_gpu, get_antsregsyn_cmd, MNI1mm_T2_brain, getslicercmd, \
         moriMNIatlas, MNI1mm_T1_brain
 # project and subjects and files to run on
-from pylabs.projects.acdc.file_names import project, SubjIdPicks, get_dwi_names
+from pylabs.projects.acdc.file_names import project, SubjIdPicks, get_dwi_names, QC_str
 #set up provenance
 from pylabs.utils import ProvenanceWrapper
 prov = ProvenanceWrapper()
@@ -34,13 +34,14 @@ fs = Path(getnetworkdataroot())
 
 antsRegistrationSyN = get_antsregsyn_cmd()
 slicer_path = getslicercmd()
+qc_strgs = QC_str()
 
 # instantiate subject id list container
 subjids_picks = SubjIdPicks()
 # list of subject ids to operate on
 picks = [
-         {'subj': 'sub-acdc103', 'session': 'ses-1', 'run': '1',  # subject selection info
-          'dwi_badvols': np.array([1, 3, 4, 5, 10, 53]), 'topup_badvols': np.array([]), 'topdn_badvols': np.array([]),  # remove bad vols identified in qc
+         {'subj': 'sub-acdc112', 'session': 'ses-1', 'run': '1',  # subject selection info
+          'dwi_badvols': np.array([]), 'topup_badvols': np.array([]), 'topdn_badvols': np.array([]),  # remove bad vols identified in qc
           },
          ]
 
@@ -60,9 +61,9 @@ topup_fnames, topdn_fnames, dwi_fnames = get_dwi_names(subjids_picks)
 
 overwrite = True
 convert = False
-dti_qc = True
+dti_qc = False
 if dti_qc:
-    from pylabs.projects.acdc.dwi.qc import qc_str   # set to blank string '' when not in use
+    qc_str = qc_strgs.pass_qc
 else:
     qc_str = ''
 run_topup = True
@@ -141,8 +142,11 @@ def test4file(file):
 #     with open(niipickle, 'rb') as f:
 #         niftiDict = cPickle.load(f)
 
+i = 0
+topup, topdn, dwif = topup_fnames[i], topdn_fnames[i], dwi_fnames[i]
 
-for i, (topup, topdn, dwif) in enumerate(zip(topup_fnames, topdn_fnames, dwi_fnames)):
+
+#for i, (topup, topdn, dwif) in enumerate(zip(topup_fnames, topdn_fnames, dwi_fnames)):
     result = ()
     dwipath = fs / project / dwif.split('_')[0] / dwif.split('_')[1] / 'dwi'
     regpath = fs / project / dwif.split('_')[0] / dwif.split('_')[1] / 'reg' / 'MNI2dwi'
@@ -189,7 +193,7 @@ for i, (topup, topdn, dwif) in enumerate(zip(topup_fnames, topdn_fnames, dwi_fna
     bvals, bvecs = read_bvals_bvecs(str(dwi_bvals_fname), str(dwi_bvecs_fname))
     gtab = gradient_table(bvals, bvecs)
     # topup distortion correction
-    if not test4file(dwipath / str(topup + '_topdn_concat_mf_unwarped_mean.nii.gz')) or (test4file(dwipath / str(topup + '_topdn_concat_mf_unwarped_mean.nii.gz')) & overwrite):
+    #if not test4file(dwipath / str(topup + '_topdn_concat_mf_unwarped_mean.nii.gz')) or (test4file(dwipath / str(topup + '_topdn_concat_mf_unwarped_mean.nii.gz')) & overwrite):
         topup_img = nib.load(str(topup_fname))
         topup_data = topup_img.get_data()
         topup_affine = topup_img.affine
@@ -217,13 +221,13 @@ for i, (topup, topdn, dwif) in enumerate(zip(topup_fnames, topdn_fnames, dwi_fna
     # eddy current correction
     ec_dwi_name = ec_dir / str(dwif +qc_str+ '_topdn_unwarped_ec')
     dwi_bvecs_ec_rot_fname = str(ec_dwi_name) + '.eddy_rotated_bvecs'
-    if not test4file(replacesuffix(ec_dwi_name, mf_str+'_clamp1.nii.gz')) or (test4file(replacesuffix(ec_dwi_name, mf_str+'_clamp1.nii.gz')) & overwrite):
+    #if not test4file(replacesuffix(ec_dwi_name, mf_str+'_clamp1.nii.gz')) or (test4file(replacesuffix(ec_dwi_name, mf_str+'_clamp1.nii.gz')) & overwrite):
         with WorkingContext(str(ec_dir)):
             b0_brain_fname, b0_brain_mask_fname, b0_brain_cropped_fname = extract_brain(dwipath/str(topup + '_topdn_concat_mf_unwarped_mean.nii.gz'))
             eddy_cmd = 'eddy_cuda7.5 --imain='+str(orig_dwif_fname)+' --mask='+str(b0_brain_mask_fname)
-            eddy_cmd += ' --acqp=acq_params.txt  --index=index.txt --bvecs='+str(dwi_bvecs_fname)
+            eddy_cmd += ' --acqp=../acq_params.txt  --index=../index.txt --bvecs='+str(dwi_bvecs_fname)
             eddy_cmd += ' --bvals='+str(dwi_bvals_fname)+' --topup='+str(dwipath / str(topup + '_topdn_concat_mf'))
-            eddy_cmd += '  --repol --out='+str(ec_dwi_name)
+            eddy_cmd += '  --repol --olnstd=1.96 --out='+str(ec_dwi_name)
             result += run_subprocess(eddy_cmd)
             # clamp, filter, and make nrrd
             ec_data = nib.load(str(ec_dwi_name)+'.nii.gz').get_data()

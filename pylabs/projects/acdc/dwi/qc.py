@@ -12,7 +12,7 @@ from pylabs.io.images import savenii
 
 from pylabs.utils import *
 # project and subjects and files to run on
-from pylabs.projects.acdc.file_names import project, SubjIdPicks, get_dwi_names, info_fname
+from pylabs.projects.acdc.file_names import project, SubjIdPicks, get_dwi_names, info_fname, QC_str
 from pylabs.diffusion.dti_qc import dwi_qc_1bv
 #set up provenance
 prov = ProvenanceWrapper()
@@ -22,23 +22,18 @@ fs = Path(getnetworkdataroot())
 
 antsRegistrationSyN = get_antsregsyn_cmd()
 slicer_path = getslicercmd()
-
+qc_strgs = QC_str()
+qc_str = qc_strgs.pass_qc
 # instantiate subject id list object
 subjids_picks = SubjIdPicks()
 # list of dicts of subject ids and info to operate on
 picks = [
-         {'subj': 'sub-acdc103', 'session': 'ses-1', 'run': '1',  # subject selection info
+         {'subj': 'sub-acdc112', 'session': 'ses-1', 'run': '1',  # subject selection info
           'dwi_badvols': np.array([]), 'topup_badvols': np.array([]), 'topdn_badvols': np.array([]),  # remove bad vols identified in qc
           },
          ]
 
 setattr(subjids_picks, 'subjids', picks)
-
-dti_qc = True
-if dti_qc:
-    from pylabs.projects.acdc.file_names import qc_str   # set to blank string '' when not in use
-else:
-    qc_str = ''
 
 
 topup_fnames, topdn_fnames, dwi_fnames = get_dwi_names(subjids_picks)

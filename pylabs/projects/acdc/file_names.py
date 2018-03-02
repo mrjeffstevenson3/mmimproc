@@ -15,10 +15,13 @@ from pylabs.utils import removesuffix, getnetworkdataroot
 from pylabs.conversion.brain_convert import acdc_conv
 
 project = 'acdc'
-qc_str = '_passqc'
+
 
 class SubjIdPicks(object):
     pass
+
+class QC_str(object):
+    pass_qc = '_passqc'
 
 fs = Path(getnetworkdataroot())
 
@@ -34,6 +37,8 @@ info_fname = fs/project/('all_'+project+'_info.h5')
 
 
 # known or expected from acdc protocol. should get now from info file
+# protocol name exceptions
+dwi_fname_excep = ['_DWI64_3SH_B0_B800_B2000_TOPUP_TE101_1p8mm3_', '_DWI6_B0_TOPUP_TE101_1p8mm3_', '_DWI6_B0_TOPDN_TE101_1p8mm3_']
 spgr_tr = '12p0'
 spgr_fa = ['05', '15', '30']
 gaba_te = 80
@@ -63,15 +68,15 @@ def merge_ftempl_dicts(dict1={}, dict2={}, dict3={}, base_dd=fname_templ_dd):
     nd.update(dict3)  # modifies base dict with dict1 2 and 3 keys and values
     return nd
 
-# freesurfer, VBM, T2 file name lists
+# empty freesurfer, VBM, T2 file name lists
 b1map_fs_fnames = []
 freesurf_fnames = []
 t2_fnames = []
-# dwi file name lists
+# empty dwi file name lists
 topup_fnames = []
 topdn_fnames= []
 dwi_fnames = []
-# 3 flip qT1 file name lists for testing purposes
+# empty 3 flip qT1 file name lists for testing purposes
 spgr_fa5_fnames = []
 spgr_fa15_fnames = []
 spgr_fa30_fnames = []
@@ -87,13 +92,13 @@ def get_freesurf_names(subjids_picks):
     return b1map_fs_fnames, freesurf_fnames
 
 def get_dwi_names(subjids_picks):
-    topup_ftempl = removesuffix(str(acdc_conv['_DWI6_B0_TOPUP_TE101_1p8mm3_']['fname_template']))
-    topdn_ftempl = removesuffix(str(acdc_conv['_DWI6_B0_TOPDN_TE101_1p8mm3_']['fname_template']))
-    dwi_ftempl = removesuffix(str(acdc_conv['_DWI64_3SH_B0_B800_B2000_TOPUP_TE101_1p8mm3_']['fname_template']))
+    topup_ftempl = removesuffix(str(acdc_conv['_DWI6_B0_TOPUP_TE97_1p8mm3_']['fname_template']))
+    topdn_ftempl = removesuffix(str(acdc_conv['_DWI6_B0_TOPDN_TE97_1p8mm3_']['fname_template']))
+    dwi_ftempl = removesuffix(str(acdc_conv['_DWI64_3SH_B0_B800_B2000_TOPUP_TE97_1p8mm3_']['fname_template']))
     for subjid in subjids_picks.subjids:
-        topup_fnames.append(str(topup_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=acdc_conv['_DWI6_B0_TOPUP_TE101_1p8mm3_'])))
-        topdn_fnames.append(str(topdn_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=acdc_conv['_DWI6_B0_TOPDN_TE101_1p8mm3_'])))
-        dwi_fnames.append(str(dwi_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=acdc_conv['_DWI64_3SH_B0_B800_B2000_TOPUP_TE101_1p8mm3_'])))
+        topup_fnames.append(str(topup_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=acdc_conv['_DWI6_B0_TOPUP_TE97_1p8mm3_'])))
+        topdn_fnames.append(str(topdn_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=acdc_conv['_DWI6_B0_TOPDN_TE97_1p8mm3_'])))
+        dwi_fnames.append(str(dwi_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=acdc_conv['_DWI64_3SH_B0_B800_B2000_TOPUP_TE97_1p8mm3_'])))
     return topup_fnames, topdn_fnames, dwi_fnames
 
 def get_3spgr_names(subjids_picks):

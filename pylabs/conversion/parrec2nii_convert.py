@@ -1,3 +1,4 @@
+#todo: select lowest recon = true needs to account for repeat scans
 from __future__ import division, print_function, absolute_import
 from pathlib import *
 from optparse import OptionParser, Option
@@ -23,6 +24,7 @@ import pandas as pd
 from nibabel.mriutils import calculate_dwell_time
 from os.path import join, isfile
 from glob import glob
+
 from pylabs.utils.files import sortedParGlob, ScanReconSort
 from pylabs.utils import pr_examdate2pydatetime, pr_examdate2BIDSdatetime, ProvenanceWrapper, getnetworkdataroot, WorkingContext, replacesuffix
 prov = ProvenanceWrapper()
@@ -64,6 +66,7 @@ def error(msg, exit_code):
     sys.exit(exit_code)
 
 def brain_proc_file(opts, scandict):
+    from pylabs.conversion.brain_convert import is_empty
     verbose.switch = opts.verbose
     if '__missing__' not in dir(scandict):
         raise TypeError('Dictionary not a collections.defaultdict, please fix.')
@@ -78,7 +81,12 @@ def brain_proc_file(opts, scandict):
             ses = 'ses-'+str(s)
             fpath = subpath / ses / 'source_parrec'
             files = ScanReconSort(fpath, '*'+opts.scan+'*.PAR')
-            infiles += files
+            if opts.take_lowest_recon:
+                # need to account for repeat scans with multiple recons.
+                if not is_empty(files):
+                    infiles += [files[0]]
+            else:
+                infiles += files
     for infile in infiles:
         prov.add(str(infile))
         print('working on '+str(infile))
@@ -316,7 +324,7 @@ def brain_proc_file(opts, scandict):
                         fid.write('%s ' % val)
                     fid.write('\n')
             else:
-                verbose('Writing .bvals and .bvecs files')
+                verbose('Writing .bvals and .bvecs files for '+str(infile))
                 # Transform bvecs with reorientation affine
                 orig2new = npl.inv(t_aff)
                 bv_reorient = from_matvec(to_matvec(orig2new)[0], [0, 0, 0])
@@ -382,6 +390,21 @@ def brain_proc_file(opts, scandict):
                     fid.write('%r\n' % dwell_time)
                 setattr(opts, 'dwell_time', dwell_time)
                 prov.log(str(outfilename).split('.')[0] + '.dwell_time', 'dwell time file created by parrec2nii_convert', str(infile), script=__file__)
+                with WorkingContext(str(fs / opts.proj)):
+                    try:
+                        if Path(fs / opts.proj / 'tesla_backups', (replacesuffix(outfilename, '.dwell_time').name)).is_symlink():
+                            Path(fs / opts.proj / 'tesla_backups', (replacesuffix(outfilename, '.dwell_time').name)).unlink()
+                        if any(opts.multisession) > 0:
+                            Path('tesla_backups', (replacesuffix(outfilename, '.dwell_time')).name).symlink_to(Path('../' + '/'.join(list((replacesuffix(outfilename, '.dwell_time').parts[-4:])))))
+                        else:
+                            Path('tesla_backups', (replacesuffix(outfilename, '.dwell_time')).name).symlink_to(Path('../' + '/'.join(list((replacesuffix(outfilename, '.dwell_time').parts[-3:])))))
+                    except OSError as e:
+                        if 'File exists' in e:
+                            raise ValueError('unable to set dwell time backup relative symbolic link for '+infile+' in '+opts.proj+'/tesla_backups/')
+                    else:
+                        print('dwell time backup link created for '+str(outfilename)+' = ' +str(Path('tesla_backups', (replacesuffix(outfilename, '.dwell_time')).name).is_symlink()))
+
+
 
         setattr(opts, 'converted', True)
         setattr(opts, 'QC', False)
