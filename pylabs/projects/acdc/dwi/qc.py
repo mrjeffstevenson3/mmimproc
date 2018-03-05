@@ -42,7 +42,7 @@ topup_fnames, topdn_fnames, dwi_fnames = get_dwi_names(subjids_picks)
 i = 0
 topup, topdn, dwif = topup_fnames[i], topdn_fnames[i], dwi_fnames[i]
 
-for i, (topup, topdn, dwif) in enumerate(zip(topup_fnames, topdn_fnames, dwi_fnames)):
+#for i, (topup, topdn, dwif) in enumerate(zip(topup_fnames, topdn_fnames, dwi_fnames)):
     # read in data and prep results df
     subject = dwif.split('_')[0]
     session = dwif.split('_')[1]
@@ -64,18 +64,18 @@ for i, (topup, topdn, dwif) in enumerate(zip(topup_fnames, topdn_fnames, dwi_fna
     qc_DF.loc[:orig_topup_data.shape[3], 'itopup'] = range(orig_topup_data.shape[3] + 1)
     qc_DF.loc[:orig_topup_data.shape[3]+1, 'alltopup_idx'] = range(orig_topup_data.shape[3] + 2)
 
-    output_pname = dwipath / 'qc' / '_'.join([subject, session, 'b800_qc'])
+    output_pname = dwipath / 'qc' / '_'.join([subject, session, 'b800-qc'])
     b800_dwi_data = orig_dwi_data[:, :, :, gtab.bvals == 800.0]
     b800_badvols = dwi_qc_1bv(b800_dwi_data, affine, output_pname)
 
-    output_pname = dwipath / 'qc' / '_'.join([subject, session, 'b2000_qc'])
+    output_pname = dwipath / 'qc' / '_'.join([subject, session, 'b2000-qc'])
     b2000_dwi_data = orig_dwi_data[:, :, :, gtab.bvals == 2000.0]
     b2000_badvols = dwi_qc_1bv(b2000_dwi_data, affine, output_pname)
 
-    output_pname = dwipath / 'qc' / '_'.join([subject, session, 'topup8b0_qc'])
+    output_pname = dwipath / 'qc' / '_'.join([subject, session, 'topup8b0-qc'])
     all_topup_data = np.append(orig_dwi_data[:, :, :, 0, None], orig_topup_data, axis=3)
     topup_badvols = dwi_qc_1bv(all_topup_data, affine, output_pname)
-    output_pname = dwipath / 'qc' / '_'.join([subject, session, 'topdn7b0_qc'])
+    output_pname = dwipath / 'qc' / '_'.join([subject, session, 'topdn7b0-qc'])
     topdn_badvols = dwi_qc_1bv(orig_topdn_data, affine, output_pname)
 
     #fill in qc results into df
