@@ -493,6 +493,7 @@ S2 = medianf(b1_data[:,:,:,1], size=7)
 b1map = calcb1map(S1, S2, picks['b1map_TRs'])
 b1map_out_fname = ses_dir/'fmap'/'{subj}_{session}_b1map_phase_mf7_9_v2.nii'.format(**picks)
 savenii(b1map, vfa_affine, str(b1map_out_fname))
+
 # fit vfa and make b1corrected qt1 img
 vy_vfa2_ec1 = vfa_data[:,:,:,:2]
 vy_vfa2_ec2 = vfa_data[:,:,:,2:4]
