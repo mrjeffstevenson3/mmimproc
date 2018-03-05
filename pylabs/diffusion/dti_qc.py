@@ -54,13 +54,12 @@ def dwi_qc_1bv(dwi_data, affine, output_pname, alpha=3.0):
         with open('gnuplot_for_dtiqc_bad.txt', mode='a') as bad_qc:
             bad_qc.write('#!/usr/bin/gnuplot\n')
             bad_qc.write('reset\n')
-            bad_qc.write('set title \''+ output_pname.parts[-5] + ' ' + output_pname.parts[-4] +' DTI QC plot key shows bad number\' font \"Helvetica,24\"\n')
+            bad_qc.write('set title \''+ output_pname.parts[-5] + ' ' + output_pname.parts[-4] +
+                         ' DTI QC plot key shows bad vol number for '+str(output_pname.name).split('_')[-1]+'\' font \"Helvetica,24\"\n')
         with open('gnuplot_for_dtiqc_good.txt', mode='a') as good_qc:
             good_qc.write('#!/usr/bin/gnuplot\n')
             good_qc.write('reset\n')
-            good_qc.write('set title \'' + output_pname.parts[-5] + ' ' + output_pname.parts[-4] + ' DTI QC plot key shows good number of volumes\' font \"Helvetica,24\"\n')
-
-
+            good_qc.write('set title \'' + output_pname.parts[-5] + ' ' + output_pname.parts[-4] + ' DTI QC plot key shows good vol number for '+str(output_pname.name).split('_')[-1]+'\' font \"Helvetica,24\"\n')
         results += run_subprocess(['bash '+str(plot_vols)])
         badvols = pd.read_csv('bad_vols_index.txt', header=None, delim_whitespace=True, index_col=0, dtype={1: 'int64'})
         try:
