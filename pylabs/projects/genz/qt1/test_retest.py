@@ -449,53 +449,51 @@ b1map13_fname = '/brainstudio/data/acdc/VY_PATCH_TEST_1-3-18/b1map_vy13_jsman_mf
 vy_b1map11_phase_mf = nib.load(b1map11_fname).get_data()
 vy_b1map13_phase_mf = nib.load(b1map13_fname).get_data()
 
-### b1map and vfa
 
+
+### b1map and vfa
+from pylabs.utils import *
 from dipy.align.reslice import reslice
 from pylabs.io.images import savenii
 from pylabs.fmap_correction.b1_map_corr import calcb1map
 from pylabs.conversion.brain_convert import img_conv
 from scipy import stats
 from scipy.ndimage.filters import median_filter as medianf
+from pylabs.projects.acdc.file_names import merge_ftempl_dicts
 
 picks = {'patch': True,
-         'project': 'genz',
-         'subj': 'sub-genz921',
-         'session': 'ses-2',
+         'project': 'acdc',
+         'subj': 'sub-acdc112',
+         'session': 'ses-1',
          'run': '1',
-         # must set fas mannually when patch used. not reported.
-         'fas': [4.0, 25.0],
-         # maybe use conv templates here?
-         'vfa_fn': 'sub-genz921_ses-2_vfa_fa-4-25-tr-21p0_1.nii',
-         'vfa_parf': 'sub-genz921_ses-2_WIP_VFA_FA4-25_QUIET_SENSE_5_1.PAR',
-         'b1map_fn': 'sub-genz921_ses-2_b1map_fc_1.nii',
-         'b1map_parf': 'sub-genz921_ses-2_WIP_B1MAP-QUIET_FC_TR60-180_SP-100_SENSE_4_1.PAR'}
+         # must set fas mannually when patch used. not reported in PAR file correctly.
+         'fas': [4.0, 25.0],}
 
-
-ses_dir = fs/'{project}/{subject}/{session}'.format(**picks)
+ses_dir = fs/'{project}/{subj}/{session}'.format(**picks)
 os.chdir(str(ses_dir/'qt1'))
 #get conversion info
-subjDF = pd.HDFStore(str(fs/project/('all_'+picks['project']+'_info.h5'))).select('/{subj}/{session}/convert_info'.format(**picks))
-pd.HDFStore(str(fs/project/('all_'+picks['project']+'_info.h5'))).close()
+picks['vfa_fn_templ'] = img_conv[picks['project']]['_VFA_FA4-25_']['fname_template']
+picks['b1map_fn_templ'] = img_conv[picks['project']]['_B1MAP-QUIET_']['fname_template']
+with pd.HDFStore(str(fs/'{project}/all_{project}_info.h5'.format(**picks))) as store:
+    subjDF = store.select('/{subj}/{session}/convert_info'.format(**picks))
+    store.close()
 # get b1map TRs
-picks['b1map_TRs'] = subjDF.loc[('fmap', '{subj}_{session}_b1map-fp_1'.format(**picks)) , 'tr']
-# get and validate vfa tr
-picks['vfa_tr'] = np.round(np.unique(subjDF.xs('qt1', level=0).iloc[0, subjDF.columns.get_loc('tr')]), 1)  # 1st guess
-picks['vfa_tr'] = str(picks.vfa_tr[0]).replace('.', 'p')
-vfaTR = subjDF.loc[('qt1', '{subj}_{session}_vfa_fa-4-25-tr-{vfa_tr}_{run}'.format(**picks)), 'tr']
-
+picks['b1map_TRs'] = np.fromstring(subjDF.loc[('fmap', str(removesuffix(picks['b1map_fn_templ'].format(**merge_ftempl_dicts(dict1=picks, dict2=img_conv[picks['project']]['_B1MAP-QUIET_']))))), 'tr'].translate(None,'[]'), sep=' ')
+# get info and data
+picks['vfa_tr'] = np.fromstring(subjDF.xs('qt1', level=0).iloc[0, subjDF.columns.get_loc('tr')].translate(None,'[]'), sep=' ')
+picks['vfa_fn'] = picks['vfa_fn_templ'].format(**merge_ftempl_dicts(dict1=picks, dict2={'scan_name': 'vfa', 'tr': str(picks['vfa_tr'][0]).replace('.', 'p')}))
+picks['b1map_fn'] = picks['b1map_fn_templ'].format(**merge_ftempl_dicts(dict1=picks, dict2=img_conv[picks['project']]['_B1MAP-QUIET_']))
 vfa_affine = nib.load(picks['vfa_fn']).affine
-
 b1_data = nib.load(str(ses_dir/'fmap'/picks['b1map_fn'])).get_data()
 vfa_data = nib.load(str(ses_dir/'qt1'/picks['vfa_fn'])).get_data()
 
-
+# calc b1map
 S1 = medianf(b1_data[:,:,:,0], size=7)
 S2 = medianf(b1_data[:,:,:,1], size=7)
-b1map = calcb1map(S1, S2, b1TRs)
-b1map_out_fname = ses_dir/'fmap'/'{subject}_{session}_b1map_phase_mf7_9.nii'.format(**picks)
+b1map = calcb1map(S1, S2, picks['b1map_TRs'])
+b1map_out_fname = ses_dir/'fmap'/'{subj}_{session}_b1map_phase_mf7_9_v2.nii'.format(**picks)
 savenii(b1map, vfa_affine, str(b1map_out_fname))
-
+# fit vfa and make b1corrected qt1 img
 vy_vfa2_ec1 = vfa_data[:,:,:,:2]
 vy_vfa2_ec2 = vfa_data[:,:,:,2:4]
 vy_vfa2_ec1_rms = np.sqrt(np.sum(np.square(vy_vfa2_ec1), axis=3)/vy_vfa2_ec1.shape[3])
@@ -516,12 +514,12 @@ x = data / np.tan(fa_b1corr_rad)
 m = np.zeros(k)
 for v in range(k):        #uses no mask yet
     m[v], intercept, r, p, std = stats.linregress(x[:, v], y[:, v])
-qT1_linregr = -vfaTR/np.log(m)
+qT1_linregr = -picks['vfa_tr']/np.log(m)
 qT1_linregr_data = qT1_linregr.reshape(vy_vfa2_ec1_rms.shape)
 qT1_linregr_data[qT1_linregr_data < 1.0] = 0
 qT1_linregr_data[qT1_linregr_data > 6000] = 6000
 qT1_linregr_data_clean = np.nan_to_num(qT1_linregr_data, copy=True)
-qt1out_fname = ses_dir/'qt1'/'{subject}_{session}_vfa_qt1_b1corrmf9_vlinregr-fit_clamped.nii'.format(**picks)
+qt1out_fname = ses_dir/'qt1'/'{subj}_{session}_vfa_qt1_b1corrmf_vlinregr-fit_clamped_v2.nii'.format(**picks)
 savenii(qT1_linregr_data_clean, vfa_affine, str(qt1out_fname))
 
 
