@@ -1,11 +1,13 @@
-rm gnuplot_for_dtiqc_bad.txt
-rm gnuplot_for_dtiqc_good.txt
-echo "#!/usr/bin/gnuplot" >> gnuplot_for_dtiqc_bad.txt
-echo "#!/usr/bin/gnuplot" >> gnuplot_for_dtiqc_good.txt
-echo "reset" >> gnuplot_for_dtiqc_bad.txt
-echo "reset" >> gnuplot_for_dtiqc_good.txt
-echo "set title 'DTI QC plot key shows bad volume number' font \"Helvetica,24\" " >> gnuplot_for_dtiqc_bad.txt
-echo "set title 'DTI QC plot key shows good volume number' font \"Helvetica,24\" " >> gnuplot_for_dtiqc_good.txt
+#rm gnuplot_for_dtiqc_bad.txt
+#rm gnuplot_for_dtiqc_good.txt
+#echo "#!/usr/bin/gnuplot" >> gnuplot_for_dtiqc_bad.txt
+#echo "#!/usr/bin/gnuplot" >> gnuplot_for_dtiqc_good.txt
+#echo "reset" >> gnuplot_for_dtiqc_bad.txt
+#echo "reset" >> gnuplot_for_dtiqc_good.txt
+#echo "set title 'DTI QC plot key shows bad volume number' font \"Helvetica,24\" " >> gnuplot_for_dtiqc_bad.txt
+#echo "set title 'DTI QC plot key shows good volume number' font \"Helvetica,24\" " >> gnuplot_for_dtiqc_good.txt
+#
+
 echo "set xlabel 'Slice number' font \"Helvetica,24\" " >> gnuplot_for_dtiqc_bad.txt
 echo "set xlabel 'Slice number' font \"Helvetica,24\" " >> gnuplot_for_dtiqc_good.txt
 echo "set xtics font \"Helvetica,18\" " >> gnuplot_for_dtiqc_bad.txt
@@ -41,8 +43,8 @@ echo "replot" >> gnuplot_for_dtiqc_bad.txt
 echo "replot" >> gnuplot_for_dtiqc_good.txt
 gnuplot gnuplot_for_dtiqc_bad.txt
 gnuplot gnuplot_for_dtiqc_good.txt
-firefox gnuplot_for_dtiqc_bad.png &
-firefox gnuplot_for_dtiqc_good.png
+#firefox gnuplot_for_dtiqc_bad.png &
+#firefox gnuplot_for_dtiqc_good.png
 
 
 

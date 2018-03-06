@@ -1,3 +1,4 @@
+#todo: finish writing qc results to df
 # first set global root data directory
 import pylabs
 pylabs.datadir.target = 'jaba'
@@ -11,7 +12,7 @@ from pylabs.io.images import savenii
 
 from pylabs.utils import *
 # project and subjects and files to run on
-from pylabs.projects.acdc.file_names import project, SubjIdPicks, get_dwi_names, info_fname
+from pylabs.projects.acdc.file_names import project, SubjIdPicks, get_dwi_names, info_fname, QC_str
 from pylabs.diffusion.dti_qc import dwi_qc_1bv
 #set up provenance
 prov = ProvenanceWrapper()
@@ -21,23 +22,18 @@ fs = Path(getnetworkdataroot())
 
 antsRegistrationSyN = get_antsregsyn_cmd()
 slicer_path = getslicercmd()
-
+qc_strgs = QC_str()
+qc_str = qc_strgs.pass_qc
 # instantiate subject id list object
 subjids_picks = SubjIdPicks()
 # list of dicts of subject ids and info to operate on
 picks = [
-         {'subj': 'sub-acdc103', 'session': 'ses-1', 'run': '1',  # subject selection info
+         {'subj': 'sub-acdc112', 'session': 'ses-1', 'run': '1',  # subject selection info
           'dwi_badvols': np.array([]), 'topup_badvols': np.array([]), 'topdn_badvols': np.array([]),  # remove bad vols identified in qc
           },
          ]
 
 setattr(subjids_picks, 'subjids', picks)
-
-dti_qc = True
-if dti_qc:
-    from pylabs.projects.acdc.file_names import qc_str   # set to blank string '' when not in use
-else:
-    qc_str = ''
 
 
 topup_fnames, topdn_fnames, dwi_fnames = get_dwi_names(subjids_picks)
@@ -46,7 +42,7 @@ topup_fnames, topdn_fnames, dwi_fnames = get_dwi_names(subjids_picks)
 i = 0
 topup, topdn, dwif = topup_fnames[i], topdn_fnames[i], dwi_fnames[i]
 
-for i, (topup, topdn, dwif) in enumerate(zip(topup_fnames, topdn_fnames, dwi_fnames)):
+#for i, (topup, topdn, dwif) in enumerate(zip(topup_fnames, topdn_fnames, dwi_fnames)):
     # read in data and prep results df
     subject = dwif.split('_')[0]
     session = dwif.split('_')[1]
@@ -61,44 +57,26 @@ for i, (topup, topdn, dwif) in enumerate(zip(topup_fnames, topdn_fnames, dwi_fna
     orig_dwi_data = nib.load(str(orig_dwi_fname)).get_data()
     orig_topup_data = nib.load(str(topup_fname)).get_data()
     orig_topdn_data = nib.load(str(topdn_fname)).get_data()
-    affine = nib.load(str(orig_dwi_fname)).affine
+    #affine = nib.load(str(orig_dwi_fname)).affine
     qc_DF = pd.DataFrame(data=gtab.bvecs, index=[range(len(gtab.bvals))], columns=['x_bvec', 'y_bvec', 'z_bvec'])
     qc_DF['bvals'] = gtab.bvals
     qc_DF.loc[:orig_topdn_data.shape[3], 'itopdn'] = range(orig_topdn_data.shape[3] + 1)
     qc_DF.loc[:orig_topup_data.shape[3], 'itopup'] = range(orig_topup_data.shape[3] + 1)
     qc_DF.loc[:orig_topup_data.shape[3]+1, 'alltopup_idx'] = range(orig_topup_data.shape[3] + 2)
 
-    output_pname = dwipath / 'qc' / '_'.join([subject, session, 'b800_qc'])
+    output_pname = dwipath / 'qc' / '_'.join([subject, session, 'b800-qc'])
     b800_dwi_data = orig_dwi_data[:, :, :, gtab.bvals == 800.0]
-    b800_badvols = dwi_qc_1bv(b800_dwi_data, affine, output_pname)
+    b800_badvols = dwi_qc_1bv(b800_dwi_data, output_pname)
 
-    output_pname = dwipath / 'qc' / '_'.join([subject, session, 'b2000_qc'])
-    b800_dwi_data = orig_dwi_data[:, :, :, gtab.bvals == 2000.0]
-    b800_badvols = dwi_qc_1bv(b800_dwi_data, affine, output_pname)
+    output_pname = dwipath / 'qc' / '_'.join([subject, session, 'b2000-qc'])
+    b2000_dwi_data = orig_dwi_data[:, :, :, gtab.bvals == 2000.0]
+    b2000_badvols = dwi_qc_1bv(b2000_dwi_data, output_pname)
 
-    output_pname = dwipath / 'qc' / '_'.join([subject, session, 'topup8b0_qc'])
+    output_pname = dwipath / 'qc' / '_'.join([subject, session, 'topup8b0-qc'])
     all_topup_data = np.append(orig_dwi_data[:, :, :, 0, None], orig_topup_data, axis=3)
-    topup_badvols = dwi_qc_1bv(all_topup_data, affine, output_pname)
-    output_pname = dwipath / 'qc' / '_'.join([subject, session, 'topdn7b0_qc'])
-    topdn_badvols = dwi_qc_1bv(orig_topdn_data, affine, output_pname)
-
-    # jpg_out = dwipath / 'qc' / 'qcreport1.jpg'
-    # report_out = dwipath / 'qc' / 'qc_report.txt'
-    # output = dwipath / 'qc' / (subject+'_'+session+'_topdn_dwiqc')
-    # topdn_badvols = dwi_qc_1bv(orig_topdn_data, affine, output)
-    # try:
-    #     jpg_out.rename(appendposix(output, '.jpg'))
-    # except OSError:
-    #     print('topdown jpg file not found. moving on.')
-    # report_out.rename(appendposix(output, '_report.txt'))
-    # all_topup_data = np.append(orig_dwi_data[:,:,:,0, None] , orig_topup_data, axis=3)
-    # output = dwipath / 'qc' / (subject+'_'+session+'_topup_dwiqc')
-    # topup_badvols = dwi_qc_1bv(all_topup_data, affine, output)
-    # try:
-    #     jpg_out.rename(appendposix(output, '.jpg'))
-    # except OSError:
-    #     print('topup jpg file not found. moving on.')
-    # report_out.rename(appendposix(output, '_report.txt'))
+    topup_badvols = dwi_qc_1bv(all_topup_data, output_pname)
+    output_pname = dwipath / 'qc' / '_'.join([subject, session, 'topdn7b0-qc'])
+    topdn_badvols = dwi_qc_1bv(orig_topdn_data, output_pname)
 
     #fill in qc results into df
     if topup_badvols.iloc[0,0] == 1:
