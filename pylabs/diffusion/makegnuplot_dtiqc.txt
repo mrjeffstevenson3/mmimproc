@@ -33,6 +33,7 @@ numgood=`cat dimensionsgood1.txt | awk '{ print $4 }'`
 echo $numbad $numgood
 numb=${numbad}+1
 numg=${numgood}+1
+
 echo "plot for [n=2:${numb}] './plotbad1.txt' u 1:(column(n)) w lines lw 4" >> gnuplot_for_dtiqc_bad.txt
 echo "plot for [n=2:${numg}] './plotgood1.txt' u 1:(column(n)) w lines lw 4" >> gnuplot_for_dtiqc_good.txt
 echo "set terminal png size 1200, 800 font 12" >> gnuplot_for_dtiqc_bad.txt
