@@ -267,6 +267,7 @@ c
 	write(21,*)it-1, '0'
 	igoodvolume = igoodvolume+1
 	endif   !found a good alphaindex
+	if(iflag2.eq.0)write(21,*)it-1,'0'
 	endif  !found a good volume
 	if(iflag.eq.1)write(21,*)it-1,'1'
 	enddo
