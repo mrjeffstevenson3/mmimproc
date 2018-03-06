@@ -34,7 +34,7 @@ def extract_brain(file, f_factor=0.3, mmzshift=0.0):
     :param file: pathlib path and file name to be extracted
     :param dti: if dti=True S0 will be found and extracted and then brain extracted
     :param args: list of addl args
-    :param kwargs: list of key word: values for addle specific args like f factor
+    :param kwargs: list of key word: values for additional specific args like f factor
     :param f_factor: threshold factor for brain extraction
     :return: 
     '''

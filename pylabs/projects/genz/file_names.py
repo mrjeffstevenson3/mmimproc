@@ -36,7 +36,7 @@ fname_templ_dd = {'subj': '{subj}', 'session': '{session}', 'scan_name': '{scan_
                   'run': '{run}', 'fa': '{fa}', 'tr': '{tr}', 'side': '{side}', 'te': '{te}', 'dyn': '{dyn}',
                   'wild': '{wild}', 'type': '{type}'}
 
-gaba_ftempl = '{subj}_WIP_{side}GABAMM_TE{te}_{dyn}DYN_{wild}_raw_{type}.SDAT'
+gaba_ftempl = '{subj}{wild}_WIP_ACCGABAMM_TE{te}_{dyn}DYN_{wild}_raw_{type}.SDAT'
 
 def set_fname_templ_dd(dd, d):
     for k in d.keys():
@@ -77,14 +77,6 @@ b1map3_fnames = []
 for fa in spgr_fa:
     exec('spgr5_fa%(fa)s_fnames = []' % {'fa': fa})
 b1map5_fnames = []
-
-# gaba spectroscopy file lists
-rt_act = []
-rt_ref = []
-lt_act = []
-lt_ref = []
-rt_matching = []
-lt_matching = []
 
 
 def get_freesurf_names(subjids_picks):
@@ -131,25 +123,24 @@ def get_3dt2_names(subjids_picks):
     return t2_fnames
 
 def get_gaba_names(subjids_picks):
+    # gaba spectroscopy file lists
+    acc_act = []
+    acc_ref = []
     for subjid in subjids_picks.subjids:
         source_path = Path(str(subjids_picks.source_path).format(**subjid))
         if not source_path.is_dir():
             raise ValueError('source_sparsdat directory for mrs SDAT not set properly in subjids_picks.source_path. Currently ' + str(source_path))
         # make dict to update
-        mrs_dd = {'side': 'RT', 'type': 'act', 'wild': '*', 'te': gaba_te, 'dyn': gaba_dyn}
-        rt_act.append(list(source_path.glob(gaba_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=mrs_dd))))[0])
-        mrs_dd.update({'side': 'LT'})
-        lt_act.append(list(source_path.glob(gaba_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=mrs_dd))))[0])
+        mrs_dd = {'type': 'act', 'wild': '*', 'te': gaba_te, 'dyn': gaba_dyn}
+        acc_act.append(list(source_path.glob(gaba_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=mrs_dd))))[0])
         mrs_dd.update({'type': 'ref'})
-        lt_ref.append(list(source_path.glob(gaba_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=mrs_dd))))[0])
-        mrs_dd.update({'side': 'RT'})
-        rt_ref.append(list(source_path.glob(gaba_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=mrs_dd))))[0])
-    return rt_act, rt_ref, lt_act, lt_ref
+        acc_ref.append(list(source_path.glob(gaba_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=mrs_dd))))[0])
+    return acc_act, acc_ref
 
 def get_matching_voi_names(subjids_picks):
-    lt_match_ftempl = removesuffix(str(img_conv[project]['_AX_MATCH_LEFT_MEMP_VBM_TI1100_']['fname_template']))
-    rt_match_ftempl = removesuffix(str(img_conv[project]['_AX_MATCH_RIGHT_MEMP_VBM_TI1100_']['fname_template']))
+    acc_matching = []
+    acc_match_ftempl = removesuffix(str(img_conv[project]['_AX_MATCH_ACC_']['fname_template']))
     for subjid in subjids_picks.subjids:
-        rt_matching.append(str(rt_match_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_AX_MATCH_RIGHT_MEMP_VBM_TI1100_'])))
-        lt_matching.append(str(lt_match_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_AX_MATCH_LEFT_MEMP_VBM_TI1100_'])))
-    return rt_matching, lt_matching
+        source_path = Path(str(subjids_picks.source_path).format(**subjid)).parent / 'source_parrec'
+        acc_matching.append(source_path / str(acc_match_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_AX_MATCH_ACC_'])))
+    return acc_matching

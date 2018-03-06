@@ -79,3 +79,14 @@ def paired_sub(niifiles, outfname, minuend=0):
 def gz2nii(file):
     with gzip.open(str(file), 'rb') as src, open(str(replacesuffix(file, '.nii')), 'wb') as dest:
         shutil.copyfileobj(src, dest)
+
+def get_ext(file):
+    file = Path(file)
+    if not any('.nii' in ex for ex in file.suffixes):
+        raise ValueError(str(file) + ' file is not nifti with .nii or .nii.gz ext. please check')
+    if len(file.suffixes) == 1 and file.suffixes[0] == '.nii':
+        return '.nii'
+    if len(file.suffixes) == 2 and file.suffixes[0] == '.nii' and file.suffixes[1] == '.gz':
+        return '.nii.gz'
+    else:
+        return None

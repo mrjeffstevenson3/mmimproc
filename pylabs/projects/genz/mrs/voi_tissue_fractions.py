@@ -16,7 +16,7 @@ from pylabs.mrs.tissue_fractions import make_voi_mask, calc_tissue_fractions
 from pylabs.structural.brain_extraction import extract_brain
 from pylabs.utils import ProvenanceWrapper, run_subprocess, WorkingContext, getnetworkdataroot, appendposix, replacesuffix, \
     prependposix, getspmpath, pylabs_dir
-from pylabs.projects.genz.file_names import project, SubjIdPicks, subjs_h5_info_fname, get_matching_voi_names, get_gaba_names
+from pylabs.projects.genz.file_names import project, SubjIdPicks, get_matching_voi_names, get_gaba_names
 prov = ProvenanceWrapper()
 
 os.environ['FSLOUTPUTTYPE'] = pylabs.opts.nii_ftype
@@ -25,9 +25,9 @@ os.environ["FSLMULTIFILEQUIT"] = pylabs.opts.fslmultifilequit
 fs = Path(getnetworkdataroot())
 spm_dir, tpm_path = getspmpath()
 
-eng = matlab.engine.start_matlab()
-eng.addpath(eng.genpath(str(pylabs_dir)))
-eng.addpath(eng.genpath(str(spm_dir)))
+# eng = matlab.engine.start_matlab()
+# eng.addpath(eng.genpath(str(pylabs_dir)))
+# eng.addpath(eng.genpath(str(spm_dir)))
 
 fast = fsl.FAST(
                 output_type=pylabs.opts.nii_ftype,
@@ -52,26 +52,24 @@ picks = [
          #{'subj': 'sub-genz996', 'session': 'ses-1', 'run': '1',},
          #{'subj': 'sub-genz996', 'session': 'ses-2', 'run': '1',},
          #{'subj': 'sub-genz997', 'session': 'ses-1', 'run': '1',},
-         {'subj': 'sub-genz996', 'session': 'ses-4', 'run': '1',}
+         {'subj': 'sub-genz923', 'session': 'ses-1', 'run': '1',}
          ]
 
 setattr(subjids_picks, 'subjids', picks)
 setattr(subjids_picks, 'source_path', fs / project / '{subj}' / '{session}' / 'source_sparsdat')
 
-rt_actfnames, rt_reffnames, lt_actfnames, lt_reffnames = get_gaba_names(subjids_picks)
+acc_actfnames, acc_reffnames = get_gaba_names(subjids_picks)
 
-rt_matchfnames, lt_matchfnames = get_matching_voi_names(subjids_picks)
+acc_matchfnames = get_matching_voi_names(subjids_picks)
 
-test_l = map(len, (rt_actfnames, lt_actfnames, rt_matchfnames, lt_matchfnames))
+test_l = map(len, (acc_actfnames, acc_reffnames, acc_matchfnames))
 if not all(test_l[0] == l for l in test_l):
     raise ValueError('lists lengths do not all match. cannot zip '+str(test_l))
 
-for rt_matchfname, lt_matchfname, rt_actfname, lt_actfname in zip(rt_matchfnames, lt_matchfnames, rt_actfnames, lt_actfnames):
+for acc_matchfname, acc_actfname, acc_reffname in zip(acc_matchfnames, acc_actfnames, acc_reffnames):
     results = ()
-    if not rt_matchfname.split('_')[0] == lt_matchfname.split('_')[0]:
-        raise ValueError('subject id does not match between right and left side.')
-    subject = rt_matchfname.split('_')[0]
-    session = rt_matchfname.split('_')[1]
+    subject = acc_matchfname.name.split('_')[0]
+    session = acc_matchfname.name.split('_')[1]
     mrs_dir = fs / project / subject / session / 'mrs'
     if not mrs_dir.is_dir():
         raise ValueError('cant find mrs directory '+str(mrs_dir))
@@ -81,17 +79,15 @@ for rt_matchfname, lt_matchfname, rt_actfname, lt_actfname in zip(rt_matchfnames
     # first do right side
     with WorkingContext(str(mrs_dir)):
         try:
-            # start with right side
-            rt_match_pfname = mrs_dir / appendposix(rt_matchfname, ext)
             if pylabs.opts.overwrite: # and not only_spm:   ## or not Path(replacesuffix(rt_match_pfname, '_brain'+ext)).is_file():
-                print('running brain extraction on '+str(rt_match_pfname))
-                rt_match_brain, rt_match_mask, rt_match_cropped = extract_brain(str(rt_match_pfname))
+                print('running brain extraction on '+str(acc_matchfname))
+                acc_match_brain, acc_match_mask, acc_match_cropped = extract_brain(str(acc_matchfname)+ext)
             else:
-                rt_match_brain, rt_match_mask = replacesuffix(rt_match_pfname, '_brain'+ext), replacesuffix(rt_match_pfname, '_brain_mask'+ext)
+                acc_match_brain, acc_match_mask, acc_match_cropped = replacesuffix(acc_match_brain, '_brain'+ext), replacesuffix(acc_match_brain, '_brain_mask'+ext), replacesuffix(acc_match_brain, '_cropped'+ext)
             if pylabs.opts.overwrite: #  and not only_spm:  ## or not Path(replacesuffix(rt_match_pfname, '_brain_susanf'+ext)).is_file():
-                print('running susan filter on ' + str(rt_match_brain))
-                results += run_subprocess(['susan ' + str(rt_match_brain) + ' -1 1 3 1 0 ' + str(replacesuffix(rt_match_brain, '_susanf'+ext))])
-                rt_match_brain = replacesuffix(rt_match_brain, '_susanf' + ext)
+                print('running susan filter on ' + str(acc_match_brain))
+                results += run_subprocess(['susan ' + str(acc_match_brain) + ' -1 1 3 1 0 ' + str(appendposix(acc_match_brain, '_susanf'))])
+                acc_match_brain = appendposix(acc_match_brain, '_susanf')
             else:
                 rt_match_brain = replacesuffix(rt_match_brain, '_susanf'+ext)
             if pylabs.opts.overwrite: # and not only_spm:   ## or not Path(replacesuffix(rt_match_pfname, '_mrs_roi_mask'+ext)).is_file():
@@ -106,36 +102,6 @@ for rt_matchfname, lt_matchfname, rt_actfname, lt_actfname in zip(rt_matchfnames
                 print('running FSL Segmentation on ' + str(rt_match_brain))
                 fast.inputs.in_files = str(rt_match_brain)
                 fast.inputs.out_basename = str(replacesuffix(rt_match_brain, '_fslfast'))
-                fast.run()
-
-            # now do left side
-            print ('overwrite='+str(pylabs.opts.overwrite))
-            lt_match_pfname = mrs_dir / appendposix(lt_matchfname, ext)
-            if pylabs.opts.overwrite: # and not only_spm:   ## or not Path(replacesuffix(lt_match_pfname, '_brain'+ext)).is_file():
-                print('running brain extraction on ' + str(lt_match_pfname))
-                lt_match_brain, lt_match_mask, lt_match_cropped = extract_brain(str(lt_match_pfname))
-            else:
-                lt_match_brain, lt_match_mask = replacesuffix(lt_match_pfname, '_brain'+ext), replacesuffix(lt_match_pfname, '_brain_mask'+ext)
-            if pylabs.opts.overwrite: # and not only_spm:   ##  or not Path(replacesuffix(lt_match_pfname, '_brain_susanf'+ext)).is_file():
-                print('running susan filter on ' + str(lt_match_brain))
-                results += run_subprocess(['susan ' + str(lt_match_brain) + ' -1 1 3 1 0 ' + str(replacesuffix(lt_match_brain, '_susanf'+ext))])
-                lt_match_brain = replacesuffix(lt_match_brain, '_susanf' + ext)
-            else:
-                lt_match_brain = replacesuffix(lt_match_brain, '_susanf'+ext)
-
-            if pylabs.opts.overwrite: # and not only_spm:   ## or not Path(replacesuffix(lt_match_pfname, '_mrs_roi_mask'+ext)).is_file():
-                print('running make mask voi on ' + str(replacesuffix(lt_actfname, '.SPAR')) + ' and ' + str(lt_match_brain))
-                lt_mask_img = make_voi_mask(replacesuffix(lt_actfname, '.SPAR'), lt_match_brain, replacesuffix(lt_match_pfname, '_mrs_roi_mask'+ext))
-
-            # run SPM segmentation on left matching
-            if pylabs.opts.overwrite: # and only_spm:   ## or not (Path(prependposix(lt_match_brain, 'c1')).is_file() & Path(prependposix(lt_match_brain, 'c2')).is_file() & Path(prependposix(lt_match_brain, 'c3')).is_file()):
-                print('running SPM Segmentation on ' + str(lt_match_brain) + ' and ' + str(lt_match_mask))
-                eng.spm_seg(str(lt_match_brain), str(tpm_path), nargout=0)
-            # run FSL segmentation on left matching
-            if pylabs.opts.overwrite: # and not only_spm:   ## or not (Path(replacesuffix(lt_match_brain, '_fslfast_seg_1'+ext)).is_file() & Path(replacesuffix(lt_match_brain, '_fslfast_seg_2'+ext)).is_file() & Path(replacesuffix(lt_match_brain, '_fslfast_seg_0'+ext)).is_file()):
-                print('running FSL Segmentation on ' + str(lt_match_brain))
-                fast.inputs.in_files = str(lt_match_brain)
-                fast.inputs.out_basename = str(replacesuffix(lt_match_brain, '_fslfast'))
                 fast.run()
 
             # calculate right FSL tissue fractions
