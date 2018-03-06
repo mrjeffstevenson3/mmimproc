@@ -57,7 +57,7 @@ topup, topdn, dwif = topup_fnames[i], topdn_fnames[i], dwi_fnames[i]
     orig_dwi_data = nib.load(str(orig_dwi_fname)).get_data()
     orig_topup_data = nib.load(str(topup_fname)).get_data()
     orig_topdn_data = nib.load(str(topdn_fname)).get_data()
-    affine = nib.load(str(orig_dwi_fname)).affine
+    #affine = nib.load(str(orig_dwi_fname)).affine
     qc_DF = pd.DataFrame(data=gtab.bvecs, index=[range(len(gtab.bvals))], columns=['x_bvec', 'y_bvec', 'z_bvec'])
     qc_DF['bvals'] = gtab.bvals
     qc_DF.loc[:orig_topdn_data.shape[3], 'itopdn'] = range(orig_topdn_data.shape[3] + 1)
@@ -66,17 +66,17 @@ topup, topdn, dwif = topup_fnames[i], topdn_fnames[i], dwi_fnames[i]
 
     output_pname = dwipath / 'qc' / '_'.join([subject, session, 'b800-qc'])
     b800_dwi_data = orig_dwi_data[:, :, :, gtab.bvals == 800.0]
-    b800_badvols = dwi_qc_1bv(b800_dwi_data, affine, output_pname)
+    b800_badvols = dwi_qc_1bv(b800_dwi_data, output_pname)
 
     output_pname = dwipath / 'qc' / '_'.join([subject, session, 'b2000-qc'])
     b2000_dwi_data = orig_dwi_data[:, :, :, gtab.bvals == 2000.0]
-    b2000_badvols = dwi_qc_1bv(b2000_dwi_data, affine, output_pname)
+    b2000_badvols = dwi_qc_1bv(b2000_dwi_data, output_pname)
 
     output_pname = dwipath / 'qc' / '_'.join([subject, session, 'topup8b0-qc'])
     all_topup_data = np.append(orig_dwi_data[:, :, :, 0, None], orig_topup_data, axis=3)
-    topup_badvols = dwi_qc_1bv(all_topup_data, affine, output_pname)
+    topup_badvols = dwi_qc_1bv(all_topup_data, output_pname)
     output_pname = dwipath / 'qc' / '_'.join([subject, session, 'topdn7b0-qc'])
-    topdn_badvols = dwi_qc_1bv(orig_topdn_data, affine, output_pname)
+    topdn_badvols = dwi_qc_1bv(orig_topdn_data, output_pname)
 
     #fill in qc results into df
     if topup_badvols.iloc[0,0] == 1:

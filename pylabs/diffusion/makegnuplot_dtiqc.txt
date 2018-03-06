@@ -43,8 +43,8 @@ echo "replot" >> gnuplot_for_dtiqc_bad.txt
 echo "replot" >> gnuplot_for_dtiqc_good.txt
 gnuplot gnuplot_for_dtiqc_bad.txt
 gnuplot gnuplot_for_dtiqc_good.txt
-firefox gnuplot_for_dtiqc_bad.png &
-firefox gnuplot_for_dtiqc_good.png
+#firefox gnuplot_for_dtiqc_bad.png &
+#firefox gnuplot_for_dtiqc_good.png
 
 
 
