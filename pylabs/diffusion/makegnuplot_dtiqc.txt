@@ -8,10 +8,10 @@
 #echo "set title 'DTI QC plot key shows good volume number' font \"Helvetica,24\" " >> gnuplot_for_dtiqc_good.txt
 #
 
-echo "set xlabel 'Slice number' font \"Helvetica,24\" " >> gnuplot_for_dtiqc_bad.txt
-echo "set xlabel 'Slice number' font \"Helvetica,24\" " >> gnuplot_for_dtiqc_good.txt
-echo "set xtics font \"Helvetica,18\" " >> gnuplot_for_dtiqc_bad.txt
-echo "set xtics font \"Helvetica,18\" " >> gnuplot_for_dtiqc_good.txt
+#echo "set xlabel 'Slice number' font \"Helvetica,24\" " >> gnuplot_for_dtiqc_bad.txt
+#echo "set xlabel 'Slice number' font \"Helvetica,24\" " >> gnuplot_for_dtiqc_good.txt
+#echo "set xtics font \"Helvetica,18\" " >> gnuplot_for_dtiqc_bad.txt
+#echo "set xtics font \"Helvetica,18\" " >> gnuplot_for_dtiqc_good.txt
 echo "set ytics font \"Helvetica,18\" " >> gnuplot_for_dtiqc_bad.txt
 echo "set ytics font \"Helvetica,18\" " >> gnuplot_for_dtiqc_good.txt
 echo "set border lw 4" >> gnuplot_for_dtiqc_bad.txt
