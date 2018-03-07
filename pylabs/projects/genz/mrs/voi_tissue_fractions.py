@@ -89,53 +89,44 @@ for acc_matchfname, acc_actfname, acc_reffname in zip(acc_matchfnames, acc_actfn
                 results += run_subprocess(['susan ' + str(acc_match_brain) + ' -1 1 3 1 0 ' + str(appendposix(acc_match_brain, '_susanf'))])
                 acc_match_brain = appendposix(acc_match_brain, '_susanf')
             else:
-                rt_match_brain = replacesuffix(rt_match_brain, '_susanf'+ext)
+                acc_match_brain = replacesuffix(acc_match_brain, '_susanf'+ext)
             if pylabs.opts.overwrite: # and not only_spm:   ## or not Path(replacesuffix(rt_match_pfname, '_mrs_roi_mask'+ext)).is_file():
-                print('running make mask voi on ' +str(replacesuffix(rt_actfname, '.SPAR'))+' and '+ str(rt_match_brain))
-                rt_mask_img = make_voi_mask(replacesuffix(rt_actfname, '.SPAR'), rt_match_brain, replacesuffix(rt_match_pfname, '_mrs_roi_mask'+ext))
+                print('running make mask voi on ' +str(replacesuffix(acc_actfname, '.SPAR')))
+                acc_mask_img = make_voi_mask(replacesuffix(acc_actfname, '.SPAR'), acc_match_brain, replacesuffix(acc_match_brain, '_mrs_roi_mask'+ext))
             # run SPM segmentation on right matching
             if pylabs.opts.overwrite: #  and only_spm:   ## or not (Path(prependposix(rt_match_brain, 'c1')).is_file() & Path(prependposix(rt_match_brain, 'c2')).is_file() & Path(prependposix(rt_match_brain, 'c3')).is_file()):
-                print('running SPM Segmentation on ' + str(rt_match_brain)+' and '+str(rt_match_mask))
-                eng.spm_seg(str(rt_match_brain), str(tpm_path), nargout=0)
+                print('running SPM Segmentation on ' + str(acc_mask_img))
+                eng.spm_seg(str(acc_mask_img), str(tpm_path), nargout=0)
             # run FSL segmentation on right matching
             if pylabs.opts.overwrite: # and not only_spm:   ## or not (Path(replacesuffix(rt_match_brain, '_fslfast_seg_1'+ext)).is_file() & Path(replacesuffix(rt_match_brain, '_fslfast_seg_2'+ext)).is_file() & Path(replacesuffix(rt_match_brain, '_fslfast_seg_0'+ext)).is_file()):
-                print('running FSL Segmentation on ' + str(rt_match_brain))
-                fast.inputs.in_files = str(rt_match_brain)
-                fast.inputs.out_basename = str(replacesuffix(rt_match_brain, '_fslfast'))
+                print('running FSL Segmentation on ' + str(acc_mask_img))
+                fast.inputs.in_files = str(acc_mask_img)
+                fast.inputs.out_basename = str(replacesuffix(acc_mask_img, '_fslfast'))
                 fast.run()
 
-            # calculate right FSL tissue fractions
-            rt_fsl_fractions = calc_tissue_fractions(replacesuffix(rt_match_pfname, '_mrs_roi_mask'+ext),
-                                                     str(replacesuffix(rt_match_brain, '_fslfast_seg_1'+ext)),
-                                                     str(replacesuffix(rt_match_brain, '_fslfast_seg_2'+ext)),
-                                                     str(replacesuffix(rt_match_brain, '_fslfast_seg_0'+ext)),
+            # calculate acc FSL tissue fractions
+            acc_fsl_fractions = calc_tissue_fractions(replacesuffix(acc_mask_img, '_mrs_roi_mask'+ext),
+                                                     str(replacesuffix(acc_mask_img, '_fslfast_seg_1'+ext)),
+                                                     str(replacesuffix(acc_mask_img, '_fslfast_seg_2'+ext)),
+                                                     str(replacesuffix(acc_mask_img, '_fslfast_seg_0'+ext)),
                                                      'right', method='FSL')
-            # calculate right SPM tissue fractions
-            rt_spm_fractions = calc_tissue_fractions(replacesuffix(rt_match_pfname, '_mrs_roi_mask'+ext),
-                                                     str(prependposix(rt_match_brain, 'c1')),
-                                                     str(prependposix(rt_match_brain, 'c2')),
-                                                     str(prependposix(rt_match_brain, 'c3')),
+            # calculate acc SPM tissue fractions
+            acc_spm_fractions = calc_tissue_fractions(replacesuffix(acc_mask_img, '_mrs_roi_mask'+ext),
+                                                     str(prependposix(acc_mask_img, 'c1')),
+                                                     str(prependposix(acc_mask_img, 'c2')),
+                                                     str(prependposix(acc_mask_img, 'c3')),
                                                      'right', method='SPM', thresh=thresh)
+###################        stopped here
 
-            # calculate left FSL tissue fractions
-            lt_fsl_fractions = calc_tissue_fractions(replacesuffix(lt_match_pfname, '_mrs_roi_mask'+ext),
-                                                     str(replacesuffix(lt_match_brain, '_fslfast_seg_1'+ext)),
-                                                     str(replacesuffix(lt_match_brain, '_fslfast_seg_2'+ext)),
-                                                     str(replacesuffix(lt_match_brain, '_fslfast_seg_0'+ext)),
-                                                     'left', method='FSL')
-            # calculate left SPM tissue fractions
-            lt_spm_fractions = calc_tissue_fractions(replacesuffix(lt_match_pfname, '_mrs_roi_mask'+ext),
-                                                     str(prependposix(lt_match_brain, 'c1')),
-                                                     str(prependposix(lt_match_brain, 'c2')),
-                                                     str(prependposix(lt_match_brain, 'c3')),
-                                                     'left', method='SPM', thresh=thresh)
             # use merge df
-            fractions = pd.DataFrame({'left_SPM': lt_spm_fractions, 'right_SPM': rt_spm_fractions, 'left_FSL': lt_fsl_fractions, 'right_FSL': rt_fsl_fractions})
-            fractions.to_csv(str(mrs_dir / str(subject + '_sv_voi_tissue_proportions.csv')), sep=',', columns=['left_SPM', 'right_SPM', 'left_FSL', 'right_FSL'])
-            # temp solution to get data out
-            indx = [subject, 'left-percCSF', 'right-percCSF', ]
-            data = {'subject': subject, 'left-percCSF': fractions.loc['frac_CSF', 'left_SPM'],
-                    'right-percCSF': fractions.loc['frac_CSF', 'right_SPM']}
+            fractions = pd.DataFrame({'acc_SPM': acc_spm_fractions, 'acc_FSL': acc_fsl_fractions, })
+            fractions.to_csv(str(mrs_dir / str(subject + '_sv_voi_tissue_proportions.csv')), sep=',', columns=['acc_SPM', 'acc_FSL'])
+
+
+
+            # temp solution to get data out. not sure about this...
+            indx = [subject, 'acc-percCSF', ]
+            data = {'subject': subject, 'acc-percCSF': fractions.loc['frac_CSF', 'acc_SPM'],}
             csf_data = pd.Series(data, index=indx, name=data['subject'])
             csf_data.to_csv(str(mrs_dir / str(subject + '_csf_fractions.csv')))
             fractions.to_hdf(str(subjs_h5_info_fname), subject/session/'mrs'/'CSF_correction_factors', append=True, format = 'table')
