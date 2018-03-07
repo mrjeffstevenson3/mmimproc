@@ -116,6 +116,25 @@ def conv_df2h5(df, h5_fname, append=True):
                     storeh5.put(subj + '/' + ses + '/convert_info', df.loc[subj,ses].applymap(str), format='t')
     return
 
+def df2h5(df, h5_fname, key, append=False):
+    h5_fname = Path(h5_fname)
+    if not h5_fname.is_file():
+        raise ValueError(str(h5_fname)+' h5 file not found.')
+    with pd.HDFStore(str(h5_fname)) as storeh5:
+            if append:
+                storeh5.append(key, df.applymap(str), format='t')
+            else:
+                storeh5.put(key, df.applymap(str), format='t')
+    return
+
+def h52df(h5_fname, key):
+    h5_fname = Path(h5_fname)
+    if not h5_fname.is_file():
+        raise ValueError(str(h5_fname)+' h5 file not found.')
+    with pd.HDFStore(str(h5_fname)) as storeh5:
+        df = storeh5.select(key)
+    return df
+
 def gen_df_extract(key, var):
     if hasattr(var,'iteritems'):
         for k, v in var.iteritems():
