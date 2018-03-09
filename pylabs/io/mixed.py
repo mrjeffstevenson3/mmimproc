@@ -81,7 +81,7 @@ def getgabavalue(fitpdf):
     pdf_text = pdftotxt(str(fitpdf))
     for line in pdf_text.splitlines():
         if 'inst. units.' in line:
-            for k,v in {'GABA+/H2O  : ': '', ' inst. units.': ''}.iteritems():
+            for k,v in {'GABA+/H2O  : ': '', ' inst. units.': '', 'GABA+/H 2 O  : ': '', }.iteritems():
                 line = line.replace(k,v)
             gaba_val = float(line)
         if 'GABA+/Cr i.r.' in line:
