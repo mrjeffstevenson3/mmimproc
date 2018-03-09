@@ -14,15 +14,29 @@ from collections import defaultdict
 from pylabs.utils import removesuffix, getnetworkdataroot
 from pylabs.conversion.brain_convert import img_conv
 
+fs = Path(getnetworkdataroot())
 project = 'genz'
-qc_str = '_passqc'
+
 
 class SubjIdPicks(object):
     pass
 
-fs = Path(getnetworkdataroot())
 
-info_fname = fs/project/('all_'+project+'_info.h5')
+
+class Opts(object):
+    project = 'acdc'
+    spm_thresh = 0.5
+    dwi_pass_qc = '_passqc'
+    info_fname = fs / project / ('all_' + project + '_info.h5')
+    dwi_fname_excep = ['_DWI64_3SH_B0_B800_B2000_TOPUP_TE101_1p8mm3_', '_DWI6_B0_TOPUP_TE101_1p8mm3_', '_DWI6_B0_TOPDN_TE101_1p8mm3_']
+    gaba_te = 80
+    gaba_dyn = 120
+    gaba_ftempl = '{subj}_WIP_{side}GABAMM_TE{te}_{dyn}DYN_{wild}_raw_{type}.SDAT'
+    vfa_fas = [4.0, 25.0]
+
+opts = Opts()
+
+qc_str = opts.dwi_pass_qc
 
 
 # known or expected from genz protocol
