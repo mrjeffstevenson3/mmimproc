@@ -81,12 +81,16 @@ def getgabavalue(fitpdf):
     pdf_text = pdftotxt(str(fitpdf))
     for line in pdf_text.splitlines():
         if 'inst. units.' in line:
-            gaba_val = line.split()[4]
+            for k,v in {'GABA+/H2O  : ': '', ' inst. units.': ''}.iteritems():
+                line = line.replace(k,v)
+            gaba_val = float(line)
         if 'GABA+/Cr i.r.' in line:
-            gabaovercr = line.split()[2]
+            for k,v in {'GABA+/Cr i.r.: ': '',}.iteritems():
+                line = line.replace(k,v)
+            gabaovercr = float(line)
     if gaba_val == None:
         raise ValueError('could not find a gaba value in '+str(fitpdf))
-    return float(gaba_val), float(gabaovercr)
+    return gaba_val, gabaovercr
 
 def conv_df2h5(df, h5_fname, append=True):
     """

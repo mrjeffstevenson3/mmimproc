@@ -17,9 +17,9 @@ gannettpath = pylabs.utils.paths.getgannettpath()
 subjids_picks = SubjIdPicks()
 # list of subject ids to operate on
 
-picks = [{'subj': 'sub-genz931', 'session': 'ses-1', 'run': '1',},
-         {'subj': 'sub-genz901', 'session': 'ses-1', 'run': '1',},
-         {'subj': 'sub-genz923', 'session': 'ses-1', 'run': '1',},
+picks = [{'subj': 'sub-genz996', 'session': 'ses-2', 'run': '1',},
+         #{'subj': 'sub-genz901', 'session': 'ses-1', 'run': '1',},
+         #{'subj': 'sub-genz923', 'session': 'ses-1', 'run': '1',},
          #{'subj': 'sub-genz997', 'session': 'ses-2', 'run': '1',},
          ]
 
@@ -72,8 +72,8 @@ for acc_act, acc_ref in zip(acc_actfnames, acc_reffnames):
                             if '_ACC' in str(f.stem):
                                 print (appendposix(f, '_fit'), appendposix(f, '_fit').is_file())
                                 subj_info['acc_gaba_value'], subj_info['acc_gabaovercr'] = getgabavalue(appendposix(f, '_fit'))
-                                output += ('ACC gaba results for {subj} in {session} is {acc_gaba_value}'.format(**subj_info))
-                                output += ('ACC gaba over Creatinine results for {subj} in {session} is {acc_gabaovercr}'.format(**subj_info))
+                                output += ('ACC gaba results for {subj} in {session} is {acc_gaba_value}'.format(**subj_info),)
+                                output += ('ACC gaba over Creatinine results for {subj} in {session} is {acc_gabaovercr}'.format(**subj_info),)
                         if 'output' in str(f.parts[-2]):
                             f.rename(appendposix(f, '_output'))
             print("({})".format(", ".join(output)))
@@ -84,6 +84,6 @@ for acc_act, acc_ref in zip(acc_actfnames, acc_reffnames):
                 json.dump(output, logr, indent=2)
             for p in results_dir.rglob("*.pdf"):
                 if '_ACC' in str(p.stem):
-                    prov.log(str(p), 'gannet gaba fit for acc', str(acc_act), script=__file__, provenance={'log': output, 'subj_info': subj_info})
+                    prov.log(str(p), 'gannet gaba fit for acc', str(acc_act), provenance={'log': output, 'subj_info': subj_info})
 
 
