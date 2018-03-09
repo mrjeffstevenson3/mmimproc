@@ -24,7 +24,7 @@ class SubjIdPicks(object):
 
 
 class Opts(object):
-    project = 'acdc'
+    project = 'genz'
     spm_thresh = 0.5
     dwi_pass_qc = '_passqc'
     info_fname = fs / project / ('all_' + project + '_info.h5')
@@ -145,7 +145,7 @@ def get_gaba_names(subjids_picks):
         if not source_path.is_dir():
             raise ValueError('source_sparsdat directory for mrs SDAT not set properly in subjids_picks.source_path. Currently ' + str(source_path))
         # make dict to update
-        mrs_dd = {'type': 'act', 'wild': '*', 'te': gaba_te, 'dyn': gaba_dyn}
+        mrs_dd = {'type': 'act', 'wild': '*', 'te': gaba_te, 'dyn': gaba_dyn, 'side': 'ACC'}
         acc_act.append(list(source_path.glob(gaba_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=mrs_dd))))[0])
         mrs_dd.update({'type': 'ref'})
         acc_ref.append(list(source_path.glob(gaba_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=mrs_dd))))[0])
