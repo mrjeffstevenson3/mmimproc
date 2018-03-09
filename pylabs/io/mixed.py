@@ -135,6 +135,16 @@ def h52df(h5_fname, key):
         df = storeh5.select(key)
     return df
 
+def getTRfromh5(h5_fname, subject, session, modality, scan):
+    h5_fname = Path(h5_fname)
+    if not h5_fname.is_file():
+        raise ValueError(str(h5_fname)+' h5 file not found.')
+    with pd.HDFStore(str(h5_fname)) as storeh5:
+        df = storeh5.select('/'+'/'.join([subject, session, 'convert_info']))
+        tr = df.loc[[modality, scan], 'tr']
+    return np.fromstring(tr.values[0].translate(None, '[]'), sep=' ')
+
+
 def gen_df_extract(key, var):
     if hasattr(var,'iteritems'):
         for k, v in var.iteritems():

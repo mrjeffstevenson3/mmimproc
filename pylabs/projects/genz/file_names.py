@@ -141,6 +141,6 @@ def get_matching_voi_names(subjids_picks):
     acc_matching = []
     acc_match_ftempl = removesuffix(str(img_conv[project]['_AX_MATCH_ACC_']['fname_template']))
     for subjid in subjids_picks.subjids:
-        source_path = Path(str(subjids_picks.source_path).format(**subjid)).parent / 'source_parrec'
+        source_path = Path(str(subjids_picks.source_path).format(**subjid)).parent / 'mrs'
         acc_matching.append(source_path / str(acc_match_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_AX_MATCH_ACC_'])))
     return acc_matching
