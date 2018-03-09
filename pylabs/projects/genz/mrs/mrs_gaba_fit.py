@@ -5,6 +5,7 @@ import pylabs
 pylabs.datadir.target = 'jaba'
 from pathlib import *
 import datetime, json
+import pandas as pd
 from pylabs.utils import ProvenanceWrapper, run_subprocess, WorkingContext, getnetworkdataroot, appendposix
 from pylabs.projects.genz.file_names import project, SubjIdPicks, get_gaba_names, Opts
 from pylabs.io.mixed import getgabavalue, df2h5
@@ -30,9 +31,10 @@ setattr(subjids_picks, 'source_path', fs / project / '{subj}' / '{session}' / 's
 opts = Opts()
 
 acc_actfnames, acc_reffnames = get_gaba_names(subjids_picks)
-i = 0
-acc_act, acc_ref = acc_actfnames[i], acc_reffnames[i]
-#for acc_act, acc_ref in zip(acc_actfnames, acc_reffnames):
+# i = 0   # for testing
+# acc_act, acc_ref = acc_actfnames[i], acc_reffnames[i]
+
+for acc_act, acc_ref in zip(acc_actfnames, acc_reffnames):
 
     results_dir = acc_act.parents[1].joinpath('mrs')
     subj_info = {'subj': results_dir.parts[-3],
@@ -90,4 +92,3 @@ acc_act, acc_ref = acc_actfnames[i], acc_reffnames[i]
                     prov.log(str(p), 'gannet gaba fit for acc', str(acc_act), provenance={'log': output, 'subj_info': subj_info})
         finally:
             df2h5(pd.DataFrame.from_dict({'gaba_fit_info': subj_info}), opts.info_fname, '/{subj}/{session}/mrs/gaba_fit_info'.format(**subj_info))
-
