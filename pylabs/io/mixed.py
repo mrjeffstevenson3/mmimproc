@@ -123,7 +123,7 @@ def conv_df2h5(df, h5_fname, append=True):
 def df2h5(df, h5_fname, key, append=False):
     h5_fname = Path(h5_fname)
     if not h5_fname.is_file():
-        raise ValueError(str(h5_fname)+' h5 file not found.')
+        print('new hdf file '+str(h5_fname)+' is being created since no existing file found.')
     with pd.HDFStore(str(h5_fname)) as storeh5:
             if append:
                 storeh5.append(key, df.applymap(str), format='t')
