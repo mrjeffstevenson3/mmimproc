@@ -12,7 +12,8 @@ pylabs.datadir.target = 'jaba'
 from pathlib import *
 from collections import defaultdict
 from pylabs.utils import removesuffix, getnetworkdataroot
-from pylabs.conversion.brain_convert import img_conv
+from pylabs.conversion.brain_convert import img_conv, genz_conv
+from pylabs.io.mixed import getTRfromh5
 
 fs = Path(getnetworkdataroot())
 project = 'genz'
@@ -25,7 +26,8 @@ class SubjIdPicks(object):
 
 class Opts(object):
     project = 'genz'
-    spm_thresh = 0.5
+    spm_thresh = 0.85
+    fsl_thresh = 0.3
     dwi_pass_qc = '_passqc'
     info_fname = fs / project / ('all_' + project + '_info.h5')
     dwi_fname_excep = ['_DWI64_3SH_B0_B800_B2000_TOPUP_TE101_1p8mm3_', '_DWI6_B0_TOPUP_TE101_1p8mm3_', '_DWI6_B0_TOPDN_TE101_1p8mm3_']
@@ -33,6 +35,11 @@ class Opts(object):
     gaba_dyn = 120
     gaba_ftempl = '{subj}_WIP_{side}GABAMM_TE{te}_{dyn}DYN_{wild}_raw_{type}.SDAT'
     vfa_fas = [4.0, 25.0]
+    spgr_tr = '21p0'
+    gaba_te = 80
+    gaba_dyn = 120
+    genz_conv = img_conv[project]
+
 
 opts = Opts()
 
@@ -94,10 +101,10 @@ b1map5_fnames = []
 
 
 def get_freesurf_names(subjids_picks):
-    b1_ftempl = removesuffix(str(img_conv[project]['_B1MAP-QUIET_FC_TR60-180_SP-100_']['fname_template']))
+    b1_ftempl = removesuffix(str(img_conv[project]['_B1MAP-QUIET_FC_']['fname_template']))
     fs_ftempl = removesuffix(str(img_conv[project]['_MEMP_IFS_0p5mm_TI1100_']['fname_template']))
     for subjid in subjids_picks.subjids:
-        b1map_fs_fnames.append(str(b1_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_B1MAP-QUIET_FC_TR60-180_SP-100_'])))
+        b1map_fs_fnames.append(str(b1_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_B1MAP-QUIET_FC_'])))
         freesurf_fnames.append(str(fs_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_MEMP_IFS_0p5mm_TI1100_'], dict3={'scan_info': 'ti1100_rms'})))
     return b1map_fs_fnames, freesurf_fnames
 
@@ -111,22 +118,6 @@ def get_dwi_names(subjids_picks):
             topdn_fnames.append(str(topdn_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_DWI_B0_TOPDN_'])))
             dwi_fnames.append(str(dwi_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_AX_MATCH_RIGHT_MEMP_VBM_TI1100_'])))
         return topup_fnames, topdn_fnames, dwi_fnames
-    except TypeError, e:
-            print('subjids needs to a dictionary.')
-
-
-def get_5spgr_names(subjids_picks):
-    try:
-        b1_ftempl = removesuffix(str(img_conv[project]['_B1MAP_']['fname_template']))
-        spgr_ftempl = removesuffix(str(img_conv[project]['_T1_MAP_']['fname_template']))
-        for subjid in subjids_picks.subjids:
-            b1map5_fnames.append(str(b1_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_B1MAP_'])))
-            fa_list_fnames = defaultdict()
-            for fa in spgr_fa:
-                fa_list_fnames['fa_%(fa)s' % {'fa': fa}] = str(spgr_ftempl).format(**merge_ftempl_dicts(
-                    dict1=subjid, dict2=img_conv[project]['_T1_MAP_'], dict3={'fa': fa, 'tr': spgr_tr,}))
-                exec('spgr5_fa%(fa)s_fnames.append(fa_list_fnames[\'fa_%(fa)s\'])' % {'fa': fa})
-        return b1map5_fnames, spgr5_fa05_fnames, spgr5_fa10_fnames, spgr5_fa15_fnames, spgr5_fa20_fnames, spgr5_fa30_fnames
     except TypeError, e:
             print('subjids needs to a dictionary.')
 
@@ -146,9 +137,13 @@ def get_gaba_names(subjids_picks):
             raise ValueError('source_sparsdat directory for mrs SDAT not set properly in subjids_picks.source_path. Currently ' + str(source_path))
         # make dict to update
         mrs_dd = {'type': 'act', 'wild': '*', 'te': gaba_te, 'dyn': gaba_dyn, 'side': 'ACC'}
-        acc_act.append(list(source_path.glob(gaba_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=mrs_dd))))[0])
-        mrs_dd.update({'type': 'ref'})
-        acc_ref.append(list(source_path.glob(gaba_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=mrs_dd))))[0])
+        if is_empty(list(source_path.glob(gaba_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=mrs_dd))))):
+            print('cannot find .SPAR file matching '+gaba_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=mrs_dd)))
+            continue
+        else:
+            acc_act.append(list(source_path.glob(gaba_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=mrs_dd))))[0])
+            mrs_dd.update({'type': 'ref'})
+            acc_ref.append(list(source_path.glob(gaba_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=mrs_dd))))[0])
     return acc_act, acc_ref
 
 def get_matching_voi_names(subjids_picks):
@@ -158,3 +153,17 @@ def get_matching_voi_names(subjids_picks):
         source_path = Path(str(subjids_picks.source_path).format(**subjid)).parent / 'mrs'
         acc_matching.append(source_path / str(acc_match_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_AX_MATCH_ACC_'])))
     return acc_matching
+
+def get_vfa_names(subjids_picks):
+    qt1_picks = []
+    b1_ftempl = str(removesuffix(str(genz_conv['_B1MAP-QUIET_FC_']['fname_template'])))
+    vfa_ftempl = str(removesuffix(str(genz_conv['_VFA_FA4-25_QUIET']['fname_template'])))
+    for subjid in subjids_picks.subjids:
+        subjid.update({'scan_name': genz_conv['_VFA_FA4-25_QUIET']['scan_name'], 'tr': '21p0'})
+        subjid['vfatr'] = getTRfromh5(opts.info_fname, subjid['subj'], subjid['session'], 'qt1', vfa_ftempl.format(**subjid))
+        subjid['vfa_fname'] = vfa_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=genz_conv['_VFA_FA4-25_QUIET']))
+        subjid['b1map_fname'] = b1_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=genz_conv['_B1MAP_']))
+        subjid['b1maptr'] = getTRfromh5(opts.info_fname, subjid['subj'], subjid['session'], 'fmap', b1_ftempl.format(**subjid))
+        subjid['vfa_fas'] = opts.vfa_fas
+        qt1_picks.append(subjid)
+    return qt1_picks

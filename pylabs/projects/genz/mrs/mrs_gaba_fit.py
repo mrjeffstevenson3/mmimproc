@@ -18,9 +18,9 @@ gannettpath = pylabs.utils.paths.getgannettpath()
 subjids_picks = SubjIdPicks()
 # list of subject ids to operate on
 
-picks = [{'subj': 'sub-genz905', 'session': 'ses-1', 'run': '1',},
-         {'subj': 'sub-genz903', 'session': 'ses-1', 'run': '1',},
-         {'subj': 'sub-genz941', 'session': 'ses-1', 'run': '1',},
+picks = [{'subj': 'sub-genz904', 'session': 'ses-1', 'run': '1',},
+         {'subj': 'sub-genz921', 'session': 'ses-1', 'run': '1',},
+         {'subj': 'sub-genz999', 'session': 'ses-1', 'run': '1',},
          #{'subj': 'sub-genz902', 'session': 'ses-2', 'run': '1',},
          ]
 
