@@ -21,7 +21,7 @@ subjids_picks = SubjIdPicks()
 picks = [{'subj': 'sub-genz905', 'session': 'ses-1', 'run': '1',},
          {'subj': 'sub-genz903', 'session': 'ses-1', 'run': '1',},
          {'subj': 'sub-genz941', 'session': 'ses-1', 'run': '1',},
-         #{'subj': 'sub-genz997', 'session': 'ses-2', 'run': '1',},
+         #{'subj': 'sub-genz902', 'session': 'ses-2', 'run': '1',},
          ]
 
 setattr(subjids_picks, 'subjids', picks)
@@ -31,8 +31,8 @@ setattr(subjids_picks, 'source_path', fs / project / '{subj}' / '{session}' / 's
 opts = Opts()
 
 acc_actfnames, acc_reffnames = get_gaba_names(subjids_picks)
-# i = 0   # for testing
-# acc_act, acc_ref = acc_actfnames[i], acc_reffnames[i]
+#i = 0   # for testing
+#acc_act, acc_ref = acc_actfnames[i], acc_reffnames[i]
 
 for acc_act, acc_ref in zip(acc_actfnames, acc_reffnames):
 
