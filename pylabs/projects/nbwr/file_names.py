@@ -27,7 +27,7 @@ class Opts(object):
     info_fname = fs / project / ('all_' + project + '_info.h5')
     # mrs defaults
     spm_thresh = 0.85
-    fast_thresh = 0.3
+    fast_thresh = 0.2
     gaba_te = 80
     gaba_dyn = 120
     gaba_ftempl = '{subj}_WIP_{side}GABAMM_TE{te}_{dyn}DYN_{wild}_raw_{type}.SDAT'
