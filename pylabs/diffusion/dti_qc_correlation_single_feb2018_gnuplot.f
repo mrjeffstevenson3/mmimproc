@@ -216,14 +216,24 @@ c	write(6,*)'bad slice ',plotbada(ii,3),plotbada(ii,1)
 	enddo  !increment over all bad slices and volumes
 	close(11)
 	close(13)
-	if(ibadvolume.gt.0)then
+	write(6,*)'ibadvolume ',ibadvolume
+	if(ibadvolume.gt.1)then
 	if(isort.eq.1)open(13,file ='plotbad1.txt')
-	write(13,*)'slice ',(ibadv(it,2)-1,it=1,ibadvolume)
+	write(13,*)'slice ',(ibadv(it,2)-1,it=1,ibadvolume-1)
 	do k=1,izsize-1
-	write(13,*)k,(plot(k,ibadv(it,2),isort),it=1,ibadvolume)
+	write(13,*)k,(plot(k,ibadv(it,2),isort),it=1,ibadvolume-1)
 	enddo  !k
 	close(13)
 	endif
+	if(ibadvolume.eq.1)then
+	if(isort.eq.1)open(13,file ='plotbad1.txt')
+	write(13,*)'slice ',(ibadv(it,2)-1,it=1,1)
+	do k=1,izsize-1
+	write(13,*)k,(plot(k,ibadv(it,2),isort),it=1,1)
+	enddo  !k
+	close(13)
+	endif
+
 
 
 	if(isort.eq.1)open(13,file = 'badvolumes1',form = 'unformatted')
@@ -251,6 +261,7 @@ c  now do the good volumes and plots
 c
 
 	igoodvolume = 1
+	write(6,*)'nvecs ',nvecs
 	do it=1,nvecs
 	iflag = 0  ! means no bad slices
 	iflag2 = 0  !means alphaindex gt threshold
@@ -259,7 +270,7 @@ c
 	enddo
 	if(iflag.eq.0)then  ! found a good volume
 	do k=1,izsize-1
-	if(alphasave(it,k).gt.2.0)iflag2 = 1
+	if(alphasave(it,k).gt.0.0)iflag2 = 1
 	enddo
 	if(iflag2.eq.1)then
 	igoodv(igoodvolume,1) = plotindex(it,isort)
@@ -267,17 +278,26 @@ c
 	write(21,*)it-1, '0'
 	igoodvolume = igoodvolume+1
 	endif   !found a good alphaindex
-	if(iflag2.eq.0)write(21,*)it-1,'0'
+	if(iflag2.eq.0)then
+	write(21,*)it-1,'0'
+c	igoodv(igoodvolume,1) = plotindex(it,isort)
+c	igoodv(igoodvolume,2) = it
+	endif
 	endif  !found a good volume
-	if(iflag.eq.1)write(21,*)it-1,'1'
+	if(iflag.eq.1)then
+	write(21,*)it-1,'1'
+c	igoodv(igoodvolume,1) = plotindex(it,isort)
+c	igoodv(igoodvolume,2) = it
+ 
+	endif
 	enddo
 
 	if(igoodvolumes.gt.0)then
 
 	if(isort.eq.1)open(13,file ='plotgood1.txt')
-	write(13,*)'slice ',(igoodv(it,2)-1,it=1,igoodvolume)
+	write(13,*)'slice ',(igoodv(it,2)-1,it=1,igoodvolume-1)
 	do k=1,izsize-1
-	write(13,*)k,(plot(k,igoodv(it,2),isort),it=1,igoodvolume)
+	write(13,*)k,(plot(k,igoodv(it,2),isort),it=1,igoodvolume-1)
 	enddo  !k
 	close(13)
 	endif

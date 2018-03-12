@@ -1,5 +1,5 @@
-#rm gnuplot_for_dtiqc_bad.txt
-#rm gnuplot_for_dtiqc_good.txt
+rm gnuplot_for_dtiqc_bad.txt
+rm gnuplot_for_dtiqc_good.txt
 #echo "#!/usr/bin/gnuplot" >> gnuplot_for_dtiqc_bad.txt
 #echo "#!/usr/bin/gnuplot" >> gnuplot_for_dtiqc_good.txt
 #echo "reset" >> gnuplot_for_dtiqc_bad.txt
@@ -31,7 +31,7 @@ echo "set timestamp" >> gnuplot_for_dtiqc_good.txt
 numbad=`cat dimensionsbad1.txt | awk '{ print $4 }'`
 numgood=`cat dimensionsgood1.txt | awk '{ print $4 }'`
 echo $numbad $numgood
-numb=${numbad}+1
+numb=${numbad}+2
 numg=${numgood}+1
 
 echo "plot for [n=2:${numb}] './plotbad1.txt' u 1:(column(n)) w lines lw 4" >> gnuplot_for_dtiqc_bad.txt
