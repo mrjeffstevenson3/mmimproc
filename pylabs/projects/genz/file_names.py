@@ -27,7 +27,7 @@ class SubjIdPicks(object):
 class Opts(object):
     project = 'genz'
     spm_thresh = 0.85
-    fsl_thresh = 0.3
+    fsl_thresh = 0.23
     dwi_pass_qc = '_passqc'
     info_fname = fs / project / ('all_' + project + '_info.h5')
     dwi_fname_excep = ['_DWI64_3SH_B0_B800_B2000_TOPUP_TE101_1p8mm3_', '_DWI6_B0_TOPUP_TE101_1p8mm3_', '_DWI6_B0_TOPDN_TE101_1p8mm3_']

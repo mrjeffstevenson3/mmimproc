@@ -67,6 +67,8 @@ def dwi_qc_1bv(dwi_data, output_pname, alpha=3.0):
         num_goodvols = dwi_data.shape[3] - num_badvols
         print('found '+str(num_badvols)+' out of '+str(dwi_data.shape[3])+' for '+str(output_pname.name).split('_')[-1])
         # add set commands for subj ids
+        if num_badvols == 0 and Path('plotbad1.txt').isfile():
+            Path('plotbad1.txt').unlink()
         if Path('gnuplot_for_dtiqc_bad.txt').is_file():
             Path('gnuplot_for_dtiqc_bad.txt').unlink()
         if Path('gnuplot_for_dtiqc_good.txt').is_file():

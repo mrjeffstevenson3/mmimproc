@@ -28,7 +28,6 @@ picks = [{'subj': 'sub-genz941', 'session': 'ses-1', 'run': '1',},
          {'subj': 'sub-genz904', 'session': 'ses-1', 'run': '1',},
          {'subj': 'sub-genz921', 'session': 'ses-1', 'run': '1',},
          {'subj': 'sub-genz999', 'session': 'ses-1', 'run': '1',},
-         {'subj': 'sub-genz902', 'session': 'ses-1', 'run': '1',},
          ]
 
 setattr(subjids_picks, 'subjids', picks)
