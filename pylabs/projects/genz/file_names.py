@@ -12,7 +12,7 @@ pylabs.datadir.target = 'jaba'
 from pathlib import *
 from collections import defaultdict
 from pylabs.utils import removesuffix, getnetworkdataroot
-from pylabs.conversion.brain_convert import img_conv, genz_conv
+from pylabs.conversion.brain_convert import img_conv, genz_conv, is_empty
 from pylabs.io.mixed import getTRfromh5
 
 fs = Path(getnetworkdataroot())

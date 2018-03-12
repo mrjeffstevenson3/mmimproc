@@ -88,9 +88,14 @@ def getgabavalue(fitpdf):
             for k,v in {'GABA+/Cr i.r.: ': '',}.iteritems():
                 line = line.replace(k,v)
             gabaovercr = float(line)
+        if 'FitErr (H/Cr)   : ' in line:
+            for k, v in {'FitErr (H/Cr)   : ': '', '%': '', }.iteritems():
+                line = line.replace(k, v)
+            fit_err = float(line.split(',')[0])
+            fit_perc = float(line.split(',')[1])
     if gaba_val == None:
         raise ValueError('could not find a gaba value in '+str(fitpdf))
-    return gaba_val, gabaovercr
+    return gaba_val, gabaovercr, fit_err, fit_perc
 
 def conv_df2h5(df, h5_fname, append=True):
     """

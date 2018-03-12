@@ -18,10 +18,17 @@ gannettpath = pylabs.utils.paths.getgannettpath()
 subjids_picks = SubjIdPicks()
 # list of subject ids to operate on
 
-picks = [{'subj': 'sub-genz904', 'session': 'ses-1', 'run': '1',},
+picks = [{'subj': 'sub-genz941', 'session': 'ses-1', 'run': '1',},
+         {'subj': 'sub-genz931', 'session': 'ses-1', 'run': '1',},
+         {'subj': 'sub-genz923', 'session': 'ses-1', 'run': '1',},
+         {'subj': 'sub-genz905', 'session': 'ses-1', 'run': '1',},
+         {'subj': 'sub-genz903', 'session': 'ses-1', 'run': '1',},
+         {'subj': 'sub-genz902', 'session': 'ses-1', 'run': '1',},
+         {'subj': 'sub-genz901', 'session': 'ses-1', 'run': '1',},
+         {'subj': 'sub-genz904', 'session': 'ses-1', 'run': '1',},
          {'subj': 'sub-genz921', 'session': 'ses-1', 'run': '1',},
          {'subj': 'sub-genz999', 'session': 'ses-1', 'run': '1',},
-         #{'subj': 'sub-genz902', 'session': 'ses-2', 'run': '1',},
+         {'subj': 'sub-genz902', 'session': 'ses-1', 'run': '1',},
          ]
 
 setattr(subjids_picks, 'subjids', picks)
@@ -75,7 +82,7 @@ for acc_act, acc_ref in zip(acc_actfnames, acc_reffnames):
                             f.rename(appendposix(f, '_fit'))
                             if '_ACC' in str(f.stem):
                                 print (appendposix(f, '_fit'), appendposix(f, '_fit').is_file())
-                                subj_info['acc-gaba'], subj_info['acc-gabaovercr'] = getgabavalue(appendposix(f, '_fit'))
+                                subj_info['acc-gaba'], subj_info['acc-gabaovercr'], subj_info['acc-fit-err'], subj_info['acc-perc-fit-err'] = getgabavalue(appendposix(f, '_fit'))
                                 subj_info['gaba-fit-datetime'] = '{:%Y%m%d%H%M}'.format(datetime.datetime.now())
                                 output += ('ACC gaba results for {subj} in {session} is {acc-gaba}'.format(**subj_info),)
                                 output += ('ACC gaba over Creatinine results for {subj} in {session} is {acc-gabaovercr}'.format(**subj_info),)
@@ -84,6 +91,7 @@ for acc_act, acc_ref in zip(acc_actfnames, acc_reffnames):
             print("({})".format(", ".join(output)))
             print('GABA fits completed normally for {subj} in {session}'.format(**subj_info))
             print ('ACC gaba = {acc-gaba}, and gaba over creatinine = {acc-gabaovercr}'.format(**subj_info))
+            print ('ACC fit error = {acc-fit-err}'.format(**subj_info))
             print('')
             with open(str(results_dir/'mrs_gaba_log{:%Y%m%d%H%M}.json'.format(datetime.datetime.now())), mode='a') as logr:
                 json.dump(output, logr, indent=2)
