@@ -292,8 +292,9 @@ c	igoodv(igoodvolume,2) = it
 	endif
 	enddo
 
-	if(igoodvolumes.gt.0)then
-
+	if(igoodvolume.gt.0)then
+	write(6,*)'igood ',(igoodv(it,2)-1,it=1,igoodvolume-1)
+c	pause
 	if(isort.eq.1)open(13,file ='plotgood1.txt')
 	write(13,*)'slice ',(igoodv(it,2)-1,it=1,igoodvolume-1)
 	do k=1,izsize-1
