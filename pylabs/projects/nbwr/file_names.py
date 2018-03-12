@@ -12,7 +12,7 @@ pylabs.datadir.target = 'jaba'
 from pathlib import *
 from collections import defaultdict
 from pylabs.utils import removesuffix, getnetworkdataroot
-from pylabs.conversion.brain_convert import nbwr_conv
+from pylabs.conversion.brain_convert import nbwr_conv, img_conv
 
 class SubjIdPicks(object):
     pass
@@ -20,9 +20,28 @@ class SubjIdPicks(object):
 fs = Path(getnetworkdataroot())
 
 project = 'nbwr'
+
+class Opts(object):
+    project = 'nbwr'
+    nbwr_conv = img_conv[project]
+    info_fname = fs / project / ('all_' + project + '_info.h5')
+    # mrs defaults
+    spm_thresh = 0.85
+    fast_thresh = 0.3
+    gaba_te = 80
+    gaba_dyn = 120
+    gaba_ftempl = '{subj}_WIP_{side}GABAMM_TE{te}_{dyn}DYN_{wild}_raw_{type}.SDAT'
+    # dwi defaults
+    dwi_pass_qc = '_passqc'
+    dwi_fname_excep = []
+    # qt1 defaults
+    spgr_tr = '12p0'
+    spgr_fas = ['05', '10', '15', '20', '30']
+
+
 # known from protocol
 spgr_tr = '12p0'
-spgr_fa = ['05', '10', '15', '20', '30']
+spgr_fas = ['05', '10', '15', '20', '30']
 gaba_te = 80
 gaba_dyn = 120
 
@@ -137,7 +156,7 @@ def get_5spgr_names(subjids_picks):
         b1map_fname_dd['subj'], b1map_fname_dd['session'], b1map_fname_dd['scan_name'], b1map_fname_dd['scan_info'], b1map_fname_dd['run'] = ('sub-' + project + subjid,) + b1map_fname_tail
         b1map5_fnames.append(str(b1_ftempl).format(**b1map_fname_dd))
         fa_list_fnames = defaultdict()
-        for fa in spgr_fa:
+        for fa in spgr_fas:
             fad = {'fa': fa, 'tr': spgr_tr}
             spgr_fname_dd['subj'], spgr_fname_dd['session'], spgr_fname_dd['scan_name'], spgr_fname_dd['fa'], spgr_fname_dd['tr'],\
             spgr_fname_dd['run'] = ('sub-' + project + subjid,) + spgr5_fname_tail

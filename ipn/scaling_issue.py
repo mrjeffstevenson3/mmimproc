@@ -5,7 +5,7 @@
 
 
 get_ipython().magic(u'matplotlib inline')
-
+# to be run on jeff's laptop
 import pylabs
 pylabs.datadir.target = 'jaba'
 from pathlib import *
@@ -21,14 +21,14 @@ from pylabs.utils import getnetworkdataroot
 fs = Path(getnetworkdataroot())
 
 
-# In[2]:
+# In[3]:
 
 
 os.chdir(str(fs.parent/'scaling_issue'))
 os.listdir(os.getcwd())
 
 
-# In[3]:
+# In[5]:
 
 
 nbwr144_mpr_rms = nib.load('sub-nbwr144_ses-1_fsmempr_ti1100_rms_1.nii').get_data()
@@ -38,28 +38,35 @@ nbwr144_fa30 = nib.load('sub-nbwr144_ses-1_spgr_fa-30-tr-12p0_1.nii').get_data()
 acdc103_mpr_rms = nib.load('sub-acdc103_ses-1_fsmempr_ti1400_rms_1.nii').get_data()
 acdc103_dwi = nib.load('sub-acdc103_ses-1_dwi-topup_64dir-3sh-800-2000_1.nii').get_data()
 acdc103_vfa = nib.load('sub-acdc103_ses-1_vfa_fa-4-25-tr-21p0_1.nii').get_data()
-
-
-# In[4]:
-
-
-sns.distplot(nbwr144_fa05[:,107,128], bins=256, rug=True, hist_kws={'range': (1, 40000)},            kde_kws={'clip': (1, 40000)})
-
-
-# In[5]:
-
-
-sns.distplot(nbwr144_fa30[:,107,128], bins=256, rug=True, hist_kws={'range': (1, 40000)},            kde_kws={'clip': (1, 40000)})
+acdc112_vfa = nib.load('sub-acdc112_ses-1_vfa_fa-4-25-tr-21p0_1.nii').get_data()
 
 
 # In[6]:
 
 
-sns.distplot(acdc103_vfa[:, 183, 193, 0], bins=256, rug=True, hist_kws={'range': (1, 40000)},            kde_kws={'clip': (1, 40000)})
+sns.distplot(nbwr144_fa05[:,107,128], bins=256, rug=True, hist_kws={'range': (1, 40000)},            kde_kws={'clip': (1, 40000)})
 
 
 # In[7]:
 
 
+sns.distplot(nbwr144_fa30[:,107,128], bins=256, rug=True, hist_kws={'range': (1, 40000)},            kde_kws={'clip': (1, 40000)})
+
+
+# In[8]:
+
+
+sns.distplot(acdc103_vfa[:, 183, 193, 0], bins=256, rug=True, hist_kws={'range': (1, 40000)},            kde_kws={'clip': (1, 40000)})
+
+
+# In[9]:
+
+
 sns.distplot(acdc103_vfa[:, 183, 193, 3], bins=256, rug=True, hist_kws={'range': (1, 40000)},            kde_kws={'clip': (1, 40000)})
+
+
+# In[10]:
+
+
+sns.distplot(acdc112_vfa[:, 183, 193, 3], bins=256, rug=True, hist_kws={'range': (1, 40000)},            kde_kws={'clip': (1, 40000)})
 

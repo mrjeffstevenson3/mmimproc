@@ -11,6 +11,17 @@ flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo')
 applyxfm = fsl.ApplyXFM()
 fs = getnetworkdataroot()
 
+gnuplot_cmds_part2 = ('set xlabel \'Slice number\' font \"Helvetica,24\" \n'
+                    'set xtics font \"Helvetica,18\" \n'
+                    'set ytics font \"Helvetica,18\" \n'
+                    'set border lw 4\n'
+                    'set ylabel \'DTI intensity\' font \"Helvetica,16\"\n'
+                    'set xrange [0:90]\n'
+                    'set pointsize 3.0\n'
+                    'set key top right\n'
+                    'set key autotitle columnheader\n'
+                    'set timestamp\n')
+
 def dti_motion_qc(project, subjects, alpha=3.0):
     origdir = os.getcwd()
     diffdir = join(getpylabspath(), 'pylabs', 'diffusion')
@@ -54,7 +65,10 @@ def dwi_qc_1bv(dwi_data, output_pname, alpha=3.0):
         except KeyError:
             num_badvols = 0
         num_goodvols = dwi_data.shape[3] - num_badvols
+        print('found '+str(num_badvols)+' out of '+str(dwi_data.shape[3])+' for '+str(output_pname.name).split('_')[-1])
         # add set commands for subj ids
+        if num_badvols == 0 and Path('plotbad1.txt').isfile():
+            Path('plotbad1.txt').unlink()
         if Path('gnuplot_for_dtiqc_bad.txt').is_file():
             Path('gnuplot_for_dtiqc_bad.txt').unlink()
         if Path('gnuplot_for_dtiqc_good.txt').is_file():
@@ -64,12 +78,24 @@ def dwi_qc_1bv(dwi_data, output_pname, alpha=3.0):
             bad_qc.write('reset\n')
             bad_qc.write('set title \''+ output_pname.parts[-5] + ' ' + output_pname.parts[-4] +
                          ' DTI QC shows '+str(num_badvols)+' BAD vols for '+str(output_pname.name).split('_')[-1]+'\' font \"Helvetica,24\"\n')
+            bad_qc.write(gnuplot_cmds_part2)
+            bad_qc.write('plot for [n=2:'+str(num_badvols)+'] \'./plotbad1.txt\' u 1:(column(n)) w lines lw 4\n'
+                         'set terminal png size 1200, 800 font 12\n'
+                         'set output \'gnuplot_for_dtiqc_bad.png\'\n'
+                         'replot')
+
         with open('gnuplot_for_dtiqc_good.txt', mode='a') as good_qc:
             good_qc.write('#!/usr/bin/gnuplot\n')
             good_qc.write('reset\n')
             good_qc.write('set title \'' + output_pname.parts[-5] + ' ' + output_pname.parts[-4] + ' DTI QC shows '+str(num_goodvols)+' GOOD vols for '+str(output_pname.name).split('_')[-1]+'\' font \"Helvetica,24\"\n')
-        results += run_subprocess(['bash '+str(plot_vols)])
+            good_qc.write(gnuplot_cmds_part2)
+            good_qc.write('plot for [n=2:' + str(num_goodvols) + '] \'./plotgood1.txt\' u 1:(column(n)) w lines lw 4\n'
+                          'set terminal png size 1200, 800 font 12\n'
+                          'set output \'gnuplot_for_dtiqc_good.png\'\n'
+                          'replot')
 
+        results += run_subprocess(['gnuplot gnuplot_for_dtiqc_bad.txt'])
+        results += run_subprocess(['gnuplot gnuplot_for_dtiqc_good.txt'])
         try:
             Path('gnuplot_for_dtiqc_good.png').rename(appendposix(output_pname, '_good_plot.png'))
             Path('gnuplot_for_dtiqc_bad.png').rename(appendposix(output_pname, '_bad_plot.png'))

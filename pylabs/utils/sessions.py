@@ -21,6 +21,8 @@ def make_sessions_fm_dict(niidict, project, subject):
         scans.append(pd.DataFrame.from_dict(s, orient='index'))
 
     sessionsDF = pd.concat(scans, keys=sessions)
+    sessionsDF.index.rename('modality', level=0, inplace=True)
+    sessionsDF.index.rename('scan_name', level=1, inplace=True)
     remain_cols = [x for x in sessionsDF.columns.values if x not in col_order]
     subsessionsDF = sessionsDF[col_order+remain_cols].reset_index(drop=True)
 

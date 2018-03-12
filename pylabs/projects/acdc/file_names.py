@@ -11,8 +11,11 @@ import pylabs
 from pathlib import *
 import pandas as pd
 from collections import defaultdict
+from pylabs.io.mixed import getTRfromh5
 from pylabs.utils import removesuffix, getnetworkdataroot
 from pylabs.conversion.brain_convert import acdc_conv
+
+fs = Path(getnetworkdataroot())
 
 project = 'acdc'
 
@@ -20,36 +23,33 @@ project = 'acdc'
 class SubjIdPicks(object):
     pass
 
-class QC_str(object):
-    pass_qc = '_passqc'
+class Opts(object):
+    project = 'acdc'
+    spm_thresh = 0.5
+    dwi_pass_qc = '_passqc'
+    info_fname = fs / project / ('all_' + project + '_info.h5')
+    dwi_fname_excep = ['_DWI64_3SH_B0_B800_B2000_TOPUP_TE101_1p8mm3_', '_DWI6_B0_TOPUP_TE101_1p8mm3_', '_DWI6_B0_TOPDN_TE101_1p8mm3_']
+    gaba_te = 80
+    gaba_dyn = 120
+    gaba_ftempl = '{subj}_WIP_{side}GABAMM_TE{te}_{dyn}DYN_{wild}_raw_{type}.SDAT'
+    vfa_fas = [4.0, 25.0]
 
-fs = Path(getnetworkdataroot())
-
-info_fname = fs/project/('all_'+project+'_info.h5')
-
-# def test_info_file(subjids_picks):
-#     if not info_fname.is_file():
-#         raise ValueError('hdf info file '+ info_fname + ' not found.')
-#     with pd.HDFStore(str(info_fname)) as storeh5:
-#         for subj in subjids_picks:
-
-
+opts = Opts()
 
 
 # known or expected from acdc protocol. should get now from info file
 # protocol name exceptions
-dwi_fname_excep = ['_DWI64_3SH_B0_B800_B2000_TOPUP_TE101_1p8mm3_', '_DWI6_B0_TOPUP_TE101_1p8mm3_', '_DWI6_B0_TOPDN_TE101_1p8mm3_']
+
 spgr_tr = '12p0'
 spgr_fa = ['05', '15', '30']
-gaba_te = 80
-gaba_dyn = 120
+
 
 # for partial substitutions
 fname_templ_dd = {'subj': '{subj}', 'session': '{session}', 'scan_name': '{scan_name}', 'scan_info': '{scan_info}',
                   'run': '{run}', 'fa': '{fa}', 'tr': '{tr}', 'side': '{side}', 'te': '{te}', 'dyn': '{dyn}',
                   'wild': '{wild}', 'type': '{type}'}
 
-gaba_ftempl = '{subj}_WIP_{side}GABAMM_TE{te}_{dyn}DYN_{wild}_raw_{type}.SDAT'
+
 
 def set_fname_templ_dd(dd, d):
     for k in d.keys():
@@ -92,14 +92,16 @@ def get_freesurf_names(subjids_picks):
     return b1map_fs_fnames, freesurf_fnames
 
 def get_dwi_names(subjids_picks):
+    dwi_picks = []
     topup_ftempl = removesuffix(str(acdc_conv['_DWI6_B0_TOPUP_TE97_1p8mm3_']['fname_template']))
     topdn_ftempl = removesuffix(str(acdc_conv['_DWI6_B0_TOPDN_TE97_1p8mm3_']['fname_template']))
     dwi_ftempl = removesuffix(str(acdc_conv['_DWI64_3SH_B0_B800_B2000_TOPUP_TE97_1p8mm3_']['fname_template']))
     for subjid in subjids_picks.subjids:
-        topup_fnames.append(str(topup_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=acdc_conv['_DWI6_B0_TOPUP_TE97_1p8mm3_'])))
-        topdn_fnames.append(str(topdn_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=acdc_conv['_DWI6_B0_TOPDN_TE97_1p8mm3_'])))
-        dwi_fnames.append(str(dwi_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=acdc_conv['_DWI64_3SH_B0_B800_B2000_TOPUP_TE97_1p8mm3_'])))
-    return topup_fnames, topdn_fnames, dwi_fnames
+        subjid['topup_fname'] = str(topup_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=acdc_conv['_DWI6_B0_TOPUP_TE97_1p8mm3_']))
+        subjid['topdn_fname'] = str(topdn_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=acdc_conv['_DWI6_B0_TOPDN_TE97_1p8mm3_']))
+        subjid['dwi_fname'] = str(dwi_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=acdc_conv['_DWI64_3SH_B0_B800_B2000_TOPUP_TE97_1p8mm3_']))
+        dwi_picks.append(subjid)
+    return dwi_picks
 
 def get_3spgr_names(subjids_picks):
     b1_ftempl = removesuffix(str(acdc_conv['_B1MAP-QUIET_']['fname_template']))
@@ -117,22 +119,17 @@ def get_3spgr_names(subjids_picks):
     return b1map_fnames, spgr_fa5_fnames, spgr_fa15_fnames, spgr_fa30_fnames
 
 def get_vfa_names(subjids_picks):
-    b1_ftempl = removesuffix(str(acdc_conv['_B1MAP-QUIET_']['fname_template']))
-    spgr_ftempl = removesuffix(str(acdc_conv['_VFA_']['fname_template']))
-
-
+    qt1_picks = []
+    b1_ftempl = str(removesuffix(str(acdc_conv['_B1MAP-QUIET_']['fname_template'])))
+    vfa_ftempl = str(removesuffix(str(acdc_conv['_VFA_FA4-25_']['fname_template'])))
     for subjid in subjids_picks.subjids:
-        subjid.update({'tr': spgr_tr,})
-        b1map_fnames.append(str(b1_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=acdc_conv['_B1MAP_'])))
-        fa_list_fnames = defaultdict()
-        for fa in spgr_fa:
-            fad = {'fa': fa, }
-            fa_list_fnames['fa_%(fa)s' % fad] = str(spgr_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=acdc_conv['_T1_MAP_'], dict3=fad))
-        spgr_fa5_fnames.append(fa_list_fnames['fa_05'])
-        spgr_fa15_fnames.append(fa_list_fnames['fa_15'])
-        spgr_fa30_fnames.append(fa_list_fnames['fa_30'])
-    return b1map_fnames, spgr_fa5_fnames, spgr_fa15_fnames, spgr_fa30_fnames
-
+        subjid.update({'scan_name': acdc_conv['_VFA_FA4-25_']['scan_name'], 'tr': '21p0'})
+        subjid['vfatr'] = getTRfromh5(str(fs/project/'all_acdc_info.h5'), subjid['subj'], subjid['session'], 'qt1', vfa_ftempl.format(**subjid))
+        subjid['vfa_fname'] = vfa_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=acdc_conv['_VFA_FA4-25_']))
+        subjid['b1map_fname'] = b1_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=acdc_conv['_B1MAP_']))
+        subjid['b1maptr'] = getTRfromh5(str(fs / project / 'all_acdc_info.h5'), subjid['subj'], subjid['session'], 'fmap', b1_ftempl.format(**subjid))
+        qt1_picks.append(subjid)
+    return qt1_picks
 
 
 def get_3dt2_names(subjids_picks):

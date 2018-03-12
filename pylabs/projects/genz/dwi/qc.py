@@ -12,7 +12,7 @@ from pylabs.io.images import savenii
 
 from pylabs.utils import *
 # project and subjects and files to run on
-from pylabs.projects.acdc.file_names import project, SubjIdPicks, get_dwi_names, Opts
+from pylabs.projects.genz.file_names import project, SubjIdPicks, get_dwi_names, Opts
 from pylabs.diffusion.dti_qc import dwi_qc_1bv
 #set up provenance
 prov = ProvenanceWrapper()
@@ -28,9 +28,10 @@ qc_str = opts.dwi_pass_qc
 subjids_picks = SubjIdPicks()
 # list of dicts of subject ids and info to operate on
 picks = [
-         {'subj': 'sub-acdc117', 'session': 'ses-1', 'run': '1',  # subject selection info
+         {'subj': 'sub-genz112', 'session': 'ses-1', 'run': '1',  # subject selection info
           'dwi_badvols': np.array([]), 'topup_badvols': np.array([]), 'topdn_badvols': np.array([]),  # remove bad vols identified in qc
           },
+        {'subj': 'sub-genz104', 'session': 'ses-1', 'run': '1',},
          ]
 
 setattr(subjids_picks, 'subjids', picks)
@@ -39,16 +40,16 @@ setattr(subjids_picks, 'subjids', picks)
 dwi_picks = get_dwi_names(subjids_picks)
 
 # for testing
-i = 0
-topup, topdn, dwif = topup_fnames[i], topdn_fnames[i], dwi_fnames[i]
+#i = 0
+#topup, topdn, dwif = topup_fnames[i], topdn_fnames[i], dwi_fnames[i]
 
 for i, pick in enumerate(dwi_picks):
     # read in data and prep results df
     subject = pick['subj']
     session = pick['session']
-    dwif = pick['dwi_fname']
+    dwif = picks['dwi_fname']
     topup = pick['topup_fname']
-    topdn = pick['topdn_fname']
+
     dwipath = fs / project / subject / session / 'dwi'
     orig_dwi_fname = dwipath / str(dwif + '.nii')
     orig_dwi_bvals_fname = dwipath / str(dwif + '.bvals')
@@ -95,7 +96,7 @@ for i, pick in enumerate(dwi_picks):
         ixb = np.isin(gtab.bvals, b)
         select_vols = orig_dwi_data[:,:,:,np.where(ixb)[0]]
         output = dwipath / 'qc' / (subject+'_'+session+'_dwiqc_b' + str(int(b)))
-        dwi_badvols = dwi_qc_1bv(select_vols, output)
+        dwi_badvols = dwi_qc_1bv(select_vols, affine, output)
         qc_DF.loc[ixb, 'dwi_qc'] = dwi_badvols[1].values
         try:
             jpg_out.rename(appendposix(output, '.jpg'))

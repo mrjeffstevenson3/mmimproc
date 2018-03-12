@@ -81,12 +81,21 @@ def getgabavalue(fitpdf):
     pdf_text = pdftotxt(str(fitpdf))
     for line in pdf_text.splitlines():
         if 'inst. units.' in line:
-            gaba_val = line.split()[4]
+            for k,v in {'GABA+/H2O  : ': '', ' inst. units.': '', 'GABA+/H 2 O  : ': '', }.iteritems():
+                line = line.replace(k,v)
+            gaba_val = float(line)
         if 'GABA+/Cr i.r.' in line:
-            gabaovercr = line.split()[2]
+            for k,v in {'GABA+/Cr i.r.: ': '',}.iteritems():
+                line = line.replace(k,v)
+            gabaovercr = float(line)
+        if 'FitErr (H/Cr)   : ' in line:
+            for k, v in {'FitErr (H/Cr)   : ': '', '%': '', }.iteritems():
+                line = line.replace(k, v)
+            fit_err = float(line.split(',')[0])
+            fit_perc = float(line.split(',')[1])
     if gaba_val == None:
         raise ValueError('could not find a gaba value in '+str(fitpdf))
-    return float(gaba_val), float(gabaovercr)
+    return gaba_val, gabaovercr, fit_err, fit_perc
 
 def conv_df2h5(df, h5_fname, append=True):
     """
@@ -115,6 +124,35 @@ def conv_df2h5(df, h5_fname, append=True):
                 else:
                     storeh5.put(subj + '/' + ses + '/convert_info', df.loc[subj,ses].applymap(str), format='t')
     return
+
+def df2h5(df, h5_fname, key, append=False):
+    h5_fname = Path(h5_fname)
+    if not h5_fname.is_file():
+        print('new hdf file '+str(h5_fname)+' is being created since no existing file found.')
+    with pd.HDFStore(str(h5_fname)) as storeh5:
+            if append:
+                storeh5.append(key, df.applymap(str), format='t')
+            else:
+                storeh5.put(key, df.applymap(str), format='t')
+    return
+
+def h52df(h5_fname, key):
+    h5_fname = Path(h5_fname)
+    if not h5_fname.is_file():
+        raise ValueError(str(h5_fname)+' h5 file not found.')
+    with pd.HDFStore(str(h5_fname)) as storeh5:
+        df = storeh5.select(key)
+    return df
+
+def getTRfromh5(h5_fname, subject, session, modality, scan):
+    h5_fname = Path(h5_fname)
+    if not h5_fname.is_file():
+        raise ValueError(str(h5_fname)+' h5 file not found.')
+    with pd.HDFStore(str(h5_fname)) as storeh5:
+        df = storeh5.select('/'+'/'.join([subject, session, 'convert_info']))
+        tr = df.loc[[modality, scan], 'tr']
+    return np.fromstring(tr.values[0].translate(None, '[]'), sep=' ')
+
 
 def gen_df_extract(key, var):
     if hasattr(var,'iteritems'):

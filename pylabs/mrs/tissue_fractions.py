@@ -32,7 +32,7 @@ def make_voi_mask(spar_fname, matching_image_fname, out_voi_mask_fname):
 
 def calc_tissue_fractions(voi_mask_fname, gm_seg_fname, wm_seg_fname, csf_seg_fname, region, method='SPM', thresh=0.0):
     subj = voi_mask_fname.parts[-4]
-    mask_img_data = nib.load(str(voi_mask_fname)).get_data()
+    mask_img_data = nib.load(str(voi_mask_fname)).get_data().astype(int)
     gm_seg_data = nib.load(str(gm_seg_fname)).get_data()
     gm_seg_data = np.where(gm_seg_data > thresh, gm_seg_data, 0)
     gm_voi = gm_seg_data * mask_img_data
