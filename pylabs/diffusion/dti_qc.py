@@ -58,6 +58,10 @@ def dwi_qc_1bv(dwi_data, output_pname, alpha=3.0):
         # make alpha_level.txt parameter file
         with open('alphalevel.txt', 'w') as f:
             f.write(str(alpha) + '\n')
+        if Path('plotbad1.txt').is_file():
+            Path('plotbad1.txt').unlink()
+        if Path('plotgood1.txt').is_file():
+            Path('plotgood1.txt').unlink()
         results += run_subprocess([str(dwi_qc)])
         badvols = pd.read_csv('bad_vols_index.txt', header=None, delim_whitespace=True, index_col=0, dtype={1: 'int64'})
         try:
@@ -67,8 +71,6 @@ def dwi_qc_1bv(dwi_data, output_pname, alpha=3.0):
         num_goodvols = dwi_data.shape[3] - num_badvols
         print('found '+str(num_badvols)+' out of '+str(dwi_data.shape[3])+' for '+str(output_pname.name).split('_')[-1])
         # add set commands for subj ids
-        if num_badvols == 0 and Path('plotbad1.txt').isfile():
-            Path('plotbad1.txt').unlink()
         if Path('gnuplot_for_dtiqc_bad.txt').is_file():
             Path('gnuplot_for_dtiqc_bad.txt').unlink()
         if Path('gnuplot_for_dtiqc_good.txt').is_file():
