@@ -79,10 +79,17 @@ def dwi_qc_1bv(dwi_data, output_pname, alpha=3.0):
             bad_qc.write('set title \''+ output_pname.parts[-5] + ' ' + output_pname.parts[-4] +
                          ' DTI QC shows '+str(num_badvols)+' BAD vols for '+str(output_pname.name).split('_')[-1]+'\' font \"Helvetica,24\"\n')
             bad_qc.write(gnuplot_cmds_part2)
-            bad_qc.write('plot for [n=2:'+str(num_badvols)+'] \'./plotbad1.txt\' u 1:(column(n)) w lines lw 4\n'
-                         'set terminal png size 1200, 800 font 12\n'
-                         'set output \'gnuplot_for_dtiqc_bad.png\'\n'
-                         'replot')
+            if num_badvols <= 2:
+                bad_qc.write('plot for [n=2:2] \'./plotbad1.txt\' u 1:(column(n)) w lines lw 4\n'
+                             'set terminal png size 1200, 800 font 12\n'
+                             'set output \'gnuplot_for_dtiqc_bad.png\'\n'
+                             'replot\n')
+
+            else:
+                bad_qc.write('plot for [n=2:'+str(num_badvols)+'] \'./plotbad1.txt\' u 1:(column(n)) w lines lw 4\n'
+                             'set terminal png size 1200, 800 font 12\n'
+                             'set output \'gnuplot_for_dtiqc_bad.png\'\n'
+                             'replot\n')
 
         with open('gnuplot_for_dtiqc_good.txt', mode='a') as good_qc:
             good_qc.write('#!/usr/bin/gnuplot\n')
@@ -90,9 +97,9 @@ def dwi_qc_1bv(dwi_data, output_pname, alpha=3.0):
             good_qc.write('set title \'' + output_pname.parts[-5] + ' ' + output_pname.parts[-4] + ' DTI QC shows '+str(num_goodvols)+' GOOD vols for '+str(output_pname.name).split('_')[-1]+'\' font \"Helvetica,24\"\n')
             good_qc.write(gnuplot_cmds_part2)
             good_qc.write('plot for [n=2:' + str(num_goodvols) + '] \'./plotgood1.txt\' u 1:(column(n)) w lines lw 4\n'
-                          'set terminal png size 1200, 800 font 12\n'
-                          'set output \'gnuplot_for_dtiqc_good.png\'\n'
-                          'replot')
+                              'set terminal png size 1200, 800 font 12\n'
+                              'set output \'gnuplot_for_dtiqc_good.png\'\n'
+                              'replot\n')
 
         results += run_subprocess(['gnuplot gnuplot_for_dtiqc_bad.txt'])
         results += run_subprocess(['gnuplot gnuplot_for_dtiqc_good.txt'])

@@ -48,7 +48,7 @@ fast = fsl.FAST(
 fast.inputs.environ['FSLMULTIFILEQUIT'] = pylabs.opts.fslmultifilequit
 ext = pylabs.opts.nii_fext
 # results of segmentation
-only_spm = True
+only_spm = False
 # instantiate subject id list container
 subjids_picks = SubjIdPicks()
 # list of subject ids to operate on
@@ -164,9 +164,9 @@ for rt_matchfname, lt_matchfname, rt_actfname, lt_actfname in zip(rt_matchfnames
 
             # calculate left FSL tissue fractions
             lt_fsl_fractions = calc_tissue_fractions(replacesuffix(lt_match_pfname, '_mrs_roi_mask'+ext),
-                                                     str(replacesuffix(lt_match_brain, '_fslfast_seg_1'+ext)),
-                                                     str(replacesuffix(lt_match_brain, '_fslfast_seg_2'+ext)),
-                                                     str(replacesuffix(lt_match_brain, '_fslfast_seg_0'+ext)),
+                                                     str(replacesuffix(lt_match_brain, '_fslfast_pve_1'+ext)),
+                                                     str(replacesuffix(lt_match_brain, '_fslfast_pve_2'+ext)),
+                                                     str(replacesuffix(lt_match_brain, '_fslfast_pve_0'+ext)),
                                                      'left', method='FSL', thresh=opts.fast_thresh)
             # calculate left SPM tissue fractions
             lt_spm_fractions = calc_tissue_fractions(replacesuffix(lt_match_pfname, '_mrs_roi_mask'+ext),
@@ -177,7 +177,7 @@ for rt_matchfname, lt_matchfname, rt_actfname, lt_actfname in zip(rt_matchfnames
             # use merge df
             fractions = pd.DataFrame({'left_SPM': lt_spm_fractions, 'right_SPM': rt_spm_fractions, 'left_FSL': lt_fsl_fractions, 'right_FSL': rt_fsl_fractions})
             fractions.to_csv(str(mrs_dir / str(subject + '_sv_voi_tissue_proportions.csv')), sep=',', columns=['left_SPM', 'right_SPM', 'left_FSL', 'right_FSL'])
-            fractions.to_hdf(str(opts.info_fname), '/'+subject+'/'+session+'/mrs/CSF_correction_factors')
+            fractions.to_hdf(str(opts.info_fname), '/'+subject+'/'+session+'/mrs/CSF_correction_factors', append=False, format='t')
 
 
             # temp solution to get data out
@@ -186,7 +186,7 @@ for rt_matchfname, lt_matchfname, rt_actfname, lt_actfname in zip(rt_matchfnames
                     'right-percCSF': fractions.loc['frac_CSF', 'right_SPM']}
             csf_data = pd.Series(data, index=indx, name=data['subject'])
             csf_data.to_csv(str(mrs_dir / str(subject + '_csf_fractions.csv')))
-            fractions.to_hdf(str(opts.info_fname), subject/session/'mrs'/'CSF_correction_factors', append=True, format = 'table')
+#            fractions.to_hdf(str(opts.info_fname), subject/session/'mrs'/'CSF_correction_factors', append=True, format = 'table')
             prov.log(str(mrs_dir / str(subject + '_sv_voi_tissue_proportions.csv')),
                      'csv text file containing percent CSF, GM, WM', str(lt_match_brain),
                      provenance={'thresh': thresh, 'side': 'left', 'method': 'SPM', 'tissue': 'GM'}, script=__file__)
