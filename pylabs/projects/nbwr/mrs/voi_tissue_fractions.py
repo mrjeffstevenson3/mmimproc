@@ -11,6 +11,7 @@ from pathlib import *
 import pandas as pd
 import matlab.engine
 from nipype.interfaces import fsl
+from pylabs.io.mixed import df2h5
 from pylabs.mrs.tissue_fractions import make_voi_mask, calc_tissue_fractions
 from pylabs.structural.brain_extraction import extract_brain
 from pylabs.utils import ProvenanceWrapper, run_subprocess, WorkingContext, getnetworkdataroot, appendposix, replacesuffix, \
@@ -51,11 +52,12 @@ ext = pylabs.opts.nii_fext
 only_spm = False
 # instantiate subject id list container
 subjids_picks = SubjIdPicks()
-# list of subject ids to operate on
+# get full list of subject ids to operate on
 id_thresh = 500
 rawsubjects = list((fs/project).glob('sub-'+project+'*'))
 subjects = []
 picks = []
+#picks = ['301', '440', '442', '443', '448', '449', '451']
 for s in rawsubjects:
     if len(str(s.parts[-1])) == 11 and int(str(s.parts[-1]).replace('sub-'+project, '')) < id_thresh:
         subjects.append(s.parts[-1])
@@ -74,8 +76,8 @@ test_l = map(len, (rt_actfnames, lt_actfnames, rt_matchfnames, lt_matchfnames))
 if not all(test_l[0] == l for l in test_l):
     raise ValueError('lists lengths do not all match. cannot zip '+str(test_l))
 
-i = 0
-rt_matchfname, lt_matchfname, rt_actfname, lt_actfname = rt_matchfnames[0], lt_matchfnames[0], rt_actfnames[0], lt_actfnames[0]
+# i = 0
+# rt_matchfname, lt_matchfname, rt_actfname, lt_actfname = rt_matchfnames[0], lt_matchfnames[0], rt_actfnames[0], lt_actfnames[0]
 
 for rt_matchfname, lt_matchfname, rt_actfname, lt_actfname in zip(rt_matchfnames, lt_matchfnames, rt_actfnames, lt_actfnames):
     results = ()
@@ -92,6 +94,7 @@ for rt_matchfname, lt_matchfname, rt_actfname, lt_actfname in zip(rt_matchfnames
     # first do right side
     with WorkingContext(str(mrs_dir)):
         try:
+            print('Working on '+subject)
             # start with right side
             rt_match_pfname = mrs_dir / appendposix(rt_matchfname, ext)
             if pylabs.opts.overwrite: # and not only_spm:   ## or not Path(replacesuffix(rt_match_pfname, '_brain'+ext)).is_file():
@@ -177,8 +180,7 @@ for rt_matchfname, lt_matchfname, rt_actfname, lt_actfname in zip(rt_matchfnames
             # use merge df
             fractions = pd.DataFrame({'left_SPM': lt_spm_fractions, 'right_SPM': rt_spm_fractions, 'left_FSL': lt_fsl_fractions, 'right_FSL': rt_fsl_fractions})
             fractions.to_csv(str(mrs_dir / str(subject + '_sv_voi_tissue_proportions.csv')), sep=',', columns=['left_SPM', 'right_SPM', 'left_FSL', 'right_FSL'])
-            fractions.to_hdf(str(opts.info_fname), '/'+subject+'/'+session+'/mrs/CSF_correction_factors', append=False, format='t')
-
+            df2h5(fractions, opts.info_fname, '/'+subject+'/'+session+'/mrs/CSF_correction_factors')
 
             # temp solution to get data out
             indx = [subject, 'left-percCSF', 'right-percCSF', ]
@@ -186,7 +188,6 @@ for rt_matchfname, lt_matchfname, rt_actfname, lt_actfname in zip(rt_matchfnames
                     'right-percCSF': fractions.loc['frac_CSF', 'right_SPM']}
             csf_data = pd.Series(data, index=indx, name=data['subject'])
             csf_data.to_csv(str(mrs_dir / str(subject + '_csf_fractions.csv')))
-#            fractions.to_hdf(str(opts.info_fname), subject/session/'mrs'/'CSF_correction_factors', append=True, format = 'table')
             prov.log(str(mrs_dir / str(subject + '_sv_voi_tissue_proportions.csv')),
                      'csv text file containing percent CSF, GM, WM', str(lt_match_brain),
                      provenance={'thresh': thresh, 'side': 'left', 'method': 'SPM', 'tissue': 'GM'}, script=__file__)

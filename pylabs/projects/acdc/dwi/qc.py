@@ -39,11 +39,11 @@ setattr(subjids_picks, 'subjids', picks)
 dwi_picks = get_dwi_names(subjids_picks)
 
 # for testing
-i = 0
-pick = dwi_picks[i]
+# i = 0
+# pick = dwi_picks[i]
 #topup, topdn, dwif = topup_fnames[i], topdn_fnames[i], dwi_fnames[i]
 
-#for i, pick in enumerate(dwi_picks):
+for i, pick in enumerate(dwi_picks):
     # read in data and prep results df
     subject = pick['subj']
     session = pick['session']
@@ -90,19 +90,19 @@ pick = dwi_picks[i]
 
     qc_DF.loc[:topdn_badvols.shape[0]-1, 'topdn_qc'] = topdn_badvols[1].values
     qc_DF.loc[:topup_badvols.shape[0]-1, 'topup_qc'] = topup_badvols[1].values
-    for b in np.unique(gtab.bvals):
-        if b == 0:
-            continue
-        ixb = np.isin(gtab.bvals, b)
-        select_vols = orig_dwi_data[:,:,:,np.where(ixb)[0]]
-        output = dwipath / 'qc' / (subject+'_'+session+'_dwiqc_b' + str(int(b)))
-        dwi_badvols = dwi_qc_1bv(select_vols, output)
-        qc_DF.loc[ixb, 'dwi_qc'] = dwi_badvols[1].values
-        try:
-            jpg_out.rename(appendposix(output, '.jpg'))
-        except OSError:
-            print('dwi jpg file for b'+str(int(b))+' not found. moving on.')
-        report_out.rename(appendposix(output, '_report.txt'))
+    # for b in np.unique(gtab.bvals):
+    #     if b == 0:
+    #         continue
+    #     ixb = np.isin(gtab.bvals, b)
+    #     select_vols = orig_dwi_data[:,:,:,np.where(ixb)[0]]
+    #     output = dwipath / 'qc' / (subject+'_'+session+'_dwiqc_b' + str(int(b)))
+    #     dwi_badvols = dwi_qc_1bv(select_vols, output)
+    #     qc_DF.loc[ixb, 'dwi_qc'] = dwi_badvols[1].values
+    #     try:
+    #         jpg_out.rename(appendposix(output, '.jpg'))
+    #     except OSError:
+    #         print('dwi jpg file for b'+str(int(b))+' not found. moving on.')
+    #     report_out.rename(appendposix(output, '_report.txt'))
 
     # write to hdf info file
     #qc_DF.to_hdf(str(info_fname), subject+'/'+session+'/dwi_qc', mode='a', append=False, format='t')
