@@ -38,11 +38,11 @@ setattr(subjids_picks, 'subjids', picks)
 dwi_picks = get_dwi_names(subjids_picks)
 
 # for testing
-i = 0
-pick = dwi_picks[i]
+#i = 0
+#pick = dwi_picks[i]
 #topup, topdn, dwif = topup_fnames[i], topdn_fnames[i], dwi_fnames[i]
 
-#for i, pick in enumerate(dwi_picks):
+for i, pick in enumerate(dwi_picks):
     # read in data and prep results df
     subject = pick['subj']
     session = pick['session']
