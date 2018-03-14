@@ -39,11 +39,11 @@ setattr(subjids_picks, 'subjids', picks)
 dwi_picks = get_dwi_names(subjids_picks)
 
 # for testing
-# i = 0
-# pick = dwi_picks[i]
+i = 0
+pick = dwi_picks[i]
 #topup, topdn, dwif = topup_fnames[i], topdn_fnames[i], dwi_fnames[i]
 
-for i, pick in enumerate(dwi_picks):
+#for i, pick in enumerate(dwi_picks):
     # read in data and prep results df
     subject = pick['subj']
     session = pick['session']
@@ -68,28 +68,45 @@ for i, pick in enumerate(dwi_picks):
     qc_DF.loc[:orig_topup_data.shape[3], 'itopup'] = range(orig_topup_data.shape[3] + 1)
     qc_DF.loc[:orig_topup_data.shape[3]+1, 'alltopup_idx'] = range(orig_topup_data.shape[3] + 2)
 
+    b = 800.0
     output_pname = dwipath / 'qc' / '_'.join([subject, session, 'b800-qc'])
-    b800_dwi_data = orig_dwi_data[:, :, :, gtab.bvals == 800.0]
+    b800_dwi_data = orig_dwi_data[:, :, :, gtab.bvals == b]
     b800_badvols = dwi_qc_1bv(b800_dwi_data, output_pname)
+    for i in range(b800_badvols.shape[0]):
+        b800_badvols.loc[i, 'orig_dwi_idx'] = int(np.where(bvals == b)[0][i])
+    b800_badvols['orig_dwi_idx'] = b800_badvols['orig_dwi_idx'].astype('int')
+    b800_badvols.set_index('orig_dwi_idx', inplace=True)
+    for i in b800_badvols.iterrows():
+        qc_DF.loc[i[0], 'auto_dwi_qc'] = b800_badvols.loc[i[0], 1]
 
+    b = 2000.0
     output_pname = dwipath / 'qc' / '_'.join([subject, session, 'b2000-qc'])
-    b2000_dwi_data = orig_dwi_data[:, :, :, gtab.bvals == 2000.0]
+    b2000_dwi_data = orig_dwi_data[:, :, :, gtab.bvals == b]
     b2000_badvols = dwi_qc_1bv(b2000_dwi_data, output_pname)
+    for i in range(b2000_badvols.shape[0]):
+        b2000_badvols.loc[i, 'orig_dwi_idx'] = int(np.where(bvals == b)[0][i])
+    b2000_badvols['orig_dwi_idx'] = b2000_badvols['orig_dwi_idx'].astype('int')
+    b2000_badvols.set_index('orig_dwi_idx', inplace=True)
+    # append cmd
+    for i in b2000_badvols.iterrows():
+        qc_DF.loc[i[0], 'auto_dwi_qc'] = b2000_badvols.loc[i[0], 1]
 
     output_pname = dwipath / 'qc' / '_'.join([subject, session, 'topup8b0-qc'])
     all_topup_data = np.append(orig_dwi_data[:, :, :, 0, None], orig_topup_data, axis=3)
     topup_badvols = dwi_qc_1bv(all_topup_data, output_pname)
+    qc_DF.loc[:topup_badvols.shape[0] - 1, 'topup_qc'] = topup_badvols[1].values
     output_pname = dwipath / 'qc' / '_'.join([subject, session, 'topdn7b0-qc'])
     topdn_badvols = dwi_qc_1bv(orig_topdn_data, output_pname)
+    qc_DF.loc[:topdn_badvols.shape[0] - 1, 'topdn_qc'] = topdn_badvols[1].values
 
-    #fill in qc results into df
+    #fill in dwi b0 qc results into df
     if topup_badvols.iloc[0,0] == 1:
-        qc_DF.loc[0, 'dwi_qc'] = 1
+        qc_DF.loc[0, 'auto_dwi_qc'] = 1
     else:
-        qc_DF.loc[0, 'dwi_qc'] = 0
+        qc_DF.loc[0, 'auto_dwi_qc'] = 0
 
-    qc_DF.loc[:topdn_badvols.shape[0]-1, 'topdn_qc'] = topdn_badvols[1].values
-    qc_DF.loc[:topup_badvols.shape[0]-1, 'topup_qc'] = topup_badvols[1].values
+
+
     # for b in np.unique(gtab.bvals):
     #     if b == 0:
     #         continue
@@ -105,4 +122,5 @@ for i, pick in enumerate(dwi_picks):
     #     report_out.rename(appendposix(output, '_report.txt'))
 
     # write to hdf info file
-    #qc_DF.to_hdf(str(info_fname), subject+'/'+session+'/dwi_qc', mode='a', append=False, format='t')
+    # qc_DF.to_hdf(str(info_fname), subject+'/'+session+'/dwi_qc', mode='a', append=False, format='t')
+

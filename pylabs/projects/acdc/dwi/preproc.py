@@ -24,7 +24,7 @@ from pylabs.utils import run_subprocess, WorkingContext, appendposix, replacesuf
 from pylabs.utils.paths import getnetworkdataroot, test4working_gpu, get_antsregsyn_cmd, MNI1mm_T2_brain, getslicercmd, \
         moriMNIatlas, MNI1mm_T1_brain
 # project and subjects and files to run on
-from pylabs.projects.acdc.file_names import project, SubjIdPicks, get_dwi_names, QC_str
+from pylabs.projects.acdc.file_names import project, SubjIdPicks, get_dwi_names, Opts
 #set up provenance
 from pylabs.utils import ProvenanceWrapper
 prov = ProvenanceWrapper()
@@ -34,13 +34,17 @@ fs = Path(getnetworkdataroot())
 
 antsRegistrationSyN = get_antsregsyn_cmd()
 slicer_path = getslicercmd()
+opts = Opts()
 qc_strgs = QC_str()
+dti_qc = False
+if not dti_qc:
+    qc_opts.dwi_pass_qcstr = ''
 
 # instantiate subject id list container
 subjids_picks = SubjIdPicks()
 # list of subject ids to operate on
 picks = [
-         {'subj': 'sub-acdc112', 'session': 'ses-1', 'run': '1',  # subject selection info
+         {'subj': 'sub-acdc117', 'session': 'ses-1', 'run': '1',  # subject selection info
           'dwi_badvols': np.array([]), 'topup_badvols': np.array([]), 'topdn_badvols': np.array([]),  # remove bad vols identified in qc
           },
          ]
@@ -61,11 +65,7 @@ topup_fnames, topdn_fnames, dwi_fnames = get_dwi_names(subjids_picks)
 
 overwrite = True
 convert = False
-dti_qc = False
-if dti_qc:
-    qc_str = qc_strgs.pass_qc
-else:
-    qc_str = ''
+
 run_topup = True
 eddy_corr = True
 eddy_corr_dir = 'eddy_cuda_repol_v1'   # output dir for eddy
@@ -88,9 +88,9 @@ good_bvecs.to_csv(str(dwipath/ (dwi_fnames[i]+'_selected_vols.bvecs')), header=N
 good_bvals.to_csv(str(dwipath/ (dwi_fnames[i]+'_selected_vols.bvals')), header=None, index=None, sep=' ', float_format='%.4f')
 nib.save(nib.Nifti1Image(good_dwi_data,  nib.load(str(dwipath / (dwi_fnames[i]+'.nii'))).affine), str(dwipath / (dwi_fnames[i]+'_selected_vols.nii')))
 
-orig_dwif_fname = dwipath / str(dwif + qc_str+'.nii')
-dwi_bvals_fname = dwipath / str(dwif + qc_str+'.bvals')
-dwi_bvecs_fname = dwipath / str(dwif + qc_str+'.bvecs')
+orig_dwif_fname = dwipath / str(dwif + opts.dwi_pass_qc+'.nii')
+dwi_bvals_fname = dwipath / str(dwif + opts.dwi_pass_qc+'.bvals')
+dwi_bvecs_fname = dwipath / str(dwif + opts.dwi_pass_qc+'.bvecs')
 # pick up at dwi_dwellt_fname below
 """
 
@@ -158,15 +158,15 @@ topup, topdn, dwif = topup_fnames[i], topdn_fnames[i], dwi_fnames[i]
     if not regpath.is_dir():
         regpath.mkdir(parents=True)
 
-    orig_dwif_fname = dwipath / str(dwif + qc_str + '.nii')
-    dwi_bvals_fname = dwipath / str(dwif + qc_str + '.bvals')
-    dwi_bvecs_fname = dwipath / str(dwif + qc_str + '.bvecs')
-    topup_fname = dwipath / str(topup + qc_str + '.nii')
-    topup_bvals_fname = dwipath / str(topup + qc_str + '.bvals')
-    topup_bvecs_fname = dwipath / str(topup + qc_str + '.bvecs')
-    topdn_fname = dwipath / str(topdn + qc_str + '.nii')
-    topdn_bvals_fname = dwipath / str(topdn + qc_str + '.bvals')
-    topdn_bvecs_fname = dwipath / str(topdn + qc_str + '.bvecs')
+    orig_dwif_fname = dwipath / str(dwif + opts.dwi_pass_qc + '.nii')
+    dwi_bvals_fname = dwipath / str(dwif + opts.dwi_pass_qc + '.bvals')
+    dwi_bvecs_fname = dwipath / str(dwif + opts.dwi_pass_qc + '.bvecs')
+    topup_fname = dwipath / str(topup + opts.dwi_pass_qc + '.nii')
+    topup_bvals_fname = dwipath / str(topup + opts.dwi_pass_qc + '.bvals')
+    topup_bvecs_fname = dwipath / str(topup + opts.dwi_pass_qc + '.bvecs')
+    topdn_fname = dwipath / str(topdn + opts.dwi_pass_qc + '.nii')
+    topdn_bvals_fname = dwipath / str(topdn + opts.dwi_pass_qc + '.bvals')
+    topdn_bvecs_fname = dwipath / str(topdn + opts.dwi_pass_qc + '.bvecs')
     dwi_dwellt_fname = dwipath / str(dwif + '.dwell_time')
     topup_dwellt_fname = dwipath / str(topup + '.dwell_time')
     topdn_dwellt_fname = dwipath / str(topdn + '.dwell_time')
@@ -219,7 +219,7 @@ topup, topdn, dwif = topup_fnames[i], topdn_fnames[i], dwi_fnames[i]
                 prov.log(str(dwipath / str(topup + '_topdn_concat_mf_unwarped_mean.nii.gz')), 'median filtered mean of topup-dn S0 vols',
                          [str(topup_fname), str(topdn_fname)])
     # eddy current correction
-    ec_dwi_name = ec_dir / str(dwif +qc_str+ '_topdn_unwarped_ec')
+    ec_dwi_name = ec_dir / str(dwif +opts.dwi_pass_qc+ '_topdn_unwarped_ec')
     dwi_bvecs_ec_rot_fname = str(ec_dwi_name) + '.eddy_rotated_bvecs'
     #if not test4file(replacesuffix(ec_dwi_name, mf_str+'_clamp1.nii.gz')) or (test4file(replacesuffix(ec_dwi_name, mf_str+'_clamp1.nii.gz')) & overwrite):
         with WorkingContext(str(ec_dir)):
