@@ -1,4 +1,4 @@
-#todo: finish writing qc results to df
+#todo: fix index floats to int
 # first set global root data directory
 import pylabs
 pylabs.datadir.target = 'jaba'
