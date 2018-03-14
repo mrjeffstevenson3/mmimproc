@@ -8,8 +8,7 @@ import numpy as np
 import pandas as pd
 from dipy.io import read_bvals_bvecs
 from dipy.core.gradients import gradient_table
-from pylabs.io.images import savenii
-
+from pylabs.io.mixed import df2h5
 from pylabs.utils import *
 # project and subjects and files to run on
 from pylabs.projects.acdc.file_names import project, SubjIdPicks, get_dwi_names, Opts
@@ -39,11 +38,11 @@ setattr(subjids_picks, 'subjids', picks)
 dwi_picks = get_dwi_names(subjids_picks)
 
 # for testing
-i = 0
-pick = dwi_picks[i]
+# i = 0
+# pick = dwi_picks[i]
 #topup, topdn, dwif = topup_fnames[i], topdn_fnames[i], dwi_fnames[i]
 
-#for i, pick in enumerate(dwi_picks):
+for i, pick in enumerate(dwi_picks):
     # read in data and prep results df
     subject = pick['subj']
     session = pick['session']
@@ -105,22 +104,7 @@ pick = dwi_picks[i]
     else:
         qc_DF.loc[0, 'auto_dwi_qc'] = 0
 
-
-
-    # for b in np.unique(gtab.bvals):
-    #     if b == 0:
-    #         continue
-    #     ixb = np.isin(gtab.bvals, b)
-    #     select_vols = orig_dwi_data[:,:,:,np.where(ixb)[0]]
-    #     output = dwipath / 'qc' / (subject+'_'+session+'_dwiqc_b' + str(int(b)))
-    #     dwi_badvols = dwi_qc_1bv(select_vols, output)
-    #     qc_DF.loc[ixb, 'dwi_qc'] = dwi_badvols[1].values
-    #     try:
-    #         jpg_out.rename(appendposix(output, '.jpg'))
-    #     except OSError:
-    #         print('dwi jpg file for b'+str(int(b))+' not found. moving on.')
-    #     report_out.rename(appendposix(output, '_report.txt'))
-
-    # write to hdf info file
-    # qc_DF.to_hdf(str(info_fname), subject+'/'+session+'/dwi_qc', mode='a', append=False, format='t')
+    qc_DF[['bvals', 'itopdn', 'itopup', 'alltopup_idx', 'orig_dwi_idx', 'auto_dwi_qc', 'topup_qc', 'topdn_qc', ]] = \
+        qc_DF[['bvals', 'itopdn', 'itopup', 'alltopup_idx', 'orig_dwi_idx', 'auto_dwi_qc', 'topup_qc', 'topdn_qc', ]].astype('int')
+    df2h5(qc_DF, opts.info_fname, '/{subj}/{session}/dwi/auto_qc'.format(**pick), append=False)
 
