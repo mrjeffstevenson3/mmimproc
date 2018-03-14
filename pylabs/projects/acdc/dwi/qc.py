@@ -38,11 +38,11 @@ setattr(subjids_picks, 'subjids', picks)
 dwi_picks = get_dwi_names(subjids_picks)
 
 # for testing
-# i = 0
-# pick = dwi_picks[i]
+i = 0
+pick = dwi_picks[i]
 #topup, topdn, dwif = topup_fnames[i], topdn_fnames[i], dwi_fnames[i]
 
-for i, pick in enumerate(dwi_picks):
+#for i, pick in enumerate(dwi_picks):
     # read in data and prep results df
     subject = pick['subj']
     session = pick['session']
@@ -60,15 +60,20 @@ for i, pick in enumerate(dwi_picks):
     orig_dwi_data = nib.load(str(orig_dwi_fname)).get_data()
     orig_topup_data = nib.load(str(topup_fname)).get_data()
     orig_topdn_data = nib.load(str(topdn_fname)).get_data()
-    #affine = nib.load(str(orig_dwi_fname)).affine
-    qc_DF = pd.DataFrame(data=gtab.bvecs, index=[range(len(gtab.bvals))], columns=['x_bvec', 'y_bvec', 'z_bvec'])
-    qc_DF['bvals'] = gtab.bvals
-    qc_DF.loc[:orig_topdn_data.shape[3], 'itopdn'] = range(orig_topdn_data.shape[3] + 1)
-    qc_DF.loc[:orig_topup_data.shape[3], 'itopup'] = range(orig_topup_data.shape[3] + 1)
-    qc_DF.loc[:orig_topup_data.shape[3]+1, 'alltopup_idx'] = range(orig_topup_data.shape[3] + 2)
+    col_dtyps = {'x_bvec': np.float, 'y_bvec': np.float, 'z_bvec': np.float, 'bvals': np.int, 'itopdn': np.int, 'itopup': np.int, 'alltopup_idx': np.int,
+                 'auto_dwi_qc': np.int, 'topup_qc': np.int, 'topdn_qc': np.int,}
+    qc_DF = pd.DataFrame(columns=pd.Index(col_dtyps.keys()), dtype='int64')
+    for k, v in col_dtyps.iteritems():
+        qc_DF[k] = qc_DF[k].astype(v)
+    qc_DF = pd.DataFrame(data=gtab.bvecs, index=[range(len(gtab.bvals))], columns=['x_bvec', 'y_bvec', 'z_bvec'], dtype=np.float)
+    qc_DF['bvals'] = gtab.bvals.astype('int')
+
+    qc_DF.loc[:orig_topdn_data.shape[3], 'itopdn'] = np.arange(orig_topdn_data.shape[3] + 1, dtype=np.int).astype('int')
+    qc_DF.loc[:orig_topup_data.shape[3], 'itopup'] = np.arange(orig_topup_data.shape[3] + 1, dtype=np.int)
+    qc_DF.loc[:orig_topup_data.shape[3] + 1, 'alltopup_idx'] = np.arange(orig_topup_data.shape[3] + 2, dtype=np.int)
 
     b = 800.0
-    output_pname = dwipath / 'qc' / '_'.join([subject, session, 'b800-qc'])
+    output_pname = dwipath / 'qc' / '{subj}_{session}_b800-qc'.format(**pick)
     b800_dwi_data = orig_dwi_data[:, :, :, gtab.bvals == b]
     b800_badvols = dwi_qc_1bv(b800_dwi_data, output_pname)
     for i in range(b800_badvols.shape[0]):
@@ -79,7 +84,7 @@ for i, pick in enumerate(dwi_picks):
         qc_DF.loc[i[0], 'auto_dwi_qc'] = b800_badvols.loc[i[0], 1]
 
     b = 2000.0
-    output_pname = dwipath / 'qc' / '_'.join([subject, session, 'b2000-qc'])
+    output_pname = dwipath / 'qc' / '{subj}_{session}_b2000-qc'.format(**pick)
     b2000_dwi_data = orig_dwi_data[:, :, :, gtab.bvals == b]
     b2000_badvols = dwi_qc_1bv(b2000_dwi_data, output_pname)
     for i in range(b2000_badvols.shape[0]):
@@ -90,11 +95,11 @@ for i, pick in enumerate(dwi_picks):
     for i in b2000_badvols.iterrows():
         qc_DF.loc[i[0], 'auto_dwi_qc'] = b2000_badvols.loc[i[0], 1]
 
-    output_pname = dwipath / 'qc' / '_'.join([subject, session, 'topup8b0-qc'])
+    output_pname = dwipath / 'qc' / '{subj}_{session}_topup8b0-qc'.format(**pick)
     all_topup_data = np.append(orig_dwi_data[:, :, :, 0, None], orig_topup_data, axis=3)
     topup_badvols = dwi_qc_1bv(all_topup_data, output_pname)
     qc_DF.loc[:topup_badvols.shape[0] - 1, 'topup_qc'] = topup_badvols[1].values
-    output_pname = dwipath / 'qc' / '_'.join([subject, session, 'topdn7b0-qc'])
+    output_pname = dwipath / 'qc' / '{subj}_{session}_topdn7b0-qc'.format(**pick)
     topdn_badvols = dwi_qc_1bv(orig_topdn_data, output_pname)
     qc_DF.loc[:topdn_badvols.shape[0] - 1, 'topdn_qc'] = topdn_badvols[1].values
 
@@ -103,8 +108,5 @@ for i, pick in enumerate(dwi_picks):
         qc_DF.loc[0, 'auto_dwi_qc'] = 1
     else:
         qc_DF.loc[0, 'auto_dwi_qc'] = 0
-
-    qc_DF[['bvals', 'itopdn', 'itopup', 'alltopup_idx', 'orig_dwi_idx', 'auto_dwi_qc', 'topup_qc', 'topdn_qc', ]] = \
-        qc_DF[['bvals', 'itopdn', 'itopup', 'alltopup_idx', 'orig_dwi_idx', 'auto_dwi_qc', 'topup_qc', 'topdn_qc', ]].astype('int')
-    df2h5(qc_DF, opts.info_fname, '/{subj}/{session}/dwi/auto_qc'.format(**pick), append=False)
+    df2h5(qc_DF.reset_index(level=0), opts.info_fname, '/{subj}/{session}/dwi/auto_qc'.format(**pick), append=False)
 
