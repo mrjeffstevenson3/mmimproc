@@ -63,7 +63,7 @@ def dwi_qc_1bv(dwi_data, output_pname, alpha=3.0):
         if Path('plotgood1.txt').is_file():
             Path('plotgood1.txt').unlink()
         results += run_subprocess([str(dwi_qc)])
-        badvols = pd.read_csv('bad_vols_index.txt', header=None, delim_whitespace=True, index_col=0, dtype={1: 'int64'})
+        badvols = pd.read_csv('bad_vols_index.txt', header=None, delim_whitespace=True, index_col=0, dtype={1: 'int'})
         try:
             num_badvols = badvols.iloc[:,0].value_counts()[1]
         except KeyError:
