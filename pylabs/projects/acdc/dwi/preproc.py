@@ -1,18 +1,18 @@
 # first set global root data directory
 import pylabs
 pylabs.datadir.target = 'jaba'
-import os, cPickle
+import os
 from pathlib import *
 from collections import defaultdict
 import nipype
 from nipype.interfaces import fsl
 import nibabel as nib
 import numpy as np
+import pandas as pd
 from dipy.io import read_bvals_bvecs
 from dipy.core.gradients import gradient_table
 import shutil
 import datetime
-from cloud.serialization.cloudpickle import dumps
 from scipy.ndimage.filters import median_filter as medianf
 from pylabs.structural.brain_extraction import extract_brain
 from pylabs.conversion.brain_convert import conv_subjs
@@ -20,32 +20,30 @@ from pylabs.conversion.nifti2nrrd import nii2nrrd
 from pylabs.alignment.ants_reg import subj2templ_applywarp
 from pylabs.correlation.atlas import mori_network_regions
 from pylabs.io.images import savenii
-from pylabs.utils import run_subprocess, WorkingContext, appendposix, replacesuffix
-from pylabs.utils.paths import getnetworkdataroot, test4working_gpu, get_antsregsyn_cmd, MNI1mm_T2_brain, getslicercmd, \
-        moriMNIatlas, MNI1mm_T1_brain
-# project and subjects and files to run on
-from pylabs.projects.acdc.file_names import project, SubjIdPicks, get_dwi_names, Opts
+from pylabs.io.mixed import h52df
+from pylabs.utils import *
 #set up provenance
 from pylabs.utils import ProvenanceWrapper
 prov = ProvenanceWrapper()
-#setup paths and file names to process
 
+# project, subject, and file objects to work on
+from pylabs.projects.acdc.file_names import project, SubjIdPicks, get_dwi_names, Opts
+
+#setup paths and file names to process
 fs = Path(getnetworkdataroot())
 
 antsRegistrationSyN = get_antsregsyn_cmd()
 slicer_path = getslicercmd()
 opts = Opts()
-qc_strgs = QC_str()
-dti_qc = False
-if not dti_qc:
-    qc_opts.dwi_pass_qcstr = ''
+dwi_qc = True
+if not dwi_qc:
+    opts.dwi_pass_qcstr = ''
 
 # instantiate subject id list container
 subjids_picks = SubjIdPicks()
 # list of subject ids to operate on
 picks = [
          {'subj': 'sub-acdc117', 'session': 'ses-1', 'run': '1',  # subject selection info
-          'dwi_badvols': np.array([]), 'topup_badvols': np.array([]), 'topdn_badvols': np.array([]),  # remove bad vols identified in qc
           },
          ]
 
@@ -61,14 +59,14 @@ else:
 print(os.environ['FSLOUTPUTTYPE'])
 
 
+
 topup_fnames, topdn_fnames, dwi_fnames = get_dwi_names(subjids_picks)
 
 overwrite = True
 convert = False
-
 run_topup = True
 eddy_corr = True
-eddy_corr_dir = 'eddy_cuda_repol_v1'   # output dir for eddy
+opts.eddy_corr_dir = 'eddy_cuda_repol_v1'   # output dir for eddy
 fits_dir_name = 'fits_v1'    # dir for all fitting methods
 mf_str = '_mf'    # set to blank string '' to disable
 """
@@ -143,30 +141,38 @@ def test4file(file):
 #         niftiDict = cPickle.load(f)
 
 i = 0
-topup, topdn, dwif = topup_fnames[i], topdn_fnames[i], dwi_fnames[i]
+#topup, topdn, dwif = topup_fnames[i], topdn_fnames[i], dwi_fnames[i]
+picks =  get_dwi_names(subjids_picks)
+pick = picks[i]
 
-
-#for i, (topup, topdn, dwif) in enumerate(zip(topup_fnames, topdn_fnames, dwi_fnames)):
+#for i, pick in enumerate(picks):
     result = ()
-    dwipath = fs / project / dwif.split('_')[0] / dwif.split('_')[1] / 'dwi'
-    regpath = fs / project / dwif.split('_')[0] / dwif.split('_')[1] / 'reg' / 'MNI2dwi'
-    ec_dir = dwipath / eddy_corr_dir
-    bedpost_dir = dwipath / 'bedpost'
+    dwipath = fs / project / '{subj}/{session}/dwi'.format(**pick)
+    regpath = fs / project / '{subj}/{session}/reg'.format(**pick) / opts.dwi_reg_dir
+    ec_dir = dwipath / opts.eddy_corr_dir
+    bedpost_dir = dwipath / opts.dwi_bedpost_dir
     fits_dir = dwipath / fits_dir_name
     if not ec_dir.is_dir():
         ec_dir.mkdir(parents=True)
     if not regpath.is_dir():
         regpath.mkdir(parents=True)
+    if dwi_qc:
+        vis_qc = h52df(opts.info_fname, '/{subj}/{session}/dwi/vis_qc'.format(**pick))
+        vis_qc.replace({'True': True, 'False': False}, inplace=True)
+        dwi_good_vols = vis_qc[vis_qc.dwi_visqc]
+        topup_goodvols = vis_qc[vis_qc.itopup_visqc]
+        topdn_goodvols = vis_qc[vis_qc.itopdn_visqc]
 
-    orig_dwif_fname = dwipath / str(dwif + opts.dwi_pass_qc + '.nii')
-    dwi_bvals_fname = dwipath / str(dwif + opts.dwi_pass_qc + '.bvals')
-    dwi_bvecs_fname = dwipath / str(dwif + opts.dwi_pass_qc + '.bvecs')
-    topup_fname = dwipath / str(topup + opts.dwi_pass_qc + '.nii')
-    topup_bvals_fname = dwipath / str(topup + opts.dwi_pass_qc + '.bvals')
-    topup_bvecs_fname = dwipath / str(topup + opts.dwi_pass_qc + '.bvecs')
-    topdn_fname = dwipath / str(topdn + opts.dwi_pass_qc + '.nii')
-    topdn_bvals_fname = dwipath / str(topdn + opts.dwi_pass_qc + '.bvals')
-    topdn_bvecs_fname = dwipath / str(topdn + opts.dwi_pass_qc + '.bvecs')
+    else:
+        orig_dwif_fname = dwipath / str(dwif + opts.dwi_pass_qc + '.nii')
+        dwi_bvals_fname = dwipath / str(dwif + opts.dwi_pass_qc + '.bvals')
+        dwi_bvecs_fname = dwipath / str(dwif + opts.dwi_pass_qc + '.bvecs')
+        topup_fname = dwipath / str(topup + opts.dwi_pass_qc + '.nii')
+        topup_bvals_fname = dwipath / str(topup + opts.dwi_pass_qc + '.bvals')
+        topup_bvecs_fname = dwipath / str(topup + opts.dwi_pass_qc + '.bvecs')
+        topdn_fname = dwipath / str(topdn + opts.dwi_pass_qc + '.nii')
+        topdn_bvals_fname = dwipath / str(topdn + opts.dwi_pass_qc + '.bvals')
+        topdn_bvecs_fname = dwipath / str(topdn + opts.dwi_pass_qc + '.bvecs')
     dwi_dwellt_fname = dwipath / str(dwif + '.dwell_time')
     topup_dwellt_fname = dwipath / str(topup + '.dwell_time')
     topdn_dwellt_fname = dwipath / str(topdn + '.dwell_time')

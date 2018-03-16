@@ -136,7 +136,7 @@ def get_gaba_names(subjids_picks):
         if not source_path.is_dir():
             raise ValueError('source_sparsdat directory for mrs SDAT not set properly in subjids_picks.source_path. Currently ' + str(source_path))
         # make dict to update
-        mrs_dd = {'type': 'act', 'wild': '*', 'te': gaba_te, 'dyn': gaba_dyn, 'side': 'ACC'}
+        mrs_dd = {'type': 'act', 'wild': '*', 'te': opts.gaba_te, 'dyn': opts.gaba_dyn, 'side': 'ACC'}
         if is_empty(list(source_path.glob(gaba_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=mrs_dd))))):
             print('cannot find .SPAR file matching '+gaba_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=mrs_dd)))
             continue

@@ -28,6 +28,10 @@ class Opts(object):
     spm_thresh = 0.5
     dwi_pass_qc = '_passqc'
     info_fname = fs / project / ('all_' + project + '_info.h5')
+    eddy_corr_dir = 'eddy_cuda_repol_v1'
+    dwi_fits_dir = 'fits_v1'
+    dwi_reg_dir = 'MNI2dwi'
+    dwi_bedpost_dir = 'bedpost'
     dwi_fname_excep = ['_DWI64_3SH_B0_B800_B2000_TOPUP_TE101_1p8mm3_', '_DWI6_B0_TOPUP_TE101_1p8mm3_', '_DWI6_B0_TOPDN_TE101_1p8mm3_']
     gaba_te = 80
     gaba_dyn = 120
