@@ -60,7 +60,7 @@ print(os.environ['FSLOUTPUTTYPE'])
 
 
 
-topup_fnames, topdn_fnames, dwi_fnames = get_dwi_names(subjids_picks)
+#topup_fnames, topdn_fnames, dwi_fnames = get_dwi_names(subjids_picks)
 
 overwrite = True
 convert = False
