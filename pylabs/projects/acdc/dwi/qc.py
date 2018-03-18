@@ -13,6 +13,7 @@ from pylabs.utils import *
 from pylabs.diffusion.dti_qc import dwi_qc_1bv
 # project and subjects and files to run on
 from pylabs.projects.acdc.file_names import project, SubjIdPicks, get_dwi_names, Opts
+
 #set up provenance
 prov = ProvenanceWrapper()
 #setup paths and file names to process
@@ -58,7 +59,14 @@ for i, pick in enumerate(dwi_picks):
     qc_DF = pd.DataFrame(data=gtab.bvecs, index=[range(len(gtab.bvals))], columns=['x_bvec', 'y_bvec', 'z_bvec'], dtype=np.float)
     qc_DF['bvals'] = gtab.bvals.astype('int')
 
-    # 3 shell dwi qc
+    qc_DF.loc[:orig_topdn_data.shape[3], 'itopdn'] = np.arange(orig_topdn_data.shape[3] + 1, dtype=np.int).astype('int')
+    qc_DF.loc[:orig_topup_data.shape[3], 'itopup'] = np.arange(orig_topup_data.shape[3] + 1, dtype=np.int)
+    qc_DF.loc[:orig_topup_data.shape[3] + 1, 'alltopup_idx'] = np.arange(orig_topup_data.shape[3] + 2, dtype=np.int)
+    qc_DF.loc[0, 'dwi_fname'] = orig_dwi_fname
+    qc_DF.loc[0, 'topup_fname'] = topup_fname
+    qc_DF.loc[0, 'topdn_fname'] = topdn_fname
+
+    # start 3 shell dwi hardi
     b = 800.0   # dwi qc
     output_pname = dwipath / 'qc' / '{subj}_{session}_b800-qc'.format(**pick)
     b800_dwi_data = orig_dwi_data[:, :, :, gtab.bvals == b]
@@ -104,7 +112,7 @@ for i, pick in enumerate(dwi_picks):
     intcols = [u'bvals', u'itopup', u'alltopup_idx', u'topup_qc', u'itopdn', u'topdn_qc', u'auto_dwi_vol_idx', u'auto_dwi_qc']
     qc_DF[intcols] = qc_DF[intcols].fillna(-9999).astype('int')
     qc_DF.replace({-9999: 'NaN'})
-    cols = [u'x_bvec', u'y_bvec', u'z_bvec'] + intcols
+    cols = [u'x_bvec', u'y_bvec', u'z_bvec'] + intcols + ['dwi_fname', 'topup_fname', 'topdn_fname']
     qc_DF = qc_DF[cols]
     df2h5(qc_DF.reset_index(level=0), opts.info_fname, '/{subj}/{session}/dwi/auto_qc'.format(**pick), append=False)
 
