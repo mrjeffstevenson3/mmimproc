@@ -27,14 +27,14 @@ from pylabs.utils import ProvenanceWrapper
 prov = ProvenanceWrapper()
 
 # project, subject, and file objects to work on
-from pylabs.projects.acdc.file_names import project, SubjIdPicks, get_dwi_names, Opts
+from pylabs.projects.acdc.file_names import project, SubjIdPicks, get_dwi_names, Optsd
 
 #setup paths and file names to process
 fs = Path(getnetworkdataroot())
 
 antsRegistrationSyN = get_antsregsyn_cmd()
 slicer_path = getslicercmd()
-opts = Opts()
+opts = Optsd()
 dwi_qc = True
 if not dwi_qc:
     opts.dwi_pass_qcstr = ''
@@ -49,6 +49,20 @@ picks = [
 
 setattr(subjids_picks, 'subjids', picks)
 
+# define local functions
+def default_to_regular(d):
+    if isinstance(d, defaultdict):
+        d = {k: default_to_regular(v) for k, v in d.iteritems()}
+    return d
+
+def test4file(file):
+    file = Path(file)
+    if file.is_file():
+        return True
+    else:
+        raise ValueError(str(file) + ' not found.')
+
+
 #  define hostnames with working gpus for processing
 flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo', output_type='NIFTI_GZ')
 if nipype.__version__ == '0.12.0':
@@ -58,10 +72,7 @@ else:
 
 print(os.environ['FSLOUTPUTTYPE'])
 
-
-
-#topup_fnames, topdn_fnames, dwi_fnames = get_dwi_names(subjids_picks)
-
+# move to opts settings
 overwrite = True
 convert = False
 run_topup = True
@@ -69,6 +80,13 @@ eddy_corr = True
 opts.eddy_corr_dir = 'eddy_cuda_repol_v1'   # output dir for eddy
 fits_dir_name = 'fits_v1'    # dir for all fitting methods
 mf_str = '_mf'    # set to blank string '' to disable
+# other future stages to run
+subT2 = False   #wip
+b1corr = False
+bet = False
+prefilter = False
+templating = False
+
 """
 i = 0
 topup, topdn, dwif = topup_fnames[i], topdn_fnames[i], dwi_fnames[i]
@@ -90,26 +108,14 @@ orig_dwif_fname = dwipath / str(dwif + opts.dwi_pass_qc+'.nii')
 dwi_bvals_fname = dwipath / str(dwif + opts.dwi_pass_qc+'.bvals')
 dwi_bvecs_fname = dwipath / str(dwif + opts.dwi_pass_qc+'.bvecs')
 # pick up at dwi_dwellt_fname below
-"""
 
-# other future stages to run
-subT2 = False   #wip
-b1corr = False
-bet = False
-prefilter = False
-templating = False
-
-
-
-
-'''
 to do:
 UKF command to modify 
 /home/toddr/.config/NA-MIC/Extensions-26072/UKFTractography/lib/Slicer-4.7/cli-modules/UKFTractography 
 --dwiFile /tmp/Slicer/CGGHB_vtkMRMLDiffusionWeightedVolumeNodeB.nhdr --seedsFile /tmp/Slicer/CGGHB_vtkMRMLLabelMapVolumeNodeB.nhdr --labels 1 --maskFile /tmp/Slicer/CGGHB_vtkMRMLLabelMapVolumeNodeB.nhdr --tracts /tmp/Slicer/CGGHB_vtkMRMLFiberBundleNodeB.vtp --seedsPerVoxel 1 --seedFALimit 0.18 --minFA 0.15 --minGA 0.1 --numThreads -1 --numTensor 2 --stepLength 0.3 --Qm 0 --recordLength 1.8 --maxHalfFiberLength 250 --recordNMSE --freeWater --recordFA --recordTrace --recordFreeWater --recordTensors --Ql 0 --Qw 0 --Qkappa 0.01 --Qvic 0.004 --Rs 0 --sigmaSignal 0 --maxBranchingAngle 0 --minBranchingAngle 0 
 NODDI Command to modify
 /home/toddr/.config/NA-MIC/Extensions-26072/UKFTractography/lib/Slicer-4.7/cli-modules/UKFTractography --dwiFile /tmp/Slicer/CECH_vtkMRMLDiffusionWeightedVolumeNodeB.nhdr --seedsFile /tmp/Slicer/CECH_vtkMRMLLabelMapVolumeNodeB.nhdr --labels 1 --maskFile /tmp/Slicer/CECH_vtkMRMLLabelMapVolumeNodeB.nhdr --tracts /tmp/Slicer/CECH_vtkMRMLFiberBundleNodeB.vtp --seedsPerVoxel 1 --seedFALimit 0.18 --minFA 0.15 --minGA 0.1 --numThreads -1 --numTensor 1 --stepLength 0.3 --Qm 0 --recordLength 1.8 --maxHalfFiberLength 250 --Ql 0 --Qw 0 --noddi --recordVic --recordKappa --recordViso --Qkappa 0.01 --Qvic 0.004 --Rs 0 --sigmaSignal 0 --maxBranchingAngle 0 --minBranchingAngle 0 
-'''
+"""
 # slicer UKF commands and default parameters to run
 ukfcmds =  {'UKF_whbr': str(slicer_path) + 'UKFTractography --dwiFile %(fdwinrrd)s --seedsFile %(mask_fnamenrrd)s --labels 1 --maskFile %(mask_fnamenrrd)s --tracts %(dwif)s_UKF_whbr.vtk '
                     '--seedsPerVoxel 1 --seedFALimit 0.18 --minFA 0.15 --minGA 0.2 --numThreads -1 --numTensor 2 --stepLength 0.3 --Qm 0 --recordLength 1.8 --maxHalfFiberLength 250 --recordNMSE --freeWater '
@@ -118,30 +124,15 @@ ukfcmds =  {'UKF_whbr': str(slicer_path) + 'UKFTractography --dwiFile %(fdwinrrd
                     '--seedsPerVoxel 1 --seedFALimit 0.18 --minFA 0.15 --minGA 0.1 --numThreads -1 --numTensor 1 --stepLength 0.3 --Qm 0 --recordLength 1.8 --maxHalfFiberLength 250 --Ql 0 --Qw 0 --noddi --recordVic --recordKappa --recordViso --Qkappa 0.01 --Qvic 0.004 --Rs 0 --sigmaSignal 0 --maxBranchingAngle 0 --minBranchingAngle 0'
             }
 
-def default_to_regular(d):
-    if isinstance(d, defaultdict):
-        d = {k: default_to_regular(v) for k, v in d.iteritems()}
-    return d
-
-def test4file(file):
-    file = Path(file)
-    if file.is_file():
-        return True
-    else:
-        raise ValueError(str(file) + ' not found.')
-
 
 # run conversion if needed
 # if convert:
 #     subjects = [x['subj'] for x in subjids_picks.subjids]
 #     niftiDict = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
 #     niftiDict, niftiDF = conv_subjs(project, subjects, niftiDict)
-# else:
-#     with open(niipickle, 'rb') as f:
-#         niftiDict = cPickle.load(f)
+
 
 i = 0
-#topup, topdn, dwif = topup_fnames[i], topdn_fnames[i], dwi_fnames[i]
 picks =  get_dwi_names(subjids_picks)
 pick = picks[i]
 
@@ -151,11 +142,27 @@ pick = picks[i]
     regpath = fs / project / '{subj}/{session}/reg'.format(**pick) / opts.dwi_reg_dir
     ec_dir = dwipath / opts.eddy_corr_dir
     bedpost_dir = dwipath / opts.dwi_bedpost_dir
-    fits_dir = dwipath / fits_dir_name
+    fits_dir = dwipath / opts.dwi_fits_dir
     if not ec_dir.is_dir():
         ec_dir.mkdir(parents=True)
     if not regpath.is_dir():
         regpath.mkdir(parents=True)
+    orig_dwif_fname = dwipath / str(dwif + opts.dwi_pass_qc + '.nii')
+    topup_fname = dwipath / str(topup + opts.dwi_pass_qc + '.nii')
+    topdn_fname = dwipath / str(topdn + opts.dwi_pass_qc + '.nii')
+    dwi_bvals_fname = dwipath / str(dwif + opts.dwi_pass_qc + '.bvals')
+    dwi_bvecs_fname = dwipath / str(dwif + opts.dwi_pass_qc + '.bvecs')
+    dwi_dwellt_fname = dwipath / str(dwif + '.dwell_time')
+    topup_dwellt_fname = dwipath / str(topup + '.dwell_time')
+    topdn_dwellt_fname = dwipath / str(topdn + '.dwell_time')
+    for f in [orig_dwif_fname, dwi_bvals_fname, dwi_bvecs_fname, dwi_dwellt_fname, topup_fname, topup_dwellt_fname, topdn_fname, topdn_dwellt_fname]:
+        test4file(f)
+    topup_img = nib.load(str(topup_fname))
+    topup_data = topup_img.get_data()
+    topup_affine = topup_img.affine
+    topdn_img = nib.load(str(topdn_fname))
+    topdn_data = topdn_img.get_data()
+    topdn_affine = topdn_img.affine
     if dwi_qc:
         vis_qc = h52df(opts.info_fname, '/{subj}/{session}/dwi/vis_qc'.format(**pick))
         vis_qc.replace({'True': True, 'False': False}, inplace=True)
@@ -164,23 +171,13 @@ pick = picks[i]
         topdn_goodvols = vis_qc[vis_qc.itopdn_visqc]
 
     else:
-        orig_dwif_fname = dwipath / str(dwif + opts.dwi_pass_qc + '.nii')
-        dwi_bvals_fname = dwipath / str(dwif + opts.dwi_pass_qc + '.bvals')
-        dwi_bvecs_fname = dwipath / str(dwif + opts.dwi_pass_qc + '.bvecs')
-        topup_fname = dwipath / str(topup + opts.dwi_pass_qc + '.nii')
-        topup_bvals_fname = dwipath / str(topup + opts.dwi_pass_qc + '.bvals')
-        topup_bvecs_fname = dwipath / str(topup + opts.dwi_pass_qc + '.bvecs')
-        topdn_fname = dwipath / str(topdn + opts.dwi_pass_qc + '.nii')
-        topdn_bvals_fname = dwipath / str(topdn + opts.dwi_pass_qc + '.bvals')
-        topdn_bvecs_fname = dwipath / str(topdn + opts.dwi_pass_qc + '.bvecs')
-    dwi_dwellt_fname = dwipath / str(dwif + '.dwell_time')
-    topup_dwellt_fname = dwipath / str(topup + '.dwell_time')
-    topdn_dwellt_fname = dwipath / str(topdn + '.dwell_time')
+        bvals, bvecs = read_bvals_bvecs(str(dwi_bvals_fname), str(dwi_bvecs_fname))
+        gtab = gradient_table(bvals, bvecs)
 
-    for f in [orig_dwif_fname, dwi_bvals_fname, dwi_bvecs_fname, dwi_dwellt_fname, topup_fname, topup_bvals_fname, \
-              topup_bvecs_fname, topup_dwellt_fname, topdn_fname, topdn_bvals_fname, topdn_bvecs_fname, topdn_dwellt_fname]:
-        test4file(f)
 
+
+
+    # make acq_params and index files for fsl eddy
     with open(str(topup_dwellt_fname), 'r') as tud:
         topup_dwellt = tud.read().replace('\n', '')
 
@@ -196,16 +193,10 @@ pick = picks[i]
         for x in range(topdn_numlines):
             ap.write('0 -1 0 ' + topdn_dwellt + '\n')
 
-    bvals, bvecs = read_bvals_bvecs(str(dwi_bvals_fname), str(dwi_bvecs_fname))
-    gtab = gradient_table(bvals, bvecs)
+
     # topup distortion correction
     #if not test4file(dwipath / str(topup + '_topdn_concat_mf_unwarped_mean.nii.gz')) or (test4file(dwipath / str(topup + '_topdn_concat_mf_unwarped_mean.nii.gz')) & overwrite):
-        topup_img = nib.load(str(topup_fname))
-        topup_data = topup_img.get_data()
-        topup_affine = topup_img.affine
-        topdn_img = nib.load(str(topdn_fname))
-        topdn_data = topdn_img.get_data()
-        topdn_affine = topdn_img.affine
+
         topup_dn_data_concat = np.concatenate((topup_data, topdn_data), axis=3)
         topup_dn_data_concat_mf = medianf(topup_dn_data_concat, size=3)
         savenii(topup_dn_data_concat_mf, topup_affine, str(dwipath / str(topup + '_topdn_concat_mf.nii.gz')))
