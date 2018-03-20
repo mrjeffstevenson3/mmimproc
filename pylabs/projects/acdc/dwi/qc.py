@@ -34,8 +34,8 @@ setattr(subjids_picks, 'subjids', picks)
 dwi_picks = get_dwi_names(subjids_picks)
 
 # for testing
-# i = 0
-# pick = dwi_picks[i]
+#i = 0
+#pick = dwi_picks[i]
 
 for i, pick in enumerate(dwi_picks):
     # read in data and prep results df
@@ -59,9 +59,9 @@ for i, pick in enumerate(dwi_picks):
     qc_DF = pd.DataFrame(data=gtab.bvecs, index=[range(len(gtab.bvals))], columns=['x_bvec', 'y_bvec', 'z_bvec'], dtype=np.float)
     qc_DF['bvals'] = gtab.bvals.astype('int')
 
-    qc_DF.loc[:orig_topdn_data.shape[3], 'itopdn'] = np.arange(orig_topdn_data.shape[3] + 1, dtype=np.int).astype('int')
-    qc_DF.loc[:orig_topup_data.shape[3], 'itopup'] = np.arange(orig_topup_data.shape[3] + 1, dtype=np.int)
-    qc_DF.loc[:orig_topup_data.shape[3] + 1, 'alltopup_idx'] = np.arange(orig_topup_data.shape[3] + 2, dtype=np.int)
+    qc_DF.loc[:orig_topdn_data.shape[3] - 1, 'itopdn'] = np.arange(orig_topdn_data.shape[3], dtype=np.int).astype('int')
+    qc_DF.loc[:orig_topup_data.shape[3] - 1, 'itopup'] = np.arange(orig_topup_data.shape[3], dtype=np.int)
+    qc_DF.loc[:orig_topup_data.shape[3], 'alltopup_idx'] = np.arange(orig_topup_data.shape[3] + 1, dtype=np.int)
     qc_DF.loc[0, 'dwi_fname'] = orig_dwi_fname
     qc_DF.loc[0, 'topup_fname'] = topup_fname
     qc_DF.loc[0, 'topdn_fname'] = topdn_fname
@@ -95,12 +95,12 @@ for i, pick in enumerate(dwi_picks):
     output_pname = dwipath / 'qc' / '{subj}_{session}_topup8b0-qc'.format(**pick)
     all_topup_data = np.append(orig_dwi_data[:, :, :, 0, None], orig_topup_data, axis=3)
     topup_badvols = dwi_qc_1bv(all_topup_data, output_pname)
-    qc_DF.loc[:topup_badvols.shape[0] - 1, 'topup_qc'] = topup_badvols[1].values
+    qc_DF.loc[:(topup_badvols.shape[0] - 1), 'topup_qc'] = topup_badvols[1].values
 
     # topdown qc
     output_pname = dwipath / 'qc' / '{subj}_{session}_topdn7b0-qc'.format(**pick)
     topdn_badvols = dwi_qc_1bv(orig_topdn_data, output_pname)
-    qc_DF.loc[:topdn_badvols.shape[0] - 1, 'topdn_qc'] = topdn_badvols[1].values
+    qc_DF.loc[:(topdn_badvols.shape[0] - 1), 'topdn_qc'] = topdn_badvols[1].values
 
     #fill in dwi b0 qc results into df
     if topup_badvols.iloc[0,0] == 1:
