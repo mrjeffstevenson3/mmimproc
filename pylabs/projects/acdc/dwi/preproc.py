@@ -37,7 +37,7 @@ slicer_path = getslicercmd()
 opts = Optsd()
 dwi_qc = True
 if not dwi_qc:
-    opts.dwi_pass_qcstr = ''
+    opts.dwi_pass_qc = ''
 
 # instantiate subject id list container
 subjids_picks = SubjIdPicks()
@@ -147,35 +147,59 @@ pick = picks[i]
         ec_dir.mkdir(parents=True)
     if not regpath.is_dir():
         regpath.mkdir(parents=True)
-    orig_dwif_fname = dwipath / str(dwif + opts.dwi_pass_qc + '.nii')
-    topup_fname = dwipath / str(topup + opts.dwi_pass_qc + '.nii')
-    topdn_fname = dwipath / str(topdn + opts.dwi_pass_qc + '.nii')
-    dwi_bvals_fname = dwipath / str(dwif + opts.dwi_pass_qc + '.bvals')
-    dwi_bvecs_fname = dwipath / str(dwif + opts.dwi_pass_qc + '.bvecs')
-    dwi_dwellt_fname = dwipath / str(dwif + '.dwell_time')
-    topup_dwellt_fname = dwipath / str(topup + '.dwell_time')
-    topdn_dwellt_fname = dwipath / str(topdn + '.dwell_time')
-    for f in [orig_dwif_fname, dwi_bvals_fname, dwi_bvecs_fname, dwi_dwellt_fname, topup_fname, topup_dwellt_fname, topdn_fname, topdn_dwellt_fname]:
+    # define files
+    orig_dwif_fname = dwipath / '{dwi_fname}.nii'.format(**pick)
+    orig_dwi_bvals_fname = dwipath / '{dwi_fname}.bvals'.format(**pick)
+    orig_dwi_bvecs_fname = dwipath / '{dwi_fname}.bvecs'.format(**pick)
+    dwi_dwellt_fname = dwipath / '{dwi_fname}.dwell_time'.format(**pick)
+    orig_topup_fname = dwipath / '{topup_fname}.nii'.format(**pick)
+    orig_topdn_fname = dwipath / '{topdn_fname}.nii'.format(**pick)
+    topup_dwellt_fname = dwipath / '{topup_fname}.dwell_time'.format(**pick)
+    topdn_dwellt_fname = dwipath / '{topdn_fname}.dwell_time'.format(**pick)
+    # test they exist
+    for f in [orig_dwif_fname, orig_dwi_bvals_fname, orig_dwi_bvecs_fname, dwi_dwellt_fname, orig_topup_fname, topup_dwellt_fname, orig_topdn_fname, topdn_dwellt_fname]:
         test4file(f)
-    topup_img = nib.load(str(topup_fname))
-    topup_data = topup_img.get_data()
-    topup_affine = topup_img.affine
-    topdn_img = nib.load(str(topdn_fname))
-    topdn_data = topdn_img.get_data()
-    topdn_affine = topdn_img.affine
+    # get data
+    orig_dwi_img = nib.load(str(orig_dwif_fname))
+    orig_dwi_data = orig_dwi_img.get_data()
+    orig_dwi_affine = orig_dwi_img.affine
+    orig_topup_img = nib.load(str(orig_topup_fname))
+    orig_topup_data = orig_topup_img.get_data()
+    orig_topup_affine = orig_topup_img.affine
+    orig_topdn_img = nib.load(str(orig_topdn_fname))
+    orig_topdn_data = orig_topdn_img.get_data()
+    orig_topdn_affine = orig_topdn_img.affine
+
     if dwi_qc:
         vis_qc = h52df(opts.info_fname, '/{subj}/{session}/dwi/vis_qc'.format(**pick))
         vis_qc.replace({'True': True, 'False': False}, inplace=True)
         dwi_good_vols = vis_qc[vis_qc.dwi_visqc]
         topup_goodvols = vis_qc[vis_qc.itopup_visqc]
         topdn_goodvols = vis_qc[vis_qc.itopdn_visqc]
+        qc_dwi_data = orig_dwi_data[:, :, :, np.array(dwi_good_vols.index)]
+        dwif_fname = appendposix(orig_dwif_fname, opts.dwi_pass_qc)
+        dwi_bvals_fname = appendposix(orig_dwi_bvals_fname, opts.dwi_pass_qc)
+        dwi_bvecs_fname = appendposix(orig_dwi_bvecs_fname, opts.dwi_pass_qc)
+        topup_fname = appendposix(orig_dwif_fname, opts.dwi_pass_qc)
+        topdn_fname = appendposix(orig_dwif_fname, opts.dwi_pass_qc)
+        savenii(qc_dwi_data, orig_dwi_affine, dwif_fname)
+        dwi_good_vols[[u'x_bvec', u'y_bvec', u'z_bvec']].T.to_csv(str(dwi_bvecs_fname), index=False, header=False, sep=' ')
+        pd.DataFrame(dwi_good_vols[u'bvals']).T.to_csv(str(dwi_bvals_fname), index=False, header=False, sep=' ')
+        bvecs = dwi_good_vols[[u'x_bvec', u'y_bvec', u'z_bvec']].T.values
+        bvals = pd.DataFrame(dwi_good_vols[u'bvals']).T.values[0]
+        gtab = gradient_table(bvals, bvecs)
+        #add topup and dn qc vols select
+        good_topup_data = orig_topup_data[:,:,:,np.array(topup_goodvols.index)]
+        good_topdn_data = orig_topdn_data[:, :, :, np.array(topdn_goodvols.index)]
+        savenii(good_topup_data, orig_topup_affine, topup_fname)
+        savenii(good_topdn_data, orig_topdn_affine, topdn_fname)
 
     else:
-        bvals, bvecs = read_bvals_bvecs(str(dwi_bvals_fname), str(dwi_bvecs_fname))
+        bvals, bvecs = read_bvals_bvecs(str(orig_dwi_bvals_fname), str(orig_dwi_bvecs_fname))
         gtab = gradient_table(bvals, bvecs)
-
-
-
+        dwif_fname = orig_dwif_fname
+        dwi_bvals_fname = orig_dwi_bvals_fname
+        dwi_bvecs_fname =orig_dwi_bvecs_fname
 
     # make acq_params and index files for fsl eddy
     with open(str(topup_dwellt_fname), 'r') as tud:
