@@ -116,7 +116,7 @@ def merge_ftempl_dicts(dict1={}, dict2={}, dict3={}, base_dd=fname_templ_dd):
     nd.update(dict3)  # modifies base dict with dict1 2 and 3 keys and values
     return nd
 
-# empty freesurfer, VBM, T2 file name lists
+# empty freesurfer, T2 file name lists
 b1map_fs_fnames = []
 freesurf_fnames = []
 t2_fnames = []
