@@ -180,8 +180,8 @@ pick = picks[i]
         dwif_fname = appendposix(orig_dwif_fname, opts.dwi_pass_qc)
         dwi_bvals_fname = appendposix(orig_dwi_bvals_fname, opts.dwi_pass_qc)
         dwi_bvecs_fname = appendposix(orig_dwi_bvecs_fname, opts.dwi_pass_qc)
-        topup_fname = appendposix(orig_dwif_fname, opts.dwi_pass_qc)
-        topdn_fname = appendposix(orig_dwif_fname, opts.dwi_pass_qc)
+        topup_fname = appendposix(orig_topup_fname, opts.dwi_pass_qc)
+        topdn_fname = appendposix(orig_topdn_fname, opts.dwi_pass_qc)
         savenii(qc_dwi_data, orig_dwi_affine, dwif_fname)
         dwi_good_vols[[u'x_bvec', u'y_bvec', u'z_bvec']].T.to_csv(str(dwi_bvecs_fname), index=False, header=False, sep=' ')
         pd.DataFrame(dwi_good_vols[u'bvals']).T.to_csv(str(dwi_bvals_fname), index=False, header=False, sep=' ')
@@ -189,10 +189,10 @@ pick = picks[i]
         bvals = pd.DataFrame(dwi_good_vols[u'bvals']).T.values[0]
         gtab = gradient_table(bvals, bvecs)
         #add topup and dn qc vols select
-        good_topup_data = orig_topup_data[:,:,:,np.array(topup_goodvols.index)]
-        good_topdn_data = orig_topdn_data[:, :, :, np.array(topdn_goodvols.index)]
-        savenii(good_topup_data, orig_topup_affine, topup_fname)
-        savenii(good_topdn_data, orig_topdn_affine, topdn_fname)
+        topup_data = orig_topup_data[:,:,:,np.array(topup_goodvols.index)]
+        topdn_data = orig_topdn_data[:, :, :, np.array(topdn_goodvols.index)]
+        savenii(topup_data, orig_topup_affine, topup_fname)
+        savenii(topdn_data, orig_topdn_affine, topdn_fname)
 
     else:
         bvals, bvecs = read_bvals_bvecs(str(orig_dwi_bvals_fname), str(orig_dwi_bvecs_fname))
@@ -200,6 +200,10 @@ pick = picks[i]
         dwif_fname = orig_dwif_fname
         dwi_bvals_fname = orig_dwi_bvals_fname
         dwi_bvecs_fname =orig_dwi_bvecs_fname
+        topup_fname = orig_topup_fname
+        topdn_fname = orig_topdn_fname
+        topup_data = orig_topup_data
+        topdn_data = orig_topdn_data
 
     # make acq_params and index files for fsl eddy
     with open(str(topup_dwellt_fname), 'r') as tud:
@@ -223,38 +227,40 @@ pick = picks[i]
 
         topup_dn_data_concat = np.concatenate((topup_data, topdn_data), axis=3)
         topup_dn_data_concat_mf = medianf(topup_dn_data_concat, size=3)
-        savenii(topup_dn_data_concat_mf, topup_affine, str(dwipath / str(topup + '_topdn_concat_mf.nii.gz')))
-        prov.log(str(dwipath / str(topup + '_topdn_concat_mf.nii.gz')), 'concatenated topup-dn S0 vols', [str(topup_fname), str(topdn_fname)])
+        savenii(topup_dn_data_concat_mf, orig_topup_affine, str(dwipath / str(pick['topup_fname'] + '_topdn_concat_mf.nii.gz')))
+        prov.log(str(dwipath / str(pick['topup_fname'] + '_topdn_concat_mf.nii.gz')), 'concatenated topup-dn S0 vols', [str(topup_fname), str(topdn_fname)])
 
         with WorkingContext(str(dwipath)):
             with open('index.txt', 'w') as f:
                 f.write('1 ' * len(gtab.bvals))
-            if overwrite or not Path(topup + '_topdn_concat_mf_unwarped_mean.nii.gz').is_file():
-                cmd = 'topup --imain=' + str(dwipath / str(topup + '_topdn_concat_mf.nii.gz'))
+            if overwrite or not Path(pick['topup_fname'] + '_topdn_concat_mf_unwarped_mean.nii.gz').is_file():
+                cmd = 'topup --imain=' + str(dwipath / str(pick['topup_fname'] + '_topdn_concat_mf.nii.gz'))
                 cmd += ' --datain=acq_params.txt --config=b02b0.cnf --out='
-                cmd += str(dwipath / str(topup + '_topdn_concat_mf'))
-                cmd += ' --iout=' + str(dwipath / str(topup + '_topdn_concat_mf_unwarped.nii.gz'))
-                cmd += ' --fout=' + str(dwipath / str(topup + '_topdn_concat_mf_warp_field.nii.gz'))
+                cmd += str(dwipath / str(pick['topup_fname'] + '_topdn_concat_mf'))
+                cmd += ' --iout=' + str(dwipath / str(pick['topup_fname'] + '_topdn_concat_mf_unwarped.nii.gz'))
+                cmd += ' --fout=' + str(dwipath / str(pick['topup_fname'] + '_topdn_concat_mf_warp_field.nii.gz'))
                 result += run_subprocess(cmd)
                 result += run_subprocess('fslmaths '+topup + '_topdn_concat_mf_unwarped'+' -Tmean '+topup + '_topdn_concat_mf_unwarped_mean.nii.gz')
-                prov.log(str(dwipath / str(topup + '_topdn_concat_mf_unwarped_mean.nii.gz')), 'median filtered mean of topup-dn S0 vols',
+                prov.log(str(dwipath / str(pick['topup_fname'] + '_topdn_concat_mf_unwarped_mean.nii.gz')), 'median filtered mean of topup-dn S0 vols',
                          [str(topup_fname), str(topdn_fname)])
+
+
     # eddy current correction
-    ec_dwi_name = ec_dir / str(dwif +opts.dwi_pass_qc+ '_topdn_unwarped_ec')
+    ec_dwi_name = ec_dir / str(dwif_fname + '_topdn_unwarped_ec')
     dwi_bvecs_ec_rot_fname = str(ec_dwi_name) + '.eddy_rotated_bvecs'
     #if not test4file(replacesuffix(ec_dwi_name, mf_str+'_clamp1.nii.gz')) or (test4file(replacesuffix(ec_dwi_name, mf_str+'_clamp1.nii.gz')) & overwrite):
         with WorkingContext(str(ec_dir)):
-            b0_brain_fname, b0_brain_mask_fname, b0_brain_cropped_fname = extract_brain(dwipath/str(topup + '_topdn_concat_mf_unwarped_mean.nii.gz'))
-            eddy_cmd = 'eddy_cuda7.5 --imain='+str(orig_dwif_fname)+' --mask='+str(b0_brain_mask_fname)
+            b0_brain_fname, b0_brain_mask_fname, b0_brain_cropped_fname = extract_brain(dwipath/str(pick['topup_fname'] + '_topdn_concat_mf_unwarped_mean.nii.gz'))
+            eddy_cmd = 'eddy_cuda7.5 --imain='+str(dwif_fname)+' --mask='+str(b0_brain_mask_fname)
             eddy_cmd += ' --acqp=../acq_params.txt  --index=../index.txt --bvecs='+str(dwi_bvecs_fname)
-            eddy_cmd += ' --bvals='+str(dwi_bvals_fname)+' --topup='+str(dwipath / str(topup + '_topdn_concat_mf'))
+            eddy_cmd += ' --bvals='+str(dwi_bvals_fname)+' --topup='+str(dwipath / str(pick['topup_fname'] + '_topdn_concat_mf'))
             eddy_cmd += '  --repol --ol_nstd=1.96 --out='+str(ec_dwi_name)
             result += run_subprocess(eddy_cmd)
             # clamp, filter, and make nrrd
             ec_data = nib.load(str(ec_dwi_name)+'.nii.gz').get_data()
             ec_data_affine = nib.load(str(ec_dwi_name)+'.nii.gz').affine
-            bvals, bvecs = read_bvals_bvecs(str(dwi_bvals_fname), str(dwi_bvecs_ec_rot_fname))
-            gtab = gradient_table(bvals, bvecs)
+            bvals, ec_bvecs = read_bvals_bvecs(str(dwi_bvals_fname), str(dwi_bvecs_ec_rot_fname))
+            ec_gtab = gradient_table(bvals, ec_bvecs)
             if mf_str != '':
                 S0 = ec_data[:, :, :, gtab.b0s_mask]
                 S0_mf = medianf(S0, size=3)
@@ -265,6 +271,9 @@ pick = picks[i]
             nii2nrrd(str(ec_dwi_name)+mf_str+'_clamp1.nii.gz', str(ec_dwi_name)+mf_str+'_clamp1.nhdr', bvalsf=str(dwi_bvals_fname), bvecsf=str(dwi_bvecs_ec_rot_fname))
             prov.log(str(ec_dwi_name)+mf_str+'_clamp1.nii.gz', 'median filtered mean of topup-dn S0 vols', str(ec_dwi_name)+mf_str+'_clamp1.nhdr')
 
+
+    # do fsl fits and dipy fits
+
     # bedpost input files and execute (hopefully) on gpu
     if not test4file(appendposix(bedpost_dir, '.bedpostX') / 'mean_S0samples.nii.gz') or (test4file(appendposix(bedpost_dir, '.bedpostX') / 'mean_S0samples.nii.gz') & overwrite):
         with WorkingContext(str(bedpost_dir)):
@@ -274,14 +283,18 @@ pick = picks[i]
             os.rename(str(bedpost_dir/dwi_bvecs_ec_rot_fname.name), str(bedpost_dir/'bvecs'))
             shutil.copy(str(dwi_bvals_fname), str(bedpost_dir))
             os.rename(str(bedpost_dir/dwi_bvals_fname.name), str(bedpost_dir/'bvals'))
-            shutil.copy(str(dwipath/str(topup + '_topdn_concat_mf_unwarped_mean_brain_mask.nii.gz')), str(bedpost_dir))
-            os.rename(str(bedpost_dir/str(topup + '_topdn_concat_mf_unwarped_mean_brain_mask.nii.gz')), str(bedpost_dir/'nodif_brain_mask.nii.gz'))
+            shutil.copy(str(dwipath/str(pick['topup_fname'] + '_topdn_concat_mf_unwarped_mean_brain_mask.nii.gz')), str(bedpost_dir))
+            os.rename(str(bedpost_dir/str(pick['topup_fname'] + '_topdn_concat_mf_unwarped_mean_brain_mask.nii.gz')), str(bedpost_dir/'nodif_brain_mask.nii.gz'))
             # run bedpost, probtracks, network, UKF, NODDI, and DKI here
             if test4working_gpu():
                 result += run_subprocess('bedpostx_gpu bedpost -n 3 --model=2')
                 # what cleanup is required?
             else:
                 result += run_subprocess('bedpostx bedpost -n 3 --model=2')
+
+
+####################### end here for now
+
 
     # use ants to warp mori atlas into subj space
     if not test4file(regpath/replacesuffix(moriMNIatlas.name, '_reg2dwi.nii.gz')) or (test4file(regpath/replacesuffix(moriMNIatlas.name, '_reg2dwi.nii.gz')) & overwrite):
