@@ -38,7 +38,7 @@ class Optsd(object):
     Define constants for acdc project with dict like mapping using opts = Optsd; **vars(opts).
     """
     def __init__(self,
-            # define project variables as dict using opts = Optsd; vars(opts).
+            # define project variables here. will become dict using opts = Optsd; vars(opts).
             project = 'acdc',
             overwrite = True,
             convert = False,
@@ -46,12 +46,14 @@ class Optsd(object):
             fsl_thresh = 0.20,
             info_fname = fs / project / ('all_' + project + '_info.h5'),
             dwi_pass_qc = '_passqc',
-            mf_str = '_mf',    # set to blank string '' to disable
+            mf_str = '_mf',    # set to blank string '' to disable median filtering
             run_topup = True,
             eddy_corr = True,
             eddy_corr_dir = 'eddy_cuda_repol_v1',   # output dir for eddy
             dwi_fits_dir = 'fits_v1',
+            do_ukf = True,
             dwi_reg_dir = 'MNI2dwi',
+            run_bedpost = True,
             dwi_bedpost_dir = 'bedpost',
             dwi_fname_excep = ['_DWI64_3SH_B0_B800_B2000_TOPUP_TE101_1p8mm3_', '_DWI6_B0_TOPUP_TE101_1p8mm3_', '_DWI6_B0_TOPDN_TE101_1p8mm3_'],
             gaba_te = 80,
@@ -74,7 +76,9 @@ class Optsd(object):
         self.eddy_corr = eddy_corr
         self.eddy_corr_dir = eddy_corr_dir
         self.dwi_fits_dir = dwi_fits_dir
+        self.do_ukf = do_ukf
         self.dwi_reg_dir = dwi_reg_dir
+        self.run_bedpost = run_bedpost
         self.dwi_bedpost_dir = dwi_bedpost_dir
         self.dwi_fname_excep = dwi_fname_excep
         self.gaba_te = gaba_te
