@@ -156,8 +156,8 @@ NODDI Command to modify
 
 picks =  get_dwi_names(subjids_picks)
 
-i = 0
-pick = picks[i]
+# i = 0
+# pick = picks[i]
 
 """
 pick dict guide:
@@ -171,7 +171,7 @@ dwi_fname = dwi file name to be processed if qc then opts.dwi_pass_qc appended t
 dwi_bvecs_ec_rot_fname = ec rotated bvecs to be used for fits, bedpost etc
 """
 
-#for i, pick in enumerate(picks):
+for i, pick in enumerate(picks):
     result = ()
     dwipath = fs / project / '{subj}/{session}/dwi'.format(**pick)
     regpath = fs / project / '{subj}/{session}/reg'.format(**pick) / opts.dwi_reg_dir
@@ -308,8 +308,8 @@ dwi_bvecs_ec_rot_fname = ec rotated bvecs to be used for fits, bedpost etc
     # do fsl fits and dipy fits
     if not (dwipath / opts.dwi_fits_dir).is_dir():
         (dwipath / opts.dwi_fits_dir).mkdir()
-    pick['fsl_fits_out'] = dwipath / opts.dwi_fits_dir / '{subj}_{session}_dwi_unwarped_ec_fslfit'
-    pick['dipy_fits_out'] = dwipath / opts.dwi_fits_dir / '{subj}_{session}_dwi_unwarped_ec_dipyfit'
+    pick['fsl_fits_out'] = dwipath / opts.dwi_fits_dir / '{subj}_{session}_dwi_unwarped_ec_fslfit'.format(**pick)
+    pick['dipy_fits_out'] = dwipath / opts.dwi_fits_dir / '{subj}_{session}_dwi_unwarped_ec_dipyfit'.format(**pick)
     with WorkingContext(str(dwipath / opts.dwi_fits_dir)):
         # do fsl dtifit cmd
         result += run_subprocess([fsl_fit_cmd.format(**pick)])
