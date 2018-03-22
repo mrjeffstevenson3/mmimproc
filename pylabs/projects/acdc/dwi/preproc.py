@@ -36,7 +36,7 @@ from pylabs.projects.acdc.file_names import project, SubjIdPicks, get_dwi_names,
 fs = Path(getnetworkdataroot())
 
 antsRegistrationSyN = get_antsregsyn_cmd()
-slicer_path = getslicercmd()
+slicer_path = getslicercmd(ver='stable')
 opts = Optsd()
 dwi_qc = True
 if not dwi_qc:
@@ -60,23 +60,48 @@ mean_b0_cmd = 'fslmaths {topup_out}_unwarped -Tmean {topup_out}_unwarped_mean.ni
 # fsl eddy cmd using cuda for speedup
 eddy_cmd = 'eddy_cuda7.5 --imain={dwif_fname} --mask={b0_brain_mask_fname} --acqp=../acq_params.txt  --index=../index.txt'
 eddy_cmd += ' --bvecs={dwi_bvecs_fname} --bvals={dwi_bvals_fname} --topup={topup_out} --repol --ol_nstd=1.96 --out={ec_dwi_fname}'
-# fsl dtifit command to make FA, MD maps etc.
+# fsl dtifit command dict to make FA, MD maps etc. then filter tensor, then recon filtered data
 fsl_fit_cmd = 'dtifit -k {ec_dwi_clamp_fname} -o {fsl_fits_out} -m {b0_brain_mask_fname} -b {dwi_bvals_fname}'
 fsl_fit_cmd += ' -r {dwi_bvecs_ec_rot_fname} --save_tensor --wls --sse'
 
 # slicer UKF commands and default parameters to run
-ukfcmds =  {'UKF_whbr': str(slicer_path) + 'UKFTractography --dwiFile %(dwi_nrrd_fname)s --seedsFile %(b0_brain_mask_fname)s'
-                    ' --labels 1 --maskFile %(b0_brain_mask_fname)s --tracts %(ec_dwi_fname)s_mf_clamp1_UKF_whbr.vtk'
-                    ' --seedsPerVoxel 1 --seedFALimit 0.18 --minFA 0.15 --minGA 0.2 --numThreads -1 --numTensor 2 --stepLength 0.3'
-                    ' --Qm 0 --recordLength 1.8 --maxHalfFiberLength 250 --recordNMSE --freeWater'
+# slicer cmd fm log:
+"""
+/home/toddr/.config/NA-MIC/Extensions-26685/UKFTractography/lib/Slicer-4.9/cli-modules/UKFTractography 
+--dwiFile /tmp/Slicer/BEDFF_vtkMRMLDiffusionWeightedVolumeNodeC.nhdr --seedsFile /tmp/Slicer/BEDFF_vtkMRMLLabelMapVolumeNodeE.nhdr 
+--labels 1 --maskFile /tmp/Slicer/BEDFF_vtkMRMLLabelMapVolumeNodeE.nhdr --tracts /tmp/Slicer/BEDFF_vtkMRMLFiberBundleNodeC.vtp 
+--seedsPerVoxel 1 --seedingThreshold 0.18 --stoppingFA 0.15 --stoppingThreshold 0.1 --numThreads -1 --numTensor 2 --stepLength 0.3 --Qm 0 
+--recordLength 0.9 --maxHalfFiberLength 250 --recordNMSE --freeWater --recordFA --recordTrace --recordFreeWater --recordTensors --Ql 0 --Qw 0 
+--Qkappa 0.01 --Qvic 0.004 --Rs 0 --sigmaSignal 0 --maxBranchingAngle 0 --minBranchingAngle 0 --minGA 10000 
+
+/home/toddr/.config/NA-MIC/Extensions-26685/UKFTractography/lib/Slicer-4.9/cli-modules/UKFTractography 
+--dwiFile /tmp/Slicer/BEDFF_vtkMRMLDiffusionWeightedVolumeNodeC.nhdr --seedsFile /tmp/Slicer/BEDFF_vtkMRMLLabelMapVolumeNodeE.nhdr 
+--labels 1 --maskFile /tmp/Slicer/BEDFF_vtkMRMLLabelMapVolumeNodeE.nhdr --tracts /tmp/Slicer/BEDFF_vtkMRMLFiberBundleNodeD.vtp 
+--seedsPerVoxel 1 --seedingThreshold 0.18 --stoppingFA 0.15 --stoppingThreshold 0.1 --numThreads -1 --numTensor 1 --stepLength 0.3 --Qm 0 
+--recordLength 0.9 --maxHalfFiberLength 250 --Ql 0 --Qw 0 --noddi --recordVic --recordKappa --recordViso 
+--Qkappa 0.01 --Qvic 0.004 --Rs 0 --sigmaSignal 0 --maxBranchingAngle 0 --minBranchingAngle 0 --minGA 10000 
+"""
+ukfcmds =  {'UKF_whbr': str(slicer_path) + 'UKFTractography --dwiFile %(dwi_nrrd_fname)s --seedsFile %(b0_brain_mask_fname_nrrd)s'
+                    ' --labels 1 --maskFile %(b0_brain_mask_fname_nrrd)s --tracts %(ec_dwi_fname)s_mf_clamp1_UKF_whbr.vtk'
+                    ' --seedsPerVoxel 1 --seedingThreshold 0.18 --stoppingFA 0.15 --stoppingThreshold 0.1 --numThreads -1'
+                    ' --numTensor 2 --stepLength 0.3 --Qm 0 --recordLength 0.9 --maxHalfFiberLength 250 --recordNMSE --freeWater'
                     ' --recordFA --recordTrace --recordFreeWater --recordTensors --Ql 0 --Qw 0 --Qkappa 0.01 --Qvic 0.004'
-                    ' --Rs 0 --sigmaSignal 0 --maxBranchingAngle 0 --minBranchingAngle 0',
-            'NODDI': str(slicer_path) + 'UKFTractography --dwiFile %(dwi_nrrd_fname)s --seedsFile %(b0_brain_mask_fname)s'
-                    ' --labels 1 --maskFile %(b0_brain_mask_fname)s --tracts %(ec_dwi_fname)s_mf_clamp1_whbr_1tensor_noddi.vtk'
-                    ' --seedsPerVoxel 1 --seedFALimit 0.18 --minFA 0.15 --minGA 0.1 --numThreads -1 --numTensor 1 --stepLength 0.3'
-                    ' --Qm 0 --recordLength 1.8 --maxHalfFiberLength 250 --Ql 0 --Qw 0 --noddi --recordVic --recordKappa --recordViso'
-                    ' --Qkappa 0.01 --Qvic 0.004 --Rs 0 --sigmaSignal 0 --maxBranchingAngle 0 --minBranchingAngle 0'
+                    ' --Rs 0 --sigmaSignal 0 --maxBranchingAngle 0 --minBranchingAngle 0 --minGA 10000',
+
+            'NODDI1': str(slicer_path) + 'UKFTractography --dwiFile %(dwi_nrrd_fname)s --seedsFile %(b0_brain_mask_fname_nrrd)s'
+                    ' --labels 1 --maskFile %(b0_brain_mask_fname_nrrd)s --tracts %(ec_dwi_fname)s_mf_clamp1_whbr_1tensor_noddi.vtk'
+                    ' --seedsPerVoxel 1 --seedingThreshold 0.18 --stoppingFA 0.15 --stoppingThreshold 0.1 --numThreads -1'
+                    ' --numTensor 1 --stepLength 0.3 --Qm 0 --recordLength 0.9 --maxHalfFiberLength 250 --Ql 0 --Qw 0'
+                    ' --noddi --recordVic --recordKappa --recordViso --Qkappa 0.01 --Qvic 0.004 --Rs 0 --sigmaSignal 0'
+                    ' --maxBranchingAngle 0 --minBranchingAngle 0 --minGA 10000',
+            'NODDI2': str(slicer_path) + 'UKFTractography --dwiFile %(dwi_nrrd_fname)s --seedsFile %(b0_brain_mask_fname_nrrd)s'
+                     ' --labels 1 --maskFile %(b0_brain_mask_fname_nrrd)s --tracts %(ec_dwi_fname)s_mf_clamp1_whbr_2tensor_noddi.vtk'
+                     ' --seedsPerVoxel 1 --seedingThreshold 0.18 --stoppingFA 0.15 --stoppingThreshold 0.1 --numThreads -1'
+                     ' --numTensor 2 --stepLength 0.3 --Qm 0 --recordLength 0.9 --maxHalfFiberLength 250 --Ql 0 --Qw 0'
+                     ' --noddi --recordVic --recordKappa --recordViso --Qkappa 0.01 --Qvic 0.004 --Rs 0 --sigmaSignal 0'
+                     ' --maxBranchingAngle 0 --minBranchingAngle 0 --minGA 10000',
             }
+
 # to get indices of upper triangle of tensor for fsl compat
 _ut_rows = np.array([0, 0, 0, 1, 1, 2])
 _ut_cols = np.array([0, 1, 2, 1, 2, 2])
@@ -286,6 +311,8 @@ for i, pick in enumerate(picks):
         with WorkingContext(str(ec_dir)):
             b0_brain_fname, b0_brain_mask_fname, b0_brain_cropped_fname = extract_brain('{topup_out}_unwarped_mean.nii.gz'.format(**pick))
             pick['b0_brain_mask_fname'] = b0_brain_mask_fname
+            nii2nrrd(pick['b0_brain_mask_fname'], replacesuffix(pick['b0_brain_mask_fname'], '.nrrd'), ismask=True)
+            pick['b0_brain_mask_fname_nrrd'] = replacesuffix(pick['b0_brain_mask_fname'], '.nrrd')
             result += run_subprocess([eddy_cmd.format(**pick)])
             # clamp, filter, and make nrrd
             ec_data = nib.load('{ec_dwi_fname}.nii.gz'.format(**pick)).get_data()
@@ -313,6 +340,7 @@ for i, pick in enumerate(picks):
     with WorkingContext(str(dwipath / opts.dwi_fits_dir)):
         # do fsl dtifit cmd
         result += run_subprocess([fsl_fit_cmd.format(**pick)])
+        # filter tensor and reconstruct with fslmaths -tensor_decomp. use ordered list to loop over seq of cmds in dict
         # do dipy fits
         tenmodel = dti.TensorModel(ec_gtab, fit_method='WLS')
         data = nib.load(pick['ec_dwi_clamp_fname']).get_data()
@@ -352,8 +380,17 @@ for i, pick in enumerate(picks):
     if opts.do_ukf:
         try:
             with WorkingContext(str(ec_dir)):
+                print('starting UKF tractography at {:%Y%m%d%H%M}'.format(datetime.now()))
+                result += ('starting UKF tractography at {:%Y%m%d%H%M}'.format(datetime.now()),)
                 result += run_subprocess([ukfcmds['UKF_whbr'] % pick])
-                result += run_subprocess([ukfcmds['NODDI'] % pick])
+                print('finished UKF tractography at {:%Y%m%d%H%M} starting NODDI 1 tensor'.format(datetime.now()))
+                result += ('finished UKF tractography at {:%Y%m%d%H%M} starting NODDI 1 tensor'.format(datetime.now()),)
+                result += run_subprocess([ukfcmds['NODDI1'] % pick])
+                print('finished NODDI 1 tensor tractography at {:%Y%m%d%H%M} starting NODDI 2 tensor'.format(datetime.now()))
+                result += ('finished NODDI 1 tensor tractography at {:%Y%m%d%H%M} starting NODDI 2 tensor'.format(datetime.now()),)
+                result += run_subprocess([ukfcmds['NODDI2'] % pick])
+                print('finished NODDI 2 tensor tractography at {:%Y%m%d%H%M}'.format(datetime.now()))
+                result += ('finished NODDI 2 tensor tractography at {:%Y%m%d%H%M}'.format(datetime.now()),)
         except:
             print('ukf failed to run with {slicer}'.format(**{'slicer': slicer_path}))
 
