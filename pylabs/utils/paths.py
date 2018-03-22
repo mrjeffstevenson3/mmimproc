@@ -134,7 +134,7 @@ def get_antsregsyn_cmd(quick=False, warps=False, warpts=False, N4bias=False):
         antsRegistrationSyN = Path(os.environ.get('ANTSPATH'), 'antsRegistrationSyN.sh')
         return antsRegistrationSyN
 
-def getslicercmd(ver='dev', stable_linux_ver='Slicer-4.8.1-linux-amd64', dev_linux_ver='Slicer-4.9.0-2018-02-08-linux-amd64', mac_ver='Slicer_dev4p7_2-21-2017.app'):
+def getslicercmd(ver='stable', stable_linux_ver='Slicer-4.8.1-linux-amd64', dev_linux_ver='Slicer-4.9.0-2018-02-08-linux-amd64', mac_ver='Slicer_dev4p7_2-21-2017.app'):
     if platform.system() == 'Darwin':
         slicer_path = Path('/Applications', mac_ver, 'Contents/MacOS/Slicer --launch ')
     elif platform.system() == 'Linux' and ver == 'dev':
