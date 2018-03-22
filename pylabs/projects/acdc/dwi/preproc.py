@@ -12,6 +12,7 @@ import pandas as pd
 from dipy.io import read_bvals_bvecs
 from dipy.core.gradients import gradient_table
 import dipy.reconst.dti as dti
+from dipy.reconst.dti import mode
 import shutil
 import datetime
 from scipy.ndimage.filters import median_filter as medianf
@@ -60,7 +61,7 @@ mean_b0_cmd = 'fslmaths {topup_out}_unwarped -Tmean {topup_out}_unwarped_mean.ni
 eddy_cmd = 'eddy_cuda7.5 --imain={dwif_fname} --mask={b0_brain_mask_fname} --acqp=../acq_params.txt  --index=../index.txt'
 eddy_cmd += ' --bvecs={dwi_bvecs_fname} --bvals={dwi_bvals_fname} --topup={topup_out} --repol --ol_nstd=1.96 --out={ec_dwi_fname}'
 # fsl dtifit command to make FA, MD maps etc.
-fsl_fit_cmd = 'dtifit -k {ec_dwi_clamp_fname} -o {fsl_fits_out} -m {b0_brain_mask_fname}-b {dwi_bvals_fname}'
+fsl_fit_cmd = 'dtifit -k {ec_dwi_clamp_fname} -o {fsl_fits_out} -m {b0_brain_mask_fname} -b {dwi_bvals_fname}'
 fsl_fit_cmd += ' -r {dwi_bvecs_ec_rot_fname} --save_tensor --wls --sse'
 
 # slicer UKF commands and default parameters to run
@@ -170,7 +171,7 @@ dwi_fname = dwi file name to be processed if qc then opts.dwi_pass_qc appended t
 dwi_bvecs_ec_rot_fname = ec rotated bvecs to be used for fits, bedpost etc
 """
 
-for i, pick in enumerate(picks):
+#for i, pick in enumerate(picks):
     result = ()
     dwipath = fs / project / '{subj}/{session}/dwi'.format(**pick)
     regpath = fs / project / '{subj}/{session}/reg'.format(**pick) / opts.dwi_reg_dir
@@ -354,25 +355,28 @@ for i, pick in enumerate(picks):
                 result += run_subprocess([ukfcmds['UKF_whbr'] % pick])
                 result += run_subprocess([ukfcmds['NODDI'] % pick])
         except:
-            print('ukf failed to run with {slicer}'.format({'slicer': slicer_path}))
+            print('ukf failed to run with {slicer}'.format(**{'slicer': slicer_path}))
 
     # bedpost input files and execute (hopefully) on gpu
     if opts.run_bedpost or opts.overwrite:
+        if not bedpost_dir.is_dir():
+            bedpost_dir.mkdir()
         with WorkingContext(str(bedpost_dir)):
             shutil.copy(pick['ec_dwi_clamp_fname'], str(bedpost_dir))
             os.rename(Path(pick['ec_dwi_clamp_fname']).name, str(bedpost_dir/'data.nii.gz'))
             shutil.copy(pick['dwi_bvecs_ec_rot_fname'], str(bedpost_dir))
             os.rename(Path(pick['dwi_bvecs_ec_rot_fname']).name, str(bedpost_dir/'bvecs'))
-            shutil.copy(pick['dwi_bvals_fname'], str(bedpost_dir))
+            shutil.copy(str(pick['dwi_bvals_fname']), str(bedpost_dir))
             os.rename(Path(pick['dwi_bvals_fname']).name, str(bedpost_dir/'bvals'))
             shutil.copy(str(pick['b0_brain_mask_fname']), str(bedpost_dir))
             os.rename(pick['b0_brain_mask_fname'].name, str(bedpost_dir/'nodif_brain_mask.nii.gz'))
             # run bedpost, probtracks, network, UKF, NODDI, and DKI here
-            if test4working_gpu():
-                result += run_subprocess(['bedpostx_gpu bedpost -n 3 --model=2'])
-                # what cleanup is required?
-            else:
-                result += run_subprocess(['bedpostx bedpost -n 3 --model=2'])
+            with WorkingContext(str(dwipath)):
+                if test4working_gpu():
+                    result += run_subprocess(['bedpostx_gpu bedpost -n 3 --model=2'])
+                    # what cleanup is required?
+                else:
+                    result += run_subprocess(['bedpostx bedpost -n 3 --model=2'])
 
 
 ####################### end here for now
