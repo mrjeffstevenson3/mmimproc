@@ -134,15 +134,17 @@ def get_antsregsyn_cmd(quick=False, warps=False, warpts=False, N4bias=False):
         antsRegistrationSyN = Path(os.environ.get('ANTSPATH'), 'antsRegistrationSyN.sh')
         return antsRegistrationSyN
 
-def getslicercmd(ver='stable', stable_linux_ver='Slicer-4.8.1-linux-amd64', dev_linux_ver='Slicer-4.9.0-2018-02-08-linux-amd64', mac_ver='Slicer_dev4p7_2-21-2017.app'):
-    if platform.system() == 'Darwin':
-        slicer_path = Path('/Applications', mac_ver, 'Contents/MacOS/Slicer --launch ')
+def getslicercmd(ver='stable', stable_linux_ver='Slicer-4.8.1-linux-amd64', dev_linux_ver='Slicer-4.9.0-2018-02-08-linux-amd64', dev_mac_ver='Slicer_dev4p7_7-16-2017.app', stable_mac_ver='Slicer_dev4p7_7-16-2017.app'):
+    if platform.system() == 'Darwin' and ver == 'dev':
+        slicer_path = Path('/Applications', dev_mac_ver, 'Contents/MacOS/Slicer --launch ')
+    elif platform.system() == 'Darwin' and ver == 'stable':
+        slicer_path = Path('/Applications', stable_mac_ver, 'Contents/MacOS/Slicer --launch ')
     elif platform.system() == 'Linux' and ver == 'dev':
         slicer_path = Path(*Path(inspect.getabsfile(pylabs)).parts[:-3]) / dev_linux_ver / 'Slicer --launch '
     elif platform.system() == 'Linux' and ver == 'stable':
         slicer_path = Path(*Path(inspect.getabsfile(pylabs)).parts[:-3]) / stable_linux_ver / 'Slicer --launch '
     if not slicer_path.parent.is_dir():
-        raise ValueError('Slicer path not found for {slicer_path}'.format({'slicer_path': slicer_path}))
+        raise ValueError('Slicer path not found for {slicer_path}'.format(**{'slicer_path': slicer_path}))
     return slicer_path
 
 def getspmpath():

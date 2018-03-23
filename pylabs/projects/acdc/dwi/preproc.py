@@ -52,6 +52,7 @@ picks = [
 
 setattr(subjids_picks, 'subjids', picks)
 
+# commands and options are modified below.
 # topup command for unwarping dti
 topup_cmd = 'topup --imain={topup_dn_fname} --datain=acq_params.txt --config=b02b0.cnf --out={topup_out}'
 topup_cmd += ' --iout={topup_out}_unwarped.nii.gz --fout={topup_out}_topdn_concat_mf_warp_field.nii.gz'
@@ -61,26 +62,13 @@ mean_b0_cmd = 'fslmaths {topup_out}_unwarped -Tmean {topup_out}_unwarped_mean.ni
 eddy_cmd = 'eddy_cuda7.5 --imain={dwif_fname} --mask={b0_brain_mask_fname} --acqp=../acq_params.txt  --index=../index.txt'
 eddy_cmd += ' --bvecs={dwi_bvecs_fname} --bvals={dwi_bvals_fname} --topup={topup_out} --repol --ol_nstd=1.96 --out={ec_dwi_fname}'
 # fsl dtifit command dict to make FA, MD maps etc. then filter tensor, then recon filtered data
-fsl_fit_cmd = 'dtifit -k {ec_dwi_clamp_fname} -o {fsl_fits_out} -m {b0_brain_mask_fname} -b {dwi_bvals_fname}'
-fsl_fit_cmd += ' -r {dwi_bvecs_ec_rot_fname} --save_tensor --wls --sse'
+fsl_fit_cmds = ['dtifit -k %(ec_dwi_clamp_fname)s -o %(fsl_fits_out)s -m %(b0_brain_mask_fname)s -b %(dwi_bvals_fname)s -r %(dwi_bvecs_ec_rot_fname)s --save_tensor --wls --sse',
+                'fslmaths %(fsl_fits_out)s_tensor -fmedian %(fsl_fits_out)s_tensor_%(mf_str)s',
+                'fslmaths %(fsl_fits_out)s_tensor_%(mf_str)s -tensor_decomp %(fsl_fits_out)s_tensor_%(mf_str)s',
+                'imcp %(fsl_fits_out)s_tensor_%(mf_str)s_L1 %(fsl_fits_out)s_tensor_%(mf_str)s_AD',
+                'fslmaths %(fsl_fits_out)s_tensor_%(mf_str)s_L2 -add %(fsl_fits_out)s_tensor_%(mf_str)s_L3 -div 2 %(fsl_fits_out)s_tensor_%(mf_str)s_RD -odt float']
 
 # slicer UKF commands and default parameters to run
-# slicer cmd fm log:
-"""
-/home/toddr/.config/NA-MIC/Extensions-26685/UKFTractography/lib/Slicer-4.9/cli-modules/UKFTractography 
---dwiFile /tmp/Slicer/BEDFF_vtkMRMLDiffusionWeightedVolumeNodeC.nhdr --seedsFile /tmp/Slicer/BEDFF_vtkMRMLLabelMapVolumeNodeE.nhdr 
---labels 1 --maskFile /tmp/Slicer/BEDFF_vtkMRMLLabelMapVolumeNodeE.nhdr --tracts /tmp/Slicer/BEDFF_vtkMRMLFiberBundleNodeC.vtp 
---seedsPerVoxel 1 --seedingThreshold 0.18 --stoppingFA 0.15 --stoppingThreshold 0.1 --numThreads -1 --numTensor 2 --stepLength 0.3 --Qm 0 
---recordLength 0.9 --maxHalfFiberLength 250 --recordNMSE --freeWater --recordFA --recordTrace --recordFreeWater --recordTensors --Ql 0 --Qw 0 
---Qkappa 0.01 --Qvic 0.004 --Rs 0 --sigmaSignal 0 --maxBranchingAngle 0 --minBranchingAngle 0 --minGA 10000 
-
-/home/toddr/.config/NA-MIC/Extensions-26685/UKFTractography/lib/Slicer-4.9/cli-modules/UKFTractography 
---dwiFile /tmp/Slicer/BEDFF_vtkMRMLDiffusionWeightedVolumeNodeC.nhdr --seedsFile /tmp/Slicer/BEDFF_vtkMRMLLabelMapVolumeNodeE.nhdr 
---labels 1 --maskFile /tmp/Slicer/BEDFF_vtkMRMLLabelMapVolumeNodeE.nhdr --tracts /tmp/Slicer/BEDFF_vtkMRMLFiberBundleNodeD.vtp 
---seedsPerVoxel 1 --seedingThreshold 0.18 --stoppingFA 0.15 --stoppingThreshold 0.1 --numThreads -1 --numTensor 1 --stepLength 0.3 --Qm 0 
---recordLength 0.9 --maxHalfFiberLength 250 --Ql 0 --Qw 0 --noddi --recordVic --recordKappa --recordViso 
---Qkappa 0.01 --Qvic 0.004 --Rs 0 --sigmaSignal 0 --maxBranchingAngle 0 --minBranchingAngle 0 --minGA 10000 
-"""
 ukfcmds =  {'UKF_whbr': str(slicer_path) + 'UKFTractography --dwiFile %(dwi_nrrd_fname)s --seedsFile %(b0_brain_mask_fname_nrrd)s'
                     ' --labels 1 --maskFile %(b0_brain_mask_fname_nrrd)s --tracts %(ec_dwi_fname)s_mf_clamp1_UKF_whbr.vtk'
                     ' --seedsPerVoxel 1 --seedingThreshold 0.18 --stoppingFA 0.15 --stoppingThreshold 0.1 --numThreads -1'
@@ -124,7 +112,6 @@ def test4file(file):
     else:
         raise ValueError(str(file) + ' not found.')
 
-
 #  define hostnames with working gpus for processing
 flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo', output_type='NIFTI_GZ')
 if nipype.__version__ == '0.12.0':
@@ -134,67 +121,25 @@ else:
 
 print(os.environ['FSLOUTPUTTYPE'])
 
-# move to opts settings
-# other future stages to run
-subT2 = False   #wip
-b1corr = False
-bet = False
-prefilter = False
-templating = False
-
-"""
-i = 0
-topup, topdn, dwif = topup_fnames[i], topdn_fnames[i], dwi_fnames[i]
-
-dwipath = fs / project / picks[i]['subj'] / picks[i]['session'] / 'dwi'
-orig_dwi_data = nib.load(str(dwipath / (dwi_fnames[i]+'.nii'))).get_data()
-voli = range(orig_dwi_data.shape[3])
-good_voli = list(set(voli) - set(picks[i]['dwi_badvols']))
-good_dwi_data = orig_dwi_data[:,:,:,good_voli]
-orig_bvecs = pd.read_csv(str(dwipath / (dwi_fnames[i]+'.bvecs')), header=None, delim_whitespace=True)
-orig_bvals = pd.read_csv(str(dwipath / (dwi_fnames[i]+'.bvals')), header=None, delim_whitespace=True)
-good_bvecs = orig_bvecs.iloc[:, good_voli]
-good_bvals = orig_bvals.iloc[:, good_voli]
-good_bvecs.to_csv(str(dwipath/ (dwi_fnames[i]+'_selected_vols.bvecs')), header=None, index=None, sep=' ', float_format='%.4f')
-good_bvals.to_csv(str(dwipath/ (dwi_fnames[i]+'_selected_vols.bvals')), header=None, index=None, sep=' ', float_format='%.4f')
-nib.save(nib.Nifti1Image(good_dwi_data,  nib.load(str(dwipath / (dwi_fnames[i]+'.nii'))).affine), str(dwipath / (dwi_fnames[i]+'_selected_vols.nii')))
-
-orig_dwif_fname = dwipath / str(dwif + opts.dwi_pass_qc+'.nii')
-dwi_bvals_fname = dwipath / str(dwif + opts.dwi_pass_qc+'.bvals')
-dwi_bvecs_fname = dwipath / str(dwif + opts.dwi_pass_qc+'.bvecs')
-# pick up at dwi_dwellt_fname below
-
-to do:
-UKF command to modify 
-/home/toddr/.config/NA-MIC/Extensions-26072/UKFTractography/lib/Slicer-4.7/cli-modules/UKFTractography 
---dwiFile /tmp/Slicer/CGGHB_vtkMRMLDiffusionWeightedVolumeNodeB.nhdr --seedsFile /tmp/Slicer/CGGHB_vtkMRMLLabelMapVolumeNodeB.nhdr --labels 1 --maskFile /tmp/Slicer/CGGHB_vtkMRMLLabelMapVolumeNodeB.nhdr --tracts /tmp/Slicer/CGGHB_vtkMRMLFiberBundleNodeB.vtp --seedsPerVoxel 1 --seedFALimit 0.18 --minFA 0.15 --minGA 0.1 --numThreads -1 --numTensor 2 --stepLength 0.3 --Qm 0 --recordLength 1.8 --maxHalfFiberLength 250 --recordNMSE --freeWater --recordFA --recordTrace --recordFreeWater --recordTensors --Ql 0 --Qw 0 --Qkappa 0.01 --Qvic 0.004 --Rs 0 --sigmaSignal 0 --maxBranchingAngle 0 --minBranchingAngle 0 
-NODDI Command to modify
-/home/toddr/.config/NA-MIC/Extensions-26072/UKFTractography/lib/Slicer-4.7/cli-modules/UKFTractography --dwiFile /tmp/Slicer/CECH_vtkMRMLDiffusionWeightedVolumeNodeB.nhdr --seedsFile /tmp/Slicer/CECH_vtkMRMLLabelMapVolumeNodeB.nhdr --labels 1 --maskFile /tmp/Slicer/CECH_vtkMRMLLabelMapVolumeNodeB.nhdr --tracts /tmp/Slicer/CECH_vtkMRMLFiberBundleNodeB.vtp --seedsPerVoxel 1 --seedFALimit 0.18 --minFA 0.15 --minGA 0.1 --numThreads -1 --numTensor 1 --stepLength 0.3 --Qm 0 --recordLength 1.8 --maxHalfFiberLength 250 --Ql 0 --Qw 0 --noddi --recordVic --recordKappa --recordViso --Qkappa 0.01 --Qvic 0.004 --Rs 0 --sigmaSignal 0 --maxBranchingAngle 0 --minBranchingAngle 0 
-"""
-
-
-# run conversion if needed
-# if convert:
-#     subjects = [x['subj'] for x in subjids_picks.subjids]
-#     niftiDict = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
-#     niftiDict, niftiDF = conv_subjs(project, subjects, niftiDict)
-
-picks =  get_dwi_names(subjids_picks)
-
-# i = 0
-# pick = picks[i]
-
 """
 pick dict guide:
 'subj' = subject being processed
 'session' = session being processed
-topup_dn_fname = combined topup and topdown pre unwarping
-topup_out = topup out file basename for unwarping
-
-dwi_fname = dwi file name to be processed if qc then opts.dwi_pass_qc appended to name
+'topup_dn_fname' = combined topup and topdown pre unwarping
+'topup_out' = topup out file basename for unwarping
+'dwi_fname' = dwi file name to be processed if qc then opts.dwi_pass_qc appended to name
 'ec_dwi_fname' = eddy current corrected dwi file for fits and bedpost
-dwi_bvecs_ec_rot_fname = ec rotated bvecs to be used for fits, bedpost etc
+'dwi_bvecs_ec_rot_fname' = ec rotated bvecs to be used for fits, bedpost etc
 """
+picks =  get_dwi_names(subjids_picks)
+
+if opts.test:
+    i = 0
+    picks = [picks[i]]
+# run conversion if needed
+if opts.convert:
+    subjects = [x['subj'] for x in subjids_picks.subjids]
+    niftiDict, niftiDF = conv_subjs(project, subjects)
 
 for i, pick in enumerate(picks):
     result = ()
@@ -338,9 +283,8 @@ for i, pick in enumerate(picks):
     pick['fsl_fits_out'] = dwipath / opts.dwi_fits_dir / '{subj}_{session}_dwi_unwarped_ec_fslfit'.format(**pick)
     pick['dipy_fits_out'] = dwipath / opts.dwi_fits_dir / '{subj}_{session}_dwi_unwarped_ec_dipyfit'.format(**pick)
     with WorkingContext(str(dwipath / opts.dwi_fits_dir)):
-        # do fsl dtifit cmd
-        result += run_subprocess([fsl_fit_cmd.format(**pick)])
-        # filter tensor and reconstruct with fslmaths -tensor_decomp. use ordered list to loop over seq of cmds in dict
+        # do fsl dtifit cmds incl median filter etc
+        result += tuple([run_subprocess(c % pick) for c in fsl_fit_cmds])
         # do dipy fits
         tenmodel = dti.TensorModel(ec_gtab, fit_method='WLS')
         data = nib.load(pick['ec_dwi_clamp_fname']).get_data()
@@ -380,17 +324,17 @@ for i, pick in enumerate(picks):
     if opts.do_ukf:
         try:
             with WorkingContext(str(ec_dir)):
-                print('starting UKF tractography at {:%Y%m%d%H%M}'.format(datetime.now()))
-                result += ('starting UKF tractography at {:%Y%m%d%H%M}'.format(datetime.now()),)
+                print('starting UKF tractography at {:%Y%m%d%H%M}'.format(datetime.datetime.now()))
+                result += ('starting UKF tractography at {:%Y%m%d%H%M}'.format(datetime.datetime.now()),)
                 result += run_subprocess([ukfcmds['UKF_whbr'] % pick])
-                print('finished UKF tractography at {:%Y%m%d%H%M} starting NODDI 1 tensor'.format(datetime.now()))
-                result += ('finished UKF tractography at {:%Y%m%d%H%M} starting NODDI 1 tensor'.format(datetime.now()),)
+                print('finished UKF tractography at {:%Y%m%d%H%M} starting NODDI 1 tensor'.format(datetime.datetime.now()))
+                result += ('finished UKF tractography at {:%Y%m%d%H%M} starting NODDI 1 tensor'.format(datetime.datetime.now()),)
                 result += run_subprocess([ukfcmds['NODDI1'] % pick])
-                print('finished NODDI 1 tensor tractography at {:%Y%m%d%H%M} starting NODDI 2 tensor'.format(datetime.now()))
-                result += ('finished NODDI 1 tensor tractography at {:%Y%m%d%H%M} starting NODDI 2 tensor'.format(datetime.now()),)
+                print('finished NODDI 1 tensor tractography at {:%Y%m%d%H%M} starting NODDI 2 tensor'.format(datetime.datetime.now()))
+                result += ('finished NODDI 1 tensor tractography at {:%Y%m%d%H%M} starting NODDI 2 tensor'.format(datetime.datetime.now()),)
                 result += run_subprocess([ukfcmds['NODDI2'] % pick])
-                print('finished NODDI 2 tensor tractography at {:%Y%m%d%H%M}'.format(datetime.now()))
-                result += ('finished NODDI 2 tensor tractography at {:%Y%m%d%H%M}'.format(datetime.now()),)
+                print('finished NODDI 2 tensor tractography at {:%Y%m%d%H%M}'.format(datetime.datetime.now()))
+                result += ('finished NODDI 2 tensor tractography at {:%Y%m%d%H%M}'.format(datetime.datetime.now()),)
         except:
             print('ukf failed to run with {slicer}'.format(**{'slicer': slicer_path}))
 
@@ -410,7 +354,9 @@ for i, pick in enumerate(picks):
             # run bedpost, probtracks, network, UKF, NODDI, and DKI here
             with WorkingContext(str(dwipath)):
                 if test4working_gpu():
+                    os.environ['FSLPARALLEL'] = ''
                     result += run_subprocess(['bedpostx_gpu bedpost -n 3 --model=2'])
+                    os.environ['FSLPARALLEL'] = 'condor'
                     # what cleanup is required?
                 else:
                     result += run_subprocess(['bedpostx bedpost -n 3 --model=2'])
@@ -449,5 +395,5 @@ probtrackx2 --network -x listseeds.txt  -l --onewaycondition --omatrix1 -c 0.2 -
 subject.node is row by row x y z center of mass coordinate for each seed plus 3 3 3 (space separated
 150 130 48 3 3 3\n # for seed001.nii.gz
 matrix2 = for loop by row matrix / waytotal to normalise and rename to .edge
-this is the input for mricros 
+this is the input for mricros ????? what????
 '''

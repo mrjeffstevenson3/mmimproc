@@ -40,6 +40,7 @@ class Optsd(object):
     def __init__(self,
             # define project variables here. will become dict using opts = Optsd; vars(opts).
             project = 'acdc',
+            test = False,
             overwrite = True,
             convert = False,
             spm_thresh = 0.85,
@@ -65,6 +66,7 @@ class Optsd(object):
             ):
         # make them accessible as obj.var as well as dict
         self.project = project
+        self.test = test
         self.overwrite = overwrite
         self.convert = convert
         self.spm_thresh = spm_thresh
