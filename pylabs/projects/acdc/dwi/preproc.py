@@ -131,17 +131,17 @@ pick dict guide:
 'ec_dwi_fname' = eddy current corrected dwi file for fits and bedpost
 'dwi_bvecs_ec_rot_fname' = ec rotated bvecs to be used for fits, bedpost etc
 """
-picks =  get_dwi_names(subjids_picks)
+dwi_picks =  get_dwi_names(subjids_picks)
 
 if opts.test:
     i = 0
-    picks = [picks[i]]
+    dwi_picks = [dwi_picks[i]]
 # run conversion if needed
 if opts.convert:
     subjects = [x['subj'] for x in subjids_picks.subjids]
     niftiDict, niftiDF = conv_subjs(project, subjects)
 
-for i, pick in enumerate(picks):
+for i, pick in enumerate(dwi_picks):
     result = ()
     dwipath = fs / project / '{subj}/{session}/dwi'.format(**pick)
     regpath = fs / project / '{subj}/{session}/reg'.format(**pick) / opts.dwi_reg_dir
