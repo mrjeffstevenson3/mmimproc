@@ -63,10 +63,10 @@ eddy_cmd = 'eddy_cuda7.5 --imain={dwif_fname} --mask={b0_brain_mask_fname} --acq
 eddy_cmd += ' --bvecs={dwi_bvecs_fname} --bvals={dwi_bvals_fname} --topup={topup_out} --repol --ol_nstd=1.96 --out={ec_dwi_fname}'
 # fsl dtifit command dict to make FA, MD maps etc. then filter tensor, then recon filtered data
 fsl_fit_cmds = ['dtifit -k %(ec_dwi_clamp_fname)s -o %(fsl_fits_out)s -m %(b0_brain_mask_fname)s -b %(dwi_bvals_fname)s -r %(dwi_bvecs_ec_rot_fname)s --save_tensor --wls --sse',
-                'fslmaths %(fsl_fits_out)s_tensor -fmedian %(fsl_fits_out)s_tensor_%(mf_str)s',
-                'fslmaths %(fsl_fits_out)s_tensor_%(mf_str)s -tensor_decomp %(fsl_fits_out)s_tensor_%(mf_str)s',
-                'imcp %(fsl_fits_out)s_tensor_%(mf_str)s_L1 %(fsl_fits_out)s_tensor_%(mf_str)s_AD',
-                'fslmaths %(fsl_fits_out)s_tensor_%(mf_str)s_L2 -add %(fsl_fits_out)s_tensor_%(mf_str)s_L3 -div 2 %(fsl_fits_out)s_tensor_%(mf_str)s_RD -odt float']
+                'fslmaths %(fsl_fits_out)s_tensor -fmedian %(fsl_fits_out)s_tensor%(mf_str)s',
+                'fslmaths %(fsl_fits_out)s_tensor%(mf_str)s -tensor_decomp %(fsl_fits_out)s_tensor%(mf_str)s',
+                'imcp %(fsl_fits_out)s_tensor%(mf_str)s_L1 %(fsl_fits_out)s_tensor%(mf_str)s_AD',
+                'fslmaths %(fsl_fits_out)s_tensor%(mf_str)s_L2 -add %(fsl_fits_out)s_tensor%(mf_str)s_L3 -div 2 %(fsl_fits_out)s_tensor%(mf_str)s_RD -odt float']
 
 # slicer UKF commands and default parameters to run
 ukfcmds =  {'UKF_whbr': str(slicer_path) + 'UKFTractography --dwiFile %(dwi_nrrd_fname)s --seedsFile %(b0_brain_mask_fname_nrrd)s'
