@@ -12,7 +12,7 @@ from pylabs.io.mixed import df2h5
 from pylabs.utils import *
 from pylabs.diffusion.dti_qc import dwi_qc_1bv
 # project and subjects and files to run on
-from pylabs.projects.acdc.file_names import project, SubjIdPicks, get_dwi_names, Opts
+from pylabs.projects.acdc.file_names import project, SubjIdPicks, get_dwi_names, Optsd
 
 #set up provenance
 prov = ProvenanceWrapper()
@@ -20,12 +20,12 @@ prov = ProvenanceWrapper()
 # set up root data directory
 fs = Path(getnetworkdataroot())
 # instantiate project level nomenclature options object
-opts = Opts()
+opts = Optsd()
 # instantiate subject id list object
 subjids_picks = SubjIdPicks()
 # list of dicts of subject ids and info to operate on
 picks = [
-         {'subj': 'sub-acdc117', 'session': 'ses-1', 'run': '1',  # subject selection info
+         {'subj': 'sub-acdc112', 'session': 'ses-1', 'run': '1',  # subject selection info
           },
          ]
 
@@ -34,8 +34,9 @@ setattr(subjids_picks, 'subjids', picks)
 dwi_picks = get_dwi_names(subjids_picks)
 
 # for testing
-#i = 0
-#pick = dwi_picks[i]
+if opts.test:
+    i = 0
+    dwi_picks = [dwi_picks[i]]
 
 for i, pick in enumerate(dwi_picks):
     # read in data and prep results df
