@@ -31,7 +31,7 @@ setattr(subjids_picks, 'subjids', picks)
 
 # string defining reg directory and appended to file name
 reg_dir_name = 'b1map2fsrms'   # for ants warp files
-overwrite = True
+overwrite = False
 hires = True          # for freesurfer
 b1corr = True         # for preprocess rms
 noise_filter = True   # for susan
@@ -41,6 +41,7 @@ neck_chop = True      # chop neck off
 mmzshift = 20         # mm below foramen magnum to chop
 meg_source_spacing = 5    # for mne source space
 bem_from = 'T1'       # or 'brain' if probs with overlapping boundaries in source space
+bem_preflood = 1.5
 
 b1map_fnames, freesurf_fnames = get_freesurf_names(subjids_picks)
 
@@ -108,6 +109,8 @@ for fsf, b1map in zip(freesurf_fnames, b1map_fnames):
         if not overwrite and hires:
             fs_sid += '_hires'
         try:
+            if bem_preflood != None:
+                curr_env['WATERSHED_PREFLOOD_HEIGHTS'] = bem_preflood
             results += mne_subprocess(['mne_setup_mri', '--mri', bem_from, '--subject', fs_sid, '--overwrite'], env=curr_env)
             results += mne_subprocess(['mne', 'watershed_bem', '--subject', fs_sid, '--overwrite'], env=curr_env)
             results += mne_subprocess(['mne_setup_source_space', '--subject', fs_sid, '--spacing', '%.0f' % meg_source_spacing, '--cps'], env=curr_env)
