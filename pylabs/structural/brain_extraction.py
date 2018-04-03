@@ -57,9 +57,9 @@ def extract_brain(file, f_factor=0.3, mmzshift=0.0, mode='T1'):
     flt.inputs.reference = str(file)
     flt.inputs.out_matrix_file = str(file.parent/appendposix(Path(file.stem).stem, '_comroi.mat'))
     flt.inputs.out_file = str(replacesuffix(file, '_comroi'+ext))
-    flt.inputs.search_x = [-60, 60]
-    flt.inputs.search_y = [-60, 60]
-    flt.inputs.search_z = [-60, 60]
+    flt.inputs.searchr_x = [-60, 60]
+    flt.inputs.searchr_y = [-60, 60]
+    flt.inputs.searchr_z = [-60, 60]
     flt.inputs.interp = 'nearestneighbour'
     res = flt.run()
     # apply mat file to MNI mask file to cut off neck

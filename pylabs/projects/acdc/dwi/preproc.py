@@ -1,3 +1,4 @@
+# todo: fix brain extraction by increasing z dim (and maybe xy) to accomodate brain stem and cerebellum of dwi
 # first set global root data directory
 import pylabs
 pylabs.datadir.target = 'jaba'
@@ -176,6 +177,7 @@ for i, pick in enumerate(dwi_picks):
     orig_topdn_data = orig_topdn_img.get_data()
     orig_topdn_affine = orig_topdn_img.affine
 
+    # select volumes that pass dwi qc
     if dwi_qc:
         vis_qc = h52df(opts.info_fname, '/{subj}/{session}/dwi/vis_qc'.format(**pick))
         vis_qc.replace({'True': True, 'False': False}, inplace=True)
@@ -202,7 +204,7 @@ for i, pick in enumerate(dwi_picks):
         topdn_data = orig_topdn_data[:, :, :, np.array(topdn_goodvols.index)]
         savenii(topup_data, orig_topup_affine, topup_fname)
         savenii(topdn_data, orig_topdn_affine, topdn_fname)
-
+    # select all volumes
     else:
         bvals, bvecs = read_bvals_bvecs(str(orig_dwi_bvals_fname), str(orig_dwi_bvecs_fname))
         gtab = gradient_table(bvals, bvecs)
@@ -301,7 +303,7 @@ for i, pick in enumerate(dwi_picks):
         savenii(tensor_ut, affine, '{dipy_fits_out}_tensor.nii'.format(**pick))
         savenii(tensor_ut_mf, affine, '{dipy_fits_out}_tensor_mf.nii'.format(**pick))
         nii2nrrd('{dipy_fits_out}_tensor_mf.nii'.format(**pick), '{dipy_fits_out}_tensor_mf.nhdr'.format(**pick), istensor=True)
-        savenii(fit.fa, affine,'{dipy_fits_out}_FA.nii'.format(**pick), minmax=(0, 1))
+        savenii(fit.fa, affine, '{dipy_fits_out}_FA.nii'.format(**pick), minmax=(0, 1))
         savenii(fit.md, affine, '{dipy_fits_out}_MD.nii'.format(**pick))
         savenii(fit.rd, affine, '{dipy_fits_out}_RD.nii'.format(**pick))
         savenii(fit.ad, affine, '{dipy_fits_out}_AD.nii'.format(**pick))

@@ -68,6 +68,15 @@ def subj2templ_applywarp(moving, ref_img, outfile, warpfiles, execwdir, dims=3, 
     return tuple([(k, v) for k, v in params.iteritems()])
 
 def subj2T1(moving, ref_img, outfile, inargs=None):
+    """
+
+    :param moving:
+    :param ref_img:
+    :param outfile:
+    :param inargs: input arguments -n <num cpu>
+    :example inargs:  -n 30 -t s -p f -j 1 -s 10 -r 1
+    :return:
+    """
     antsRegistrationSyN = get_antsregsyn_cmd()
     args = []
     if inargs == None:
@@ -76,10 +85,8 @@ def subj2T1(moving, ref_img, outfile, inargs=None):
         if '-n' not in '\t'.join(inargs):
             args += ['-n 10']
         args.append(inargs)
-    cmd = ''
-    cmd += antsRegistrationSyN + ' -d 3 -f '+ref_img+' -m '+moving
-    cmd += ' -o '+outfile+' '
-    cmd += ' '.join(map(str, args))
+    cmd = str(antsRegistrationSyN) + ' -d 3 -f ' + ref_img + ' -m ' + moving + ' -o ' + outfile
+    cmd += ' ' + ' '.join(map(str, args))
     output = ()
     t = datetime.datetime.now()
     output += (str(t),)
