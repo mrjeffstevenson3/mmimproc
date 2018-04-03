@@ -10,7 +10,8 @@ import scipy.stats as ss
 import itertools
 import json
 import matlab.engine
-from pylabs.utils import ProvenanceWrapper, getnetworkdataroot, appendposix, bumptodefunct, WorkingContext, run_subprocess, pylabs_dir
+from pylabs.io.mixed import get_h5_keys, h52df
+from pylabs.utils import *
 from pylabs.projects.nbwr.file_names import project
 prov = ProvenanceWrapper()
 
@@ -22,6 +23,7 @@ corr_fpgm = pylabs_dir / 'pylabs/projects/nbwr/mrs/nbwr_spreadsheet_sep27_correl
 plot_fpgm = pylabs_dir / 'pylabs/projects/nbwr/mrs/makeplots_nbwr.txt'
 
 # define input/output file names
+all_info_fname = fs/project/'all_{project}_info.h5'.format(**{'project': project})
 stats_dir = fs/project/'stats'/'mrs'
 glu_fname = 'Paros_Chemdata_tablefile_20180226.txt'
 jonah_glu_fname = 'jonah_Chemdata_tablefile_reformat2017-10-4.csv'
@@ -116,13 +118,22 @@ jonah_lt_corrmetab['left-GluOverGABA'] = jonah_lt_corrmetab['left-Glu-80ms']/jon
 jonah_lt_corrmetab.to_hdf(hdf_fname, 'jonah_left_csf_corrected_mrs_data', mode='a', format='t', append=True, data_columns=jonah_lt_corrmetab.columns)
 
 onerowpersubj = pd.merge(left_side_glu, right_side_glu, left_index=True, right_index=True)
-onerowpersubj['left-percCSF'] = np.nan
-onerowpersubj['right-percCSF']  = np.nan
+
+csf_corr_keys = sorted(get_h5_keys(str(all_info_fname), 'CSF_correction_factors'))
+for k in csf_corr_keys:
+
+
+
+onerowpersubj['left-SPM-percCSF'] = np.nan
+onerowpersubj['right-SPM-percCSF']  = np.nan
+onerowpersubj['left-FSL-percCSF'] = np.nan
+onerowpersubj['right-FSL-percCSF']  = np.nan
 onerowpersubj['left-GABA']  = np.nan
 onerowpersubj['right-GABA']  = np.nan
 onerowpersubj = onerowpersubj[uncorr_cols].T
 onerowpersubj.reindex_axis(sorted(onerowpersubj.columns), axis=1)
 onerowpersubj.drop(exclude_subj, axis=1, inplace=True)
+
 # now get gaba data
 for s in onerowpersubj.columns:
     print('working on '+s)
