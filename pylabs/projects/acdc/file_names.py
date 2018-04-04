@@ -3,6 +3,7 @@
 # class object to pass list of subject ids and passed to functions here using the SubjIdPicks class object.
 # defaults for project set in class Optsd used in all pipelines
 import pylabs
+pylabs.datadir.target = 'jaba'
 from pathlib import *
 import pandas as pd
 from collections import defaultdict

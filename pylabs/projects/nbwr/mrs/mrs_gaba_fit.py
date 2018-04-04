@@ -22,7 +22,7 @@ rawsubjects = list((fs/project).glob('sub-'+project+'*'))
 subjects = []
 for s in rawsubjects:
     if len(str(s.parts[-1])) == 11 and int(str(s.parts[-1]).replace('sub-'+project, '')) < id_thresh:
-        subjects.append(s.parts[-1].replace('sub-nbwr', ''))
+        subjects.append(s.parts[-1].replace('sub-'+project, ''))
 subjects = sorted(subjects)
 
 picks = subjects    #['442', '443'] # only does one subj until bug fix
@@ -77,23 +77,24 @@ for rt_act, rt_ref, lt_act, lt_ref in zip(rt_actfnames, rt_reffnames, lt_actfnam
         for x in results_dir.glob("MRS*"):
             if '_old' not in str(x):
                 for f in x.glob("*.pdf"):
-                    if 'fit' in str(f.parts[-2]):
-                        f.rename(appendposix(f, '_fit'))
-                        if '_RT' in str(f.stem):
+                    if 'fit' in f.parts[-2]:
+                        if 'fit' not in f.name:
+                            f.rename(appendposix(f, '_fit'))
+                        if '_RT' in f.name:
                             subj_info['Right-gaba'], subj_info['Right-gabaovercr'], subj_info['Right-fit-err'], subj_info['Right-perc-fit-err'] = getgabavalue(appendposix(f, '_fit'))
                             subj_info['gaba-fit-datetime'] = '{:%Y%m%d%H%M}'.format(datetime.datetime.now())
                             output += ('Right gaba results for {subj} in {session} is {Right-gaba}'.format(**subj_info),)
                             output += ('Right gaba over Creatinine results for {subj} in {session} is {Right-gabaovercr}'.format(**subj_info),)
-                        elif '_LT' in str(f.stem):
+                        elif '_LT' in f.name:
                             subj_info['Left-gaba'], subj_info['Left-gabaovercr'], subj_info['Left-fit-err'], subj_info['Left-perc-fit-err'] = getgabavalue(appendposix(f, '_fit'))
                             subj_info['gaba-fit-datetime'] = '{:%Y%m%d%H%M}'.format(datetime.datetime.now())
                             output += ('Left gaba results for {subj} in {session} is {Left-gaba}'.format(**subj_info),)
                             output += ('Left gaba over Creatinine results for {subj} in {session} is {Left-gabaovercr}'.format(**subj_info),)
-                    if 'output' in str(f.parts[-2]):
+                    if 'output' in f.parts[-2] and 'output' not in f.name:
                         f.rename(appendposix(f, '_output'))
         print("({})".format(", ".join(output)))
-        print('GABA fits completed normally for ' + results_dir.parts[-3])
-        print ('Left gaba results = ' + str(subj_info['Left-gaba']) + ' and right side gaba = ' + str(subj_info['Right-gaba']))
+        print('GABA fits completed normally for {subj} {session}'.format(**subj_info))
+        print ('Left gaba results = {Left-gaba} and right side gaba = {Right-gaba}'.format(**subj_info))
         with open(str(results_dir/'mrs_gaba_log{:%Y%m%d%H%M}.json'.format(datetime.datetime.now())), mode='a') as logr:
             json.dump(output, logr, indent=2)
         # for p in results_dir.rglob("*.pdf"):
