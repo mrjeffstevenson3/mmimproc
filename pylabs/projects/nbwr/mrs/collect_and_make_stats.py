@@ -26,7 +26,7 @@ plot_fpgm = pylabs_dir / 'pylabs/projects/nbwr/mrs/makeplots_nbwr.txt'
 # define input/output file names
 all_info_fname = fs/project/'all_{project}_info.h5'.format(**{'project': project})
 stats_dir = fs/project/'stats'/'mrs'
-glu_fname = 'Paros_Chemdata_tablefile_20180226.txt'
+glu_fname = 'Paros_Chemdata_tablefile.txt'
 jonah_glu_fname = 'jonah_Chemdata_tablefile_reformat2017-10-4.csv'
 base_fname = fs / project / 'stats' / 'mrs' / 'all_nbwr_mrs'
 uncorr_csv_fname = appendposix(base_fname, '_uncorr_fits.csv')
@@ -36,6 +36,7 @@ hdf_fname = appendposix(base_fname, '_results_csfcorr_fits.h5')
 fcsf_corr_fname = base_fname.parent / 'csfcorrected.csv'
 fstats_fname =  base_fname.parent / 'stats_tvalue.csv'
 
+# for todds correlation plots
 # set up matlab runtime engine - disable for manual runs
 # eng = matlab.engine.start_matlab("-noFigureWindows -nodesktop -nodisplay -nosplash")    #"-nodesktop" or try "-nodisplay"
 # eng.addpath(eng.genpath(str(pylabs_dir)))
@@ -53,8 +54,8 @@ corr_cols = [u'left-GABA', u'left-NAAplusNAAG', u'left-GPCplusPCh', u'left-Crplu
 ftran_cols = [u'csfcorrected_left-GABA             ', u'csfcorrected_left-NAAplusNAAG      ', u'csfcorrected_left-GPCplusPCh       ', u'csfcorrected_left-CrplusPCr        ', u'csfcorrected_left-mIns             ', u'csfcorrected_left-Glu-80ms         ', u'csfcorrected_glu_gaba_ratio_left   ', u'csfcorrected_right-GABA            ', u'csfcorrected_right-NAAplusNAAG     ', u'csfcorrected_right-GPCplusPCh      ', u'csfcorrected_right-CrplusPCr       ', u'csfcorrected_right-mIns            ', u'csfcorrected_right-Glu-80ms        ', u'csfcorrected_glu_gaba_ratio_right  ']
 exclude_subj = []   #['sub-nbwr997', 'sub-nbwr998', 'sub-nbwr999', ]  # 'sub-nbwr136', 'sub-nbwr447']
 exclude_data = ['Scan', 'Hemisphere', 'short_FWHM', 'short_SNR', 'short_TE', 'long_FWHM', 'long_SNR', 'long_TE']
-right_col_map = {'NAA+NAAG': 'right-NAAplusNAAG', 'GPC+PCh': 'right-GPCplusPCh', 'Cr+PCr': 'right-CrplusPCr', 'mIns': 'right-mIns', 'Glu': 'right-Glu-80ms'}
-left_col_map = {'NAA+NAAG': 'left-NAAplusNAAG', 'GPC+PCh': 'left-GPCplusPCh', 'Cr+PCr': 'left-CrplusPCr', 'mIns': 'left-mIns', 'Glu': 'left-Glu-80ms'}
+right_col_map = {'NAA+NAAG': 'right-NAAplusNAAG', 'GPC+PCh': 'right-GPCplusPCh', 'Cr+PCr': 'right-CrplusPCr', 'mIns': 'right-mIns', 'Glu': 'right-Glu-80ms', 'region': 'right-region'}
+left_col_map = {'NAA+NAAG': 'left-NAAplusNAAG', 'GPC+PCh': 'left-GPCplusPCh', 'Cr+PCr': 'left-CrplusPCr', 'mIns': 'left-mIns', 'Glu': 'left-Glu-80ms', 'region': 'left-region'}
 ftran2py_col_map = dict(zip(ftran_cols, corr_cols))
 #fcsf_corr.columns.str.strip().str.replace('_', '-') use this to change and map new fortran df cols
 left_metab = ['left-GABA', 'left-NAAplusNAAG', 'left-GPCplusPCh', 'left-CrplusPCr', 'left-mIns', 'left-Glu-80ms']
@@ -78,14 +79,15 @@ glu_data['region'] = glu_data['Hemisphere'].map({'LT': 'left-insula', 'RT': 'rig
 glu_data['method'] = 'lcmodel'
 glu_data.reset_index(inplace=True)
 glu_data.drop(exclude_data, axis=1, inplace=True)
-right_side_glu = glu_data.loc[1::2]
-left_side_glu = glu_data.loc[::2]
-right_side_glu.copy('deep')
-left_side_glu.copy('deep')
+right_side_glu = glu_data.loc[1::2] # start row 1 skip every other
+left_side_glu = glu_data.loc[::2] # start row 0 skip every other
+right_side_glu.copy('deep') # make view of object a data containing object
+left_side_glu.copy('deep') # make view of object a data containing object
 right_side_glu.set_index('subject', inplace=True)
 left_side_glu.set_index('subject', inplace=True)
-right_side_glu.to_hdf(hdf_fname, 'right_side_glutamate_and_other_metabolites', mode='a', format='t', append=True, data_columns=right_side_glu.columns)
-left_side_glu.to_hdf(hdf_fname, 'left_side_glutamate_and_other_metabolites', mode='a', format='t', append=True, data_columns=left_side_glu.columns)
+
+# right_side_glu.to_hdf(hdf_fname, 'right_side_glutamate_and_other_metabolites', mode='a', format='t', append=True, data_columns=right_side_glu.columns)
+# left_side_glu.to_hdf(hdf_fname, 'left_side_glutamate_and_other_metabolites', mode='a', format='t', append=True, data_columns=left_side_glu.columns)
 right_side_glu.rename(columns=right_col_map, inplace=True)
 left_side_glu.rename(columns=left_col_map, inplace=True)
 # save orig glu fits to h5
@@ -124,7 +126,9 @@ if include_jonah:
 onerowpersubj = pd.merge(left_side_glu, right_side_glu, left_index=True, right_index=True)
 
 csf_corr_keys = sorted(get_h5_keys(str(all_info_fname), 'CSF_correction_factors'))
-for k in csf_corr_keys:
+
+
+#for k in csf_corr_keys:   # loop over subjects and add csf correction data
 
 
 
