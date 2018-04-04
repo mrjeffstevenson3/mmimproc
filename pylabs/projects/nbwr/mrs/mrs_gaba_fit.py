@@ -3,6 +3,7 @@
 # first set global root data directory
 import pylabs
 pylabs.datadir.target = 'jaba'
+import pandas as pd
 from pathlib import *
 import datetime, json
 from pylabs.utils import ProvenanceWrapper, run_subprocess, WorkingContext, getnetworkdataroot, appendposix
