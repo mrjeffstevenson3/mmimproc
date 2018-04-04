@@ -32,18 +32,15 @@ setattr(subjids_picks, 'source_path', fs / project / 'sub-nbwr%(sid)s' / 'ses-1'
 
 rt_actfnames, rt_reffnames, lt_actfnames, lt_reffnames = get_gaba_names(subjids_picks)
 
+# for testing
+# i = 0
+# rt_act, rt_ref, lt_act, lt_ref = rt_actfnames[i], rt_reffnames[i], lt_actfnames[i], lt_reffnames[i]
 
 for rt_act, rt_ref, lt_act, lt_ref in zip(rt_actfnames, rt_reffnames, lt_actfnames, lt_reffnames):
-    # use only if rt side has motion like 215
-    #toddpath = rt_act.parent/'toddtest'
-    #rt_act = toddpath/'sub-nbwr215_WIP_RTGABAMM_TE80_120DYN_12_2_edited_dyn80_raw_act.SDAT'
-    
     results_dir = rt_act.parents[1].joinpath('mrs')
     subj_info = {'subj': results_dir.parts[-3],
                  'session': results_dir.parts[-2],
                  'modality': results_dir.parts[-1]}
-
-
     if not results_dir.is_dir():
         results_dir.mkdir(parents=True)
 
@@ -78,18 +75,18 @@ for rt_act, rt_ref, lt_act, lt_ref in zip(rt_actfnames, rt_reffnames, lt_actfnam
             if '_old' not in str(x):
                 for f in x.glob("*.pdf"):
                     if 'fit' in f.parts[-2]:
-                        if 'fit' not in f.name:
-                            f.rename(appendposix(f, '_fit'))
                         if '_RT' in f.name:
-                            subj_info['Right-gaba'], subj_info['Right-gabaovercr'], subj_info['Right-fit-err'], subj_info['Right-perc-fit-err'] = getgabavalue(appendposix(f, '_fit'))
+                            subj_info['Right-gaba'], subj_info['Right-gabaovercr'], subj_info['Right-fit-err'], subj_info['Right-perc-fit-err'] = getgabavalue(f)
                             subj_info['gaba-fit-datetime'] = '{:%Y%m%d%H%M}'.format(datetime.datetime.now())
                             output += ('Right gaba results for {subj} in {session} is {Right-gaba}'.format(**subj_info),)
                             output += ('Right gaba over Creatinine results for {subj} in {session} is {Right-gabaovercr}'.format(**subj_info),)
                         elif '_LT' in f.name:
-                            subj_info['Left-gaba'], subj_info['Left-gabaovercr'], subj_info['Left-fit-err'], subj_info['Left-perc-fit-err'] = getgabavalue(appendposix(f, '_fit'))
+                            subj_info['Left-gaba'], subj_info['Left-gabaovercr'], subj_info['Left-fit-err'], subj_info['Left-perc-fit-err'] = getgabavalue(f)
                             subj_info['gaba-fit-datetime'] = '{:%Y%m%d%H%M}'.format(datetime.datetime.now())
                             output += ('Left gaba results for {subj} in {session} is {Left-gaba}'.format(**subj_info),)
                             output += ('Left gaba over Creatinine results for {subj} in {session} is {Left-gabaovercr}'.format(**subj_info),)
+                        if 'fit' not in f.name:
+                            f.rename(appendposix(f, '_fit'))
                     if 'output' in f.parts[-2] and 'output' not in f.name:
                         f.rename(appendposix(f, '_output'))
         print("({})".format(", ".join(output)))
@@ -97,10 +94,10 @@ for rt_act, rt_ref, lt_act, lt_ref in zip(rt_actfnames, rt_reffnames, lt_actfnam
         print ('Left gaba results = {Left-gaba} and right side gaba = {Right-gaba}'.format(**subj_info))
         with open(str(results_dir/'mrs_gaba_log{:%Y%m%d%H%M}.json'.format(datetime.datetime.now())), mode='a') as logr:
             json.dump(output, logr, indent=2)
-        # for p in results_dir.rglob("*.pdf"):
-        #     if '_RT' in str(p.stem):
-        #         prov.log(str(p), 'gannet gaba fit for right side', str(rt_act), script=__file__, provenance={'log': output})
-        #     if '_LT' in str(p.stem):
-        #         prov.log(str(p), 'gannet gaba fit for left side', str(lt_act), script=__file__, provenance={'log': output})
+        for p in results_dir.rglob("*.pdf"):
+            if '_RT' in str(p.stem):
+                prov.log(str(p), 'gannet gaba fit for right side', str(rt_act), script=__file__, provenance={'log': output})
+            if '_LT' in str(p.stem):
+                prov.log(str(p), 'gannet gaba fit for left side', str(lt_act), script=__file__, provenance={'log': output})
         df2h5(pd.DataFrame.from_dict({'gaba_fit_info': subj_info}), all_info_fname, '/{subj}/{session}/mrs/gaba_fit_info'.format(**subj_info))
 
