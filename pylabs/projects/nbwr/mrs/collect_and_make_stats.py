@@ -1,4 +1,4 @@
-# this is awraper function for mrs that collects the disparate mrs data, calculates group stats, and output to google spreadsheet.
+# this is a wrapper function for mrs that collects the disparate mrs data, calculates group stats, and output to google spreadsheet.
 # first set global root data directory
 import pylabs
 pylabs.datadir.target = 'jaba'
@@ -10,12 +10,13 @@ import scipy.stats as ss
 import itertools
 import json
 import matlab.engine
-from pylabs.io.mixed import get_h5_keys, h52df
+from pylabs.io.mixed import get_h5_keys, h52df, df2h5
 from pylabs.utils import *
 from pylabs.projects.nbwr.file_names import project
 prov = ProvenanceWrapper()
 
 fs = Path(getnetworkdataroot())
+include_jonah = False
 
 #define fortran programs
 stats_fpgm = pylabs_dir / 'pylabs/projects/nbwr/mrs/nbwr_spreadsheet_sep19_2017'
@@ -66,7 +67,7 @@ metab_to_correlate = [ u'right-Glu-80ms', u'right-GluOverGABA']
 ftran_cols_to_correlate = [u'csfcorrected-right-Glu-80ms        ', u'csfcorrected-glu-gaba-ratio-right  ']
 # get neva's lc model csv file
 glu_data = pd.read_csv(str(stats_dir/glu_fname), delim_whitespace=True)
-#need to edit a few subject ids
+# may not need to edit a few subject ids as of feb 2018
 ids2rename = {'NBWR404c': 'NBWR404', 'NWBR999B': 'NBWR999'}
 glu_data.set_index(['Scan'], inplace=True)
 glu_data.rename(index=ids2rename, inplace=True)
@@ -87,35 +88,38 @@ right_side_glu.to_hdf(hdf_fname, 'right_side_glutamate_and_other_metabolites', m
 left_side_glu.to_hdf(hdf_fname, 'left_side_glutamate_and_other_metabolites', mode='a', format='t', append=True, data_columns=left_side_glu.columns)
 right_side_glu.rename(columns=right_col_map, inplace=True)
 left_side_glu.rename(columns=left_col_map, inplace=True)
+# save orig glu fits to h5
+df2h5(pd.merge(left_side_glu, right_side_glu, left_index=True, right_index=True), all_info_fname, '/stats/mrs/orig_glu_fits')
 
-# get jonah comparison data
-jonah_glu_data = pd.read_csv(str(stats_dir/jonah_glu_fname))
-jonah_glu_data.set_index('subject', inplace=True)
-jonah_glu_data.rename(columns=left_col_map, inplace=True)
-jonah_glu_data.drop(exclude_data[1:], axis=1, inplace=True)
-jonah_glu_data['left-percCSF'] = np.nan
-jonah_glu_data['left-GABA']  = np.nan
-jonah_glu_data = jonah_glu_data.T
-for ses in ['1','2']:
-    mrs_dir = fs / 'tadpole' / 'sub-tadpole001' / str('ses-'+ses) / 'mrs'
-    jonah_gaba_fits_logf = sorted(list(mrs_dir.rglob('mrs_gaba_log*.json')),
-                            key=lambda date: int(date.stem.split('_')[-1].replace('log', '')))[-1]
-    with open(str(jonah_gaba_fits_logf), 'r') as gf:
-        log_data = json.load(gf)
-    for line in log_data:
-        if 'Left gaba results' in line:
-            lt_gaba_val = float(line.split()[3])
-            jonah_glu_data.loc['left-GABA', 'sub-tadpole00'+ses] = lt_gaba_val
-    csf_frac = pd.read_csv(str(mrs_dir / 'sub-tadpole001_csf_fractions.csv'))
-    csf_frac.set_index('sub-tadpole001', inplace=True)
-    jonah_glu_data.loc['left-percCSF', 'sub-tadpole00'+ses] = csf_frac.loc['left-percCSF'].values[0]
+if include_jonah:
+    # get jonah comparison data
+    jonah_glu_data = pd.read_csv(str(stats_dir/jonah_glu_fname))
+    jonah_glu_data.set_index('subject', inplace=True)
+    jonah_glu_data.rename(columns=left_col_map, inplace=True)
+    jonah_glu_data.drop(exclude_data[1:], axis=1, inplace=True)
+    jonah_glu_data['left-percCSF'] = np.nan
+    jonah_glu_data['left-GABA']  = np.nan
+    jonah_glu_data = jonah_glu_data.T
+    for ses in ['1','2']:
+        mrs_dir = fs / 'tadpole' / 'sub-tadpole001' / str('ses-'+ses) / 'mrs'
+        jonah_gaba_fits_logf = sorted(list(mrs_dir.rglob('mrs_gaba_log*.json')),
+                                key=lambda date: int(date.stem.split('_')[-1].replace('log', '')))[-1]
+        with open(str(jonah_gaba_fits_logf), 'r') as gf:
+            log_data = json.load(gf)
+        for line in log_data:
+            if 'Left gaba results' in line:
+                lt_gaba_val = float(line.split()[3])
+                jonah_glu_data.loc['left-GABA', 'sub-tadpole00'+ses] = lt_gaba_val
+        csf_frac = pd.read_csv(str(mrs_dir / 'sub-tadpole001_csf_fractions.csv'))
+        csf_frac.set_index('sub-tadpole001', inplace=True)
+        jonah_glu_data.loc['left-percCSF', 'sub-tadpole00'+ses] = csf_frac.loc['left-percCSF'].values[0]
 
-jonah_glu_data = jonah_glu_data.T
-jonah_glu_data['left-1over1minfracCSF'] = 1 / (1 - jonah_glu_data.loc[:, 'left-percCSF'])
-jonah_lt_corrmetab = jonah_glu_data[left_metab].multiply(jonah_glu_data['left-1over1minfracCSF'], axis='index')
-jonah_lt_corrmetab['left-GluOverGABA'] = jonah_lt_corrmetab['left-Glu-80ms']/jonah_lt_corrmetab['left-GABA']
-#save jonah data to hdf
-jonah_lt_corrmetab.to_hdf(hdf_fname, 'jonah_left_csf_corrected_mrs_data', mode='a', format='t', append=True, data_columns=jonah_lt_corrmetab.columns)
+    jonah_glu_data = jonah_glu_data.T
+    jonah_glu_data['left-1over1minfracCSF'] = 1 / (1 - jonah_glu_data.loc[:, 'left-percCSF'])
+    jonah_lt_corrmetab = jonah_glu_data[left_metab].multiply(jonah_glu_data['left-1over1minfracCSF'], axis='index')
+    jonah_lt_corrmetab['left-GluOverGABA'] = jonah_lt_corrmetab['left-Glu-80ms']/jonah_lt_corrmetab['left-GABA']
+    #save jonah data to hdf
+    jonah_lt_corrmetab.to_hdf(hdf_fname, 'jonah_left_csf_corrected_mrs_data', mode='a', format='t', append=True, data_columns=jonah_lt_corrmetab.columns)
 
 onerowpersubj = pd.merge(left_side_glu, right_side_glu, left_index=True, right_index=True)
 
@@ -336,5 +340,5 @@ stats_worksheet.set_row(19, {'align': 'left'})
 #stats_worksheet.conditional_format('B4:O4', {'type': 'cell', 'criteria': '<=', 'value': 0.05, 'bg_color': '#FFC7CE'})
 writer.save()
 
-eng.quit()
+#eng.quit()
 
