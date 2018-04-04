@@ -183,6 +183,9 @@ right_FSLcorr['right-GluOverGABA'] = right_FSLcorr['right-Glu-80ms']/right_FSLco
 right_FSLcorr = right_FSLcorr.join(onerowpersubj['right-gabaovercr'])
 FSLcorr_metab = pd.merge(left_FSLcorr, right_FSLcorr, left_index=True, right_index=True)
 
+# shortcut to get data to todd
+SPMcorr_metab.to_csv(str(stats_dir/'for_todd_SPMcorrected_metabolites.csv'), header=True, index=True, sep=',', float_format='%.8f')
+FSLcorr_metab.to_csv(str(stats_dir/'for_todd_FSLcorrected_metabolites.csv'), header=True, index=True, sep=',', float_format='%.8f')
 
 
 #
