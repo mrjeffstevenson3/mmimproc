@@ -142,6 +142,7 @@ def h52df(h5_fname, key):
         raise ValueError(str(h5_fname)+' h5 file not found.')
     with pd.HDFStore(str(h5_fname)) as storeh5:
         df = storeh5.select(key)
+        df = df.apply(pd.to_numeric, errors='ignore')
     return df
 
 def get_h5_keys(h5_fname, key=None):

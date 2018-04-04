@@ -101,4 +101,3 @@ for rt_act, rt_ref, lt_act, lt_ref in zip(rt_actfnames, rt_reffnames, lt_actfnam
             if '_LT' in str(p.stem):
                 prov.log(str(p), 'gannet gaba fit for left side', str(lt_act), script=__file__, provenance={'log': output})
         df2h5(pd.DataFrame.from_dict({'gaba_fit_info': subj_info}), all_info_fname, '/{subj}/{session}/mrs/gaba_fit_info'.format(**subj_info))
-

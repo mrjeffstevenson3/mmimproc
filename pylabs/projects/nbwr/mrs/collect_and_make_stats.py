@@ -60,6 +60,7 @@ ftran2py_col_map = dict(zip(ftran_cols, corr_cols))
 #fcsf_corr.columns.str.strip().str.replace('_', '-') use this to change and map new fortran df cols
 left_metab = ['left-GABA', 'left-NAAplusNAAG', 'left-GPCplusPCh', 'left-CrplusPCr', 'left-mIns', 'left-Glu-80ms']
 right_metab = [ 'right-GABA', 'right-NAAplusNAAG', 'right-GPCplusPCh', 'right-CrplusPCr', 'right-mIns', 'right-Glu-80ms']
+subjs_on_meds = ['sub-nbwr007', 'sub-nbwr081', 'sub-nbwr215', 'sub-nbwr317']
 
 behav_cols_of_interest = [u'VCI Composite', u'PRI Composite', u'FSIQ-4 Composite', u'FSIQ-2 Composite']  # options: u'SRS-2 Total T-Score', u'Awr T-Score', u'Cog T-Score', u'Com T-Score', u'Mot T-Score', u'RRB T-Score', u'SCI T-Score'
 behav_col_map = {'VCI Composite':  'VCI-Composite','PRI Composite':  'PRI-Composite', 'FSIQ-4 Composite':  'FSIQ-4-Composite', 'FSIQ-2 Composite': 'FSIQ-2-Composite'}
