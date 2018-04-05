@@ -88,52 +88,18 @@ right_side_glu.set_index('subject', inplace=True)
 left_side_glu.set_index('subject', inplace=True)
 right_side_glu.rename(columns=right_col_map, inplace=True)
 left_side_glu.rename(columns=left_col_map, inplace=True)
-
-
-if include_jonah:
-    # get jonah comparison data
-    jonah_glu_data = pd.read_csv(str(stats_dir/jonah_glu_fname))
-    jonah_glu_data.set_index('subject', inplace=True)
-    jonah_glu_data.rename(columns=left_col_map, inplace=True)
-    jonah_glu_data.drop(exclude_data[1:], axis=1, inplace=True)
-    jonah_glu_data['left-percCSF'] = np.nan
-    jonah_glu_data['left-GABA']  = np.nan
-    jonah_glu_data = jonah_glu_data.T
-    for ses in ['1','2']:
-        mrs_dir = fs / 'tadpole' / 'sub-tadpole001' / str('ses-'+ses) / 'mrs'
-        jonah_gaba_fits_logf = sorted(list(mrs_dir.rglob('mrs_gaba_log*.json')),
-                                key=lambda date: int(date.stem.split('_')[-1].replace('log', '')))[-1]
-        with open(str(jonah_gaba_fits_logf), 'r') as gf:
-            log_data = json.load(gf)
-        for line in log_data:
-            if 'Left gaba results' in line:
-                lt_gaba_val = float(line.split()[3])
-                jonah_glu_data.loc['left-GABA', 'sub-tadpole00'+ses] = lt_gaba_val
-        csf_frac = pd.read_csv(str(mrs_dir / 'sub-tadpole001_csf_fractions.csv'))
-        csf_frac.set_index('sub-tadpole001', inplace=True)
-        jonah_glu_data.loc['left-percCSF', 'sub-tadpole00'+ses] = csf_frac.loc['left-percCSF'].values[0]
-
-    jonah_glu_data = jonah_glu_data.T
-    jonah_glu_data['left-1over1minfracCSF'] = 1 / (1 - jonah_glu_data.loc[:, 'left-percCSF'])
-    jonah_lt_corrmetab = jonah_glu_data[left_metab].multiply(jonah_glu_data['left-1over1minfracCSF'], axis='index')
-    jonah_lt_corrmetab['left-GluOverGABA'] = jonah_lt_corrmetab['left-Glu-80ms']/jonah_lt_corrmetab['left-GABA']
-    #save jonah data to hdf
-    jonah_lt_corrmetab.to_hdf(hdf_fname, 'jonah_left_csf_corrected_mrs_data', mode='a', format='t', append=True, data_columns=jonah_lt_corrmetab.columns)
-
 onerowpersubj = pd.merge(left_side_glu, right_side_glu, left_index=True, right_index=True)
-
 # save orig glu fits to h5
-df2h5(onerowpersubj, all_info_fname, '/stats/mrs/orig_glu_fits')
-onerowpersubj['left-SPM-percCSF'] = np.nan
-onerowpersubj['right-SPM-percCSF']  = np.nan
-onerowpersubj['left-FSL-percCSF'] = np.nan
-onerowpersubj['right-FSL-percCSF']  = np.nan
-onerowpersubj['left-GABA']  = np.nan
-onerowpersubj['right-GABA']  = np.nan
-onerowpersubj['left-gabaovercr']  = np.nan
-onerowpersubj['right-gabaovercr']  = np.nan
-onerowpersubj = onerowpersubj[uncorr_cols]
-onerowpersubj.reindex_axis(sorted(onerowpersubj.columns), axis=1)
+# df2h5(onerowpersubj, all_info_fname, '/stats/mrs/orig_glu_fits')
+# onerowpersubj['left-SPM-percCSF'] = np.nan
+# onerowpersubj['right-SPM-percCSF']  = np.nan
+# onerowpersubj['left-FSL-percCSF'] = np.nan
+# onerowpersubj['right-FSL-percCSF']  = np.nan
+# onerowpersubj['left-GABA']  = np.nan
+# onerowpersubj['right-GABA']  = np.nan
+# onerowpersubj['left-gabaovercr']  = np.nan
+# onerowpersubj['right-gabaovercr']  = np.nan
+
 onerowpersubj.drop(exclude_subj, axis=1, inplace=True)
 
 csf_corr_keys = sorted(get_h5_keys(str(all_info_fname), 'CSF_correction_factors'))
@@ -165,6 +131,9 @@ onerowpersubj['right-SPM-1over1minfracCSF'] = 1 / (1 - onerowpersubj.loc[:, 'rig
 onerowpersubj['left-FSL-1over1minfracCSF'] = 1 / (1 - onerowpersubj.loc[:, 'left-FSL-percCSF'])
 onerowpersubj['right-FSL-1over1minfracCSF'] = 1 / (1 - onerowpersubj.loc[:, 'right-FSL-percCSF'])
 
+# onerowpersubj = onerowpersubj[uncorr_cols]
+# onerowpersubj.reindex_axis(sorted(onerowpersubj.columns), axis=1)
+
 
 left_SPMcorr = onerowpersubj[left_metab].multiply(onerowpersubj['left-SPM-1over1minfracCSF'], axis='index')
 right_SPMcorr = onerowpersubj[right_metab].multiply(onerowpersubj['right-SPM-1over1minfracCSF'], axis='index')
@@ -183,41 +152,11 @@ right_FSLcorr['right-GluOverGABA'] = right_FSLcorr['right-Glu-80ms']/right_FSLco
 right_FSLcorr = right_FSLcorr.join(onerowpersubj['right-gabaovercr'])
 FSLcorr_metab = pd.merge(left_FSLcorr, right_FSLcorr, left_index=True, right_index=True)
 
+
+
 # shortcut to get data to todd
 SPMcorr_metab.to_csv(str(stats_dir/'for_todd_SPMcorrected_metabolites.csv'), header=True, index=True, sep=',', float_format='%.8f')
 FSLcorr_metab.to_csv(str(stats_dir/'for_todd_FSLcorrected_metabolites.csv'), header=True, index=True, sep=',', float_format='%.8f')
-
-
-#
-#     # now get gaba data
-# for s in onerowpersubj.columns:
-#     print('working on '+s)
-#     mrs_dir = fs / project / s / 'ses-1' / 'mrs'
-#     if len(list(mrs_dir.rglob('mrs_gaba_log*.json'))) in [0,[],None]:
-#         raise ValueError('mrs_gaba_log file missing for '+s+'. make sure gaba fit was run with MRSfit subdirs in mrs dir.')
-#     else:
-#         gaba_fits_logf = sorted(list(mrs_dir.rglob('mrs_gaba_log*.json')), key=lambda date: int(date.stem.split('_')[-1].replace('log', '')))[-1]
-#     with open(str(gaba_fits_logf), 'r') as gf:
-#         log_data = json.load(gf)
-#     for line in log_data:
-#         if 'Left gaba results' in line:
-#             lt_gaba_val = float(line.split()[3])
-#         if 'Right gaba over Creatinine results' in line:
-#             rt_gaba_over_cr = float(line.split()[5])
-#         if 'Right gaba results' in line:
-#             rt_gaba_val = float(line.split()[3])
-#         if 'Left gaba over Creatinine results' in line:
-#             lt_gaba_over_cr = float(line.split()[5])
-#
-#     onerowpersubj.loc['right-GABA', s] = rt_gaba_val
-#     onerowpersubj.loc['right-GABAoverCR', s] = rt_gaba_over_cr
-#     onerowpersubj.loc['left-GABA', s] = lt_gaba_val
-#     onerowpersubj.loc['left-GABAoverCR', s] = lt_gaba_over_cr
-#
-#     csf_frac = pd.read_csv(str(mrs_dir / str(s + '_csf_fractions.csv')))
-#     csf_frac.set_index(s, inplace=True)
-#     onerowpersubj.loc['left-percCSF', s] = csf_frac.loc['left-percCSF'][0]
-#     onerowpersubj.loc['right-percCSF', s] = csf_frac.loc['right-percCSF'][0]
 
 # behavior data
 behav_fname = stats_dir / 'GABA_subject_information.xlsx'      #'GABA.xlsx'
@@ -228,6 +167,36 @@ behav_data = behav_raw[behav_cols_of_interest]
 behav_data.rename(columns=behav_col_map, inplace=True)
 behav_data.copy('deep')
 behav_data.sort_index(inplace=True)
+
+if include_jonah:
+    # get jonah comparison data
+    jonah_glu_data = pd.read_csv(str(stats_dir/jonah_glu_fname))
+    jonah_glu_data.set_index('subject', inplace=True)
+    jonah_glu_data.rename(columns=left_col_map, inplace=True)
+    jonah_glu_data.drop(exclude_data[1:], axis=1, inplace=True)
+    jonah_glu_data['left-percCSF'] = np.nan
+    jonah_glu_data['left-GABA']  = np.nan
+    jonah_glu_data = jonah_glu_data.T
+    for ses in ['1','2']:
+        mrs_dir = fs / 'tadpole' / 'sub-tadpole001' / str('ses-'+ses) / 'mrs'
+        jonah_gaba_fits_logf = sorted(list(mrs_dir.rglob('mrs_gaba_log*.json')),
+                                key=lambda date: int(date.stem.split('_')[-1].replace('log', '')))[-1]
+        with open(str(jonah_gaba_fits_logf), 'r') as gf:
+            log_data = json.load(gf)
+        for line in log_data:
+            if 'Left gaba results' in line:
+                lt_gaba_val = float(line.split()[3])
+                jonah_glu_data.loc['left-GABA', 'sub-tadpole00'+ses] = lt_gaba_val
+        csf_frac = pd.read_csv(str(mrs_dir / 'sub-tadpole001_csf_fractions.csv'))
+        csf_frac.set_index('sub-tadpole001', inplace=True)
+        jonah_glu_data.loc['left-percCSF', 'sub-tadpole00'+ses] = csf_frac.loc['left-percCSF'].values[0]
+
+    jonah_glu_data = jonah_glu_data.T
+    jonah_glu_data['left-1over1minfracCSF'] = 1 / (1 - jonah_glu_data.loc[:, 'left-percCSF'])
+    jonah_lt_corrmetab = jonah_glu_data[left_metab].multiply(jonah_glu_data['left-1over1minfracCSF'], axis='index')
+    jonah_lt_corrmetab['left-GluOverGABA'] = jonah_lt_corrmetab['left-Glu-80ms']/jonah_lt_corrmetab['left-GABA']
+    #save jonah data to hdf
+    jonah_lt_corrmetab.to_hdf(hdf_fname, 'jonah_left_csf_corrected_mrs_data', mode='a', format='t', append=True, data_columns=jonah_lt_corrmetab.columns)
 
 # do fortran stats 1st
 onerowpersubj.to_csv(str(uncorr_csv_fname), header=True, index=True, na_rep=9999, index_label='metabolite')
@@ -248,17 +217,17 @@ with WorkingContext(str(uncorr_csv_fname.parent)):
         cfn.write(fcsf_corr_fname.name + '\n')  # was csfcorr_csv_fname.name
     rlog += run_subprocess(str(stats_fpgm))
 
-#onerowpersubj = onerowpersubj.T
-onerowpersubj['left-1over1minfracCSF'] = 1 / (1 - onerowpersubj.loc[:,'left-percCSF'])
-onerowpersubj['right-1over1minfracCSF'] = 1 / (1 - onerowpersubj.loc[:,'right-percCSF'])
-
-lt_corrmetab = onerowpersubj[left_metab].multiply(onerowpersubj['left-1over1minfracCSF'], axis='index')
-rt_corrmetab = onerowpersubj[right_metab].multiply(onerowpersubj['right-1over1minfracCSF'], axis='index')
-lt_corrmetab['left-GluOverGABA'] = lt_corrmetab['left-Glu-80ms']/lt_corrmetab['left-GABA']
-rt_corrmetab['right-GluOverGABA'] = rt_corrmetab['right-Glu-80ms']/rt_corrmetab['right-GABA']
-corr_metab = pd.merge(lt_corrmetab, rt_corrmetab, left_index=True, right_index=True)
-corr_metab.to_csv(str(csfcorr_csv_fname), header=True, columns=corr_cols, index=True, na_rep=9999, index_label='corr_metabolite')
-corr_metab.to_hdf(hdf_fname, 'CSFcorrected_mrs_data', mode='a', format='t', append=True, data_columns=corr_metab.columns)
+# # onerowpersubj = onerowpersubj.T
+# # onerowpersubj['left-1over1minfracCSF'] = 1 / (1 - onerowpersubj.loc[:,'left-percCSF'])
+# # onerowpersubj['right-1over1minfracCSF'] = 1 / (1 - onerowpersubj.loc[:,'right-percCSF'])
+# #
+# # lt_corrmetab = onerowpersubj[left_metab].multiply(onerowpersubj['left-1over1minfracCSF'], axis='index')
+# # rt_corrmetab = onerowpersubj[right_metab].multiply(onerowpersubj['right-1over1minfracCSF'], axis='index')
+# # lt_corrmetab['left-GluOverGABA'] = lt_corrmetab['left-Glu-80ms']/lt_corrmetab['left-GABA']
+# # rt_corrmetab['right-GluOverGABA'] = rt_corrmetab['right-Glu-80ms']/rt_corrmetab['right-GABA']
+# # corr_metab = pd.merge(lt_corrmetab, rt_corrmetab, left_index=True, right_index=True)
+# # corr_metab.to_csv(str(csfcorr_csv_fname), header=True, columns=corr_cols, index=True, na_rep=9999, index_label='corr_metabolite')
+# # corr_metab.to_hdf(hdf_fname, 'CSFcorrected_mrs_data', mode='a', format='t', append=True, data_columns=corr_metab.columns)
 
 asd_grp = corr_metab.index.str.replace('sub-nbwr', '').astype('int') < 400  # ASD only
 tvalues, pvalues = ss.ttest_ind(corr_metab[asd_grp], corr_metab[~asd_grp], equal_var=False)
