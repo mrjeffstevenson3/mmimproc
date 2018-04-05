@@ -16,9 +16,9 @@ from pylabs.projects.nbwr.file_names import project
 prov = ProvenanceWrapper()
 
 fs = Path(getnetworkdataroot())
-include_jonah = False
+include_jonah = False  # broken
 
-#define fortran programs
+# define fortran programs
 stats_fpgm = pylabs_dir / 'pylabs/projects/nbwr/mrs/nbwr_spreadsheet_sep19_2017'
 corr_fpgm = pylabs_dir / 'pylabs/projects/nbwr/mrs/nbwr_spreadsheet_sep27_correlations_13_3'
 plot_fpgm = pylabs_dir / 'pylabs/projects/nbwr/mrs/makeplots_nbwr.txt'
@@ -34,7 +34,7 @@ csfcorr_csv_fname = appendposix(base_fname, '_results_csfcorr_fits.csv')
 excel_fname = appendposix(base_fname, '_results_csfcorr_fits.xlsx')
 hdf_fname = appendposix(base_fname, '_results_csfcorr_fits.h5')
 fcsf_corr_fname = base_fname.parent / 'csfcorrected.csv'
-fstats_fname =  base_fname.parent / 'stats_tvalue.csv'
+fstats_fname = base_fname.parent / 'stats_tvalue.csv'
 
 # for todds correlation plots
 # set up matlab runtime engine - disable for manual runs
@@ -45,27 +45,27 @@ fstats_fname =  base_fname.parent / 'stats_tvalue.csv'
 # print("current matlab working directory is " + str(eng.pwd()))
 
 # save old data file versions if there
-for file in [uncorr_csv_fname, csfcorr_csv_fname, excel_fname, hdf_fname, fcsf_corr_fname, fstats_fname]:
-    bumptodefunct(file)
+for afile in [uncorr_csv_fname, csfcorr_csv_fname, excel_fname, hdf_fname, fcsf_corr_fname, fstats_fname]:
+    bumptodefunct(afile)
 
-#define dataframe col names
+# define dataframe col names
 uncorr_cols = [u'left-SPM-percCSF', u'left-FSL-percCSF', u'left-GABA', u'left-gabaovercr', u'left-NAAplusNAAG', u'left-GPCplusPCh', u'left-CrplusPCr', u'left-mIns', u'left-Glu-80ms',u'right-SPM-percCSF', u'right-FSL-percCSF', u'right-GABA', u'right-gabaovercr',  u'right-NAAplusNAAG', u'right-GPCplusPCh', u'right-CrplusPCr', u'right-mIns', u'right-Glu-80ms']
-corr_cols = [u'left-GABA', u'Left-gabaovercr', u'left-NAAplusNAAG', u'left-GPCplusPCh', u'left-CrplusPCr', u'left-mIns', u'left-Glu-80ms', u'left-GluOverGABA', u'right-GABA', u'Right-gabaovercr', u'right-NAAplusNAAG', u'right-GPCplusPCh', u'right-CrplusPCr', u'right-mIns', u'right-Glu-80ms', u'right-GluOverGABA']
+corr_cols = [u'left-GABA', u'left-gabaovercr', u'left-NAAplusNAAG', u'left-GPCplusPCh', u'left-CrplusPCr', u'left-mIns', u'left-Glu-80ms', u'left-GluOverGABA', u'right-GABA', u'right-gabaovercr', u'right-NAAplusNAAG', u'right-GPCplusPCh', u'right-CrplusPCr', u'right-mIns', u'right-Glu-80ms', u'right-GluOverGABA']
 ftran_cols = [u'csfcorrected_left-GABA             ', u'csfcorrected_left-NAAplusNAAG      ', u'csfcorrected_left-GPCplusPCh       ', u'csfcorrected_left-CrplusPCr        ', u'csfcorrected_left-mIns             ', u'csfcorrected_left-Glu-80ms         ', u'csfcorrected_glu_gaba_ratio_left   ', u'csfcorrected_right-GABA            ', u'csfcorrected_right-NAAplusNAAG     ', u'csfcorrected_right-GPCplusPCh      ', u'csfcorrected_right-CrplusPCr       ', u'csfcorrected_right-mIns            ', u'csfcorrected_right-Glu-80ms        ', u'csfcorrected_glu_gaba_ratio_right  ']
-exclude_subj = []   #['sub-nbwr997', 'sub-nbwr998', 'sub-nbwr999', ]  # 'sub-nbwr136', 'sub-nbwr447']
+exclude_subj = []   # ['sub-nbwr997', 'sub-nbwr998', 'sub-nbwr999', ]  # 'sub-nbwr136', 'sub-nbwr447']
 exclude_data = ['Scan', 'Hemisphere', 'short_FWHM', 'short_SNR', 'short_TE', 'long_FWHM', 'long_SNR', 'long_TE']
 right_col_map = {'NAA+NAAG': 'right-NAAplusNAAG', 'GPC+PCh': 'right-GPCplusPCh', 'Cr+PCr': 'right-CrplusPCr', 'mIns': 'right-mIns', 'Glu': 'right-Glu-80ms', 'region': 'right-region', 'method': 'right-method'}
 left_col_map = {'NAA+NAAG': 'left-NAAplusNAAG', 'GPC+PCh': 'left-GPCplusPCh', 'Cr+PCr': 'left-CrplusPCr', 'mIns': 'left-mIns', 'Glu': 'left-Glu-80ms', 'region': 'left-region', 'method': 'left-method'}
 ftran2py_col_map = dict(zip(ftran_cols, corr_cols))
-#fcsf_corr.columns.str.strip().str.replace('_', '-') use this to change and map new fortran df cols
+# fcsf_corr.columns.str.strip().str.replace('_', '-') use this to change and map new fortran df cols
 left_metab = ['left-GABA', 'left-NAAplusNAAG', 'left-GPCplusPCh', 'left-CrplusPCr', 'left-mIns', 'left-Glu-80ms']
-right_metab = [ 'right-GABA', 'right-NAAplusNAAG', 'right-GPCplusPCh', 'right-CrplusPCr', 'right-mIns', 'right-Glu-80ms']
+right_metab = ['right-GABA', 'right-NAAplusNAAG', 'right-GPCplusPCh', 'right-CrplusPCr', 'right-mIns', 'right-Glu-80ms']
 subjs_on_meds = ['sub-nbwr007', 'sub-nbwr081', 'sub-nbwr215', 'sub-nbwr317']
 
 behav_cols_of_interest = [u'VCI Composite', u'PRI Composite', u'FSIQ-4 Composite', u'FSIQ-2 Composite']  # options: u'SRS-2 Total T-Score', u'Awr T-Score', u'Cog T-Score', u'Com T-Score', u'Mot T-Score', u'RRB T-Score', u'SCI T-Score'
 behav_col_map = {'VCI Composite':  'VCI-Composite','PRI Composite':  'PRI-Composite', 'FSIQ-4 Composite':  'FSIQ-4-Composite', 'FSIQ-2 Composite': 'FSIQ-2-Composite'}
 behav_to_correlate = ['VCI-Composite', 'PRI-Composite',  'FSIQ-4-Composite', 'FSIQ-2-Composite']
-metab_to_correlate = [ u'right-Glu-80ms', u'right-GluOverGABA']
+metab_to_correlate = [u'right-Glu-80ms', u'right-GluOverGABA']
 ftran_cols_to_correlate = [u'csfcorrected-right-Glu-80ms        ', u'csfcorrected-glu-gaba-ratio-right  ']
 # get neva's lc model csv file
 glu_data = pd.read_csv(str(stats_dir/glu_fname), delim_whitespace=True)
@@ -80,10 +80,10 @@ glu_data['region'] = glu_data['Hemisphere'].map({'LT': 'left-insula', 'RT': 'rig
 glu_data['method'] = 'lcmodel'
 glu_data.reset_index(inplace=True)
 glu_data.drop(exclude_data, axis=1, inplace=True)
-right_side_glu = glu_data.loc[1::2] # start row 1 skip every other
-left_side_glu = glu_data.loc[::2] # start row 0 skip every other
-right_side_glu.copy('deep') # make view of object a data containing object
-left_side_glu.copy('deep') # make view of object a data containing object
+right_side_glu = glu_data.loc[1::2]  # start row 1 skip every other
+left_side_glu = glu_data.loc[::2]  # start row 0 skip every other
+right_side_glu.copy('deep')  # make view of object a data containing object
+left_side_glu.copy('deep')  # make view of object a data containing object
 right_side_glu.set_index('subject', inplace=True)
 left_side_glu.set_index('subject', inplace=True)
 right_side_glu.rename(columns=right_col_map, inplace=True)
@@ -146,8 +146,8 @@ df2h5(SPMcorr_metab, all_info_fname, '/stats/mrs/SPM_CSFcorr_metabolites')
 df2h5(FSLcorr_metab, all_info_fname, '/stats/mrs/FSL_CSFcorr_metabolites')
 
 # fetch behavior data
-behav_fname = stats_dir / 'GABA_subject_information.xlsx'      #'GABA.xlsx'
-behav_raw = pd.read_excel(str(behav_fname), sheetname='ASD Tracking')
+behav_fname = stats_dir / 'GABA_subject_information.xlsx'      # 'GABA.xlsx'
+behav_raw = pd.read_excel(str(behav_fname), sheet_name='ASD Tracking')
 behav_raw['subject'] = behav_raw['Subject #'].str.replace('GABA_', 'sub-nbwr')
 behav_raw.set_index(['subject'], inplace=True)
 behav_data = behav_raw[behav_cols_of_interest]
@@ -156,13 +156,13 @@ behav_data.copy('deep')
 behav_data.sort_index(inplace=True)
 
 if include_jonah:
-    # get jonah comparison data
+    # get jonah comparison data (broken)
     jonah_glu_data = pd.read_csv(str(stats_dir/jonah_glu_fname))
     jonah_glu_data.set_index('subject', inplace=True)
     jonah_glu_data.rename(columns=left_col_map, inplace=True)
     jonah_glu_data.drop(exclude_data[1:], axis=1, inplace=True)
     jonah_glu_data['left-percCSF'] = np.nan
-    jonah_glu_data['left-GABA']  = np.nan
+    jonah_glu_data['left-GABA'] = np.nan
     jonah_glu_data = jonah_glu_data.T
     for ses in ['1','2']:
         mrs_dir = fs / 'tadpole' / 'sub-tadpole001' / str('ses-'+ses) / 'mrs'
@@ -182,31 +182,14 @@ if include_jonah:
     jonah_glu_data['left-1over1minfracCSF'] = 1 / (1 - jonah_glu_data.loc[:, 'left-percCSF'])
     jonah_lt_corrmetab = jonah_glu_data[left_metab].multiply(jonah_glu_data['left-1over1minfracCSF'], axis='index')
     jonah_lt_corrmetab['left-GluOverGABA'] = jonah_lt_corrmetab['left-Glu-80ms']/jonah_lt_corrmetab['left-GABA']
-    #save jonah data to hdf
+    # save jonah data to hdf
     df2h5(jonah_lt_corrmetab, all_info_fname, '/stats/mrs/jonah_left_CSFcorr_metabolites')
 
-# do fortran stats 1st. export to fortran compat csv.
-rlog = ()
-onerowpersubj.to_csv(str(uncorr_csv_fname), header=True, index=True, na_rep=9999, index_label='metabolite')
-with WorkingContext(str(uncorr_csv_fname.parent)):
-    with open('numcol2.txt', mode='w') as nc:
-        nc.write(str(2) + '\n')
-    with open('numrow2.txt', mode='w') as nr:
-        nr.write(str(len(behav_data.index)+1) + '\n')
-    with open('numcol3.txt', mode='w') as nc:
-        nc.write(str(len(onerowpersubj.columns)) + '\n')
-    with open('numrow3.txt', mode='w') as nr:
-        nr.write(str(len(onerowpersubj.index)+1) + '\n')
-    with open('all_nbwr_uncorr.txt', mode='w') as ufn:
-        ufn.write(uncorr_csv_fname.name + '\n')
-    with open('all_nbwr.txt', mode='w') as cfn:
-        cfn.write(fcsf_corr_fname.name + '\n')  # was csfcorr_csv_fname.name
-    rlog += run_subprocess(str(stats_fpgm))
 
+# make scipy python stats
 asd_grp = SPMcorr_metab.index.str.replace('sub-nbwr', '').astype('int') < 400  # ASD only
 SPM_tvalues, SPM_pvalues = ss.ttest_ind(SPMcorr_metab[asd_grp], SPMcorr_metab[~asd_grp], equal_var=False)
 FSL_tvalues, FSL_pvalues = ss.ttest_ind(FSLcorr_metab[asd_grp], FSLcorr_metab[~asd_grp], equal_var=False)
-
 # generate descriptive stats DF
 SPM_descriptives = SPMcorr_metab.groupby(asd_grp.astype(int)).describe()
 SPM_descriptives.rename(index={0: 'control', 1: 'asd'}, inplace=True)
@@ -214,9 +197,7 @@ SPM_descriptives.index.rename('descriptives', inplace=True)
 FSL_descriptives = FSLcorr_metab.groupby(asd_grp.astype(int)).describe()
 FSL_descriptives.rename(index={0: 'control', 1: 'asd'}, inplace=True)
 FSL_descriptives.index.rename('descriptives', inplace=True)
-
-#organise stats results here
-fstats = pd.DataFrame.from_csv(str(fstats_fname))
+# organise stats results
 stats_results = pd.DataFrame.from_dict({'SPMcorr_t-stat': SPM_tvalues, 'SPMcorr_p-value': SPM_pvalues, 'FSLcorr_t-stat': FSL_tvalues, 'FSLcorr_p-value': FSL_pvalues})
 if len(stats_results.T.columns) == len(corr_cols) == len(SPMcorr_metab.columns):
     col_map = {}
@@ -226,33 +207,60 @@ else:
     mismatch = [len(stats_results.T.columns), len(corr_cols), len(SPMcorr_metab.columns)]
     raise ValueError('stats result cols do not match. stats='+str(mismatch[0])+' corr_cols='+str(mismatch[1])+' metab cols='+str(mismatch[2]))
 stats_results.rename(index=col_map,inplace=True)
-hdr_txt = {'fortran': 'Stats results from todds fortran code', 'scipy_stats': 'summary t-stats and p-values from python stats', 'descriptive': 'Additional descriptive stats from pandas'}
-stats_hdrs = pd.Series(hdr_txt)
+df2h5(stats_results, all_info_fname, '/stats/mrs/all_CSFcorr_metab_stats_group_t_test_results')
 
-# now do fortran correlations
-with WorkingContext(str(stats_dir)):
-    with open('numcol1.txt', mode='w') as nc:
-        nc.write(str(len(corr_metab.columns)) + '\n'+str(len(corr_metab.columns)) + '\n')
-    with open('numrow1.txt', mode='w') as nr:
-        nr.write(str(len(corr_metab.index)+1) + '\n'+str(len(corr_metab.index)+1) + '\n')
-    # read back in results of stats
-    fcsf_corr = pd.DataFrame.from_csv(str(fcsf_corr_fname))
-    fcsf_corr_colrename = fcsf_corr.rename(columns=ftran2py_col_map)
-    # loop over correlation
-    for mb in itertools.product(ftran_cols_to_correlate, behav_to_correlate):
-        # pick column number
-        with open('chosen_metabolite.txt', mode='w') as cmet:
-            cmet.write(str(fcsf_corr_colrename.columns.get_loc(mb[0])+1) + '\n')
-        behav_data.to_csv('behav_corr.csv', header=True, columns=[mb[1]], index=True, na_rep=9999, index_label='subject')
-        with open('gaba_scores.txt', mode='w') as gs:
-            gs.write('behav_corr.csv' + '\n')
-        print("working on "+'_'.join(mb)+" correlations")
-        rlog += run_subprocess(str(corr_fpgm))
-        rlog += run_subprocess(str(plot_fpgm))
-        #rlog += eng.GenSpec(nargout=0)
-        # now save results to new file names
-        newname = stats_dir / ('_'.join(mb)+'_corr_plot_{:%Y%m%d%H%M}.jpg'.format(datetime.datetime.now()))
-        #Path(stats_dir / 'mrsbehav.jpg').rename(newname)
+
+# # do fortran stats. export to fortran compat csv.
+# rlog = ()
+# SPMuncorr_cols = [x for x in uncorr_cols if ('gabaovercr' not in x and 'FSL' not in x)]
+# FSLuncorr_cols = [x for x in uncorr_cols if ('gabaovercr' not in x and 'SPM' not in x)]
+# for cols in [SPMuncorr_cols, FSLuncorr_cols]:
+#     onerowpersubj.to_csv(str(uncorr_csv_fname), header=True, index=True, columns=cols, na_rep=9999, index_label='metabolite')
+#     with WorkingContext(str(uncorr_csv_fname.parent)):
+#         with open('numcol2.txt', mode='w') as nc:
+#             nc.write(str(2) + '\n')
+#         with open('numrow2.txt', mode='w') as nr:
+#             nr.write(str(len(behav_data.index)+1) + '\n')
+#         with open('numcol3.txt', mode='w') as nc:
+#             nc.write(str(len(cols)) + '\n')
+#         with open('numrow3.txt', mode='w') as nr:
+#             nr.write(str(len(onerowpersubj.index) + 1) + '\n')
+#         with open('all_nbwr_uncorr.txt', mode='w') as ufn:
+#             ufn.write(uncorr_csv_fname.name + '\n')
+#         with open('all_nbwr.txt', mode='w') as cfn:
+#             cfn.write(fcsf_corr_fname.name + '\n')  # was csfcorr_csv_fname.name
+#         rlog += run_subprocess(str(stats_fpgm))
+#         if 'left-SPM-percCSF' in cols:
+#             SPMcorr_fstats = pd.read_csv(str(fstats_fname))
+#         if 'left-FSL-percCSF' in cols:
+#             FSLcorr_fstats = pd.read_csv(str(fstats_fname))
+# hdr_txt = {'fortran': 'Stats results from todds fortran code', 'scipy_stats': 'summary t-stats and p-values from python stats', 'descriptive': 'Additional descriptive stats from pandas'}
+# stats_hdrs = pd.Series(hdr_txt)
+#
+# # now do fortran correlations
+# with WorkingContext(str(stats_dir)):
+#     with open('numcol1.txt', mode='w') as nc:
+#         nc.write(str(len(corr_metab.columns)) + '\n'+str(len(corr_metab.columns)) + '\n')
+#     with open('numrow1.txt', mode='w') as nr:
+#         nr.write(str(len(corr_metab.index)+1) + '\n'+str(len(corr_metab.index)+1) + '\n')
+#     # read back in results of stats
+#     fcsf_corr = pd.DataFrame.from_csv(str(fcsf_corr_fname))
+#     fcsf_corr_colrename = fcsf_corr.rename(columns=ftran2py_col_map)
+#     # loop over correlation
+#     for mb in itertools.product(ftran_cols_to_correlate, behav_to_correlate):
+#         # pick column number
+#         with open('chosen_metabolite.txt', mode='w') as cmet:
+#             cmet.write(str(fcsf_corr_colrename.columns.get_loc(mb[0])+1) + '\n')
+#         behav_data.to_csv('behav_corr.csv', header=True, columns=[mb[1]], index=True, na_rep=9999, index_label='subject')
+#         with open('gaba_scores.txt', mode='w') as gs:
+#             gs.write('behav_corr.csv' + '\n')
+#         print("working on "+'_'.join(mb)+" correlations")
+#         rlog += run_subprocess(str(corr_fpgm))
+#         rlog += run_subprocess(str(plot_fpgm))
+#         #rlog += eng.GenSpec(nargout=0)
+#         # now save results to new file names
+#         newname = stats_dir / ('_'.join(mb)+'_corr_plot_{:%Y%m%d%H%M}.jpg'.format(datetime.datetime.now()))
+#         #Path(stats_dir / 'mrsbehav.jpg').rename(newname)
 
 ''' 
 mrs data saved to hdf file:
@@ -266,7 +274,7 @@ mrs data saved to hdf file:
 
 '''
 
-#write excel workbook and matching h5 dataframes
+# write excel workbook and matching h5 dataframes
 writer = pd.ExcelWriter(str(excel_fname), engine='xlsxwriter')
 workbook = writer.book
 
@@ -285,58 +293,69 @@ data_format.set_align('vcenter')
 data_format.set_align('center')
 data_format.set_text_wrap(False)
 
-# why write uncorrected to excel 1st?
-onerowpersubj.to_hdf(hdf_fname, 'uncorrected_mrs_data', mode='a', format='t', append=True, data_columns=onerowpersubj.columns)
-onerowpersubj.to_excel(writer, sheet_name='uncorr', columns=uncorr_cols, index=True, index_label='subject', header=True, startrow=1, na_rep=9999)
-
-uncorr_worksheet = writer.sheets['uncorr']
-uncorr_worksheet.set_default_row(25)
-uncorr_worksheet.set_column('B:O', 24, data_format)
-uncorr_worksheet.set_column('A:A', 18, labels_format)
-uncorr_worksheet.write_string(0,0,'Uncorrected fit data and CSF correction factor', title_format)
+# # why write uncorrected to excel 1st?
+# onerowpersubj.to_hdf(hdf_fname, 'uncorrected_mrs_data', mode='a', format='t', append=True, data_columns=onerowpersubj.columns)
+# onerowpersubj.to_excel(writer, sheet_name='uncorr', columns=uncorr_cols, index=True, index_label='subject', header=True, startrow=1, na_rep=9999)
+# uncorr_worksheet = writer.sheets['uncorr']
+# uncorr_worksheet.set_default_row(25)
+# uncorr_worksheet.set_column('B:O', 24, data_format)
+# uncorr_worksheet.set_column('A:A', 18, labels_format)
+# uncorr_worksheet.write_string(0,0,'Uncorrected fit data and CSF correction factor', title_format)
 
 # write csf corrected data
-corr_metab.to_excel(writer, sheet_name='corr_metab', columns=corr_cols, index=True, index_label='subject', header=True, startrow=1, na_rep=9999)
+SPMcorr_metab.to_excel(writer, sheet_name='SPMcorr_metab', columns=corr_cols, index=True, index_label='subject', header=True, startrow=1, na_rep=9999)
+FSLcorr_metab.to_excel(writer, sheet_name='FSLcorr_metab', columns=corr_cols, index=True, index_label='subject', header=True, startrow=1, na_rep=9999)
 
-corr_worksheet = writer.sheets['corr_metab']
-corr_worksheet.set_default_row(25)
-corr_worksheet.set_column('B:O', 24, data_format)
-corr_worksheet.set_column('A:A', 18, labels_format)
-corr_worksheet.write_string(0,0,'Corrected Metabolite Concentration after CSF correction factor applied', title_format)
+SPMcorr_worksheet = writer.sheets['SPMcorr_metab']
+SPMcorr_worksheet.set_default_row(35)
+SPMcorr_worksheet.set_column('B:Q', 24, data_format)
+SPMcorr_worksheet.set_column('A:A', 18, labels_format)
+SPMcorr_worksheet.write_string(0, 0, 'Corrected Metabolite Concentrations after CSF correction factor applied using SPM segmentation', title_format)
 
-# write fortran corrected data
-fcsf_corr.to_excel(writer, sheet_name='fortran_corr', index=True, index_label='subject', header=True, startrow=1, na_rep=9999)
-fcsf_worksheet = writer.sheets['fortran_corr']
-fcsf_worksheet.set_default_row(25)
-fcsf_worksheet.set_column('B:O', 24, data_format)
-fcsf_worksheet.set_column('A:A', 18, labels_format)
-fcsf_worksheet.write_string(0,0,'Corrected Metabolite Concentration after CSF correction factor applied', title_format)
+FSLcorr_worksheet = writer.sheets['FSLcorr_metab']
+FSLcorr_worksheet.set_default_row(35)
+FSLcorr_worksheet.set_column('B:Q', 24, data_format)
+FSLcorr_worksheet.set_column('A:A', 18, labels_format)
+FSLcorr_worksheet.write_string(0, 0, 'Corrected Metabolite Concentrations after CSF correction factor applied using FSL segmentation', title_format)
 
+
+# # write fortran corrected data
+# fcsf_corr.to_excel(writer, sheet_name='fortran_corr', index=True, index_label='subject', header=True, startrow=1, na_rep=9999)
+# fcsf_worksheet = writer.sheets['fortran_corr']
+# fcsf_worksheet.set_default_row(25)
+# fcsf_worksheet.set_column('B:O', 24, data_format)
+# fcsf_worksheet.set_column('A:A', 18, labels_format)
+# fcsf_worksheet.write_string(0,0,'Corrected Metabolite Concentration after CSF correction factor applied', title_format)
 
 stats_results.T.to_excel(writer, sheet_name='stats', index_label='stats', header=True, startrow=2, startcol=0)
-stats_results.T.to_hdf(hdf_fname, 'CSFcorrected_mrs_stats', mode='a', format='t', append=True, data_columns=stats_results.T.columns)
-fstats.to_excel(writer, sheet_name='stats', index_label='stats', header=True, startrow=9, startcol=0)
+#stats_results.T.to_hdf(hdf_fname, 'CSFcorrected_mrs_stats', mode='a', format='t', append=True, data_columns=stats_results.T.columns)
+#fstats.to_excel(writer, sheet_name='stats', index_label='stats', header=True, startrow=9, startcol=0)
 
 # format descriptives as 2 col LT/RT loop
-descriptives.to_excel(writer, sheet_name='stats', index_label='stats', header=True, startrow=22, startcol=0)
-#descriptives.to_hdf(hdf_fname, 'CSFcorrected_mrs_descriptive_stats', mode='a', format='t', append=True, data_columns=descriptives.columns)
+SPM_descriptives.T.to_excel(writer, sheet_name='stats', index_label='stats', header=True, startrow=22, startcol=0)
+FSL_descriptives.T.to_excel(writer, sheet_name='stats', index_label='stats', header=True, startrow=22, startcol=6)
+
+# descriptives.to_hdf(hdf_fname, 'CSFcorrected_mrs_descriptive_stats', mode='a', format='t', append=True, data_columns=descriptives.columns)
 
 stats_worksheet = writer.sheets['stats']
-stats_worksheet.set_column('B:O', 24, data_format)
-stats_worksheet.set_default_row(25)
+stats_worksheet.set_column('B:Q', 22, data_format)
+stats_worksheet.set_default_row(35)
 stats_worksheet.set_column('A:A', 18, labels_format)
-stats_worksheet.write_string(0,0,'Summary t-stats and p-values from python stats', title_format)
-stats_worksheet.write_string(7,0,'Stats results from todds fortran code', title_format)
-stats_worksheet.write_string(20,0,'Additional descriptive stats from pandas', title_format)
-stats_worksheet.write_string(28,0,'Selected Correlations:', title_format)
-stats_worksheet.set_row(18, {'align': 'left'})
-stats_worksheet.set_row(19, {'align': 'left'})
+stats_worksheet.write_string(0, 0, 'Summary t-stats and p-values from python stats for both SPM and FSL CSF corrected metabolites', title_format)
+# stats_worksheet.write_string(7,0,'Stats results from todds fortran code', title_format)
+stats_worksheet.write_string(20,0,'Additional SPM CSF corrected descriptive stats from pandas', title_format)
+stats_worksheet.write_string(20,6,'Additional FSL CSF corrected descriptive stats from pandas', title_format)
+# stats_worksheet.write_string(28,0,'Selected Correlations:', title_format)
+# stats_worksheet.set_row(18, {'align': 'left'})
+# stats_worksheet.set_row(19, {'align': 'left'})
 
-#stats_worksheet = writer.sheets['fortran_stats']
+# stats_worksheet = writer.sheets['fortran_stats']
 
 
-#stats_worksheet.conditional_format('B4:O4', {'type': 'cell', 'criteria': '<=', 'value': 0.05, 'bg_color': '#FFC7CE'})
+# stats_worksheet.conditional_format('B4:O4', {'type': 'cell', 'criteria': '<=', 'value': 0.05, 'bg_color': '#FFC7CE'})
+
+
 writer.save()
 
-#eng.quit()
+# eng.quit()
 
