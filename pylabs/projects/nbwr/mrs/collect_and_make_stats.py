@@ -50,7 +50,7 @@ for file in [uncorr_csv_fname, csfcorr_csv_fname, excel_fname, hdf_fname, fcsf_c
 
 #define dataframe col names
 uncorr_cols = [u'left-SPM-percCSF', u'left-FSL-percCSF', u'left-GABA', u'left-gabaovercr', u'left-NAAplusNAAG', u'left-GPCplusPCh', u'left-CrplusPCr', u'left-mIns', u'left-Glu-80ms',u'right-SPM-percCSF', u'right-FSL-percCSF', u'right-GABA', u'right-gabaovercr',  u'right-NAAplusNAAG', u'right-GPCplusPCh', u'right-CrplusPCr', u'right-mIns', u'right-Glu-80ms']
-corr_cols = [u'left-GABA', u'Left-gabaovercr' u'left-NAAplusNAAG', u'left-GPCplusPCh', u'left-CrplusPCr', u'left-mIns', u'left-Glu-80ms', u'left-GluOverGABA', u'right-GABA', u'Right-gabaovercr', u'right-NAAplusNAAG', u'right-GPCplusPCh', u'right-CrplusPCr', u'right-mIns', u'right-Glu-80ms', u'right-GluOverGABA']
+corr_cols = [u'left-GABA', u'Left-gabaovercr', u'left-NAAplusNAAG', u'left-GPCplusPCh', u'left-CrplusPCr', u'left-mIns', u'left-Glu-80ms', u'left-GluOverGABA', u'right-GABA', u'Right-gabaovercr', u'right-NAAplusNAAG', u'right-GPCplusPCh', u'right-CrplusPCr', u'right-mIns', u'right-Glu-80ms', u'right-GluOverGABA']
 ftran_cols = [u'csfcorrected_left-GABA             ', u'csfcorrected_left-NAAplusNAAG      ', u'csfcorrected_left-GPCplusPCh       ', u'csfcorrected_left-CrplusPCr        ', u'csfcorrected_left-mIns             ', u'csfcorrected_left-Glu-80ms         ', u'csfcorrected_glu_gaba_ratio_left   ', u'csfcorrected_right-GABA            ', u'csfcorrected_right-NAAplusNAAG     ', u'csfcorrected_right-GPCplusPCh      ', u'csfcorrected_right-CrplusPCr       ', u'csfcorrected_right-mIns            ', u'csfcorrected_right-Glu-80ms        ', u'csfcorrected_glu_gaba_ratio_right  ']
 exclude_subj = []   #['sub-nbwr997', 'sub-nbwr998', 'sub-nbwr999', ]  # 'sub-nbwr136', 'sub-nbwr447']
 exclude_data = ['Scan', 'Hemisphere', 'short_FWHM', 'short_SNR', 'short_TE', 'long_FWHM', 'long_SNR', 'long_TE']
@@ -89,30 +89,21 @@ left_side_glu.set_index('subject', inplace=True)
 right_side_glu.rename(columns=right_col_map, inplace=True)
 left_side_glu.rename(columns=left_col_map, inplace=True)
 onerowpersubj = pd.merge(left_side_glu, right_side_glu, left_index=True, right_index=True)
-# save orig glu fits to h5
-# df2h5(onerowpersubj, all_info_fname, '/stats/mrs/orig_glu_fits')
-# onerowpersubj['left-SPM-percCSF'] = np.nan
-# onerowpersubj['right-SPM-percCSF']  = np.nan
-# onerowpersubj['left-FSL-percCSF'] = np.nan
-# onerowpersubj['right-FSL-percCSF']  = np.nan
-# onerowpersubj['left-GABA']  = np.nan
-# onerowpersubj['right-GABA']  = np.nan
-# onerowpersubj['left-gabaovercr']  = np.nan
-# onerowpersubj['right-gabaovercr']  = np.nan
-
 onerowpersubj.drop(exclude_subj, axis=1, inplace=True)
-
+# save orig glu fits to h5
+df2h5(onerowpersubj, all_info_fname, '/stats/mrs/orig_glu_fits')
+# collect CSF Correction and GABA data
 csf_corr_keys = sorted(get_h5_keys(str(all_info_fname), 'CSF_correction_factors'))
 gaba_keys = sorted(get_h5_keys(str(all_info_fname), 'gaba'))
 if not len(csf_corr_keys) == len(gaba_keys):
     raise ValueError('gaba and csf keys not equal. asymetric processing not supported at this time.')
+# test data alignment
 all_same = []
 for i, (c, g) in enumerate(zip(csf_corr_keys, gaba_keys)):
     if c.split('/')[1] == g.split('/')[1]:
         all_same.append(True)
 if not all(all_same):
     raise ValueError('Subjects index not aligned in csf and gaba hdf keys. stopping now.')
-
 for csf_k, gaba_k in zip(csf_corr_keys, gaba_keys):
     csf_df = h52df(all_info_fname, csf_k)
     gaba_df = h52df(all_info_fname, gaba_k)
@@ -125,21 +116,17 @@ for csf_k, gaba_k in zip(csf_corr_keys, gaba_keys):
     onerowpersubj.loc[subj, 'right-GABA'] = float(gaba_df.loc['right-gaba', 'gaba_fit_info'])
     onerowpersubj.loc[subj, 'left-gabaovercr'] = float(gaba_df.loc['left-gabaovercr', 'gaba_fit_info'])
     onerowpersubj.loc[subj, 'right-gabaovercr'] = float(gaba_df.loc['right-gabaovercr', 'gaba_fit_info'])
-
+# calculate CSF correction factor
 onerowpersubj['left-SPM-1over1minfracCSF'] = 1 / (1 - onerowpersubj.loc[:, 'left-SPM-percCSF'])
 onerowpersubj['right-SPM-1over1minfracCSF'] = 1 / (1 - onerowpersubj.loc[:, 'right-SPM-percCSF'])
 onerowpersubj['left-FSL-1over1minfracCSF'] = 1 / (1 - onerowpersubj.loc[:, 'left-FSL-percCSF'])
 onerowpersubj['right-FSL-1over1minfracCSF'] = 1 / (1 - onerowpersubj.loc[:, 'right-FSL-percCSF'])
-
-# onerowpersubj = onerowpersubj[uncorr_cols]
-# onerowpersubj.reindex_axis(sorted(onerowpersubj.columns), axis=1)
-
-
+# apply correction factor
 left_SPMcorr = onerowpersubj[left_metab].multiply(onerowpersubj['left-SPM-1over1minfracCSF'], axis='index')
 right_SPMcorr = onerowpersubj[right_metab].multiply(onerowpersubj['right-SPM-1over1minfracCSF'], axis='index')
 left_FSLcorr = onerowpersubj[left_metab].multiply(onerowpersubj['left-FSL-1over1minfracCSF'], axis='index')
 right_FSLcorr = onerowpersubj[right_metab].multiply(onerowpersubj['right-FSL-1over1minfracCSF'], axis='index')
-
+# calculate ratios for each correction method
 left_SPMcorr['left-GluOverGABA'] = left_SPMcorr['left-Glu-80ms']/left_SPMcorr['left-GABA']
 left_SPMcorr = left_SPMcorr.join(onerowpersubj['left-gabaovercr'])
 right_SPMcorr['right-GluOverGABA'] = right_SPMcorr['right-Glu-80ms']/right_SPMcorr['right-GABA']
@@ -152,13 +139,13 @@ right_FSLcorr['right-GluOverGABA'] = right_FSLcorr['right-Glu-80ms']/right_FSLco
 right_FSLcorr = right_FSLcorr.join(onerowpersubj['right-gabaovercr'])
 FSLcorr_metab = pd.merge(left_FSLcorr, right_FSLcorr, left_index=True, right_index=True)
 
-
-
 # shortcut to get data to todd
 SPMcorr_metab.to_csv(str(stats_dir/'for_todd_SPMcorrected_metabolites.csv'), header=True, index=True, sep=',', float_format='%.8f')
 FSLcorr_metab.to_csv(str(stats_dir/'for_todd_FSLcorrected_metabolites.csv'), header=True, index=True, sep=',', float_format='%.8f')
+df2h5(SPMcorr_metab, all_info_fname, '/stats/mrs/SPM_CSFcorr_metabolites')
+df2h5(FSLcorr_metab, all_info_fname, '/stats/mrs/FSL_CSFcorr_metabolites')
 
-# behavior data
+# fetch behavior data
 behav_fname = stats_dir / 'GABA_subject_information.xlsx'      #'GABA.xlsx'
 behav_raw = pd.read_excel(str(behav_fname), sheetname='ASD Tracking')
 behav_raw['subject'] = behav_raw['Subject #'].str.replace('GABA_', 'sub-nbwr')
@@ -196,12 +183,11 @@ if include_jonah:
     jonah_lt_corrmetab = jonah_glu_data[left_metab].multiply(jonah_glu_data['left-1over1minfracCSF'], axis='index')
     jonah_lt_corrmetab['left-GluOverGABA'] = jonah_lt_corrmetab['left-Glu-80ms']/jonah_lt_corrmetab['left-GABA']
     #save jonah data to hdf
-    jonah_lt_corrmetab.to_hdf(hdf_fname, 'jonah_left_csf_corrected_mrs_data', mode='a', format='t', append=True, data_columns=jonah_lt_corrmetab.columns)
+    df2h5(jonah_lt_corrmetab, all_info_fname, '/stats/mrs/jonah_left_CSFcorr_metabolites')
 
-# do fortran stats 1st
-onerowpersubj.to_csv(str(uncorr_csv_fname), header=True, index=True, na_rep=9999, index_label='metabolite')
-
+# do fortran stats 1st. export to fortran compat csv.
 rlog = ()
+onerowpersubj.to_csv(str(uncorr_csv_fname), header=True, index=True, na_rep=9999, index_label='metabolite')
 with WorkingContext(str(uncorr_csv_fname.parent)):
     with open('numcol2.txt', mode='w') as nc:
         nc.write(str(2) + '\n')
@@ -217,35 +203,27 @@ with WorkingContext(str(uncorr_csv_fname.parent)):
         cfn.write(fcsf_corr_fname.name + '\n')  # was csfcorr_csv_fname.name
     rlog += run_subprocess(str(stats_fpgm))
 
-# # onerowpersubj = onerowpersubj.T
-# # onerowpersubj['left-1over1minfracCSF'] = 1 / (1 - onerowpersubj.loc[:,'left-percCSF'])
-# # onerowpersubj['right-1over1minfracCSF'] = 1 / (1 - onerowpersubj.loc[:,'right-percCSF'])
-# #
-# # lt_corrmetab = onerowpersubj[left_metab].multiply(onerowpersubj['left-1over1minfracCSF'], axis='index')
-# # rt_corrmetab = onerowpersubj[right_metab].multiply(onerowpersubj['right-1over1minfracCSF'], axis='index')
-# # lt_corrmetab['left-GluOverGABA'] = lt_corrmetab['left-Glu-80ms']/lt_corrmetab['left-GABA']
-# # rt_corrmetab['right-GluOverGABA'] = rt_corrmetab['right-Glu-80ms']/rt_corrmetab['right-GABA']
-# # corr_metab = pd.merge(lt_corrmetab, rt_corrmetab, left_index=True, right_index=True)
-# # corr_metab.to_csv(str(csfcorr_csv_fname), header=True, columns=corr_cols, index=True, na_rep=9999, index_label='corr_metabolite')
-# # corr_metab.to_hdf(hdf_fname, 'CSFcorrected_mrs_data', mode='a', format='t', append=True, data_columns=corr_metab.columns)
-
-asd_grp = corr_metab.index.str.replace('sub-nbwr', '').astype('int') < 400  # ASD only
-tvalues, pvalues = ss.ttest_ind(corr_metab[asd_grp], corr_metab[~asd_grp], equal_var=False)
+asd_grp = SPMcorr_metab.index.str.replace('sub-nbwr', '').astype('int') < 400  # ASD only
+SPM_tvalues, SPM_pvalues = ss.ttest_ind(SPMcorr_metab[asd_grp], SPMcorr_metab[~asd_grp], equal_var=False)
+FSL_tvalues, FSL_pvalues = ss.ttest_ind(FSLcorr_metab[asd_grp], FSLcorr_metab[~asd_grp], equal_var=False)
 
 # generate descriptive stats DF
-descriptives = corr_metab.groupby(asd_grp.astype(int)).describe()
-descriptives.rename(index={0: 'control', 1: 'asd'}, inplace=True)
-descriptives.index.rename('descriptives', inplace=True)
+SPM_descriptives = SPMcorr_metab.groupby(asd_grp.astype(int)).describe()
+SPM_descriptives.rename(index={0: 'control', 1: 'asd'}, inplace=True)
+SPM_descriptives.index.rename('descriptives', inplace=True)
+FSL_descriptives = FSLcorr_metab.groupby(asd_grp.astype(int)).describe()
+FSL_descriptives.rename(index={0: 'control', 1: 'asd'}, inplace=True)
+FSL_descriptives.index.rename('descriptives', inplace=True)
 
 #organise stats results here
 fstats = pd.DataFrame.from_csv(str(fstats_fname))
-stats_results = pd.DataFrame.from_dict({'t-stat': tvalues, 'p-value': pvalues})
-if len(stats_results.T.columns) == len(corr_cols) == len(corr_metab.columns):
+stats_results = pd.DataFrame.from_dict({'SPMcorr_t-stat': SPM_tvalues, 'SPMcorr_p-value': SPM_pvalues, 'FSLcorr_t-stat': FSL_tvalues, 'FSLcorr_p-value': FSL_pvalues})
+if len(stats_results.T.columns) == len(corr_cols) == len(SPMcorr_metab.columns):
     col_map = {}
-    for n, c in zip(range(0, len(corr_metab.columns)), corr_metab.columns):
+    for n, c in zip(range(0, len(SPMcorr_metab.columns)), SPMcorr_metab.columns):
         col_map[n] = c
 else:
-    mismatch = [len(stats_results.T.columns), len(corr_cols), len(corr_metab.columns)]
+    mismatch = [len(stats_results.T.columns), len(corr_cols), len(SPMcorr_metab.columns)]
     raise ValueError('stats result cols do not match. stats='+str(mismatch[0])+' corr_cols='+str(mismatch[1])+' metab cols='+str(mismatch[2]))
 stats_results.rename(index=col_map,inplace=True)
 hdr_txt = {'fortran': 'Stats results from todds fortran code', 'scipy_stats': 'summary t-stats and p-values from python stats', 'descriptive': 'Additional descriptive stats from pandas'}
