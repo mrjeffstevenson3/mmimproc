@@ -1,0 +1,15 @@
+library(ggplot2)
+library(Rmisc)
+library(car)
+pd = position_dodge(.2)
+my_data = read.csv("prepare_for_r_cholineleft.txt")
+ggplot(sumsum,aes(x=group,y=choline)) + geom_errorbar(aes(ymin=choline-se,ymax=choline+se),width=.2,size=0.7,position=pd) + geom_point(shape=15,size=4,position=pd) +theme_bw() + theme(axis.title.y = element_text(vjust=1.8),axis.title.x = element_text(vjust=-0.5), axis.title = element_text(face = "bold"))+scale_color_manual(values = c("black", "blue"))
+dplyr::sample_n(my_data, 10)
+library(dplyr)
+group_by(my_data, group)
+my_data$group <- ordered(my_data$group,
+                         levels = c("1", "2", "3"))
+levels(my_data$group)
+res.aov <- aov(choline ~ group, data = my_data)
+
+summary(res.aov)
