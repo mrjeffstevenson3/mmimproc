@@ -1,4 +1,5 @@
 import os
+from pathlib import *
 
 
 class WorkingContext(object):
@@ -14,15 +15,15 @@ class WorkingContext(object):
     """
 
     def __init__(self, workdir):
-        self.workdir = workdir
-        self.startdir = os.getcwd()
-        if not os.path.isdir(self.workdir):
-            os.makedirs(self.workdir)
+        self.workdir = Path(workdir)
+        self.startdir = Path.cwd()
+        if not self.workdir.is_dir():
+            self.workdir.mkdir(parents=True)
 
     def __enter__(self):
         if not (self.startdir == self.workdir):
-            os.chdir(self.workdir)
+            os.chdir(str(self.workdir))
 
     def __exit__(self, exctype, excval, exctb):
         if not (self.startdir == self.workdir):
-            os.chdir(self.startdir)
+            os.chdir(str(self.startdir))

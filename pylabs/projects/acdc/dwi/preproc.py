@@ -10,8 +10,12 @@ from nipype.interfaces import fsl
 import nibabel as nib
 import numpy as np
 import pandas as pd
+from dipy.denoise.noise_estimate import estimate_sigma
+from dipy.denoise.non_local_means import non_local_means
+from dipy.denoise.adaptive_soft_matching import adaptive_soft_matching
 from dipy.io import read_bvals_bvecs
 from dipy.core.gradients import gradient_table
+import dipy.reconst.dki as dki
 import dipy.reconst.dti as dti
 from dipy.reconst.dti import mode
 import shutil
@@ -284,6 +288,7 @@ for i, pick in enumerate(dwi_picks):
         (dwipath / opts.dwi_fits_dir).mkdir()
     pick['fsl_fits_out'] = dwipath / opts.dwi_fits_dir / '{subj}_{session}_dwi_unwarped_ec_fslfit'.format(**pick)
     pick['dipy_fits_out'] = dwipath / opts.dwi_fits_dir / '{subj}_{session}_dwi_unwarped_ec_dipyfit'.format(**pick)
+    pick['dipy_dki_fits_out'] = dwipath / opts.dwi_fits_dir / '{subj}_{session}_dwi_unwarped_ec_dki_dipyfit'.format(**pick)
     with WorkingContext(str(dwipath / opts.dwi_fits_dir)):
         # do fsl dtifit cmds incl median filter etc
         result += tuple([run_subprocess(c % pick) for c in fsl_fit_cmds])
@@ -322,6 +327,61 @@ for i, pick in enumerate(dwi_picks):
         savenii(ev1, affine, '{dipy_fits_out}_mf_AD.nii'.format(**pick))
         savenii(evals[1:].mean(0), affine, '{dipy_fits_out}_mf_RD.nii'.format(**pick))
         savenii(mode(fit_quad_form_mf), affine, '{dipy_fits_out}_mf_MO.nii'.format(**pick), minmax=(-1, 1))
+        # do denoise and dki
+        """
+        In order to generate the two pre-denoised versions of the data we will use the
+        ``non_local_means`` denoising. For ``non_local_means`` first we need to
+        estimate the standard deviation of the noise. We use N=4 since the Sherbrooke
+        dataset was acquired on a 1.5T Siemens scanner with a 4 array head coil.
+        """
+
+        sigma = estimate_sigma(data, N=4)
+
+        """
+        For the denoised version of the original data which preserves sharper features,
+        we perform non-local means with smaller patch size.
+        """
+
+        den_small = non_local_means(
+            data,
+            sigma=sigma,
+            mask=mask,
+            patch_radius=1,
+            block_radius=1,
+            rician=True)
+
+        """
+        For the denoised version of the original data that implies more smoothing, we
+        perform non-local means with larger patch size.
+        """
+
+        den_large = non_local_means(
+            data,
+            sigma=sigma,
+            mask=mask,
+            patch_radius=2,
+            block_radius=1,
+            rician=True)
+
+        """
+        Now we perform the adaptive soft coefficient matching. Empirically we set the
+        adaptive parameter in ascm to be the average of the local noise variance,
+        in this case the sigma itself.
+        """
+
+        den_final = adaptive_soft_matching(data, den_small, den_large, sigma[0])
+
+        dkimodel = dki.DiffusionKurtosisModel(ec_gtab)
+
+        dkifit = dkimodel.fit(den_final, mask=mask)
+        # save files with savenii
+        savenii(dkifit.fa, affine, '{dipy_dki_fits_out}_FA.nii'.format(**pick), minmax=(0, 1))
+        savenii(dkifit.md, affine, '{dipy_dki_fits_out}_MD.nii'.format(**pick))
+        savenii(dkifit.rd, affine, '{dipy_dki_fits_out}_RD.nii'.format(**pick))
+        savenii(dkifit.ad, affine, '{dipy_dki_fits_out}_AD.nii'.format(**pick))
+        savenii(dkifit.mk(0, 3), affine, '{dipy_dki_fits_out}_MK.nii'.format(**pick), minmax=(0, 3))
+        savenii(dkifit.rk(0, 3), affine, '{dipy_dki_fits_out}_RK.nii'.format(**pick), minmax=(0, 3))
+        savenii(dkifit.ak(0, 3), affine, '{dipy_dki_fits_out}_AK.nii'.format(**pick), minmax=(0, 3))
 
     if opts.do_ukf:
         try:
@@ -365,7 +425,7 @@ for i, pick in enumerate(dwi_picks):
 
 
 ####################### end here for now
-
+'''
 
     # use ants to warp mori atlas into subj space
     if not test4file(regpath/replacesuffix(moriMNIatlas.name, '_reg2dwi.nii.gz')) or (test4file(regpath/replacesuffix(moriMNIatlas.name, '_reg2dwi.nii.gz')) & overwrite):
@@ -387,7 +447,7 @@ for i, pick in enumerate(dwi_picks):
 
 
 
-'''
+
 warp MNI_T1 to dwi for mricros :done
 loop over mori to gen seed bin mask and dilate and get com coord and put subject.node 
 probtracts cmd:
@@ -398,4 +458,5 @@ subject.node is row by row x y z center of mass coordinate for each seed plus 3 
 150 130 48 3 3 3\n # for seed001.nii.gz
 matrix2 = for loop by row matrix / waytotal to normalise and rename to .edge
 this is the input for mricros ????? what????
+
 '''
