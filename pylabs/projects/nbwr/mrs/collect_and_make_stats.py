@@ -80,10 +80,8 @@ glu_data['region'] = glu_data['Hemisphere'].map({'LT': 'left-insula', 'RT': 'rig
 glu_data['method'] = 'lcmodel'
 glu_data.reset_index(inplace=True)
 glu_data.drop(exclude_data, axis=1, inplace=True)
-right_side_glu = glu_data.loc[1::2]  # start row 1 skip every other
-left_side_glu = glu_data.loc[::2]  # start row 0 skip every other
-right_side_glu.copy('deep')  # make view of object a data containing object
-left_side_glu.copy('deep')  # make view of object a data containing object
+right_side_glu = glu_data.loc[1::2].copy('deep')  # start row 1 skip every other
+left_side_glu = glu_data.loc[::2].copy('deep')  # start row 0 skip every other
 right_side_glu.set_index('subject', inplace=True)
 left_side_glu.set_index('subject', inplace=True)
 right_side_glu.rename(columns=right_col_map, inplace=True)
@@ -108,14 +106,14 @@ for csf_k, gaba_k in zip(csf_corr_keys, gaba_keys):
     csf_df = h52df(all_info_fname, csf_k)
     gaba_df = h52df(all_info_fname, gaba_k)
     subj = gaba_k.split('/')[1]
-    onerowpersubj.loc[subj, 'left-SPM-percCSF'] = float(csf_df.loc['frac_CSF', 'left_SPM'])
-    onerowpersubj.loc[subj, 'right-SPM-percCSF'] = float(csf_df.loc['frac_CSF', 'right_SPM'])
-    onerowpersubj.loc[subj, 'left-FSL-percCSF'] = float(csf_df.loc['frac_CSF', 'left_FSL'])
-    onerowpersubj.loc[subj, 'right-FSL-percCSF'] = float(csf_df.loc['frac_CSF', 'right_FSL'])
-    onerowpersubj.loc[subj, 'left-GABA'] = float(gaba_df.loc['left-gaba', 'gaba_fit_info'])
-    onerowpersubj.loc[subj, 'right-GABA'] = float(gaba_df.loc['right-gaba', 'gaba_fit_info'])
-    onerowpersubj.loc[subj, 'left-gabaovercr'] = float(gaba_df.loc['left-gabaovercr', 'gaba_fit_info'])
-    onerowpersubj.loc[subj, 'right-gabaovercr'] = float(gaba_df.loc['right-gabaovercr', 'gaba_fit_info'])
+    onerowpersubj.loc[subj, 'left-SPM-percCSF'] = np.float64(csf_df.loc['frac_CSF', 'left_SPM'])
+    onerowpersubj.loc[subj, 'right-SPM-percCSF'] = np.float64(csf_df.loc['frac_CSF', 'right_SPM'])
+    onerowpersubj.loc[subj, 'left-FSL-percCSF'] = np.float64(csf_df.loc['frac_CSF', 'left_FSL'])
+    onerowpersubj.loc[subj, 'right-FSL-percCSF'] = np.float64(csf_df.loc['frac_CSF', 'right_FSL'])
+    onerowpersubj.loc[subj, 'left-GABA'] = np.float64(gaba_df.loc['left-gaba', 'gaba_fit_info'])
+    onerowpersubj.loc[subj, 'right-GABA'] = np.float64(gaba_df.loc['right-gaba', 'gaba_fit_info'])
+    onerowpersubj.loc[subj, 'left-gabaovercr'] = np.float64(gaba_df.loc['left-gabaovercr', 'gaba_fit_info'])
+    onerowpersubj.loc[subj, 'right-gabaovercr'] = np.float64(gaba_df.loc['right-gabaovercr', 'gaba_fit_info'])
 # calculate CSF correction factor
 onerowpersubj['left-SPM-1over1minfracCSF'] = 1 / (1 - onerowpersubj.loc[:, 'left-SPM-percCSF'])
 onerowpersubj['right-SPM-1over1minfracCSF'] = 1 / (1 - onerowpersubj.loc[:, 'right-SPM-percCSF'])
@@ -150,9 +148,8 @@ behav_fname = stats_dir / 'GABA_subject_information.xlsx'      # 'GABA.xlsx'
 behav_raw = pd.read_excel(str(behav_fname), sheet_name='ASD Tracking')
 behav_raw['subject'] = behav_raw['Subject #'].str.replace('GABA_', 'sub-nbwr')
 behav_raw.set_index(['subject'], inplace=True)
-behav_data = behav_raw[behav_cols_of_interest]
+behav_data = behav_raw[behav_cols_of_interest].copy('deep')
 behav_data.rename(columns=behav_col_map, inplace=True)
-behav_data.copy('deep')
 behav_data.sort_index(inplace=True)
 
 if include_jonah:
@@ -172,7 +169,7 @@ if include_jonah:
             log_data = json.load(gf)
         for line in log_data:
             if 'Left gaba results' in line:
-                lt_gaba_val = float(line.split()[3])
+                lt_gaba_val = np.float64(line.split()[3])
                 jonah_glu_data.loc['left-GABA', 'sub-tadpole00'+ses] = lt_gaba_val
         csf_frac = pd.read_csv(str(mrs_dir / 'sub-tadpole001_csf_fractions.csv'))
         csf_frac.set_index('sub-tadpole001', inplace=True)
@@ -190,14 +187,7 @@ if include_jonah:
 asd_grp = SPMcorr_metab.index.str.replace('sub-nbwr', '').astype('int') < 400  # ASD only
 SPM_tvalues, SPM_pvalues = ss.ttest_ind(SPMcorr_metab[asd_grp], SPMcorr_metab[~asd_grp], equal_var=False)
 FSL_tvalues, FSL_pvalues = ss.ttest_ind(FSLcorr_metab[asd_grp], FSLcorr_metab[~asd_grp], equal_var=False)
-# generate descriptive stats DF
-SPM_descriptives = SPMcorr_metab.groupby(asd_grp.astype(int)).describe()
-SPM_descriptives.rename(index={0: 'control', 1: 'asd'}, inplace=True)
-SPM_descriptives.index.rename('descriptives', inplace=True)
-FSL_descriptives = FSLcorr_metab.groupby(asd_grp.astype(int)).describe()
-FSL_descriptives.rename(index={0: 'control', 1: 'asd'}, inplace=True)
-FSL_descriptives.index.rename('descriptives', inplace=True)
-# organise stats results
+# organise stats results and save to HDF
 stats_results = pd.DataFrame.from_dict({'SPMcorr_t-stat': SPM_tvalues, 'SPMcorr_p-value': SPM_pvalues, 'FSLcorr_t-stat': FSL_tvalues, 'FSLcorr_p-value': FSL_pvalues})
 if len(stats_results.T.columns) == len(corr_cols) == len(SPMcorr_metab.columns):
     col_map = {}
@@ -208,7 +198,15 @@ else:
     raise ValueError('stats result cols do not match. stats='+str(mismatch[0])+' corr_cols='+str(mismatch[1])+' metab cols='+str(mismatch[2]))
 stats_results.rename(index=col_map,inplace=True)
 df2h5(stats_results, all_info_fname, '/stats/mrs/all_CSFcorr_metab_stats_group_t_test_results')
-
+# generate descriptive stats DF
+SPM_descriptives = SPMcorr_metab.groupby(asd_grp.astype(int)).describe()
+SPM_descriptives.rename(index={0: 'control_SPM', 1: 'asd_SPM'}, inplace=True)
+SPM_descriptives.index.rename('descriptives', inplace=True)
+FSL_descriptives = FSLcorr_metab.groupby(asd_grp.astype(int)).describe()
+FSL_descriptives.rename(index={0: 'control_FSL', 1: 'asd_FSL'}, inplace=True)
+FSL_descriptives.index.rename('descriptives', inplace=True)
+descriptives = pd.merge(SPM_descriptives.T, FSL_descriptives.T, left_index=True, right_index=True)
+df2h5(descriptives, all_info_fname, '/stats/mrs/all_CSFcorr_metab_descriptive_stats_results')
 
 # # do fortran stats. export to fortran compat csv.
 # rlog = ()
@@ -326,16 +324,12 @@ FSLcorr_worksheet.write_string(0, 0, 'Corrected Metabolite Concentrations after 
 # fcsf_worksheet.set_column('B:O', 24, data_format)
 # fcsf_worksheet.set_column('A:A', 18, labels_format)
 # fcsf_worksheet.write_string(0,0,'Corrected Metabolite Concentration after CSF correction factor applied', title_format)
+# fstats.to_excel(writer, sheet_name='stats', index_label='stats', header=True, startrow=9, startcol=0)
 
 stats_results.T.to_excel(writer, sheet_name='stats', index_label='stats', header=True, startrow=2, startcol=0)
-#stats_results.T.to_hdf(hdf_fname, 'CSFcorrected_mrs_stats', mode='a', format='t', append=True, data_columns=stats_results.T.columns)
-#fstats.to_excel(writer, sheet_name='stats', index_label='stats', header=True, startrow=9, startcol=0)
-
-# format descriptives as 2 col LT/RT loop
+# format descriptives as 2 cols SPM and FSL
 SPM_descriptives.T.to_excel(writer, sheet_name='stats', index_label='stats', header=True, startrow=22, startcol=0)
 FSL_descriptives.T.to_excel(writer, sheet_name='stats', index_label='stats', header=True, startrow=22, startcol=6)
-
-# descriptives.to_hdf(hdf_fname, 'CSFcorrected_mrs_descriptive_stats', mode='a', format='t', append=True, data_columns=descriptives.columns)
 
 stats_worksheet = writer.sheets['stats']
 stats_worksheet.set_column('B:Q', 22, data_format)
@@ -343,19 +337,15 @@ stats_worksheet.set_default_row(35)
 stats_worksheet.set_column('A:A', 18, labels_format)
 stats_worksheet.write_string(0, 0, 'Summary t-stats and p-values from python stats for both SPM and FSL CSF corrected metabolites', title_format)
 # stats_worksheet.write_string(7,0,'Stats results from todds fortran code', title_format)
-stats_worksheet.write_string(20,0,'Additional SPM CSF corrected descriptive stats from pandas', title_format)
-stats_worksheet.write_string(20,6,'Additional FSL CSF corrected descriptive stats from pandas', title_format)
+stats_worksheet.write_string(20, 0, 'Additional SPM CSF corrected descriptive stats from pandas', title_format)
+stats_worksheet.write_string(20, 6, 'Additional FSL CSF corrected descriptive stats from pandas', title_format)
 # stats_worksheet.write_string(28,0,'Selected Correlations:', title_format)
 # stats_worksheet.set_row(18, {'align': 'left'})
 # stats_worksheet.set_row(19, {'align': 'left'})
 
 # stats_worksheet = writer.sheets['fortran_stats']
 
-
-# stats_worksheet.conditional_format('B4:O4', {'type': 'cell', 'criteria': '<=', 'value': 0.05, 'bg_color': '#FFC7CE'})
-
-
 writer.save()
-
+# close matlab instance
 # eng.quit()
 
