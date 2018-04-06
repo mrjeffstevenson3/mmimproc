@@ -142,7 +142,19 @@ def h52df(h5_fname, key):
         raise ValueError(str(h5_fname)+' h5 file not found.')
     with pd.HDFStore(str(h5_fname)) as storeh5:
         df = storeh5.select(key)
+        df = df.apply(pd.to_numeric, errors='ignore')
     return df
+
+def get_h5_keys(h5_fname, key=None):
+    h5_fname = Path(h5_fname)
+    if not h5_fname.is_file():
+        raise ValueError(str(h5_fname)+' h5 file not found.')
+    with pd.HDFStore(str(h5_fname)) as storeh5:
+        h5keys = storeh5.keys()
+    if not key is None:
+        match_key = [k for k in h5keys if key in k]
+        h5keys = match_key
+    return h5keys
 
 def getTRfromh5(h5_fname, subject, session, modality, scan):
     h5_fname = Path(h5_fname)

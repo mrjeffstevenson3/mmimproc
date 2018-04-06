@@ -1,13 +1,9 @@
-# orig_dwi are the original dwi source files output from conversion -> inputs to topup
-# set as a triple tuple (topup_dwi_6S0 6 vol S0 1st, topdn_dwi_6S0 6 vol S0 2nd, dwi-topup_64dir-3sh-800-2000 multishell 64 dir dwi 3rd)
-# topup_dwi_6S0 and topdn_dwi_6S0 are inputs to topup along with dwell time
-# topup_unwarped is the output from topup and input to eddy
-
 # here there are no subj ids, those are called out by the picks list inside SubjIdPicks object.
 
 # class object to pass list of subject ids and passed to functions here using the SubjIdPicks class object.
-# defaults for session and run numbers are set here as  well as exceptions to those defaults called out by subject and modality.
+# defaults for project set in class Optsd used in all pipelines
 import pylabs
+pylabs.datadir.target = 'jaba'
 from pathlib import *
 import pandas as pd
 from collections import defaultdict
@@ -23,33 +19,92 @@ project = 'acdc'
 class SubjIdPicks(object):
     pass
 
-class Opts(object):
+class Opts(object):  # now obsolete with Optsd
     project = 'acdc'
     spm_thresh = 0.5
     dwi_pass_qc = '_passqc'
     info_fname = fs / project / ('all_' + project + '_info.h5')
+    eddy_corr_dir = 'eddy_cuda_repol_v1'
+    dwi_fits_dir = 'fits_v1'
+    dwi_reg_dir = 'MNI2dwi'
+    dwi_bedpost_dir = 'bedpost'
     dwi_fname_excep = ['_DWI64_3SH_B0_B800_B2000_TOPUP_TE101_1p8mm3_', '_DWI6_B0_TOPUP_TE101_1p8mm3_', '_DWI6_B0_TOPDN_TE101_1p8mm3_']
     gaba_te = 80
     gaba_dyn = 120
     gaba_ftempl = '{subj}_WIP_{side}GABAMM_TE{te}_{dyn}DYN_{wild}_raw_{type}.SDAT'
     vfa_fas = [4.0, 25.0]
 
-opts = Opts()
+class Optsd(object):
+    """
+    Define constants for acdc project with dict like mapping using opts = Optsd; **vars(opts).
+    """
+    def __init__(self,
+            # define project variables here. will become dict using opts = Optsd; vars(opts).
+            project = 'acdc',
+            test = False,
+            overwrite = True,
+            convert = False,
+            spm_thresh = 0.85,
+            fsl_thresh = 0.20,
+            info_fname = fs / project / ('all_' + project + '_info.h5'),
+            dwi_pass_qc = '_passqc',
+            mf_str = '_mf',    # set to blank string '' to disable median filtering
+            run_topup = True,
+            eddy_corr = True,
+            eddy_corr_dir = 'eddy_cuda_repol_v1',   # output dir for eddy
+            dwi_fits_dir = 'fits_v1',
+            do_ukf = True,
+            dwi_reg_dir = 'MNI2dwi',
+            run_bedpost = True,
+            dwi_bedpost_dir = 'bedpost',
+            dwi_fname_excep = ['_DWI64_3SH_B0_B800_B2000_TOPUP_TE101_1p8mm3_', '_DWI6_B0_TOPUP_TE101_1p8mm3_', '_DWI6_B0_TOPDN_TE101_1p8mm3_'],
+            gaba_te = 80,
+            gaba_dyn = 120,
+            gaba_ftempl = '{subj}_WIP_{side}GABAMM_TE{te}_{dyn}DYN_{wild}_raw_{type}.SDAT',
+            b1corr = False,
+            vfa_tr = 21.0,
+            vfa_fas = [4.0, 25.0],
+            ):
+        # make them accessible as obj.var as well as dict
+        self.project = project
+        self.test = test
+        self.overwrite = overwrite
+        self.convert = convert
+        self.spm_thresh = spm_thresh
+        self.fsl_thresh = fsl_thresh
+        self.dwi_pass_qc = dwi_pass_qc
+        self.mf_str = mf_str
+        self.info_fname = info_fname
+        self.run_topup = run_topup
+        self.eddy_corr = eddy_corr
+        self.eddy_corr_dir = eddy_corr_dir
+        self.dwi_fits_dir = dwi_fits_dir
+        self.do_ukf = do_ukf
+        self.dwi_reg_dir = dwi_reg_dir
+        self.run_bedpost = run_bedpost
+        self.dwi_bedpost_dir = dwi_bedpost_dir
+        self.dwi_fname_excep = dwi_fname_excep
+        self.gaba_te = gaba_te
+        self.gaba_dyn = gaba_dyn
+        self.gaba_ftempl = gaba_ftempl
+        self.b1corr = b1corr
+        self.vfa_tr = vfa_tr
+        self.vfa_fas = vfa_fas
 
+"""
+# other future stages to run to move to opts settings
+subT2 = False   #wip ??
+bet = False
+prefilter = False
+templating = False
+"""
 
-# known or expected from acdc protocol. should get now from info file
-# protocol name exceptions
-
-spgr_tr = '12p0'
-spgr_fa = ['05', '15', '30']
-
+opts = Optsd()
 
 # for partial substitutions
 fname_templ_dd = {'subj': '{subj}', 'session': '{session}', 'scan_name': '{scan_name}', 'scan_info': '{scan_info}',
                   'run': '{run}', 'fa': '{fa}', 'tr': '{tr}', 'side': '{side}', 'te': '{te}', 'dyn': '{dyn}',
                   'wild': '{wild}', 'type': '{type}'}
-
-
 
 def set_fname_templ_dd(dd, d):
     for k in d.keys():
@@ -68,20 +123,10 @@ def merge_ftempl_dicts(dict1={}, dict2={}, dict3={}, base_dd=fname_templ_dd):
     nd.update(dict3)  # modifies base dict with dict1 2 and 3 keys and values
     return nd
 
-# empty freesurfer, VBM, T2 file name lists
+# empty freesurfer, T2 file name lists
 b1map_fs_fnames = []
 freesurf_fnames = []
 t2_fnames = []
-# empty dwi file name lists
-topup_fnames = []
-topdn_fnames= []
-dwi_fnames = []
-# empty 3 flip qT1 file name lists for testing purposes
-spgr_fa5_fnames = []
-spgr_fa15_fnames = []
-spgr_fa30_fnames = []
-b1map_fnames = []
-
 
 def get_freesurf_names(subjids_picks):
     b1_ftempl = removesuffix(str(acdc_conv['_B1MAP-QUIET_']['fname_template']))
@@ -103,27 +148,12 @@ def get_dwi_names(subjids_picks):
         dwi_picks.append(subjid)
     return dwi_picks
 
-def get_3spgr_names(subjids_picks):
-    b1_ftempl = removesuffix(str(acdc_conv['_B1MAP-QUIET_']['fname_template']))
-    spgr_ftempl = removesuffix(str(acdc_conv['_T1_MAP_']['fname_template']))
-    for subjid in subjids_picks.subjids:
-        subjid.update({'tr': spgr_tr,})
-        b1map_fnames.append(str(b1_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=acdc_conv['_B1MAP_'])))
-        fa_list_fnames = defaultdict()
-        for fa in spgr_fa:
-            fad = {'fa': fa, }
-            fa_list_fnames['fa_%(fa)s' % fad] = str(spgr_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=acdc_conv['_T1_MAP_'], dict3=fad))
-        spgr_fa5_fnames.append(fa_list_fnames['fa_05'])
-        spgr_fa15_fnames.append(fa_list_fnames['fa_15'])
-        spgr_fa30_fnames.append(fa_list_fnames['fa_30'])
-    return b1map_fnames, spgr_fa5_fnames, spgr_fa15_fnames, spgr_fa30_fnames
-
 def get_vfa_names(subjids_picks):
     qt1_picks = []
     b1_ftempl = str(removesuffix(str(acdc_conv['_B1MAP-QUIET_']['fname_template'])))
     vfa_ftempl = str(removesuffix(str(acdc_conv['_VFA_FA4-25_']['fname_template'])))
     for subjid in subjids_picks.subjids:
-        subjid.update({'scan_name': acdc_conv['_VFA_FA4-25_']['scan_name'], 'tr': '21p0'})
+        subjid.update({'scan_name': acdc_conv['_VFA_FA4-25_']['scan_name'], 'tr': str(opts.vfa_tr).replace('.', 'p')})
         subjid['vfatr'] = getTRfromh5(str(fs/project/'all_acdc_info.h5'), subjid['subj'], subjid['session'], 'qt1', vfa_ftempl.format(**subjid))
         subjid['vfa_fname'] = vfa_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=acdc_conv['_VFA_FA4-25_']))
         subjid['b1map_fname'] = b1_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=acdc_conv['_B1MAP_']))

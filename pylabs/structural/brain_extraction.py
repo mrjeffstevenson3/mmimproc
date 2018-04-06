@@ -1,5 +1,6 @@
 # extract brain and mask function. now uses pylabs.opts to set file ext
 import pylabs
+pylabs.datadir.target = 'jaba'
 from pathlib import *
 from collections import defaultdict
 import subprocess
@@ -10,7 +11,8 @@ import nibabel as nib
 from scipy.ndimage.measurements import center_of_mass as com
 from dipy.segment.mask import applymask
 from pylabs.io.images import savenii
-from pylabs.utils import appendposix, replacesuffix, getnetworkdataroot, ProvenanceWrapper, meg_head_mask
+from pylabs.utils import *
+from pylabs.utils.paths import mnicom, mnimask, mniT2com
 from nipype.interfaces import fsl
 flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo', output_type=pylabs.opts.nii_ftype)
 if nipype.__version__ == '0.12.0':
@@ -23,12 +25,8 @@ prov = ProvenanceWrapper()
 fs = getnetworkdataroot()  # should pick up datadir.target
 ext = pylabs.opts.nii_fext
 
-pylabs_basepath = Path(*Path(inspect.getabsfile(pylabs)).parts[:-2])
-mnicom = pylabs_basepath/'data'/'atlases'/'MNI152_T1_1mm_8kcomroi.nii'
-mnimask = pylabs_basepath/'data'/'atlases'/'MNI152_T1_1mm_mask.nii'
-
 # new universal (hopefully) brain extraction method
-def extract_brain(file, f_factor=0.3, mmzshift=0.0):
+def extract_brain(file, f_factor=0.3, mmzshift=0.0, mode='T1'):
     '''
     simplest form pass a pathlib file name and brain extraction is performed
     :param file: pathlib path and file name to be extracted
@@ -50,10 +48,19 @@ def extract_brain(file, f_factor=0.3, mmzshift=0.0):
         else:
             nifti = False   # compressed original
     # make mat file for center of mass ROI and mask in MNI template
-    flt.inputs.in_file = str(mnicom)
+    if mode == 'T1':
+        flt.inputs.in_file = str(mnicom)
+        flt.inputs.cost_func = 'mutualinfo'
+    elif mode == 'T2':
+        flt.inputs.in_file = str(mniT2com)
+        flt.inputs.cost_func = 'corratio'
     flt.inputs.reference = str(file)
     flt.inputs.out_matrix_file = str(file.parent/appendposix(Path(file.stem).stem, '_comroi.mat'))
     flt.inputs.out_file = str(replacesuffix(file, '_comroi'+ext))
+    flt.inputs.searchr_x = [-60, 60]
+    flt.inputs.searchr_y = [-60, 60]
+    flt.inputs.searchr_z = [-60, 60]
+    flt.inputs.interp = 'nearestneighbour'
     res = flt.run()
     # apply mat file to MNI mask file to cut off neck
     mat_fname = file.parent/appendposix(Path(file.stem).stem, '_comroi.mat')

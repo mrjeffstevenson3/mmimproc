@@ -23,13 +23,17 @@ os.environ['FSLOUTPUTTYPE'] = pylabs.opts.nii_ftype
 os.environ["FSLMULTIFILEQUIT"] = pylabs.opts.fslmultifilequit
 
 fs = Path(getnetworkdataroot())
-spm_dir, tpm_path = getspmpath()
-spm = False
-if spm:
+opts = Opts()
+pylabs.opts.overwrite = True
+do_mask = True
+do_spm = True
+if do_spm:
+    spm_dir, tpm_path = getspmpath()
     eng = matlab.engine.start_matlab()
     eng.addpath(eng.genpath(str(pylabs_dir)))
     eng.addpath(eng.genpath(str(spm_dir)))
 
+do_fast = True
 fast = fsl.FAST(
                 output_type=pylabs.opts.nii_ftype,
                 number_classes=3,
@@ -44,7 +48,7 @@ fast = fsl.FAST(
             )
 fast.inputs.environ['FSLMULTIFILEQUIT'] = pylabs.opts.fslmultifilequit
 ext = pylabs.opts.nii_fext
-
+# results of segmentation
 only_spm = False
 # instantiate subject id list container
 subjids_picks = SubjIdPicks()
@@ -53,7 +57,7 @@ picks = [
          #{'subj': 'sub-genz996', 'session': 'ses-1', 'run': '1',},
          #{'subj': 'sub-genz996', 'session': 'ses-2', 'run': '1',},
          #{'subj': 'sub-genz997', 'session': 'ses-1', 'run': '1',},
-         {'subj': 'sub-genz923', 'session': 'ses-1', 'run': '1',}
+         {'subj': 'sub-genz901', 'session': 'ses-1', 'run': '1',}
          ]
 
 setattr(subjids_picks, 'subjids', picks)
@@ -94,17 +98,17 @@ for acc_matchfname, acc_actfname, acc_reffname in zip(acc_matchfnames, acc_actfn
                 acc_match_brain = appendposix(acc_match_brain, '_susanf')
             else:
                 acc_match_brain = replacesuffix(acc_match_brain, '_susanf'+ext)
-            if pylabs.opts.overwrite: # and not only_spm:   ## or not Path(replacesuffix(rt_match_pfname, '_mrs_roi_mask'+ext)).is_file():
+            if pylabs.opts.overwrite and do_mask: # and not only_spm:   ## or not Path(replacesuffix(rt_match_pfname, '_mrs_roi_mask'+ext)).is_file():
                 print('running make mask voi on ' +str(replacesuffix(acc_actfname, '.SPAR')))
                 acc_mask_img = make_voi_mask(replacesuffix(acc_actfname, '.SPAR'), acc_match_brain, replacesuffix(acc_match_brain, '_mrs_roi_mask'+ext))
 
 
             # run SPM segmentation on right matching
-            if pylabs.opts.overwrite: #  and only_spm:   ## or not (Path(prependposix(rt_match_brain, 'c1')).is_file() & Path(prependposix(rt_match_brain, 'c2')).is_file() & Path(prependposix(rt_match_brain, 'c3')).is_file()):
+            if pylabs.opts.overwrite and do_spm: #  and only_spm:   ## or not (Path(prependposix(rt_match_brain, 'c1')).is_file() & Path(prependposix(rt_match_brain, 'c2')).is_file() & Path(prependposix(rt_match_brain, 'c3')).is_file()):
                 print('running SPM Segmentation on ' + str(acc_match_brain))
                 eng.spm_seg(str(acc_match_brain), str(tpm_path), nargout=0)
             # run FSL segmentation on right matching
-            if pylabs.opts.overwrite: # and not only_spm:   ## or not (Path(replacesuffix(rt_match_brain, '_fslfast_seg_1'+ext)).is_file() & Path(replacesuffix(rt_match_brain, '_fslfast_seg_2'+ext)).is_file() & Path(replacesuffix(rt_match_brain, '_fslfast_seg_0'+ext)).is_file()):
+            if pylabs.opts.overwrite and do_fast: # and not only_spm:   ## or not (Path(replacesuffix(rt_match_brain, '_fslfast_seg_1'+ext)).is_file() & Path(replacesuffix(rt_match_brain, '_fslfast_seg_2'+ext)).is_file() & Path(replacesuffix(rt_match_brain, '_fslfast_seg_0'+ext)).is_file()):
                 print('running FSL Segmentation on ' + str(acc_match_brain))
                 fast.inputs.in_files = str(acc_match_brain)
                 fast.inputs.out_basename = str(replacesuffix(acc_match_brain, '_fslfast'))
@@ -150,3 +154,6 @@ for acc_matchfname, acc_actfname, acc_reffname in zip(acc_matchfnames, acc_actfn
 
         except:
             raise
+
+if do_spm:
+    eng.quit()

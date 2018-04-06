@@ -23,11 +23,16 @@ MNI1mm_T1 = pylabs_atlasdir/'MNI152_T1_1mm.nii.gz'
 MNI1mm_T1_mask = pylabs_atlasdir/'MNI152_T1_1mm_mask.nii'
 MNI1mm_T1_brain = pylabs_atlasdir/'MNI152_T1_1mm_brain.nii.gz'
 MNI1mm_T1_brain_mask = pylabs_atlasdir/'MNI152_T1_1mm_brain_mask.nii.gz'
-#MNI1mm_T2 = pylabs_atlasdir/'MNI152_T2_1mm.nii.gz'
+MNI1mm_T2 = pylabs_atlasdir/'MNI152_T2_1mm.nii.gz'
 MNI1mm_T2_brain = pylabs_atlasdir/'MNI152_T2_1mm_brain.nii.gz'
 MNI1mm_T1_qa_mask = pylabs_atlasdir/'MNI152_T1_1mm_qa_mask.nii.gz'
 meg_head_mask = pylabs_atlasdir/'MNI152_T1_1mm_meg_mask.nii'
 
+
+mnicom = pylabs_atlasdir /'MNI152_T1_1mm_8kcomroi.nii'
+mnimask = pylabs_atlasdir /'MNI152_T1_1mm_mask.nii'
+mniT2com = pylabs_atlasdir /'MNI152_T2_1mm_8kcomroi.nii'
+mniT2combr = pylabs_atlasdir /'MNI152_T2_1mm_brain_8kcomroi.nii'
 
 def getlocaldataroot():
     hostname = socket.gethostname()
@@ -134,13 +139,17 @@ def get_antsregsyn_cmd(quick=False, warps=False, warpts=False, N4bias=False):
         antsRegistrationSyN = Path(os.environ.get('ANTSPATH'), 'antsRegistrationSyN.sh')
         return antsRegistrationSyN
 
-def getslicercmd(linux_ver='Slicer-4.7.0-2017-03-12-linux-amd64', mac_ver='Slicer_dev4p7_2-21-2017.app'):
-    if platform.system() == 'Darwin':
-        slicer_path = Path('/Applications', mac_ver, 'Contents/MacOS/Slicer --launch ')
-    elif platform.system() == 'Linux':
-        slicer_path = Path(*Path(inspect.getabsfile(pylabs)).parts[:-3]) / linux_ver / 'Slicer --launch '
+def getslicercmd(ver='stable', stable_linux_ver='Slicer-4.8.1-linux-amd64', dev_linux_ver='Slicer-4.9.0-2018-02-08-linux-amd64', dev_mac_ver='Slicer_dev4p7_7-16-2017.app', stable_mac_ver='Slicer_dev4p7_7-16-2017.app'):
+    if platform.system() == 'Darwin' and ver == 'dev':
+        slicer_path = Path('/Applications', dev_mac_ver, 'Contents/MacOS/Slicer --launch ')
+    elif platform.system() == 'Darwin' and ver == 'stable':
+        slicer_path = Path('/Applications', stable_mac_ver, 'Contents/MacOS/Slicer --launch ')
+    elif platform.system() == 'Linux' and ver == 'dev':
+        slicer_path = Path(*Path(inspect.getabsfile(pylabs)).parts[:-3]) / dev_linux_ver / 'Slicer --launch '
+    elif platform.system() == 'Linux' and ver == 'stable':
+        slicer_path = Path(*Path(inspect.getabsfile(pylabs)).parts[:-3]) / stable_linux_ver / 'Slicer --launch '
     if not slicer_path.parent.is_dir():
-        raise ValueError('Slicer path not found for ' + str(slicer_path))
+        raise ValueError('Slicer path not found for {slicer_path}'.format(**{'slicer_path': slicer_path}))
     return slicer_path
 
 def getspmpath():

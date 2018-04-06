@@ -24,7 +24,7 @@ import pandas as pd
 from nibabel.mriutils import calculate_dwell_time
 from os.path import join, isfile
 from glob import glob
-
+from pylabs.io.images import savenii
 from pylabs.utils.files import sortedParGlob, ScanReconSort
 from pylabs.utils import pr_examdate2pydatetime, pr_examdate2BIDSdatetime, ProvenanceWrapper, getnetworkdataroot, WorkingContext, replacesuffix
 prov = ProvenanceWrapper()
