@@ -212,6 +212,7 @@ df2h5(descriptives, all_info_fname, '/stats/mrs/all_CSFcorr_metab_descriptive_st
 # rlog = ()
 # SPMuncorr_cols = [x for x in uncorr_cols if ('gabaovercr' not in x and 'FSL' not in x)]
 # FSLuncorr_cols = [x for x in uncorr_cols if ('gabaovercr' not in x and 'SPM' not in x)]
+# fortran seaches for 'left-percCSF' and 'right-percCSF'
 # for cols in [SPMuncorr_cols, FSLuncorr_cols]:
 #     onerowpersubj.to_csv(str(uncorr_csv_fname), header=True, index=True, columns=cols, na_rep=9999, index_label='metabolite')
 #     with WorkingContext(str(uncorr_csv_fname.parent)):
@@ -219,15 +220,17 @@ df2h5(descriptives, all_info_fname, '/stats/mrs/all_CSFcorr_metab_descriptive_st
 #             nc.write(str(2) + '\n')
 #         with open('numrow2.txt', mode='w') as nr:
 #             nr.write(str(len(behav_data.index)+1) + '\n')
-#         with open('numcol3.txt', mode='w') as nc:
+#         with open('numcol3.txt', mode='w') as nc:   # for t-stat
 #             nc.write(str(len(cols)) + '\n')
-#         with open('numrow3.txt', mode='w') as nr:
+#         with open('numrow3.txt', mode='w') as nr:    # for t-stat
 #             nr.write(str(len(onerowpersubj.index) + 1) + '\n')
 #         with open('all_nbwr_uncorr.txt', mode='w') as ufn:
 #             ufn.write(uncorr_csv_fname.name + '\n')
 #         with open('all_nbwr.txt', mode='w') as cfn:
 #             cfn.write(fcsf_corr_fname.name + '\n')  # was csfcorr_csv_fname.name
 #         rlog += run_subprocess(str(stats_fpgm))
+
+
 #         if 'left-SPM-percCSF' in cols:
 #             SPMcorr_fstats = pd.read_csv(str(fstats_fname))
 #         if 'left-FSL-percCSF' in cols:

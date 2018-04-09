@@ -51,11 +51,13 @@ if not dwi_qc:
 subjids_picks = SubjIdPicks()
 # list of subject ids to operate on
 picks = [
-         {'subj': 'sub-acdc112', 'session': 'ses-1', 'run': '1',  # subject selection info
+         {'subj': 'sub-acdc117', 'session': 'ses-1', 'run': '1',  # subject selection info
           },
          ]
 
 setattr(subjids_picks, 'subjids', picks)
+
+opts.test = True
 
 # commands and options are modified below.
 # topup command for unwarping dti
@@ -344,7 +346,7 @@ for i, pick in enumerate(dwi_picks):
 
         den_small = non_local_means(
             data,
-            sigma=sigma,
+            sigma=sigma[0],
             mask=mask,
             patch_radius=1,
             block_radius=1,
@@ -357,7 +359,7 @@ for i, pick in enumerate(dwi_picks):
 
         den_large = non_local_means(
             data,
-            sigma=sigma,
+            sigma=sigma[0],
             mask=mask,
             patch_radius=2,
             block_radius=1,
