@@ -6,13 +6,15 @@ pylabs.datadir.target = 'jaba'
 from pathlib import *
 import datetime, json
 import pandas as pd
-from pylabs.utils import ProvenanceWrapper, run_subprocess, WorkingContext, getnetworkdataroot, appendposix
-from pylabs.projects.genz.file_names import project, SubjIdPicks, get_gaba_names, Opts
+from pylabs.utils import *
+from pylabs.projects.genz.file_names import project, SubjIdPicks, get_gaba_names, get_freesurf_names, Opts
+from pylabs.structural.brain_extraction import extract_brain
 from pylabs.io.mixed import getgabavalue, df2h5
 prov = ProvenanceWrapper()
 
 fs = Path(getnetworkdataroot())
-gannettpath = pylabs.utils.paths.getgannettpath()
+gannettpath = getgannettpath()
+spmpath, tpm_path = getspmpath()
 
 # instantiate subject id list container
 subjids_picks = SubjIdPicks()
@@ -24,20 +26,28 @@ picks = [{'subj': 'sub-genz996', 'session': 'ses-6', 'run': '1',},
 
 setattr(subjids_picks, 'subjids', picks)
 setattr(subjids_picks, 'source_path', fs / project / '{subj}' / '{session}' / 'source_sparsdat')
-# setattr(subjids_picks, 'source_path', fs / project / 'sub-tadpole%(sid)s' / 'ses-%(ses)s' / 'source_sparsdat')
 
 opts = Opts()
 
 acc_actfnames, acc_reffnames = get_gaba_names(subjids_picks)
+b1map_fs_fnames, freesurf_fnames = get_freesurf_names(subjids_picks)
 #i = 0   # for testing
 #acc_act, acc_ref = acc_actfnames[i], acc_reffnames[i]
 
-for acc_act, acc_ref in zip(acc_actfnames, acc_reffnames):
+for acc_act, acc_ref, b1map, fs_rms in zip(acc_actfnames, acc_reffnames, b1map_fs_fnames, freesurf_fnames):
 
     results_dir = acc_act.parents[1].joinpath('mrs')
     subj_info = {'subj': results_dir.parts[-3],
                  'session': results_dir.parts[-2],
-                 'modality': results_dir.parts[-1]}
+                 'modality': results_dir.parts[-1],
+                 'gannettpath': gannettpath,
+                 'spmpath': spmpath,
+                 'acc_act': acc_act,
+                 'acc_ref': acc_ref,
+                 'b1map': b1map,
+                 'fs_rms': fs_rms,
+
+                 }
 
     if not results_dir.is_dir():
         results_dir.mkdir(parents=True)
@@ -45,8 +55,15 @@ for acc_act, acc_ref in zip(acc_actfnames, acc_reffnames):
     if not acc_act.is_file() or not acc_ref.is_file():
         raise ValueError('one or more .SDAT files is missing. please check.')
 
-    acc_mcode = "addpath('{0}'); MRS_struct = GannetLoad({{'{1}'}},{{'{2}'}}); MRS_struct = GannetFit(MRS_struct); exit;".format(
-            gannettpath, str(acc_act), str(acc_ref))
+    fs_rms_brain, fs_rms_brain_mask, fs_rms_cropped = extract_brain(fs_rms)
+
+    subj_info['fs_rms_brain'] = fs_rms_brain
+    subj_info['fs_rms_brain_mask'] = fs_rms_brain_mask
+
+    acc_mcode = "addpath('{gannettpath}', '{spmpath}'); MRS_struct = GannetLoad({{'{acc_act}'}},{{'{acc_ref}'}});" \
+                " MRS_struct = GannetFit(MRS_struct); MRS_struct = GannetCoRegister(MRS_struct, {{'{fs_rms_brain}'}});" \
+                " exit;".format(**subj_info)
+
 
     acc_cmd = 'matlab -nodisplay -nosplash -nodesktop -r "{0}"'.format(acc_mcode)
     output =()

@@ -352,3 +352,46 @@ writer.save()
 # close matlab instance
 # eng.quit()
 
+'''
+# test of meds interaction stats
+import scipy.stats as ss
+from statsmodels.stats.multicomp import pairwise_tukeyhsd
+# for SPM csf correction
+spm_corr_metab = h52df(all_info_fname, '/stats/mrs/SPM_CSFcorr_metabolites')
+asd_grp3 = spm_corr_metab.index.str.replace('sub-nbwr', '').astype('int') < 400
+spm_corr_metab.loc[asd_grp3, 'group'] = 'asd'
+spm_corr_metab.loc[subjs_on_meds, 'group'] = 'asd-meds'
+spm_corr_metab.loc[~asd_grp3, 'group'] = 'cntrl'
+spm_corr_metab.columns.name = 'metabolites'
+spm_corr_metab.set_index('group', append=True, inplace=True)
+spm_corr_metab_stacked = spm_corr_metab.stack()
+spm_corr_metab_stacked.name = 'values'
+for metab_group in spm_corr_metab_stacked.groupby('metabolites'):
+    samples = [group[1] for group in metab_group[1].groupby('group')]
+    f_val, p_val = ss.f_oneway(*samples)
+    print('SPMcorr Metabolite: {}, F value: {:.5f}, p value: {:.5f}'.format(metab_group[0], f_val, p_val))
+for metab in spm_corr_metab:
+    results = pairwise_tukeyhsd(spm_corr_metab[metab], spm_corr_metab.reset_index(level=1)['group'])
+    print('SPMcorr Metabolite {}'.format(metab))
+    print(results)
+
+# FSL corrected 
+fsl_corr_metab = h52df(all_info_fname, '/stats/mrs/FSL_CSFcorr_metabolites')
+asd_grp_fsl = fsl_corr_metab.index.str.replace('sub-nbwr', '').astype('int') < 400
+fsl_corr_metab.loc[asd_grp_fsl, 'group'] = 'asd'
+fsl_corr_metab.loc[subjs_on_meds, 'group'] = 'asd-meds'
+fsl_corr_metab.loc[~asd_grp_fsl, 'group'] = 'cntrl'
+fsl_corr_metab.columns.name = 'metabolites'
+fsl_corr_metab.set_index('group', append=True, inplace=True)
+fsl_corr_metab_stacked = fsl_corr_metab.stack()
+fsl_corr_metab_stacked.name = 'values'
+for metab_group in fsl_corr_metab_stacked.groupby('metabolites'):
+    samples = [group[1] for group in metab_group[1].groupby('group')]
+    f_val, p_val = ss.f_oneway(*samples)
+    print('FSLcorr Metabolite: {}, F value: {:.5f}, p value: {:.5f}'.format(metab_group[0], f_val, p_val))
+
+for metab in fsl_corr_metab:
+    results = pairwise_tukeyhsd(fsl_corr_metab[metab], fsl_corr_metab.reset_index(level=1)['group'])
+    print('FSLcorr Metabolite {}'.format(metab))
+    print(results)
+'''
