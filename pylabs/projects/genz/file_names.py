@@ -40,8 +40,75 @@ class Opts(object):
     gaba_dyn = 120
     genz_conv = img_conv[project]
 
-
 opts = Opts()
+
+class Optsd(object):
+    """
+    Define constants for genz project with dict like mapping using opts = Optsd; **vars(opts).
+    """
+    def __init__(self,
+            # define project variables here. will become dict using opts = Optsd; vars(opts).
+            project = 'genz',
+            test = False,
+            overwrite = True,
+            convert = False,
+            spm_thresh = 0.85,
+            fsl_thresh = 0.20,
+            info_fname = fs / project / ('all_' + project + '_info.h5'),
+            dwi_pass_qc = '_passqc',
+            mf_str = '_mf',    # set to blank string '' to disable median filtering
+            run_topup = True,
+            eddy_corr = True,
+            eddy_corr_dir = 'eddy_cuda_repol_v1',   # output dir for eddy
+            dwi_fits_dir = 'fits_v1',
+            do_ukf = True,
+            dwi_reg_dir = 'MNI2dwi',
+            run_bedpost = True,
+            dwi_bedpost_dir = 'bedpost',
+            dwi_fname_excep = ['_DWI64_3SH_B0_B800_B2000_TOPUP_TE101_1p8mm3_', '_DWI6_B0_TOPUP_TE101_1p8mm3_', '_DWI6_B0_TOPDN_TE101_1p8mm3_'],
+            gaba_te = 80,
+            gaba_dyn = 120,
+            gaba_ftempl = '{subj}_WIP_ACCGABAMM_TE{te}_{dyn}DYN_{wild}_raw_{type}.SDAT',
+            b1corr = False,
+            vfa_tr = 21.0,
+            vfa_fas = [4.0, 25.0],
+            ):
+        # make them accessible as obj.var as well as dict
+        self.project = project
+        self.test = test
+        self.overwrite = overwrite
+        self.convert = convert
+        self.spm_thresh = spm_thresh
+        self.fsl_thresh = fsl_thresh
+        self.dwi_pass_qc = dwi_pass_qc
+        self.mf_str = mf_str
+        self.info_fname = info_fname
+        self.run_topup = run_topup
+        self.eddy_corr = eddy_corr
+        self.eddy_corr_dir = eddy_corr_dir
+        self.dwi_fits_dir = dwi_fits_dir
+        self.do_ukf = do_ukf
+        self.dwi_reg_dir = dwi_reg_dir
+        self.run_bedpost = run_bedpost
+        self.dwi_bedpost_dir = dwi_bedpost_dir
+        self.dwi_fname_excep = dwi_fname_excep
+        self.gaba_te = gaba_te
+        self.gaba_dyn = gaba_dyn
+        self.gaba_ftempl = gaba_ftempl
+        self.b1corr = b1corr
+        self.vfa_tr = vfa_tr
+        self.vfa_fas = vfa_fas
+
+"""
+# other future stages to run to move to opts settings
+subT2 = False   #wip ??
+bet = False
+prefilter = False
+templating = False
+"""
+
+opts = Optsd()
+
 
 qc_str = opts.dwi_pass_qc
 
@@ -102,7 +169,7 @@ b1map5_fnames = []
 
 def get_freesurf_names(subjids_picks):
     b1_ftempl = removesuffix(str(img_conv[project]['_B1MAP-QUIET_FC_']['fname_template']))
-    fs_ftempl = removesuffix(str(img_conv[project]['_MEMP_IFS_0p5mm_TI1100_']['fname_template']))
+    fs_ftempl = removesuffix(str(img_conv[project]['MEMP_IFS_0p5mm_2echo_']['fname_template']))
     for subjid in subjids_picks.subjids:
         b1map_fs_fnames.append(str(b1_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_B1MAP-QUIET_FC_'])))
         freesurf_fnames.append(str(fs_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['MEMP_IFS_0p5mm_2echo_'], dict3={'scan_info': 'ti1200_rms'})))

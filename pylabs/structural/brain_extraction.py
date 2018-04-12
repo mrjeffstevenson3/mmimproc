@@ -38,6 +38,7 @@ def extract_brain(file, f_factor=0.3, mmzshift=0.0, mode='T1', nii=False):
     :return: 
     '''
     # remove ext if .nii or .nii.gz output_type='NIFTI_GZ'
+    ext = pylabs.opts.nii_fext
     file = Path(file)
     if not file.is_file():
         raise ValueError(str(file)+' file is not found. please check')
@@ -99,7 +100,7 @@ def extract_brain(file, f_factor=0.3, mmzshift=0.0, mode='T1', nii=False):
         ext = '.nii'
         gz2nii(brain_outfname+'.nii.gz', delete_gz=True)
         gz2nii(brain_outfname + '_mask.nii.gz', delete_gz=True)
-        gz2nii(replacesuffix(file, '_cropped'+ext), delete_gz=True)
+        gz2nii(replacesuffix(file, '_cropped.nii.gz'), delete_gz=True)
     prov.log(brain_outfname+ext, 'generic fsl bet brain', str(file), script=__file__, provenance={'f factor': f_factor, 'com': list(bet_com), })
     prov.log(str(replacesuffix(file, '_brain_mask'+ext)), 'generic fsl bet brain mask', str(file), script=__file__, provenance={'f factor': f_factor, 'com': list(bet_com)})
     prov.log(str(replacesuffix(file, '_cropped'+ext)), 'generic fsl bet brain mask', str(file), script=__file__,
