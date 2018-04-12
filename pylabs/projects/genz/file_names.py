@@ -176,16 +176,18 @@ def get_freesurf_names(subjids_picks):
     return b1map_fs_fnames, freesurf_fnames
 
 def get_dwi_names(subjids_picks):
+    dwi_picks = []
     try:
         topup_ftempl = removesuffix(str(img_conv[project]['_DWI_B0_TOPUP_']['fname_template']))
         topdn_ftempl = removesuffix(str(img_conv[project]['_DWI_B0_TOPDN_']['fname_template']))
         dwi_ftempl = removesuffix(str(img_conv[project]['_DWI64_3SH_B0_B800_B2000_TOPUP_']['fname_template']))
         for subjid in subjids_picks.subjids:
-            topup_fnames.append(str(topup_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_DWI_B0_TOPUP_'])))
-            topdn_fnames.append(str(topdn_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_DWI_B0_TOPDN_'])))
-            dwi_fnames.append(str(dwi_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_AX_MATCH_RIGHT_MEMP_VBM_TI1100_'])))
-        return topup_fnames, topdn_fnames, dwi_fnames
-    except TypeError, e:
+            subjid['topup_fname'] = str(topup_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_DWI_B0_TOPUP_']))
+            subjid['topdn_ftempl'] = str(topdn_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_DWI_B0_TOPDN_']))
+            subjid['dwi_fname'] = str(dwi_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_DWI64_3SH_B0_B800_B2000_TOPUP_']))
+            dwi_picks.append(subjid)
+        return dwi_picks
+    except TypeError as e:
             print('subjids needs to a dictionary.')
 
 def get_3dt2_names(subjids_picks):
