@@ -7,7 +7,7 @@ class SubjIdPicks(object):
     pass
 
 class RootDataDir(object):
-    target = 'scotty'
+    target = 'jaba'
     pass
 
 datadir = RootDataDir()

@@ -8,7 +8,7 @@ from os.path import expanduser, join
 from pathlib import *
 
 class RootDataDir(object):
-    target = 'scotty'
+    target = 'jaba'
     pass
 
 # hostnames with functioning gpus
@@ -68,6 +68,8 @@ def getnetworkdataroot(verbose=True):
             print('setting root data directory to jaba.')
         if hostname in ['scotty.ilabs.uw.edu', 'scotty', 'redshirt.ilabs.uw.edu', 'redshirt', 'uhora.ilabs.uw.edu', 'uhora', 'sulu.ilabs.uw.edu', 'sulu', 'JVDB', 'spock', 'spock.ilabs.uw.edu']:
             return '/brainstudio/data'
+        if hostname in ['emalia.ilabs.washington.edu', 'emalia',]:
+            return '/Volumes/MRI-DTI/data'
         elif any(x in hostname for x in ['Jeffs-MacBook-Pro-3.local', 'Jeffs-MBP-3', '.dhcp4.washington.edu']):
             print('found mrjeffs laptop. using local datadir. datadir= ', pylabs.datadir.target)
             return '/Users/mrjeffs/Documents/Research/data'
