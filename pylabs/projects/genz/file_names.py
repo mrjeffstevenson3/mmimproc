@@ -1,3 +1,4 @@
+# todo: make roll_brain_to_com function with affine transform outfile to place brain at center of image fro ANTS.
 # orig_dwi are the original dwi source files output from conversion -> inputs to topup
 # set as a triple tuple (topup_dwi_6S0 6 vol S0 1st, topdn_dwi_6S0 6 vol S0 2nd, dwi-topup_64dir-3sh-800-2000 multishell 64 dir dwi 3rd)
 # topup_dwi_6S0 and topdn_dwi_6S0 are inputs to topup along with dwell time
