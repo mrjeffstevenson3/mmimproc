@@ -35,7 +35,7 @@ from pylabs.utils import ProvenanceWrapper
 prov = ProvenanceWrapper()
 
 # project, subject, and file objects to work on
-from pylabs.projects.acdc.file_names import project, SubjIdPicks, get_dwi_names, Optsd
+from pylabs.projects.genz.file_names import project, SubjIdPicks, get_dwi_names, Optsd
 
 #setup paths and file names to process
 fs = Path(getnetworkdataroot())
@@ -51,7 +51,7 @@ if not dwi_qc:
 subjids_picks = SubjIdPicks()
 # list of subject ids to operate on
 picks = [
-         {'subj': 'sub-acdc117', 'session': 'ses-1', 'run': '1',  # subject selection info
+         {'subj': 'sub-genz501', 'session': 'ses-1', 'run': '1',  # subject selection info
           },
          ]
 
