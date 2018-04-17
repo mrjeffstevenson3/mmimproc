@@ -109,9 +109,9 @@ for csf_k, gaba_k in zip(csf_corr_keys, gaba_keys):
     gaba_df = h52df(all_info_fname, gaba_k)
     subj = gaba_k.split('/')[1]
     if not all( x == csf_df.loc['threshold', ['left_FSL', 'right_FSL']].values[0] for x in csf_df.loc['threshold', ['left_FSL', 'right_FSL']].values):
-        raise ValueError('unequal left and right FSL threshold values for {subj}'.format({'subj': subj}))
+        raise ValueError('unequal left and right FSL threshold values for {subj}'.format(**{'subj': subj}))
     if not all(x == csf_df.loc['threshold', ['left_FSL', 'right_FSL']].values[0] for x in csf_df.loc['threshold', ['left_SPM', 'right_SPM']].values):
-        raise ValueError('unequal left and right SPM threshold values for {subj}'.format({'subj': subj}))
+        raise ValueError('unequal left and right SPM threshold values for {subj}'.format(**{'subj': subj}))
     spm_threshs.append(csf_df.loc['threshold', 'left_SPM'])
     fsl_threshs.append(csf_df.loc['threshold', 'left_FSL'])
     onerowpersubj.loc[subj, 'left-SPM-percCSF'] = np.float64(csf_df.loc['frac_CSF', 'left_SPM'])
