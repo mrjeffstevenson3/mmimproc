@@ -112,8 +112,8 @@ for csf_k, gaba_k in zip(csf_corr_keys, gaba_keys):
         raise ValueError('unequal left and right FSL threshold values for {subj}'.format(**{'subj': subj}))
     if not all(x == csf_df.loc['threshold', ['left_SPM', 'right_SPM']].values[0] for x in csf_df.loc['threshold', ['left_SPM', 'right_SPM']].values):
         raise ValueError('unequal left and right SPM threshold values for {subj}'.format(**{'subj': subj}))
-    spm_threshs.append(csf_df.loc['threshold', 'left_SPM'])
-    fsl_threshs.append(csf_df.loc['threshold', 'left_FSL'])
+    spm_threshs.append(float(csf_df.loc['threshold', 'left_SPM']))
+    fsl_threshs.append(float(csf_df.loc['threshold', 'left_FSL']))
     onerowpersubj.loc[subj, 'left-SPM-percCSF'] = np.float64(csf_df.loc['frac_CSF', 'left_SPM'])
     onerowpersubj.loc[subj, 'right-SPM-percCSF'] = np.float64(csf_df.loc['frac_CSF', 'right_SPM'])
     onerowpersubj.loc[subj, 'left-FSL-percCSF'] = np.float64(csf_df.loc['frac_CSF', 'left_FSL'])
@@ -123,10 +123,10 @@ for csf_k, gaba_k in zip(csf_corr_keys, gaba_keys):
     onerowpersubj.loc[subj, 'left-gabaovercr'] = np.float64(gaba_df.loc['left-gabaovercr', 'gaba_fit_info'])
     onerowpersubj.loc[subj, 'right-gabaovercr'] = np.float64(gaba_df.loc['right-gabaovercr', 'gaba_fit_info'])
 # test all thresholds are the same.
-if not all(spm_threshs == spm_threshs[0]):
+if not all(x == spm_threshs[0] for x in spm_threshs):
     print spm_threshs
     raise ValueError('found different SPM thresholds in dataset')
-if not all(fsl_threshs == fsl_threshs[0]):
+if not all(x == fsl_threshs[0] for x in fsl_threshs):
     print fsl_threshs
     raise ValueError('found different FSL thresholds in dataset')
 # calculate CSF correction factor
