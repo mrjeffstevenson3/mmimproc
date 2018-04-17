@@ -316,7 +316,7 @@ uncorr_worksheet = writer.sheets['uncorr']
 uncorr_worksheet.set_default_row(25)
 uncorr_worksheet.set_column('B:O', 24, data_format)
 uncorr_worksheet.set_column('A:A', 18, labels_format)
-uncorr_worksheet.write_string(0,0,'Uncorrected fit data and CSF correction factor', title_format)
+uncorr_worksheet.write_string(0,0,'Uncorrected fit data and CSF correction factor. SPM threshold = {spm_thr}. FSL threshold = {fsl_thr}'.format(**{'spm_thr': spm_threshs[0], 'fsl_thr': fsl_threshs[0]}), title_format)
 
 # write csf corrected data
 SPMcorr_metab.to_excel(writer, sheet_name='SPMcorr_metab', columns=corr_cols, index=True, index_label='subject', header=True, startrow=1, na_rep=9999)
@@ -326,13 +326,13 @@ SPMcorr_worksheet = writer.sheets['SPMcorr_metab']
 SPMcorr_worksheet.set_default_row(35)
 SPMcorr_worksheet.set_column('B:Q', 24, data_format)
 SPMcorr_worksheet.set_column('A:A', 18, labels_format)
-SPMcorr_worksheet.write_string(0, 0, 'Corrected Metabolite Concentrations after CSF correction factor applied using SPM segmentation', title_format)
+SPMcorr_worksheet.write_string(0, 0, 'Corrected Metabolite Concentrations after CSF correction factor applied using SPM segmentation with threshold {thresh}'.format(**{'thresh': spm_threshs[0]}), title_format)
 
 FSLcorr_worksheet = writer.sheets['FSLcorr_metab']
 FSLcorr_worksheet.set_default_row(35)
 FSLcorr_worksheet.set_column('B:Q', 24, data_format)
 FSLcorr_worksheet.set_column('A:A', 18, labels_format)
-FSLcorr_worksheet.write_string(0, 0, 'Corrected Metabolite Concentrations after CSF correction factor applied using FSL segmentation', title_format)
+FSLcorr_worksheet.write_string(0, 0, 'Corrected Metabolite Concentrations after CSF correction factor applied using FSL segmentation with threshold {thresh}'.format(**{'thresh': fsl_threshs[0]}), title_format)
 
 
 # # write fortran corrected data
