@@ -63,7 +63,7 @@ for acc_act, acc_ref, b1map, fs_rms in zip(acc_actfnames, acc_reffnames, b1map_f
     subj_info['fs_rms_brain'] = fs_rms_brain
     subj_info['fs_rms_brain_mask'] = fs_rms_brain_mask
 
-    acc_mcode = "addpath('{gannettpath}', '{spmpath}'); MRS_struct = GannetLoad({{'{acc_act}'}},{{'{acc_ref}'}});" \
+    acc_mcode = "addpath('{gannettpath}', '{genpath(spmpath})'); MRS_struct = GannetLoad({{'{acc_act}'}},{{'{acc_ref}'}});" \
                 " MRS_struct = GannetFit(MRS_struct); MRS_struct = GannetCoRegister(MRS_struct, {{'{fs_rms_brain}'}});" \
                 " MRS_struct = GannetSegment(MRS_struct) ; exit;".format(**subj_info)
 

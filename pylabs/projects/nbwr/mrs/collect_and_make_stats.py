@@ -102,10 +102,18 @@ for i, (c, g) in enumerate(zip(csf_corr_keys, gaba_keys)):
         all_same.append(True)
 if not all(all_same):
     raise ValueError('Subjects index not aligned in csf and gaba hdf keys. stopping now.')
+spm_threshs = []
+fsl_threshs = []
 for csf_k, gaba_k in zip(csf_corr_keys, gaba_keys):
     csf_df = h52df(all_info_fname, csf_k)
     gaba_df = h52df(all_info_fname, gaba_k)
     subj = gaba_k.split('/')[1]
+    if not all( x == csf_df.loc['threshold', ['left_FSL', 'right_FSL']].values[0] for x in csf_df.loc['threshold', ['left_FSL', 'right_FSL']].values):
+        raise ValueError('unequal left and right FSL threshold values for {subj}'.format({'subj': subj}))
+    if not all(x == csf_df.loc['threshold', ['left_FSL', 'right_FSL']].values[0] for x in csf_df.loc['threshold', ['left_SPM', 'right_SPM']].values):
+        raise ValueError('unequal left and right SPM threshold values for {subj}'.format({'subj': subj}))
+    spm_threshs.append(csf_df.loc['threshold', 'left_SPM'])
+    fsl_threshs.append(csf_df.loc['threshold', 'left_FSL'])
     onerowpersubj.loc[subj, 'left-SPM-percCSF'] = np.float64(csf_df.loc['frac_CSF', 'left_SPM'])
     onerowpersubj.loc[subj, 'right-SPM-percCSF'] = np.float64(csf_df.loc['frac_CSF', 'right_SPM'])
     onerowpersubj.loc[subj, 'left-FSL-percCSF'] = np.float64(csf_df.loc['frac_CSF', 'left_FSL'])
@@ -114,6 +122,13 @@ for csf_k, gaba_k in zip(csf_corr_keys, gaba_keys):
     onerowpersubj.loc[subj, 'right-GABA'] = np.float64(gaba_df.loc['right-gaba', 'gaba_fit_info'])
     onerowpersubj.loc[subj, 'left-gabaovercr'] = np.float64(gaba_df.loc['left-gabaovercr', 'gaba_fit_info'])
     onerowpersubj.loc[subj, 'right-gabaovercr'] = np.float64(gaba_df.loc['right-gabaovercr', 'gaba_fit_info'])
+# test all thresholds are the same.
+if not all(spm_threshs == spm_threshs[0]):
+    print spm_threshs
+    raise ValueError('found different SPM thresholds in dataset')
+if not all(fsl_threshs == fsl_threshs[0]):
+    print fsl_threshs
+    raise ValueError('found different FSL thresholds in dataset')
 # calculate CSF correction factor
 onerowpersubj['left-SPM-1over1minfracCSF'] = 1 / (1 - onerowpersubj.loc[:, 'left-SPM-percCSF'])
 onerowpersubj['right-SPM-1over1minfracCSF'] = 1 / (1 - onerowpersubj.loc[:, 'right-SPM-percCSF'])
@@ -294,14 +309,14 @@ data_format.set_align('vcenter')
 data_format.set_align('center')
 data_format.set_text_wrap(False)
 
-# # why write uncorrected to excel 1st?
-# onerowpersubj.to_hdf(hdf_fname, 'uncorrected_mrs_data', mode='a', format='t', append=True, data_columns=onerowpersubj.columns)
-# onerowpersubj.to_excel(writer, sheet_name='uncorr', columns=uncorr_cols, index=True, index_label='subject', header=True, startrow=1, na_rep=9999)
-# uncorr_worksheet = writer.sheets['uncorr']
-# uncorr_worksheet.set_default_row(25)
-# uncorr_worksheet.set_column('B:O', 24, data_format)
-# uncorr_worksheet.set_column('A:A', 18, labels_format)
-# uncorr_worksheet.write_string(0,0,'Uncorrected fit data and CSF correction factor', title_format)
+# why write uncorrected to excel 1st?
+onerowpersubj.to_hdf(hdf_fname, 'uncorrected_mrs_data', mode='a', format='t', append=True, data_columns=onerowpersubj.columns)
+onerowpersubj.to_excel(writer, sheet_name='uncorr', columns=uncorr_cols, index=True, index_label='subject', header=True, startrow=1, na_rep=9999)
+uncorr_worksheet = writer.sheets['uncorr']
+uncorr_worksheet.set_default_row(25)
+uncorr_worksheet.set_column('B:O', 24, data_format)
+uncorr_worksheet.set_column('A:A', 18, labels_format)
+uncorr_worksheet.write_string(0,0,'Uncorrected fit data and CSF correction factor', title_format)
 
 # write csf corrected data
 SPMcorr_metab.to_excel(writer, sheet_name='SPMcorr_metab', columns=corr_cols, index=True, index_label='subject', header=True, startrow=1, na_rep=9999)

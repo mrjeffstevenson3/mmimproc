@@ -20,13 +20,12 @@ prov = ProvenanceWrapper()
 fs = Path(getnetworkdataroot())
 # instantiate project level nomenclature options object
 opts = Optsd()
-opts.test = True
+opts.test = False
 # instantiate subject id list object
 subjids_picks = SubjIdPicks()
 # list of dicts of subject ids and info to operate on
 picks = [
-         {'subj': 'sub-genz501', 'session': 'ses-1', 'run': '1', }, # subject selection info
-         {'subj': 'sub-genz104', 'session': 'ses-1', 'run': '1', },
+         {'subj': 'sub-genz301', 'session': 'ses-1', 'run': '1', }, # subject selection info
          ]
 
 setattr(subjids_picks, 'subjids', picks)

@@ -168,8 +168,8 @@ b1map5_fnames = []
 
 
 def get_freesurf_names(subjids_picks):
-    b1_ftempl = removesuffix(str(img_conv[project]['_B1MAP-QUIET_FC_']['fname_template']))
-    fs_ftempl = removesuffix(str(img_conv[project]['MEMP_IFS_0p5mm_2echo_']['fname_template']))
+    b1_ftempl = removesuffix(str(genz_conv['_B1MAP-QUIET_FC_']['fname_template']))
+    fs_ftempl = removesuffix(str(genz_conv['MEMP_IFS_0p5mm_2echo_']['fname_template']))
     for subjid in subjids_picks.subjids:
         b1map_fs_fnames.append(str(b1_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_B1MAP-QUIET_FC_'])))
         freesurf_fnames.append(str(fs_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['MEMP_IFS_0p5mm_2echo_'], dict3={'scan_info': 'ti1200_rms'})))
@@ -178,12 +178,12 @@ def get_freesurf_names(subjids_picks):
 def get_dwi_names(subjids_picks):
     dwi_picks = []
     try:
-        topup_ftempl = removesuffix(str(img_conv[project]['_DWI_B0_TOPUP_']['fname_template']))
-        topdn_ftempl = removesuffix(str(img_conv[project]['_DWI_B0_TOPDN_']['fname_template']))
-        dwi_ftempl = removesuffix(str(img_conv[project]['_DWI64_3SH_B0_B800_B2000_TOPUP_']['fname_template']))
+        topup_ftempl = removesuffix(str(genz_conv['_DWI6_B0_TOPUP_']['fname_template']))
+        topdn_ftempl = removesuffix(str(genz_conv['_DWI6_B0_TOPDN_']['fname_template']))
+        dwi_ftempl = removesuffix(str(genz_conv['_DWI64_3SH_B0_B800_B2000_TOPUP_']['fname_template']))
         for subjid in subjids_picks.subjids:
-            subjid['topup_fname'] = str(topup_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_DWI_B0_TOPUP_']))
-            subjid['topdn_ftempl'] = str(topdn_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_DWI_B0_TOPDN_']))
+            subjid['topup_fname'] = str(topup_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_DWI6_B0_TOPUP_']))
+            subjid['topdn_fname'] = str(topdn_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_DWI6_B0_TOPDN_']))
             subjid['dwi_fname'] = str(dwi_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_DWI64_3SH_B0_B800_B2000_TOPUP_']))
             dwi_picks.append(subjid)
         return dwi_picks
