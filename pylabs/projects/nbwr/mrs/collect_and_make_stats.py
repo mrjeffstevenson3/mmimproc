@@ -353,10 +353,10 @@ stats_worksheet = writer.sheets['stats']
 stats_worksheet.set_column('B:Q', 22, data_format)
 stats_worksheet.set_default_row(35)
 stats_worksheet.set_column('A:A', 18, labels_format)
-stats_worksheet.write_string(0, 0, 'Summary t-stats and p-values from python stats for both SPM (threshold={spm_thr}) and FSL (threshold={fsl_thr}) CSF corrected metabolites'.format(**{'spm_thr': spm_threshs[0], 'fsl_thr': fsl_threshs[0]})', title_format)
+stats_worksheet.write_string(0, 0, 'Summary t-stats and p-values from python stats for both SPM (threshold={spm_thr}) and FSL (threshold={fsl_thr}) CSF corrected metabolites'.format(**{'spm_thr': spm_threshs[0], 'fsl_thr': fsl_threshs[0]}), title_format)
 # stats_worksheet.write_string(7,0,'Stats results from todds fortran code', title_format)
-stats_worksheet.write_string(20, 0, 'Additional SPM (threshold={spm_thr}) CSF corrected descriptive stats'.format(**{'spm_thr': spm_threshs[0], 'fsl_thr': fsl_threshs[0]})', title_format)
-stats_worksheet.write_string(20, 6, 'Additional FSL (threshold={fsl_thr}) CSF corrected descriptive stats'.format(**{'spm_thr': spm_threshs[0], 'fsl_thr': fsl_threshs[0]})', title_format)
+stats_worksheet.write_string(20, 0, 'Additional SPM (threshold={spm_thr}) CSF corrected descriptive stats'.format(**{'spm_thr': spm_threshs[0], 'fsl_thr': fsl_threshs[0]}), title_format)
+stats_worksheet.write_string(20, 6, 'Additional FSL (threshold={fsl_thr}) CSF corrected descriptive stats'.format(**{'spm_thr': spm_threshs[0], 'fsl_thr': fsl_threshs[0]}), title_format)
 # stats_worksheet.write_string(28,0,'Selected Correlations:', title_format)
 # stats_worksheet.set_row(18, {'align': 'left'})
 # stats_worksheet.set_row(19, {'align': 'left'})
@@ -371,6 +371,9 @@ writer.save()
 # test of meds interaction stats
 import scipy.stats as ss
 from statsmodels.stats.multicomp import pairwise_tukeyhsd
+project = 'nbwr'
+all_info_fname = fs/project/'all_{project}_info.h5'.format(**{'project': project})
+subjs_on_meds = ['sub-nbwr007', 'sub-nbwr081', 'sub-nbwr215', 'sub-nbwr317']
 # for SPM csf correction
 spm_corr_metab = h52df(all_info_fname, '/stats/mrs/SPM_CSFcorr_metabolites')
 asd_grp3 = spm_corr_metab.index.str.replace('sub-nbwr', '').astype('int') < 400
