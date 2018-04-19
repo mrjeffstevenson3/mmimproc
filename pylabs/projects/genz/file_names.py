@@ -53,7 +53,7 @@ class Optsd(object):
             test = False,
             overwrite = True,
             convert = False,
-            spm_thresh = 0.85,
+            spm_thresh = 0.80,
             fsl_thresh = 0.20,
             info_fname = fs / project / ('all_' + project + '_info.h5'),
             dwi_pass_qc = '_passqc',
