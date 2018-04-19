@@ -52,7 +52,7 @@ if not dwi_qc:
 subjids_picks = SubjIdPicks()
 # list of subject ids to operate on
 picks = [
-         {'subj': 'sub-genz501', 'session': 'ses-1', 'run': '1',  # subject selection info
+         {'subj': 'sub-genz308', 'session': 'ses-1', 'run': '1',  # subject selection info
           },
          ]
 
@@ -341,9 +341,9 @@ for i, pick in enumerate(dwi_picks):
         savenii(dkifit.md, affine, '{dipy_dki_fits_out}_MD.nii'.format(**pick))
         savenii(dkifit.rd, affine, '{dipy_dki_fits_out}_RD.nii'.format(**pick))
         savenii(dkifit.ad, affine, '{dipy_dki_fits_out}_AD.nii'.format(**pick))
-        savenii(dkifit.mk(0, 3), affine, '{dipy_dki_fits_out}_MK.nii'.format(**pick), minmax=(0, 3))
-        savenii(dkifit.rk(0, 3), affine, '{dipy_dki_fits_out}_RK.nii'.format(**pick), minmax=(0, 3))
-        savenii(dkifit.ak(0, 3), affine, '{dipy_dki_fits_out}_AK.nii'.format(**pick), minmax=(0, 3))
+        savenii(dkifit.mk(-3, 3), affine, '{dipy_dki_fits_out}_MK.nii'.format(**pick), minmax=(-3, 3))
+        savenii(dkifit.rk(-3, 3), affine, '{dipy_dki_fits_out}_RK.nii'.format(**pick), minmax=(-3, 3))
+        savenii(dkifit.ak(-3, 3), affine, '{dipy_dki_fits_out}_AK.nii'.format(**pick), minmax=(-3, 3))
 
     if opts.do_ukf:
         try:
