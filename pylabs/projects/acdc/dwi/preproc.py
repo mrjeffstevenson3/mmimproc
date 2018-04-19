@@ -1,4 +1,5 @@
 # todo: fix brain extraction by increasing z dim (and maybe xy) to accomodate brain stem and cerebellum of dwi or pre-crop MNI before reg
+# todo: fix sigma array length problem with DKI
 # first set global root data directory
 import pylabs
 pylabs.datadir.target = 'jaba'
