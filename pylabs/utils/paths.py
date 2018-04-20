@@ -28,6 +28,9 @@ MNI1mm_T2_brain = pylabs_atlasdir/'MNI152_T2_1mm_brain.nii.gz'
 MNI1mm_T1_qa_mask = pylabs_atlasdir/'MNI152_T1_1mm_qa_mask.nii.gz'
 meg_head_mask = pylabs_atlasdir/'MNI152_T1_1mm_meg_mask.nii'
 
+# todds fortran programs
+vol2fiber = pylabs_dir/'pylabs/diffusion/writefiber_withpaint_may23_2017_qt1'
+
 
 mnicom = pylabs_atlasdir /'MNI152_T1_1mm_8kcomroi.nii'
 mnimask = pylabs_atlasdir /'MNI152_T1_1mm_mask.nii'
