@@ -25,14 +25,17 @@ def inject_vol_data_into_vtk(working_dir, vol_fname, vtk_infname, vtk_outfname):
             fsz.write(str(Path(vtk_infname).stat().st_size)+'\n')
         with open('offsets.txt', 'w') as off:
             off.write('{x} {y} {z}\n'.format(**offsets))
-
+        shutil.copy(str(aal_motor), 'aal_motor.vtk')
+        shutil.copy(str(aal_base), 'base.vtk')
+        shutil.copy(str(aal_channel), 'channel.vtk')
         results += run_subprocess(vol2fiber)
         Path('fnew.vtk').rename(vtk_outfname)
-
     return
 
 '''
-  cd /mnt/users/js/nbwr/sub-nbwr999b/ses-1/Slicer_scenes/Slicer_1st_noddi_run_5-8-2017/toddtest
+bash script to convert to python:
+
+cd /mnt/users/js/nbwr/sub-nbwr999b/ses-1/Slicer_scenes/Slicer_1st_noddi_run_5-8-2017/toddtest
 echo "1" > usechannel.txt
 echo "1" > procmethod.txt
 FILESIZE=$(stat -c%s "f.vtk")

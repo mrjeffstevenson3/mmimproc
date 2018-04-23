@@ -4,9 +4,8 @@ import nibabel as nib
 import numpy as np
 from pylabs.utils import *
 from pylabs.io.images import savenii
-from pylabs.io.mixed import h52df
+from pylabs.structural.brain_extraction import extract_brain
 from pylabs.fmap_correction.b1_map_corr import calcb1map
-from pylabs.conversion.brain_convert import img_conv
 from scipy import stats
 from scipy.ndimage.filters import median_filter as medianf
 # project, subject, and file objects to work on
@@ -19,7 +18,7 @@ fs = Path(getnetworkdataroot())
 subjids_picks = SubjIdPicks()
 opts = Optsd()
 # must set fas mannually when patch used. not reported in PAR file correctly.
-picks = [{'patch': True, 'project': project, 'subj': 'sub-genz508', 'session': 'ses-1', 'run': '1', 'fas': [4.0, 25.0],},
+picks = [{'patch': True, 'project': project, 'subj': 'sub-genz501', 'session': 'ses-1', 'run': '1', 'fas': [4.0, 25.0],},
          ]
 setattr(subjids_picks, 'subjids', picks)
 
@@ -33,15 +32,22 @@ if opts.test:
 for pick in vfa_picks:
     ses_dir = fs/'{project}/{subj}/{session}'.format(**pick)
     b1_data = nib.load(str(ses_dir/'fmap'/pick['b1map_fname'])+'.nii').get_data().astype(np.float64)
+    b1_affine = nib.load(str(ses_dir/'fmap'/pick['b1map_fname'])+'.nii').affine
     vfa_data = nib.load(str(ses_dir/'qt1'/pick['vfa_fname'])+'.nii').get_data().astype(np.float64)
     vfa_affine = nib.load(str(ses_dir/'qt1'/pick['vfa_fname'])+'.nii').affine
+    savenii(vfa_data[:, :, :, 2], vfa_affine, ses_dir / 'qt1' / (pick['vfa_fname'] + '_fa25ec1.nii'))
+    vfa_brain, vfa_brain_mask, vfa_cropped = extract_brain(ses_dir / 'qt1' / (pick['vfa_fname'] + '_fa25ec1.nii'), f_factor=0.25)
     with WorkingContext(ses_dir/'qt1'):
         # calc b1map
         S1 = medianf(b1_data[:,:,:,0], size=7)
         S2 = medianf(b1_data[:,:,:,1], size=7)
+        savenii(S2, b1_affine, ses_dir / 'qt1' / (pick['b1map_fname'] + '_tr2_mf_mag.nii'))
+        b1map_brain, b1map_brain_mask, b1map_cropped = extract_brain(ses_dir / 'qt1' / (pick['b1map_fname'] + '_tr2_mf_mag.nii'), f_factor=0.4)
         b1map = calcb1map(S1, S2, pick['b1maptr'])
         b1map_out_fname = ses_dir/'fmap'/'{subj}_{session}_b1map_phase_mf.nii'.format(**pick)
         savenii(b1map, vfa_affine, str(b1map_out_fname))
+
+        # reg b1map and vfa and apply to mask
 
         # fit vfa and make b1corrected qt1 img
         vy_vfa2_ec1 = vfa_data[:,:,:,:2]
