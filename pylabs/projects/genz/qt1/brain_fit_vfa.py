@@ -77,4 +77,5 @@ for pick in vfa_picks:
         with np.errstate(divide='ignore', invalid='ignore'):
             R1 = np.true_divide(1.0, qT1_linregr_data_clean)
             R1[ ~ np.isfinite(R1)] = 0
-            savenii(R1, vfa_affine, str(qt1out_fname))
+            R1 = R1 * 1000.0
+            savenii(R1, vfa_affine, str(qt1out_fname), minmax=(0,1))

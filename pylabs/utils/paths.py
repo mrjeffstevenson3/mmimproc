@@ -27,6 +27,10 @@ MNI1mm_T2 = pylabs_atlasdir/'MNI152_T2_1mm.nii.gz'
 MNI1mm_T2_brain = pylabs_atlasdir/'MNI152_T2_1mm_brain.nii.gz'
 MNI1mm_T1_qa_mask = pylabs_atlasdir/'MNI152_T1_1mm_qa_mask.nii.gz'
 meg_head_mask = pylabs_atlasdir/'MNI152_T1_1mm_meg_mask.nii'
+# false input model for todd's vol2fiber fortran
+aal_motor = pylabs_atlasdir/'aal_motor.vtk'
+aal_base = pylabs_atlasdir/'base.vtk'
+aal_channel = pylabs_atlasdir/'channel.vtk'
 
 # todds fortran programs
 vol2fiber = pylabs_dir/'pylabs/diffusion/writefiber_withpaint_may23_2017_qt1'
