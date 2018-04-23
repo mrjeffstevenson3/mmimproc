@@ -230,10 +230,10 @@ def get_vfa_names(subjids_picks):
     vfa_ftempl = str(removesuffix(str(genz_conv['_VFA_FA4-25_QUIET']['fname_template'])))
     for subjid in subjids_picks.subjids:
         subjid.update({'scan_name': genz_conv['_VFA_FA4-25_QUIET']['scan_name'], 'tr': '21p0'})
-        subjid['vfatr'] = getTRfromh5(opts.info_fname, subjid['subj'], subjid['session'], 'qt1', vfa_ftempl.format(**subjid))
+        subjid['vfatr'] = getTRfromh5(opts.info_fname, subjid['subj'], subjid['session'], 'qt1', vfa_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=genz_conv['_VFA_FA4-25_QUIET'])))
         subjid['vfa_fname'] = vfa_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=genz_conv['_VFA_FA4-25_QUIET']))
-        subjid['b1map_fname'] = b1_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=genz_conv['_B1MAP_']))
-        subjid['b1maptr'] = getTRfromh5(opts.info_fname, subjid['subj'], subjid['session'], 'fmap', b1_ftempl.format(**subjid))
+        subjid['b1map_fname'] = b1_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=genz_conv['_B1MAP-QUIET_FC_']))
+        subjid['b1maptr'] = getTRfromh5(opts.info_fname, subjid['subj'], subjid['session'], 'fmap', b1_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=genz_conv['_B1MAP-QUIET_FC_'])))
         subjid['vfa_fas'] = opts.vfa_fas
         qt1_picks.append(subjid)
     return qt1_picks

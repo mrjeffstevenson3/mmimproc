@@ -459,11 +459,11 @@ from pylabs.fmap_correction.b1_map_corr import calcb1map
 from pylabs.conversion.brain_convert import img_conv
 from scipy import stats
 from scipy.ndimage.filters import median_filter as medianf
-from pylabs.projects.acdc.file_names import merge_ftempl_dicts
+from pylabs.projects.genz.file_names import merge_ftempl_dicts
 
 picks = {'patch': True,
-         'project': 'acdc',
-         'subj': 'sub-acdc112',
+         'project': 'genz',
+         'subj': 'sub-genz501',
          'session': 'ses-1',
          'run': '1',
          # must set fas mannually when patch used. not reported in PAR file correctly.
@@ -522,8 +522,4 @@ qT1_linregr_data[qT1_linregr_data > 6000] = 6000
 qT1_linregr_data_clean = np.nan_to_num(qT1_linregr_data, copy=True)
 qt1out_fname = ses_dir/'qt1'/'{subj}_{session}_vfa_qt1_b1corrmf_vlinregr-fit_clamped_v2.nii'.format(**picks)
 savenii(qT1_linregr_data_clean, vfa_affine, str(qt1out_fname))
-
-
-
-# now segment using spm
 

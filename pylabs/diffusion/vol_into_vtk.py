@@ -2,25 +2,32 @@
 import pylabs
 pylabs.datadir.target = 'jaba'
 from pathlib import *
+import shutil
 import numpy as np
-
+import nibabel as nib
 from pylabs.utils import *
 
 def inject_vol_data_into_vtk(working_dir, vol_fname, vtk_infname, vtk_outfname):
     results = (,)
-
+    vtk_infname = Path(vtk_infname)
+    vtk_outfname = Path(vtk_outfname)
+    shutil.copy(str(vtk_infname), 'f.vtk')
+    img = nib.load(str(vol_fname))
+    affine = img.affine
+    offsets = {'x': affine[0, 3], 'y': affine[1, 3], 'z': affine[2, 3]}
+    nib.save(nib.AnalyzeImage(img.get_data().astype('float32'), affine),'stats1.hdr')
     with WorkingContext(working_dir):
-
-
         with open('usechannel.txt', 'w') as uc:
             uc.write('1\n')
-
         with open('procmethod.txt', 'w') as pm:
-             pm.write('1\n')
-
+            pm.write('1\n')
+        with open('filesize.txt', 'w') as fsz:
+            fsz.write(str(Path(vtk_infname).stat().st_size)+'\n')
+        with open('offsets.txt', 'w') as off:
+            off.write('{x} {y} {z}\n'.format(**offsets))
 
         results += run_subprocess(vol2fiber)
-
+        Path('fnew.vtk').rename(vtk_outfname)
 
     return
 
@@ -41,6 +48,7 @@ echo $xoffset $yoffset $zoffset > offsets.txt
 rm stats1*
 cp stats.nii.gz stats1.nii.gz
 fslchfiletype ANALYZE stats1
+
 
 cp /mnt/users/js/bbc/holdaal/base.vtk .
 cp /mnt/users/js/bbc/holdaal/aal_motor.vtk .
