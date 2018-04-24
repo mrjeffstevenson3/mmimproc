@@ -1,4 +1,4 @@
-c gfortran  -O3 -mcmodel=medium -g writefiber_withpaint_may23_2017_qt1.f -o writefiber_withpaint_may23_2017_qt1 -ffixed-line-length-none
+c gfortran  -O3 -mcmodel=medium -g writefiber_withpaint_may23_2017_qt1.f -o writefiber_withpaint_may23_2017_qt1 -ffixed-line-length-none -fno-range-check
 
 c read DTI fiber track vtk and quantify the FA and several other parameters
 c read vtk binary file
@@ -9,7 +9,7 @@ c
 	equivalence (chead,rhead)
 	integer*2 ihead(174)
 	real rhead(87)
-	integer*1 ivtk(1075593303)
+	integer*1 ivtk(3075593303)
 	equivalence (vtk,ivtk)
 	character*5 c6,c6ufk
 	character*37 c37
