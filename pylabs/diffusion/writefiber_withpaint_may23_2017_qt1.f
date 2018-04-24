@@ -4,7 +4,7 @@ c read DTI fiber track vtk and quantify the FA and several other parameters
 c read vtk binary file
 c
 	character*40 cfn,cfnin,cfnin2
-	character*1 vtk(1075593303),c10(10),cspace(1),chead(348)
+	character*1 vtk(3075593303),c10(10),cspace(1),chead(348)
 	equivalence (chead,ihead)
 	equivalence (chead,rhead)
 	integer*2 ihead(174)
@@ -18,8 +18,8 @@ c
 	character*1 a1,cnmr(1000000),cint(1000000),cnmr11(1000000)
 	integer*1 inmr(1000000),inmr2(1000000),icint(1000000),icint2(1000000)
 	integer*1 isav(1000000)
-	real nmr(25000),dtistats(256)
-	character*1 cdti(1024)
+	real nmr(25000),dtistats(400)
+	character*1 cdti(1600)
 	equivalence (cdti,dtistats)
 	integer iint(25000)
 	equivalence (icint2,iint)
@@ -38,7 +38,7 @@ c
 	  DOUBLE PRECISION W(3)
 	real psavx(4),psavy(4),psavz(4),rmindistance(4),imindistance1(4),imindistance2(4)
 	real distancesav(200000),xwall(100),ywall(100),zwall(100)
-	real dti(256,256,256,6)
+	real dti(400,400,400,6)
 	integer iflagindex(7)
 	open(11,file = 'offsets.txt')
 	read(11,*)xoffset,yoffset,zoffset
