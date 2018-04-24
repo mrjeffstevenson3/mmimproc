@@ -85,20 +85,19 @@ def subj2T1(moving, ref_img, outfile, inargs=None):
         if '-n' not in '\t'.join(inargs):
             args += ['-n 10']
         args.append(inargs)
-    cmd = str(antsRegistrationSyN) + ' -d 3 -f ' + ref_img + ' -m ' + moving + ' -o ' + outfile
+    cmd = str(antsRegistrationSyN) + ' -d 3 -f ' + str(ref_img) + ' -m ' + str(moving) + ' -o ' + str(outfile)
     cmd += ' ' + ' '.join(map(str, args))
     output = ()
     t = datetime.datetime.now()
     output += (str(t),)
-    cmdt = (cmd,)
-    output += cmdt
+    output += (cmd,)
     output += run_subprocess(cmd)
     params = {}
     params['args'] = args
     params['cmd'] = cmd
     params['output'] = output
     params['ref_img'] = ref_img
-    provenance.log(outfile, 'antsRegistrationSyN', moving, script=__file__, provenance=params)
+    provenance.log(str(outfile), 'antsRegistrationSyN', str(moving), script=__file__, provenance=params)
     return
 
 def fsl2ants_affine(execwdir, ref, src, fslmatfilename):

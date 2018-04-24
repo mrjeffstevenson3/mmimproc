@@ -4,6 +4,7 @@ import nibabel as nib
 import numpy as np
 from pylabs.utils import *
 from pylabs.io.images import savenii
+from pylabs.alignment.ants_reg import subj2T1, subj2templ_applywarp
 from pylabs.structural.brain_extraction import extract_brain
 from pylabs.fmap_correction.b1_map_corr import calcb1map
 from scipy import stats
@@ -28,7 +29,7 @@ if opts.test:
     i = 0
     vfa_picks = [vfa_picks[i]]
 
-# loop over subjs
+# loop over subjects
 for pick in vfa_picks:
     ses_dir = fs/'{project}/{subj}/{session}'.format(**pick)
     b1_data = nib.load(str(ses_dir/'fmap'/pick['b1map_fname'])+'.nii').get_data().astype(np.float64)
@@ -45,9 +46,13 @@ for pick in vfa_picks:
         b1map_brain, b1map_brain_mask, b1map_cropped = extract_brain(ses_dir / 'qt1' / (pick['b1map_fname'] + '_tr2_mf_mag.nii'), f_factor=0.4)
         b1map = calcb1map(S1, S2, pick['b1maptr'])
         b1map_out_fname = ses_dir/'fmap'/'{subj}_{session}_b1map_phase_mf.nii'.format(**pick)
-        savenii(b1map, vfa_affine, str(b1map_out_fname))
+        savenii(b1map, b1_affine, str(b1map_out_fname))
 
         # reg b1map and vfa and apply to mask
+        subj2T1(b1map_brain, vfa_brain, appendposix(b1map_brain, '_reg2vfa_'))
+        subj2templ_applywarp(b1map_out_fname, vfa_brain, appendposix(b1map_out_fname, '_reg2vfa'),
+                             [appendposix(b1map_brain, '_reg2vfa_Warp1'),], '.',
+                             affine_xform=[appendposix(b1map_brain, '_reg2vfa_Affine0')])
 
         # fit vfa and make b1corrected qt1 img
         vy_vfa2_ec1 = vfa_data[:,:,:,:2]
@@ -68,8 +73,10 @@ for pick in vfa_picks:
         y = data / np.sin(fa_b1corr_rad)
         x = data / np.tan(fa_b1corr_rad)
         m = np.zeros(k)
-        for v in range(k):        #uses no mask yet
-            m[v], intercept, r, p, std = stats.linregress(x[:, v], y[:, v])
+        mask = nib.load(str(vfa_brain_mask)).get_data().astype('bool').flatten()
+        for v in range(k):
+            if mask[v]:
+                m[v], intercept, r, p, std = stats.linregress(x[:, v], y[:, v])
         qT1_linregr = -pick['vfatr'][0]/np.log(m)
         qT1_linregr_data = qT1_linregr.reshape(vy_vfa2_ec1_rms.shape)
         qT1_linregr_data[np.logical_or(qT1_linregr_data < 1.0, ~np.isfinite(qT1_linregr_data))] = 0
