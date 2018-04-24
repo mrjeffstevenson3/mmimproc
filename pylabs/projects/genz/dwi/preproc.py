@@ -1,5 +1,5 @@
 # todo: fix brain extraction by increasing z dim (and maybe xy) to accomodate brain stem and cerebellum of dwi or pre-crop MNI before reg
-# todo: fix sigma array length problem with DKI
+# todo: add timestamp to status updates
 # first set global root data directory
 import pylabs
 pylabs.datadir.target = 'jaba'
@@ -11,9 +11,9 @@ from nipype.interfaces import fsl
 import nibabel as nib
 import numpy as np
 import pandas as pd
+# working dipy denoise for dki
 from dipy.denoise.noise_estimate import estimate_sigma
 from dipy.denoise.non_local_means import non_local_means
-from dipy.denoise.adaptive_soft_matching import adaptive_soft_matching
 from dipy.io import read_bvals_bvecs
 from dipy.core.gradients import gradient_table
 import dipy.reconst.dki as dki
@@ -36,7 +36,7 @@ from pylabs.utils import ProvenanceWrapper
 prov = ProvenanceWrapper()
 
 # project, subject, and file objects to work on
-from pylabs.projects.acdc.file_names import project, SubjIdPicks, get_dwi_names, Optsd
+from pylabs.projects.genz.file_names import project, SubjIdPicks, get_dwi_names, Optsd
 
 #setup paths and file names to process
 fs = Path(getnetworkdataroot())
@@ -52,7 +52,7 @@ if not dwi_qc:
 subjids_picks = SubjIdPicks()
 # list of subject ids to operate on
 picks = [
-         {'subj': 'sub-acdc117', 'session': 'ses-1', 'run': '1',  # subject selection info
+         {'subj': 'sub-genz508', 'session': 'ses-1', 'run': '1',  # subject selection info
           },
          ]
 
@@ -330,61 +330,20 @@ for i, pick in enumerate(dwi_picks):
         savenii(ev1, affine, '{dipy_fits_out}_mf_AD.nii'.format(**pick))
         savenii(evals[1:].mean(0), affine, '{dipy_fits_out}_mf_RD.nii'.format(**pick))
         savenii(mode(fit_quad_form_mf), affine, '{dipy_fits_out}_mf_MO.nii'.format(**pick), minmax=(-1, 1))
+
         # do denoise and dki
-        """
-        In order to generate the two pre-denoised versions of the data we will use the
-        ``non_local_means`` denoising. For ``non_local_means`` first we need to
-        estimate the standard deviation of the noise. We use N=4 since the Sherbrooke
-        dataset was acquired on a 1.5T Siemens scanner with a 4 array head coil.
-        """
-
         sigma = estimate_sigma(data, N=4)
-
-        """
-        For the denoised version of the original data which preserves sharper features,
-        we perform non-local means with smaller patch size.
-        """
-
-        den_small = non_local_means(
-            data,
-            sigma=sigma[0],
-            mask=mask,
-            patch_radius=1,
-            block_radius=1,
-            rician=True)
-
-        """
-        For the denoised version of the original data that implies more smoothing, we
-        perform non-local means with larger patch size.
-        """
-
-        den_large = non_local_means(
-            data,
-            sigma=sigma[0],
-            mask=mask,
-            patch_radius=2,
-            block_radius=1,
-            rician=True)
-
-        """
-        Now we perform the adaptive soft coefficient matching. Empirically we set the
-        adaptive parameter in ascm to be the average of the local noise variance,
-        in this case the sigma itself.
-        """
-
-        den_final = adaptive_soft_matching(data, den_small, den_large, sigma[0])
-
+        den_data = non_local_means(data, sigma=np.average(sigma), mask=mask)
         dkimodel = dki.DiffusionKurtosisModel(ec_gtab)
-
-        dkifit = dkimodel.fit(den_final, mask=mask)
-        # save files with savenii
+        dkifit = dkimodel.fit(den_data, mask=mask)
+        # save dki files with savenii
         savenii(dkifit.fa, affine, '{dipy_dki_fits_out}_FA.nii'.format(**pick), minmax=(0, 1))
         savenii(dkifit.md, affine, '{dipy_dki_fits_out}_MD.nii'.format(**pick))
         savenii(dkifit.rd, affine, '{dipy_dki_fits_out}_RD.nii'.format(**pick))
         savenii(dkifit.ad, affine, '{dipy_dki_fits_out}_AD.nii'.format(**pick))
-        savenii(dkifit.mk(0, 3), affine, '{dipy_dki_fits_out}_MK.nii'.format(**pick), minmax=(0, 3))
-        savenii(dkifit.rk(0, 3), affine, '{dipy_dki_fits_out}_RK.nii'.format(**pick), minmax=(0, 3))
-        savenii(dkifit.ak(0, 3), affine, '{dipy_dki_fits_out}_AK.nii'.format(**pick), minmax=(0, 3))
+        savenii(dkifit.mk(-3, 3), affine, '{dipy_dki_fits_out}_MK.nii'.format(**pick), minmax=(-3, 3))
+        savenii(dkifit.rk(-3, 3), affine, '{dipy_dki_fits_out}_RK.nii'.format(**pick), minmax=(-3, 3))
+        savenii(dkifit.ak(-3, 3), affine, '{dipy_dki_fits_out}_AK.nii'.format(**pick), minmax=(-3, 3))
 
     if opts.do_ukf:
         try:

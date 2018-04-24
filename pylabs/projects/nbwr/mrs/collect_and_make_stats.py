@@ -102,10 +102,18 @@ for i, (c, g) in enumerate(zip(csf_corr_keys, gaba_keys)):
         all_same.append(True)
 if not all(all_same):
     raise ValueError('Subjects index not aligned in csf and gaba hdf keys. stopping now.')
+spm_threshs = []
+fsl_threshs = []
 for csf_k, gaba_k in zip(csf_corr_keys, gaba_keys):
     csf_df = h52df(all_info_fname, csf_k)
     gaba_df = h52df(all_info_fname, gaba_k)
     subj = gaba_k.split('/')[1]
+    if not all( x == csf_df.loc['threshold', ['left_FSL', 'right_FSL']].values[0] for x in csf_df.loc['threshold', ['left_FSL', 'right_FSL']].values):
+        raise ValueError('unequal left and right FSL threshold values for {subj}'.format(**{'subj': subj}))
+    if not all(x == csf_df.loc['threshold', ['left_SPM', 'right_SPM']].values[0] for x in csf_df.loc['threshold', ['left_SPM', 'right_SPM']].values):
+        raise ValueError('unequal left and right SPM threshold values for {subj}'.format(**{'subj': subj}))
+    spm_threshs.append(float(csf_df.loc['threshold', 'left_SPM']))
+    fsl_threshs.append(float(csf_df.loc['threshold', 'left_FSL']))
     onerowpersubj.loc[subj, 'left-SPM-percCSF'] = np.float64(csf_df.loc['frac_CSF', 'left_SPM'])
     onerowpersubj.loc[subj, 'right-SPM-percCSF'] = np.float64(csf_df.loc['frac_CSF', 'right_SPM'])
     onerowpersubj.loc[subj, 'left-FSL-percCSF'] = np.float64(csf_df.loc['frac_CSF', 'left_FSL'])
@@ -114,6 +122,13 @@ for csf_k, gaba_k in zip(csf_corr_keys, gaba_keys):
     onerowpersubj.loc[subj, 'right-GABA'] = np.float64(gaba_df.loc['right-gaba', 'gaba_fit_info'])
     onerowpersubj.loc[subj, 'left-gabaovercr'] = np.float64(gaba_df.loc['left-gabaovercr', 'gaba_fit_info'])
     onerowpersubj.loc[subj, 'right-gabaovercr'] = np.float64(gaba_df.loc['right-gabaovercr', 'gaba_fit_info'])
+# test all thresholds are the same.
+if not all(x == spm_threshs[0] for x in spm_threshs):
+    print spm_threshs
+    raise ValueError('found different SPM thresholds in dataset')
+if not all(x == fsl_threshs[0] for x in fsl_threshs):
+    print fsl_threshs
+    raise ValueError('found different FSL thresholds in dataset')
 # calculate CSF correction factor
 onerowpersubj['left-SPM-1over1minfracCSF'] = 1 / (1 - onerowpersubj.loc[:, 'left-SPM-percCSF'])
 onerowpersubj['right-SPM-1over1minfracCSF'] = 1 / (1 - onerowpersubj.loc[:, 'right-SPM-percCSF'])
@@ -212,6 +227,7 @@ df2h5(descriptives, all_info_fname, '/stats/mrs/all_CSFcorr_metab_descriptive_st
 # rlog = ()
 # SPMuncorr_cols = [x for x in uncorr_cols if ('gabaovercr' not in x and 'FSL' not in x)]
 # FSLuncorr_cols = [x for x in uncorr_cols if ('gabaovercr' not in x and 'SPM' not in x)]
+# fortran seaches for 'left-percCSF' and 'right-percCSF'
 # for cols in [SPMuncorr_cols, FSLuncorr_cols]:
 #     onerowpersubj.to_csv(str(uncorr_csv_fname), header=True, index=True, columns=cols, na_rep=9999, index_label='metabolite')
 #     with WorkingContext(str(uncorr_csv_fname.parent)):
@@ -219,15 +235,17 @@ df2h5(descriptives, all_info_fname, '/stats/mrs/all_CSFcorr_metab_descriptive_st
 #             nc.write(str(2) + '\n')
 #         with open('numrow2.txt', mode='w') as nr:
 #             nr.write(str(len(behav_data.index)+1) + '\n')
-#         with open('numcol3.txt', mode='w') as nc:
+#         with open('numcol3.txt', mode='w') as nc:   # for t-stat
 #             nc.write(str(len(cols)) + '\n')
-#         with open('numrow3.txt', mode='w') as nr:
+#         with open('numrow3.txt', mode='w') as nr:    # for t-stat
 #             nr.write(str(len(onerowpersubj.index) + 1) + '\n')
 #         with open('all_nbwr_uncorr.txt', mode='w') as ufn:
 #             ufn.write(uncorr_csv_fname.name + '\n')
 #         with open('all_nbwr.txt', mode='w') as cfn:
 #             cfn.write(fcsf_corr_fname.name + '\n')  # was csfcorr_csv_fname.name
 #         rlog += run_subprocess(str(stats_fpgm))
+
+
 #         if 'left-SPM-percCSF' in cols:
 #             SPMcorr_fstats = pd.read_csv(str(fstats_fname))
 #         if 'left-FSL-percCSF' in cols:
@@ -291,14 +309,14 @@ data_format.set_align('vcenter')
 data_format.set_align('center')
 data_format.set_text_wrap(False)
 
-# # why write uncorrected to excel 1st?
-# onerowpersubj.to_hdf(hdf_fname, 'uncorrected_mrs_data', mode='a', format='t', append=True, data_columns=onerowpersubj.columns)
-# onerowpersubj.to_excel(writer, sheet_name='uncorr', columns=uncorr_cols, index=True, index_label='subject', header=True, startrow=1, na_rep=9999)
-# uncorr_worksheet = writer.sheets['uncorr']
-# uncorr_worksheet.set_default_row(25)
-# uncorr_worksheet.set_column('B:O', 24, data_format)
-# uncorr_worksheet.set_column('A:A', 18, labels_format)
-# uncorr_worksheet.write_string(0,0,'Uncorrected fit data and CSF correction factor', title_format)
+# why write uncorrected to excel 1st?
+onerowpersubj.to_hdf(hdf_fname, 'uncorrected_mrs_data', mode='a', format='t', append=True, data_columns=onerowpersubj.columns)
+onerowpersubj.to_excel(writer, sheet_name='uncorr', columns=uncorr_cols, index=True, index_label='subject', header=True, startrow=1, na_rep=9999)
+uncorr_worksheet = writer.sheets['uncorr']
+uncorr_worksheet.set_default_row(25)
+uncorr_worksheet.set_column('B:O', 24, data_format)
+uncorr_worksheet.set_column('A:A', 18, labels_format)
+uncorr_worksheet.write_string(0,0,'Uncorrected fit data and CSF correction factor. SPM threshold = {spm_thr}. FSL threshold = {fsl_thr}'.format(**{'spm_thr': spm_threshs[0], 'fsl_thr': fsl_threshs[0]}), title_format)
 
 # write csf corrected data
 SPMcorr_metab.to_excel(writer, sheet_name='SPMcorr_metab', columns=corr_cols, index=True, index_label='subject', header=True, startrow=1, na_rep=9999)
@@ -308,13 +326,13 @@ SPMcorr_worksheet = writer.sheets['SPMcorr_metab']
 SPMcorr_worksheet.set_default_row(35)
 SPMcorr_worksheet.set_column('B:Q', 24, data_format)
 SPMcorr_worksheet.set_column('A:A', 18, labels_format)
-SPMcorr_worksheet.write_string(0, 0, 'Corrected Metabolite Concentrations after CSF correction factor applied using SPM segmentation', title_format)
+SPMcorr_worksheet.write_string(0, 0, 'Corrected Metabolite Concentrations after CSF correction factor applied using SPM segmentation with threshold {thresh}'.format(**{'thresh': spm_threshs[0]}), title_format)
 
 FSLcorr_worksheet = writer.sheets['FSLcorr_metab']
 FSLcorr_worksheet.set_default_row(35)
 FSLcorr_worksheet.set_column('B:Q', 24, data_format)
 FSLcorr_worksheet.set_column('A:A', 18, labels_format)
-FSLcorr_worksheet.write_string(0, 0, 'Corrected Metabolite Concentrations after CSF correction factor applied using FSL segmentation', title_format)
+FSLcorr_worksheet.write_string(0, 0, 'Corrected Metabolite Concentrations after CSF correction factor applied using FSL segmentation with threshold {thresh}'.format(**{'thresh': fsl_threshs[0]}), title_format)
 
 
 # # write fortran corrected data
@@ -335,10 +353,10 @@ stats_worksheet = writer.sheets['stats']
 stats_worksheet.set_column('B:Q', 22, data_format)
 stats_worksheet.set_default_row(35)
 stats_worksheet.set_column('A:A', 18, labels_format)
-stats_worksheet.write_string(0, 0, 'Summary t-stats and p-values from python stats for both SPM and FSL CSF corrected metabolites', title_format)
+stats_worksheet.write_string(0, 0, 'Summary t-stats and p-values from python stats for both SPM (threshold={spm_thr}) and FSL (threshold={fsl_thr}) CSF corrected metabolites'.format(**{'spm_thr': spm_threshs[0], 'fsl_thr': fsl_threshs[0]}), title_format)
 # stats_worksheet.write_string(7,0,'Stats results from todds fortran code', title_format)
-stats_worksheet.write_string(20, 0, 'Additional SPM CSF corrected descriptive stats from pandas', title_format)
-stats_worksheet.write_string(20, 6, 'Additional FSL CSF corrected descriptive stats from pandas', title_format)
+stats_worksheet.write_string(20, 0, 'Additional SPM (threshold={spm_thr}) CSF corrected descriptive stats'.format(**{'spm_thr': spm_threshs[0], 'fsl_thr': fsl_threshs[0]}), title_format)
+stats_worksheet.write_string(20, 6, 'Additional FSL (threshold={fsl_thr}) CSF corrected descriptive stats'.format(**{'spm_thr': spm_threshs[0], 'fsl_thr': fsl_threshs[0]}), title_format)
 # stats_worksheet.write_string(28,0,'Selected Correlations:', title_format)
 # stats_worksheet.set_row(18, {'align': 'left'})
 # stats_worksheet.set_row(19, {'align': 'left'})
@@ -349,3 +367,49 @@ writer.save()
 # close matlab instance
 # eng.quit()
 
+'''
+# test of meds interaction stats
+import scipy.stats as ss
+from statsmodels.stats.multicomp import pairwise_tukeyhsd
+project = 'nbwr'
+all_info_fname = fs/project/'all_{project}_info.h5'.format(**{'project': project})
+subjs_on_meds = ['sub-nbwr007', 'sub-nbwr081', 'sub-nbwr215', 'sub-nbwr317']
+# for SPM csf correction
+spm_corr_metab = h52df(all_info_fname, '/stats/mrs/SPM_CSFcorr_metabolites')
+asd_grp3 = spm_corr_metab.index.str.replace('sub-nbwr', '').astype('int') < 400
+spm_corr_metab.loc[asd_grp3, 'group'] = 'asd'
+spm_corr_metab.loc[subjs_on_meds, 'group'] = 'asd-meds'
+spm_corr_metab.loc[~asd_grp3, 'group'] = 'cntrl'
+spm_corr_metab.columns.name = 'metabolites'
+spm_corr_metab.set_index('group', append=True, inplace=True)
+spm_corr_metab_stacked = spm_corr_metab.stack()
+spm_corr_metab_stacked.name = 'values'
+for metab_group in spm_corr_metab_stacked.groupby('metabolites'):
+    samples = [group[1] for group in metab_group[1].groupby('group')]
+    f_val, p_val = ss.f_oneway(*samples)
+    print('SPMcorr Metabolite: {}, F value: {:.5f}, p value: {:.5f}'.format(metab_group[0], f_val, p_val))
+for metab in spm_corr_metab:
+    results = pairwise_tukeyhsd(spm_corr_metab[metab], spm_corr_metab.reset_index(level=1)['group'])
+    print('SPMcorr Metabolite {}'.format(metab))
+    print(results)
+
+# FSL corrected 
+fsl_corr_metab = h52df(all_info_fname, '/stats/mrs/FSL_CSFcorr_metabolites')
+asd_grp_fsl = fsl_corr_metab.index.str.replace('sub-nbwr', '').astype('int') < 400
+fsl_corr_metab.loc[asd_grp_fsl, 'group'] = 'asd'
+fsl_corr_metab.loc[subjs_on_meds, 'group'] = 'asd-meds'
+fsl_corr_metab.loc[~asd_grp_fsl, 'group'] = 'cntrl'
+fsl_corr_metab.columns.name = 'metabolites'
+fsl_corr_metab.set_index('group', append=True, inplace=True)
+fsl_corr_metab_stacked = fsl_corr_metab.stack()
+fsl_corr_metab_stacked.name = 'values'
+for metab_group in fsl_corr_metab_stacked.groupby('metabolites'):
+    samples = [group[1] for group in metab_group[1].groupby('group')]
+    f_val, p_val = ss.f_oneway(*samples)
+    print('FSLcorr Metabolite: {}, F value: {:.5f}, p value: {:.5f}'.format(metab_group[0], f_val, p_val))
+
+for metab in fsl_corr_metab:
+    results = pairwise_tukeyhsd(fsl_corr_metab[metab], fsl_corr_metab.reset_index(level=1)['group'])
+    print('FSLcorr Metabolite {}'.format(metab))
+    print(results)
+'''

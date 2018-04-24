@@ -1,3 +1,4 @@
+# todo: make ants version that works with dti cropped topup_dn_mean_brain images.
 # extract brain and mask function. now uses pylabs.opts to set file ext
 import pylabs
 pylabs.datadir.target = 'jaba'
@@ -10,7 +11,7 @@ import numpy as np
 import nibabel as nib
 from scipy.ndimage.measurements import center_of_mass as com
 from dipy.segment.mask import applymask
-from pylabs.io.images import savenii
+from pylabs.io.images import savenii, gz2nii
 from pylabs.utils import *
 from pylabs.utils.paths import mnicom, mnimask, mniT2com
 from nipype.interfaces import fsl
@@ -26,17 +27,18 @@ fs = getnetworkdataroot()  # should pick up datadir.target
 ext = pylabs.opts.nii_fext
 
 # new universal (hopefully) brain extraction method
-def extract_brain(file, f_factor=0.3, mmzshift=0.0, mode='T1'):
+def extract_brain(file, f_factor=0.3, mmzshift=0.0, mode='T1', nii=False):
     '''
     simplest form pass a pathlib file name and brain extraction is performed
     :param file: pathlib path and file name to be extracted
-    :param dti: if dti=True S0 will be found and extracted and then brain extracted
+    :param mode: T2 uses MNI T2 contrast head as com. dti=True undeveloped at this time
     :param args: list of addl args
-    :param kwargs: list of key word: values for additional specific args like f factor
+    :param kwargs: list of key word: values for additional specific bet2 args
     :param f_factor: threshold factor for brain extraction
     :return: 
     '''
     # remove ext if .nii or .nii.gz output_type='NIFTI_GZ'
+    ext = pylabs.opts.nii_fext
     file = Path(file)
     if not file.is_file():
         raise ValueError(str(file)+' file is not found. please check')
@@ -48,6 +50,7 @@ def extract_brain(file, f_factor=0.3, mmzshift=0.0, mode='T1'):
         else:
             nifti = False   # compressed original
     # make mat file for center of mass ROI and mask in MNI template
+    # develop method to deal with dti S0 cropped images
     if mode == 'T1':
         flt.inputs.in_file = str(mnicom)
         flt.inputs.cost_func = 'mutualinfo'
@@ -93,6 +96,11 @@ def extract_brain(file, f_factor=0.3, mmzshift=0.0, mode='T1'):
     bet.inputs.skull = True
     bet.inputs.out_file = brain_outfname
     betres = bet.run()
+    if nii:
+        ext = '.nii'
+        gz2nii(brain_outfname+'.nii.gz', delete_gz=True)
+        gz2nii(brain_outfname + '_mask.nii.gz', delete_gz=True)
+        gz2nii(replacesuffix(file, '_cropped.nii.gz'), delete_gz=True)
     prov.log(brain_outfname+ext, 'generic fsl bet brain', str(file), script=__file__, provenance={'f factor': f_factor, 'com': list(bet_com), })
     prov.log(str(replacesuffix(file, '_brain_mask'+ext)), 'generic fsl bet brain mask', str(file), script=__file__, provenance={'f factor': f_factor, 'com': list(bet_com)})
     prov.log(str(replacesuffix(file, '_cropped'+ext)), 'generic fsl bet brain mask', str(file), script=__file__,

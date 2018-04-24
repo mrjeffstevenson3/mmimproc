@@ -1,4 +1,6 @@
 import pylabs
+pylabs.datadir.target = 'jaba'
+from pathlib import *
 import nibabel, numpy
 from pylabs.utils import run_subprocess, replacesuffix, ProvenanceWrapper
 from pathlib import *
@@ -76,9 +78,11 @@ def paired_sub(niifiles, outfname, minuend=0):
     savenii(sub_data, affine, outfname)
 
 
-def gz2nii(file):
+def gz2nii(file, delete_gz=False):
     with gzip.open(str(file), 'rb') as src, open(str(replacesuffix(file, '.nii')), 'wb') as dest:
         shutil.copyfileobj(src, dest)
+        if delete_gz:
+            Path(file).unlink()
 
 def get_ext(file):
     file = Path(file)

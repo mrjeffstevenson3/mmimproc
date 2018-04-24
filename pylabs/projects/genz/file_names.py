@@ -1,3 +1,4 @@
+# todo: make roll_brain_to_com function with affine transform outfile to place brain at center of image fro ANTS.
 # orig_dwi are the original dwi source files output from conversion -> inputs to topup
 # set as a triple tuple (topup_dwi_6S0 6 vol S0 1st, topdn_dwi_6S0 6 vol S0 2nd, dwi-topup_64dir-3sh-800-2000 multishell 64 dir dwi 3rd)
 # topup_dwi_6S0 and topdn_dwi_6S0 are inputs to topup along with dwell time
@@ -40,8 +41,75 @@ class Opts(object):
     gaba_dyn = 120
     genz_conv = img_conv[project]
 
-
 opts = Opts()
+
+class Optsd(object):
+    """
+    Define constants for genz project with dict like mapping using opts = Optsd; **vars(opts).
+    """
+    def __init__(self,
+            # define project variables here. will become dict using opts = Optsd; vars(opts).
+            project = 'genz',
+            test = False,
+            overwrite = True,
+            convert = False,
+            spm_thresh = 0.80,
+            fsl_thresh = 0.20,
+            info_fname = fs / project / ('all_' + project + '_info.h5'),
+            dwi_pass_qc = '_passqc',
+            mf_str = '_mf',    # set to blank string '' to disable median filtering
+            run_topup = True,
+            eddy_corr = True,
+            eddy_corr_dir = 'eddy_cuda_repol_v1',   # output dir for eddy
+            dwi_fits_dir = 'fits_v1',
+            do_ukf = True,
+            dwi_reg_dir = 'MNI2dwi',
+            run_bedpost = True,
+            dwi_bedpost_dir = 'bedpost',
+            dwi_fname_excep = ['_DWI64_3SH_B0_B800_B2000_TOPUP_TE101_1p8mm3_', '_DWI6_B0_TOPUP_TE101_1p8mm3_', '_DWI6_B0_TOPDN_TE101_1p8mm3_'],
+            gaba_te = 80,
+            gaba_dyn = 120,
+            gaba_ftempl = '{subj}_WIP_ACCGABAMM_TE{te}_{dyn}DYN_{wild}_raw_{type}.SDAT',
+            b1corr = False,
+            vfa_tr = 21.0,
+            vfa_fas = [4.0, 25.0],
+            ):
+        # make them accessible as obj.var as well as dict
+        self.project = project
+        self.test = test
+        self.overwrite = overwrite
+        self.convert = convert
+        self.spm_thresh = spm_thresh
+        self.fsl_thresh = fsl_thresh
+        self.dwi_pass_qc = dwi_pass_qc
+        self.mf_str = mf_str
+        self.info_fname = info_fname
+        self.run_topup = run_topup
+        self.eddy_corr = eddy_corr
+        self.eddy_corr_dir = eddy_corr_dir
+        self.dwi_fits_dir = dwi_fits_dir
+        self.do_ukf = do_ukf
+        self.dwi_reg_dir = dwi_reg_dir
+        self.run_bedpost = run_bedpost
+        self.dwi_bedpost_dir = dwi_bedpost_dir
+        self.dwi_fname_excep = dwi_fname_excep
+        self.gaba_te = gaba_te
+        self.gaba_dyn = gaba_dyn
+        self.gaba_ftempl = gaba_ftempl
+        self.b1corr = b1corr
+        self.vfa_tr = vfa_tr
+        self.vfa_fas = vfa_fas
+
+"""
+# other future stages to run to move to opts settings
+subT2 = False   #wip ??
+bet = False
+prefilter = False
+templating = False
+"""
+
+opts = Optsd()
+
 
 qc_str = opts.dwi_pass_qc
 
@@ -101,24 +169,26 @@ b1map5_fnames = []
 
 
 def get_freesurf_names(subjids_picks):
-    b1_ftempl = removesuffix(str(img_conv[project]['_B1MAP-QUIET_FC_']['fname_template']))
-    fs_ftempl = removesuffix(str(img_conv[project]['_MEMP_IFS_0p5mm_TI1100_']['fname_template']))
+    b1_ftempl = removesuffix(str(genz_conv['_B1MAP-QUIET_FC_']['fname_template']))
+    fs_ftempl = removesuffix(str(genz_conv['MEMP_IFS_0p5mm_2echo_']['fname_template']))
     for subjid in subjids_picks.subjids:
         b1map_fs_fnames.append(str(b1_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_B1MAP-QUIET_FC_'])))
-        freesurf_fnames.append(str(fs_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_MEMP_IFS_0p5mm_TI1100_'], dict3={'scan_info': 'ti1100_rms'})))
+        freesurf_fnames.append(str(fs_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['MEMP_IFS_0p5mm_2echo_'], dict3={'scan_info': 'ti1200_rms'})))
     return b1map_fs_fnames, freesurf_fnames
 
 def get_dwi_names(subjids_picks):
+    dwi_picks = []
     try:
-        topup_ftempl = removesuffix(str(img_conv[project]['_DWI_B0_TOPUP_']['fname_template']))
-        topdn_ftempl = removesuffix(str(img_conv[project]['_DWI_B0_TOPDN_']['fname_template']))
-        dwi_ftempl = removesuffix(str(img_conv[project]['_DWI64_3SH_B0_B800_B2000_TOPUP_']['fname_template']))
+        topup_ftempl = removesuffix(str(genz_conv['_DWI6_B0_TOPUP_']['fname_template']))
+        topdn_ftempl = removesuffix(str(genz_conv['_DWI6_B0_TOPDN_']['fname_template']))
+        dwi_ftempl = removesuffix(str(genz_conv['_DWI64_3SH_B0_B800_B2000_TOPUP_']['fname_template']))
         for subjid in subjids_picks.subjids:
-            topup_fnames.append(str(topup_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_DWI_B0_TOPUP_'])))
-            topdn_fnames.append(str(topdn_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_DWI_B0_TOPDN_'])))
-            dwi_fnames.append(str(dwi_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_AX_MATCH_RIGHT_MEMP_VBM_TI1100_'])))
-        return topup_fnames, topdn_fnames, dwi_fnames
-    except TypeError, e:
+            subjid['topup_fname'] = str(topup_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_DWI6_B0_TOPUP_']))
+            subjid['topdn_fname'] = str(topdn_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_DWI6_B0_TOPDN_']))
+            subjid['dwi_fname'] = str(dwi_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_DWI64_3SH_B0_B800_B2000_TOPUP_']))
+            dwi_picks.append(subjid)
+        return dwi_picks
+    except TypeError as e:
             print('subjids needs to a dictionary.')
 
 def get_3dt2_names(subjids_picks):
@@ -160,10 +230,10 @@ def get_vfa_names(subjids_picks):
     vfa_ftempl = str(removesuffix(str(genz_conv['_VFA_FA4-25_QUIET']['fname_template'])))
     for subjid in subjids_picks.subjids:
         subjid.update({'scan_name': genz_conv['_VFA_FA4-25_QUIET']['scan_name'], 'tr': '21p0'})
-        subjid['vfatr'] = getTRfromh5(opts.info_fname, subjid['subj'], subjid['session'], 'qt1', vfa_ftempl.format(**subjid))
+        subjid['vfatr'] = getTRfromh5(opts.info_fname, subjid['subj'], subjid['session'], 'qt1', vfa_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=genz_conv['_VFA_FA4-25_QUIET'])))
         subjid['vfa_fname'] = vfa_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=genz_conv['_VFA_FA4-25_QUIET']))
-        subjid['b1map_fname'] = b1_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=genz_conv['_B1MAP_']))
-        subjid['b1maptr'] = getTRfromh5(opts.info_fname, subjid['subj'], subjid['session'], 'fmap', b1_ftempl.format(**subjid))
+        subjid['b1map_fname'] = b1_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=genz_conv['_B1MAP-QUIET_FC_']))
+        subjid['b1maptr'] = getTRfromh5(opts.info_fname, subjid['subj'], subjid['session'], 'fmap', b1_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=genz_conv['_B1MAP-QUIET_FC_'])))
         subjid['vfa_fas'] = opts.vfa_fas
         qt1_picks.append(subjid)
     return qt1_picks

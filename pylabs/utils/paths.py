@@ -8,7 +8,7 @@ from os.path import expanduser, join
 from pathlib import *
 
 class RootDataDir(object):
-    target = 'scotty'
+    target = 'jaba'
     pass
 
 # hostnames with functioning gpus
@@ -27,6 +27,13 @@ MNI1mm_T2 = pylabs_atlasdir/'MNI152_T2_1mm.nii.gz'
 MNI1mm_T2_brain = pylabs_atlasdir/'MNI152_T2_1mm_brain.nii.gz'
 MNI1mm_T1_qa_mask = pylabs_atlasdir/'MNI152_T1_1mm_qa_mask.nii.gz'
 meg_head_mask = pylabs_atlasdir/'MNI152_T1_1mm_meg_mask.nii'
+# false input model for todd's vol2fiber fortran
+aal_motor = pylabs_atlasdir/'aal_motor.vtk'
+aal_base = pylabs_atlasdir/'base.vtk'
+aal_channel = pylabs_atlasdir/'channel.vtk'
+
+# todds fortran programs
+vol2fiber = pylabs_dir/'pylabs/diffusion/writefiber_withpaint_may23_2017_qt1'
 
 
 mnicom = pylabs_atlasdir /'MNI152_T1_1mm_8kcomroi.nii'
@@ -68,6 +75,8 @@ def getnetworkdataroot(verbose=True):
             print('setting root data directory to jaba.')
         if hostname in ['scotty.ilabs.uw.edu', 'scotty', 'redshirt.ilabs.uw.edu', 'redshirt', 'uhora.ilabs.uw.edu', 'uhora', 'sulu.ilabs.uw.edu', 'sulu', 'JVDB', 'spock', 'spock.ilabs.uw.edu']:
             return '/brainstudio/data'
+        if hostname in ['emalia.ilabs.washington.edu', 'emalia',]:
+            return '/Volumes/MRI-DTI/data'
         elif any(x in hostname for x in ['Jeffs-MacBook-Pro-3.local', 'Jeffs-MBP-3', '.dhcp4.washington.edu']):
             print('found mrjeffs laptop. using local datadir. datadir= ', pylabs.datadir.target)
             return '/Users/mrjeffs/Documents/Research/data'

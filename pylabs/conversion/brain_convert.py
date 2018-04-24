@@ -243,7 +243,7 @@ genz_conv = pd.DataFrame({
                         'verbose': True, 'compressed': False, 'permit_truncated': True, 'bvs': True, 'dwell_time': True, 'b1corr': False,
                         'field_strength': 3.0, 'vol_info': False, 'origin': 'scanner', 'minmax': ('parse', 'parse'), 'store_header': True,
                         'scaling': 'dv', 'keep_trace': True, 'overwrite': True, 'strict_sort': False, 'multisession': (1, 2, 3), 'rms': False},
-            'MEMP_IFS_0p5mm_2echo-18cm': {'dirstruct': 'BIDS', 'outdir': 'anat', 'scan_name': 'fsmempr', 'scan_info': 'ti1200',
+            'MEMP_IFS_0p5mm_2echo_': {'dirstruct': 'BIDS', 'outdir': 'anat', 'scan_name': 'fsmempr', 'scan_info': 'ti1200',
                         'fname_template': '{subj}_{session}_{scan_name}_{scan_info}_{run}.nii', 'take_lowest_recon': True,
                         'verbose': True, 'compressed': False, 'permit_truncated': False, 'bvs': False,
                         'dwell_time': False, 'b1corr': False,'field_strength': False, 'vol_info': False, 'origin': 'scanner', 'minmax': ('parse', 'parse'),
@@ -266,6 +266,11 @@ genz_conv = pd.DataFrame({
                         'take_lowest_recon': True, 'verbose': True, 'compressed': False, 'permit_truncated': False, 'bvs': False, 'dwell_time': False, 'b1corr': True,
                         'field_strength': False, 'vol_info': False, 'origin': 'scanner', 'minmax': ('parse', 'parse'), 'store_header': True,
                         'scaling': 'dv', 'keep_trace': False, 'overwrite': True, 'strict_sort': False, 'multisession': (1, 2, 3), 'rms': False},
+            '_AX_T2_MATCH_ACC_': {'dirstruct': 'BIDS', 'outdir': 'mrs', 'scan_name': 'match_acc_mrs', 'scan_info': 't2',
+                       'fname_template': '{subj}_{session}_{scan_name}_{scan_info}_{run}.nii', 'take_lowest_recon': True,
+                       'verbose': True, 'compressed': False, 'permit_truncated': False, 'bvs': False, 'dwell_time': False, 'b1corr': False, 'field_strength': False, 'vol_info': False,
+                       'origin': 'scanner', 'minmax': ('parse', 'parse'), 'store_header': True, 'scaling': 'dv', 'keep_trace': False,
+                       'overwrite': True, 'strict_sort': True, 'multisession': (1, 2, 3), 'rms': False},
             })
 
 acdc_conv = pd.DataFrame({

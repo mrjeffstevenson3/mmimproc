@@ -181,12 +181,13 @@ def brain_proc_file(opts, scandict):
         setattr(opts, 'orig_data_shape', in_data.shape)
         #make rms if asked
         if opts.rms and len(in_data.shape) == 4:
-            in_data_rms = np.sqrt(np.sum(np.square(in_data), axis=3)/in_data.shape[3])
-            rmsimg = nifti1.Nifti1Image(in_data_rms, affine, pr_hdr)
+            in_dataui64 = in_data.astype(np.uint64)
+            in_data_rms = np.sqrt(np.mean(np.square(in_dataui64), axis=3))
+            rmsimg = nifti1.Nifti1Image(in_data_rms.astype(np.float64), affine, pr_hdr)
             rmshdr = rmsimg.header
             rmshdr.set_data_dtype(out_dtype)
             rmshdr.set_slope_inter(slope, intercept)
-            rmshdr.set_qform(affine, code=2)
+            rmshdr.set_qform(affine, code=1)
 
         bvals, bvecs = pr_hdr.get_bvals_bvecs()
         if not opts.keep_trace:  # discard Philips DTI trace if present
@@ -260,7 +261,7 @@ def brain_proc_file(opts, scandict):
         nhdr = nimg.header
         nhdr.set_data_dtype(out_dtype)
         nhdr.set_slope_inter(slope, intercept)
-        nhdr.set_qform(affine, code=2)
+        nhdr.set_qform(affine, code=1)
 
         if 'parse' in opts.minmax:
             # need to get the scaled data

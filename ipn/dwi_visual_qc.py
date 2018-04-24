@@ -12,7 +12,7 @@ import pandas as pd
 import numpy as np
 from pylabs.io.mixed import df2h5, h52df, get_h5_keys
 from pylabs.utils import *
-from pylabs.projects.acdc.file_names import project, Optsd
+from pylabs.projects.genz.file_names import project, Optsd
 import qgrid
 qgrid.enable
 import ipywidgets as widgets

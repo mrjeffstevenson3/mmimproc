@@ -26,7 +26,7 @@ class Opts(object):
     nbwr_conv = img_conv[project]
     info_fname = fs / project / ('all_' + project + '_info.h5')
     # mrs defaults
-    spm_thresh = 0.85
+    spm_thresh = 0.8
     fast_thresh = 0.2
     gaba_te = 80
     gaba_dyn = 120
