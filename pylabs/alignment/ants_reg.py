@@ -36,7 +36,7 @@ def subj2templ_applywarp(moving, ref_img, outfile, warpfiles, execwdir, dims=3, 
         cmd += 'WarpTimeSeriesImageMultiTransform 4 '
     if dims == 3 or dims == 2:
         cmd += 'WarpImageMultiTransform '+str(dims)+' '
-    cmd += moving+' '+outfile+' -R '+ref_img+' '
+    cmd += str(moving)+' '+str(outfile)+' -R '+str(ref_img)+' '
     if inv:
         print "inverse selected, reversing order of ants Warp and affine list for "+outfile
         cmd += ' '.join(['-i ' + a + ' ' + w for a, w in zip(reversed(affine_xform), reversed(warpfiles))])+' '
@@ -49,8 +49,7 @@ def subj2templ_applywarp(moving, ref_img, outfile, warpfiles, execwdir, dims=3, 
     output = ()
     t = datetime.datetime.now()
     output += (str(t),)
-    cmdt = (cmd,)
-    output += cmdt
+    output += (cmd,)
     with WorkingContext(execwdir):
         print(cmd)
         output += run_subprocess(cmd)

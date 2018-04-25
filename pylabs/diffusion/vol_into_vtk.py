@@ -8,15 +8,16 @@ import nibabel as nib
 from pylabs.utils import *
 
 def inject_vol_data_into_vtk(working_dir, vol_fname, vtk_infname, vtk_outfname):
-    results = (,)
-    vtk_infname = Path(vtk_infname)
-    vtk_outfname = Path(vtk_outfname)
-    shutil.copy(str(vtk_infname), 'f.vtk')
-    img = nib.load(str(vol_fname))
-    affine = img.affine
-    offsets = {'x': affine[0, 3], 'y': affine[1, 3], 'z': affine[2, 3]}
-    nib.save(nib.AnalyzeImage(img.get_data().astype('float32'), affine),'stats1.hdr')
+    results = ( '',)
     with WorkingContext(working_dir):
+        vtk_infname = Path(vtk_infname)
+        vtk_outfname = Path(vtk_outfname)
+        shutil.copy(str(vtk_infname), 'f.vtk')
+        img = nib.load(str(vol_fname))
+        img_data = img.get_data().astype(np.float32)
+        affine = img.affine
+        offsets = {'x': affine[0, 3], 'y': affine[1, 3], 'z': affine[2, 3]}
+        nib.save(nib.AnalyzeImage(img_data, affine),'stats1.hdr')
         with open('usechannel.txt', 'w') as uc:
             uc.write('1\n')
         with open('procmethod.txt', 'w') as pm:
@@ -28,8 +29,9 @@ def inject_vol_data_into_vtk(working_dir, vol_fname, vtk_infname, vtk_outfname):
         shutil.copy(str(aal_motor), 'aal_motor.vtk')
         shutil.copy(str(aal_base), 'base.vtk')
         shutil.copy(str(aal_channel), 'channel.vtk')
-        results += run_subprocess(vol2fiber)
+        results += run_subprocess([str(vol2fiber)])
         Path('fnew.vtk').rename(vtk_outfname)
+        print("({})".format(", ".join(results)))
     return
 
 '''
