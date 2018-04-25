@@ -52,8 +52,11 @@ if not dwi_qc:
 subjids_picks = SubjIdPicks()
 # list of subject ids to operate on
 picks = [
-         {'subj': 'sub-genz510', 'session': 'ses-1', 'run': '1',  # subject selection info
-          },
+         {'subj': 'sub-genz510', 'session': 'ses-1', 'run': '1',},  # subject selection info
+         {'subj': 'sub-genz508', 'session': 'ses-1', 'run': '1',},
+         {'subj': 'sub-genz501', 'session': 'ses-1', 'run': '1',},
+         {'subj': 'sub-genz308', 'session': 'ses-1', 'run': '1',},
+         {'subj': 'sub-genz311', 'session': 'ses-1', 'run': '1',},
          ]
 
 setattr(subjids_picks, 'subjids', picks)
@@ -175,13 +178,13 @@ for i, pick in enumerate(dwi_picks):
         test4file(f)
     # get data
     orig_dwi_img = nib.load(str(orig_dwif_fname))
-    orig_dwi_data = orig_dwi_img.get_data()
+    orig_dwi_data = orig_dwi_img.get_data().astype(np.float64)
     orig_dwi_affine = orig_dwi_img.affine
     orig_topup_img = nib.load(str(orig_topup_fname))
-    orig_topup_data = orig_topup_img.get_data()
+    orig_topup_data = orig_topup_img.get_data().astype(np.float64)
     orig_topup_affine = orig_topup_img.affine
     orig_topdn_img = nib.load(str(orig_topdn_fname))
-    orig_topdn_data = orig_topdn_img.get_data()
+    orig_topdn_data = orig_topdn_img.get_data().astype(np.float64)
     orig_topdn_affine = orig_topdn_img.affine
 
     # select volumes that pass dwi qc
@@ -263,13 +266,13 @@ for i, pick in enumerate(dwi_picks):
     pick['dwi_bvecs_ec_rot_fname'] = '{ec_dwi_fname}.eddy_rotated_bvecs'.format(**pick)
     if opts.eddy_corr or opts.overwrite:
         with WorkingContext(str(ec_dir)):
-            b0_brain_fname, b0_brain_mask_fname, b0_brain_cropped_fname = extract_brain('{topup_out}_unwarped_mean.nii.gz'.format(**pick), mode='T2')
+            b0_brain_fname, b0_brain_mask_fname, b0_brain_cropped_fname = extract_brain('{topup_out}_unwarped_mean.nii.gz'.format(**pick), mode='T2', dwi=True, f_factor=0.65, robust=True)
             pick['b0_brain_mask_fname'] = b0_brain_mask_fname
             nii2nrrd(pick['b0_brain_mask_fname'], replacesuffix(pick['b0_brain_mask_fname'], '.nrrd'), ismask=True)
             pick['b0_brain_mask_fname_nrrd'] = replacesuffix(pick['b0_brain_mask_fname'], '.nrrd')
             result += run_subprocess([eddy_cmd.format(**pick)])
             # clamp, filter, and make nrrd
-            ec_data = nib.load('{ec_dwi_fname}.nii.gz'.format(**pick)).get_data()
+            ec_data = nib.load('{ec_dwi_fname}.nii.gz'.format(**pick)).get_data().astype(np.float64)
             ec_data_affine = nib.load('{ec_dwi_fname}.nii.gz'.format(**pick)).affine
             bvals, ec_bvecs = read_bvals_bvecs(str(pick['dwi_bvals_fname']), pick['dwi_bvecs_ec_rot_fname'])
             ec_gtab = gradient_table(bvals, ec_bvecs)
@@ -297,9 +300,9 @@ for i, pick in enumerate(dwi_picks):
         result += tuple([run_subprocess(c % pick) for c in fsl_fit_cmds])
         # do dipy fits
         tenmodel = dti.TensorModel(ec_gtab, fit_method='WLS')
-        data = nib.load(pick['ec_dwi_clamp_fname']).get_data()
+        data = nib.load(pick['ec_dwi_clamp_fname']).get_data().astype(np.float64)
         affine = nib.load(pick['ec_dwi_clamp_fname']).affine
-        mask = nib.load(str(pick['b0_brain_mask_fname'])).get_data()
+        mask = nib.load(str(pick['b0_brain_mask_fname'])).get_data().astype(np.int64)
         fit = tenmodel.fit(data, mask)
         # filter and save all dipy files
         fit_quad_form = fit.quadratic_form

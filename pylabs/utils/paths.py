@@ -39,6 +39,7 @@ vol2fiber = pylabs_dir/'pylabs/diffusion/writefiber_withpaint_may23_2017_qt1'
 mnicom = pylabs_atlasdir /'MNI152_T1_1mm_8kcomroi.nii'
 mnimask = pylabs_atlasdir /'MNI152_T1_1mm_mask.nii'
 mniT2com = pylabs_atlasdir /'MNI152_T2_1mm_8kcomroi.nii'
+mniT2comdwi = pylabs_atlasdir /'MNI152_T2_1mm_8kcomroi_dwi.nii'
 mniT2combr = pylabs_atlasdir /'MNI152_T2_1mm_brain_8kcomroi.nii'
 
 def getlocaldataroot():
