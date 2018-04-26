@@ -380,6 +380,8 @@ for i, pick in enumerate(dwi_picks):
             os.rename(pick['b0_brain_mask_fname'].name, str(bedpost_dir/'nodif_brain_mask.nii.gz'))
             # run bedpost, probtracks, network, UKF, NODDI, and DKI here
             with WorkingContext(str(dwipath)):
+                if (dwipath / 'bedpost.bedpostX').is_dir() and opts.overwrite:
+                    bumptodefunct(dwipath / 'bedpost.bedpostX')
                 if test4working_gpu():
                     os.environ['FSLPARALLEL'] = ''
                     result += run_subprocess(['bedpostx_gpu bedpost -n 3 --model=2'])
