@@ -5,22 +5,14 @@ import datetime
 import pylabs
 from pylabs.correlation.atlas import make_mask_fm_atlas_parts, make_mask_fm_tracts
 from pylabs.alignment.ants_reg import subj2templ_applywarp
-from pylabs.projects.bbc.pairing import vbmpairing, dwipairing
-from pylabs.utils.paths import getnetworkdataroot
-from pylabs.utils import run_subprocess, WorkingContext
+from pylabs.projects.genz.file_names import get_dwi_names, Optsd, project, SubjIdPicks, get_vfa_names
+from pylabs.utils import *
 from pylabs.conversion.nifti2nrrd import nii2nrrd
 #set up provenance
-from pylabs.utils.provenance import ProvenanceWrapper
 provenance = ProvenanceWrapper()
 #setup paths and file names to process
 fs = Path(getnetworkdataroot())
-pylabs_atlasdir = Path(*Path(inspect.getabsfile(pylabs)).parts[:-2]) / 'data' / 'atlases'
-slicer_path = Path(*Path(inspect.getabsfile(pylabs)).parts[:-3]) / 'Slicer-4.7.0-2017-02-01-linux-amd64' / 'Slicer --launch '
-#setup masks and templates:
-anat_atlas = pylabs_atlasdir / 'JHU_MNI_SS_WMPM_Type_I_matched.nii.gz'
-tract_atlas = pylabs_atlasdir / 'JHU-ICBM-tracts-prob-1mm.nii.gz'
-JHU_thr = {'thr': 5}    #global threshold for tract atlas to narrow fiber bundle channel
-stat_thr = {'thr': 0.95, 'fn_thr': 95}
+slicer_path = getslicercmd(ver='stable', stable_linux_ver='Slicer-4.8.1-linux-amd64')
 
 MNI_atlases = {'mori': {'atlas_fname': 'JHU_MNI_SS_WMPM_Type_I_matched.nii.gz', 'roi_list': None, 'Sl_cmd': None},
                 'aal_motor': {'atlas_fname': 'aal_1mm_motorcortex.nii', 'roi_list': [1, 2, 3, 4, 7, 8, 19, 20, 23, 24, 57, 58, 59, 60, 61, 62, 63, 64, 69, 70], 'Sl_cmd': 'ModelMaker -l 1 -n '},
@@ -58,17 +50,40 @@ MNI_atlases = {'mori': {'atlas_fname': 'JHU_MNI_SS_WMPM_Type_I_matched.nii.gz', 
                 'JHU_tracts_Left_Unc-17': {'atlas_fname': 'JHU_tracts_thr%(JHU_thr)s_Left_Unc-17.nii', 'roi_list': 17, 'Sl_cmd': 'ModelMaker -l 1 -n '},
                 'JHU_tracts_Right_Unc-18': {'atlas_fname': 'JHU_tracts_thr%(JHU_thr)s_Right_Unc-18.nii', 'roi_list': 18, 'Sl_cmd': 'ModelMaker -l 1 -n '},
 
-                'stats_vbm_WM_s2'  : {'atlas_fname': 'all_WM_mod_s2_n10000_exchbl_tfce_corrp_tstat2.nii.gz', 'roi_list': 1, 'Sl_cmd': 'UKFTractography --dwiFile %(fdwinrrd)s --seedsFile %(seed_fnamenrrd)s --labels 1 --maskFile %(mask_fnamenrrd)s --tracts %(dwif)s_UKF_whbr.vtk '
-                                     '--seedsPerVoxel 1 --seedFALimit 0.18 --minFA 0.15 --minGA 0.2 --numThreads -1 --numTensor 2 --stepLength 0.3 --Qm 0 --recordLength 0.9 --maxHalfFiberLength 250 --recordNMSE --freeWater '
-                                     '--recordFA --recordTrace --recordFreeWater --recordTensors --Ql 0 --Qw 0 --Qkappa 0.01 --Qvic 0.004 --Rs 0 --sigmaSignal 0 --maxBranchingAngle 0 --minBranchingAngle 0'},
+                # 'stats_vbm_WM_s2'  : {'atlas_fname': 'all_WM_mod_s2_n10000_exchbl_tfce_corrp_tstat2.nii.gz', 'roi_list': 1, 'Sl_cmd': 'UKFTractography --dwiFile %(fdwinrrd)s --seedsFile %(seed_fnamenrrd)s --labels 1 --maskFile %(mask_fnamenrrd)s --tracts %(dwif)s_UKF_whbr.vtk '
+                #                      '--seedsPerVoxel 1 --seedFALimit 0.18 --minFA 0.15 --minGA 0.2 --numThreads -1 --numTensor 2 --stepLength 0.3 --Qm 0 --recordLength 0.9 --maxHalfFiberLength 250 --recordNMSE --freeWater '
+                #                      '--recordFA --recordTrace --recordFreeWater --recordTensors --Ql 0 --Qw 0 --Qkappa 0.01 --Qvic 0.004 --Rs 0 --sigmaSignal 0 --maxBranchingAngle 0 --minBranchingAngle 0'},
                 }
 
-tensors = {'RESTORE':['_eddy_corrected_repol_std2_restore_cam_tensor_medfilt.nhdr', '_eddy_corrected_repol_std2_restore_cam_tensor.nhdr', '_eddy_corrected_repol_std2_restore_dipy_tensor.nhdr', '_eddy_corrected_repol_std2_restore_dipy_tensor_medfilt.nhdr'],
-            'OLS': ['_eddy_corrected_repol_std2_ols_fsl_tensor_medfilt.nhdr', '_eddy_corrected_repol_std2_ols_fsl_tensor.nhdr', '_eddy_corrected_repol_std2_ols_dipy_tensor.nhdr', '_eddy_corrected_repol_std2_ols_dipy_tensor_medfilt.nhdr', '_eddy_corrected_repol_std2_ols_cam_tensor.nhdr', '_eddy_corrected_repol_std2_ols_cam_tensor_medfilt.nhdr'],
-            'WLS': ['_eddy_corrected_repol_std2_wls_fsl_tensor_medfilt.nhdr', '_eddy_corrected_repol_std2_wls_fsl_tensor.nhdr', '_eddy_corrected_repol_std2_wls_dipy_tensor.nhdr', '_eddy_corrected_repol_std2_wls_dipy_tensor_medfilt.nhdr', '_eddy_corrected_repol_std2_wls_cam_tensor.nhdr', '_eddy_corrected_repol_std2_wls_cam_tensor_medfilt.nhdr']
-            }
+# tensors = {'RESTORE':['_eddy_corrected_repol_std2_restore_cam_tensor_medfilt.nhdr', '_eddy_corrected_repol_std2_restore_cam_tensor.nhdr', '_eddy_corrected_repol_std2_restore_dipy_tensor.nhdr', '_eddy_corrected_repol_std2_restore_dipy_tensor_medfilt.nhdr'],
+#             'OLS': ['_eddy_corrected_repol_std2_ols_fsl_tensor_medfilt.nhdr', '_eddy_corrected_repol_std2_ols_fsl_tensor.nhdr', '_eddy_corrected_repol_std2_ols_dipy_tensor.nhdr', '_eddy_corrected_repol_std2_ols_dipy_tensor_medfilt.nhdr', '_eddy_corrected_repol_std2_ols_cam_tensor.nhdr', '_eddy_corrected_repol_std2_ols_cam_tensor_medfilt.nhdr'],
+#             'WLS': ['_eddy_corrected_repol_std2_wls_fsl_tensor_medfilt.nhdr', '_eddy_corrected_repol_std2_wls_fsl_tensor.nhdr', '_eddy_corrected_repol_std2_wls_dipy_tensor.nhdr', '_eddy_corrected_repol_std2_wls_dipy_tensor_medfilt.nhdr', '_eddy_corrected_repol_std2_wls_cam_tensor.nhdr', '_eddy_corrected_repol_std2_wls_cam_tensor_medfilt.nhdr']
+#             }
+
 #set project specific files
-project = 'bbc'
+subjids_picks = SubjIdPicks()
+opts = Optsd()
+# must set fas mannually when patch used. not reported in PAR file correctly.
+picks = [
+        {'patch': True, 'project': project, 'subj': 'sub-genz508', 'session': 'ses-1', 'run': '1', 'fas': [4.0, 25.0],},
+        {'patch': True, 'project': project, 'subj': 'sub-genz501', 'session': 'ses-1', 'run': '1', 'fas': [4.0, 25.0],},
+        {'patch': True, 'project': project, 'subj': 'sub-genz308', 'session': 'ses-1', 'run': '1', 'fas': [4.0, 25.0],},
+        {'patch': True, 'project': project, 'subj': 'sub-genz311', 'session': 'ses-1', 'run': '1', 'fas': [4.0, 25.0],},
+         ]
+setattr(subjids_picks, 'subjids', picks)
+
+dwi_picks =  get_dwi_names(subjids_picks)
+qt1_picks =  get_vfa_names(subjids_picks)
+
+
+opts.test = True
+if opts.test:
+    i = 0
+    dwi_picks = [dwi_picks[i]]
+    qt1_picks = [qt1_picks[i]]
+
+
+
 ec_meth = 'cuda_repol_std2_S0mf3_v5'
 fa2t1_outdir = 'reg_subFA2suborigvbmpaired_run2'
 fadir = 'FA_fsl_wls_tensor_mf_ero_paired'
@@ -82,16 +97,19 @@ MNI2templ_invwarp = templdir / 'bbc_pairedLH_template_reg2MNI_1InverseWarp.nii.g
 MNI2templ_aff = templdir / 'bbc_pairedLH_template_reg2MNI_0GenericAffine.mat'
 dwi2vbmsubjdir = fs / project / 'reg' / 'reg_subFA2suborigvbmpaired_run2'
 dwi_reg_append = '_eddy_corrected_repol_std2_wls_fsl_tensor_mf_FA_ero_reg2sorigvbm_'
-output = tuple()  # to catch and log errors
+
+
 
 #apply the warps
-for dwif, vbmf in zip(dwi_fnames, vbm_fnames):
+for dwif, qt1f in zip(dwi_picks, vfa_picks):
+    output = tuple()
+    # first warp MNI atlases to dwi space
     for k, a in MNI_atlases.iteritems():
         # extract rois from atlases and make masks
         if 'mori' in k and not a['roi_list'] == None:
-            make_mask_fm_atlas_parts(atlas=str(anat_atlas), roi_list=a['roi_list'], mask_fname=str(pylabs_atlasdir / a['atlas_fname']))
+            make_mask_fm_atlas_parts(atlas=str(moriMNIatlas), roi_list=a['roi_list'], mask_fname=str(pylabs_atlasdir / a['atlas_fname']))
         elif 'JHU_' in k:
-            make_mask_fm_tracts(atlas=str(tract_atlas), volidx=a['roi_list'], thresh=JHU_thr, mask_fname=str(pylabs_atlasdir / (a['atlas_fname'] % JHU_thr)))
+            make_mask_fm_tracts(atlas=str(JHUtracts_prob_atlas), volidx=a['roi_list'], thresh=JHU_thr, mask_fname=str(pylabs_atlasdir / (a['atlas_fname'] % JHU_thr)))
         elif 'aal_motor' in k:
             make_mask_fm_atlas_parts(atlas=str(pylabs_atlasdir / 'aal_1mm_reg2MNI_masked.nii.gz'), roi_list=a['roi_list'], mask_fname=str(pylabs_atlasdir / a['atlas_fname']))
         elif 'stats' in k:
@@ -149,7 +167,7 @@ for dwif, vbmf in zip(dwi_fnames, vbm_fnames):
                         provenance.log(str(vtkdir / str(dwif + '_' + (a['atlas_fname'] % JHU_thr).split('.')[0]) + '.vtk'), 'generate model vtk', str(outf), script=__file__, provenance=params)
                 elif 'stats' not in k:
                     for m, ts in tensors.iteritems():
-                        tenpath = execwdir / ec_meth / m
+                        tenpath = execwdir / opts.eddy_corr_dir
                         for t in ts:
                             cmd = ''
                             cmd += str(slicer_path) + a['Sl_cmd']

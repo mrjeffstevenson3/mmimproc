@@ -73,6 +73,10 @@ class Optsd(object):
             b1corr = False,
             vfa_tr = 21.0,
             vfa_fas = [4.0, 25.0],
+            reg_mni2dwi = '{fs}/{project}/{subj}/{session}/reg/mni2dwi',
+            reg_qt12dwi = '{fs}/{project}/{subj}/{session}/reg/qt12dwi',
+            JHU_thr = 5,
+            stat_thr = 0.95,
             ):
         # make them accessible as obj.var as well as dict
         self.project = project
@@ -99,6 +103,10 @@ class Optsd(object):
         self.b1corr = b1corr
         self.vfa_tr = vfa_tr
         self.vfa_fas = vfa_fas
+        self.reg_mni2dwi = reg_mni2dwi
+        self.reg_qt12dwi = reg_qt12dwi
+        self.JHU_thr = JHU_thr
+        self.stat_thr = stat_thr
 
 """
 # other future stages to run to move to opts settings
