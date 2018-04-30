@@ -11789,7 +11789,7 @@ div#notebook {
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">pylabs.io.mixed</span> <span class="kn">import</span> <span class="n">df2h5</span><span class="p">,</span> <span class="n">h52df</span><span class="p">,</span> <span class="n">get_h5_keys</span>
 <span class="kn">from</span> <span class="nn">pylabs.utils</span> <span class="kn">import</span> <span class="o">*</span>
-<span class="kn">from</span> <span class="nn">pylabs.projects.acdc.file_names</span> <span class="kn">import</span> <span class="n">project</span><span class="p">,</span> <span class="n">Optsd</span>
+<span class="kn">from</span> <span class="nn">pylabs.projects.genz.file_names</span> <span class="kn">import</span> <span class="n">project</span><span class="p">,</span> <span class="n">Optsd</span>
 <span class="kn">import</span> <span class="nn">qgrid</span>
 <span class="n">qgrid</span><span class="o">.</span><span class="n">enable</span>
 <span class="kn">import</span> <span class="nn">ipywidgets</span> <span class="kn">as</span> <span class="nn">widgets</span>
@@ -11814,27 +11814,21 @@ div#notebook {
 <div class="prompt"></div>
 
 
-<div class="output_subarea output_stream output_stderr output_text">
-<pre>/home/toddr/Software/anaconda2/lib/python2.7/site-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
-  from ._conv import register_converters as _register_converters
-</pre>
-</div>
-</div>
-
-<div class="output_area">
-
-<div class="prompt"></div>
-
-
 <div class="output_subarea output_stream output_stdout output_text">
 <pre>setting root data directory to jaba.
+(&#39;found mrjeffs laptop. using local datadir. datadir= &#39;, &#39;jaba&#39;)
 setting root data directory to jaba.
+(&#39;found mrjeffs laptop. using local datadir. datadir= &#39;, &#39;jaba&#39;)
 setting root data directory to jaba.
-/brainstudio/data
+(&#39;found mrjeffs laptop. using local datadir. datadir= &#39;, &#39;jaba&#39;)
+/Users/mrjeffs/Documents/Research/data
 setting root data directory to jaba.
-/brainstudio/data
+(&#39;found mrjeffs laptop. using local datadir. datadir= &#39;, &#39;jaba&#39;)
+/Users/mrjeffs/Documents/Research/data
 setting root data directory to jaba.
+(&#39;found mrjeffs laptop. using local datadir. datadir= &#39;, &#39;jaba&#39;)
 setting root data directory to jaba.
+(&#39;found mrjeffs laptop. using local datadir. datadir= &#39;, &#39;jaba&#39;)
 </pre>
 </div>
 </div>
@@ -11844,21 +11838,26 @@ setting root data directory to jaba.
 <div class="prompt"></div>
 
 
+<div class="output_subarea output_text output_error">
+<pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">ValueError</span>                                Traceback (most recent call last)
+<span class="ansi-green-fg">&lt;ipython-input-1-709aa9f711b3&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span><span class="ansi-blue-fg">()</span>
+<span class="ansi-green-intense-fg ansi-bold">     13</span> fs <span class="ansi-blue-fg">=</span> Path<span class="ansi-blue-fg">(</span>getnetworkdataroot<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">     14</span> opts <span class="ansi-blue-fg">=</span> Optsd<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-fg">---&gt; 15</span><span class="ansi-red-fg"> input_selkey = widgets.Dropdown(options=get_h5_keys(opts.info_fname, key=&#39;auto_qc&#39;), disabled=False,
+</span><span class="ansi-green-intense-fg ansi-bold">     16</span>     description=&#39;Subject DWI to qc:&#39;,)
+<span class="ansi-green-intense-fg ansi-bold">     17</span> input_selkey<span class="ansi-blue-fg">.</span>layout<span class="ansi-blue-fg">.</span>width <span class="ansi-blue-fg">=</span> <span class="ansi-blue-fg">&#39;600px&#39;</span>
 
+<span class="ansi-green-fg">/Users/mrjeffs/Software/pylabs/pylabs/io/mixed.py</span> in <span class="ansi-cyan-fg">get_h5_keys</span><span class="ansi-blue-fg">(h5_fname, key)</span>
+<span class="ansi-green-intense-fg ansi-bold">    149</span>     h5_fname <span class="ansi-blue-fg">=</span> Path<span class="ansi-blue-fg">(</span>h5_fname<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    150</span>     <span class="ansi-green-fg">if</span> <span class="ansi-green-fg">not</span> h5_fname<span class="ansi-blue-fg">.</span>is_file<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">--&gt; 151</span><span class="ansi-red-fg">         </span><span class="ansi-green-fg">raise</span> ValueError<span class="ansi-blue-fg">(</span>str<span class="ansi-blue-fg">(</span>h5_fname<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">+</span><span class="ansi-blue-fg">&#39; h5 file not found.&#39;</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    152</span>     <span class="ansi-green-fg">with</span> pd<span class="ansi-blue-fg">.</span>HDFStore<span class="ansi-blue-fg">(</span>str<span class="ansi-blue-fg">(</span>h5_fname<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">)</span> <span class="ansi-green-fg">as</span> storeh5<span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">    153</span>         h5keys <span class="ansi-blue-fg">=</span> storeh5<span class="ansi-blue-fg">.</span>keys<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
 
-
- 
- 
-<div id="676072da-c440-4b22-b72d-deffabdeb9a2"></div>
-<div class="output_subarea output_widget_view ">
-<script type="text/javascript">
-var element = $('#676072da-c440-4b22-b72d-deffabdeb9a2');
-</script>
-<script type="application/vnd.jupyter.widget-view+json">
-{"model_id": "7465deaa26cf4b02846ad7618f83fb43", "version_minor": 0, "version_major": 2}
-</script>
+<span class="ansi-red-fg">ValueError</span>: /Users/mrjeffs/Documents/Research/data/genz/all_genz_info.h5 h5 file not found.</pre>
 </div>
-
 </div>
 
 </div>
@@ -11867,11 +11866,11 @@ var element = $('#676072da-c440-4b22-b72d-deffabdeb9a2');
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[18]:</div>
+<div class="prompt input_prompt">In&nbsp;[2]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="n">all_dwi_auto_qc</span> <span class="o">=</span> <span class="n">h52df</span><span class="p">(</span><span class="n">opts</span><span class="o">.</span><span class="n">info_fname</span><span class="p">,</span> <span class="n">input_selkey</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
-<span class="n">all_dwi_auto_qc</span>
+<span class="c1">#all_dwi_auto_qc</span>
 </pre></div>
 
 </div>
@@ -11884,30 +11883,30 @@ var element = $('#676072da-c440-4b22-b72d-deffabdeb9a2');
 
 <div class="output_area">
 
-<div class="prompt output_prompt">Out[18]:</div>
+<div class="prompt output_prompt">Out[2]:</div>
 
 
 
 <div class="output_html rendered_html output_subarea output_execute_result">
 <div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
+<style>
+    .dataframe thead tr:only-child th {
+        text-align: right;
+    }
+
+    .dataframe thead th {
+        text-align: left;
     }
 
     .dataframe tbody tr th {
         vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
     }
 </style>
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
       <th></th>
-      <th>level_0</th>
+      <th>index</th>
       <th>x_bvec</th>
       <th>y_bvec</th>
       <th>z_bvec</th>
@@ -11939,9 +11938,9 @@ var element = $('#676072da-c440-4b22-b72d-deffabdeb9a2');
       <td>0</td>
       <td>0</td>
       <td>0</td>
-      <td>/brainstudio/data/acdc/sub-acdc117/ses-1/dwi/s...</td>
-      <td>/brainstudio/data/acdc/sub-acdc117/ses-1/dwi/s...</td>
-      <td>/brainstudio/data/acdc/sub-acdc117/ses-1/dwi/s...</td>
+      <td>/brainstudio/data/acdc/sub-acdc104/ses-1/dwi/s...</td>
+      <td>/brainstudio/data/acdc/sub-acdc104/ses-1/dwi/s...</td>
+      <td>/brainstudio/data/acdc/sub-acdc104/ses-1/dwi/s...</td>
     </tr>
     <tr>
       <th>1</th>
@@ -11974,7 +11973,7 @@ var element = $('#676072da-c440-4b22-b72d-deffabdeb9a2');
       <td>2</td>
       <td>0</td>
       <td>1</td>
-      <td>0</td>
+      <td>1</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
@@ -11992,7 +11991,7 @@ var element = $('#676072da-c440-4b22-b72d-deffabdeb9a2');
       <td>3</td>
       <td>0</td>
       <td>2</td>
-      <td>0</td>
+      <td>1</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
@@ -12010,7 +12009,7 @@ var element = $('#676072da-c440-4b22-b72d-deffabdeb9a2');
       <td>4</td>
       <td>0</td>
       <td>3</td>
-      <td>0</td>
+      <td>1</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
@@ -12040,13 +12039,13 @@ var element = $('#676072da-c440-4b22-b72d-deffabdeb9a2');
       <td>-0.095</td>
       <td>0.995</td>
       <td>2000</td>
-      <td>6</td>
-      <td>6</td>
-      <td>0</td>
+      <td>-9999</td>
       <td>6</td>
       <td>0</td>
+      <td>-9999</td>
+      <td>-9999</td>
       <td>5</td>
-      <td>0</td>
+      <td>1</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
@@ -12058,13 +12057,13 @@ var element = $('#676072da-c440-4b22-b72d-deffabdeb9a2');
       <td>-0.004</td>
       <td>-0.522</td>
       <td>2000</td>
-      <td>7</td>
-      <td>7</td>
-      <td>0</td>
-      <td>7</td>
+      <td>-9999</td>
+      <td>-9999</td>
+      <td>-9999</td>
+      <td>-9999</td>
       <td>-9999</td>
       <td>6</td>
-      <td>1</td>
+      <td>0</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
@@ -12077,7 +12076,7 @@ var element = $('#676072da-c440-4b22-b72d-deffabdeb9a2');
       <td>-0.399</td>
       <td>2000</td>
       <td>-9999</td>
-      <td>8</td>
+      <td>-9999</td>
       <td>-9999</td>
       <td>-9999</td>
       <td>-9999</td>
@@ -12100,7 +12099,7 @@ var element = $('#676072da-c440-4b22-b72d-deffabdeb9a2');
       <td>-9999</td>
       <td>-9999</td>
       <td>8</td>
-      <td>0</td>
+      <td>1</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
@@ -12118,7 +12117,7 @@ var element = $('#676072da-c440-4b22-b72d-deffabdeb9a2');
       <td>-9999</td>
       <td>-9999</td>
       <td>9</td>
-      <td>0</td>
+      <td>1</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
@@ -12172,7 +12171,7 @@ var element = $('#676072da-c440-4b22-b72d-deffabdeb9a2');
       <td>-9999</td>
       <td>-9999</td>
       <td>12</td>
-      <td>0</td>
+      <td>1</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
@@ -12190,7 +12189,7 @@ var element = $('#676072da-c440-4b22-b72d-deffabdeb9a2');
       <td>-9999</td>
       <td>-9999</td>
       <td>13</td>
-      <td>0</td>
+      <td>1</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
@@ -12244,7 +12243,7 @@ var element = $('#676072da-c440-4b22-b72d-deffabdeb9a2');
       <td>-9999</td>
       <td>-9999</td>
       <td>16</td>
-      <td>0</td>
+      <td>1</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
@@ -12262,7 +12261,7 @@ var element = $('#676072da-c440-4b22-b72d-deffabdeb9a2');
       <td>-9999</td>
       <td>-9999</td>
       <td>17</td>
-      <td>1</td>
+      <td>0</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
@@ -12280,7 +12279,7 @@ var element = $('#676072da-c440-4b22-b72d-deffabdeb9a2');
       <td>-9999</td>
       <td>-9999</td>
       <td>18</td>
-      <td>1</td>
+      <td>0</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
@@ -12352,7 +12351,7 @@ var element = $('#676072da-c440-4b22-b72d-deffabdeb9a2');
       <td>-9999</td>
       <td>-9999</td>
       <td>22</td>
-      <td>1</td>
+      <td>0</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
@@ -12370,7 +12369,7 @@ var element = $('#676072da-c440-4b22-b72d-deffabdeb9a2');
       <td>-9999</td>
       <td>-9999</td>
       <td>23</td>
-      <td>1</td>
+      <td>0</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
@@ -12388,7 +12387,7 @@ var element = $('#676072da-c440-4b22-b72d-deffabdeb9a2');
       <td>-9999</td>
       <td>-9999</td>
       <td>24</td>
-      <td>1</td>
+      <td>0</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
@@ -12406,7 +12405,7 @@ var element = $('#676072da-c440-4b22-b72d-deffabdeb9a2');
       <td>-9999</td>
       <td>-9999</td>
       <td>25</td>
-      <td>0</td>
+      <td>1</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
@@ -12442,7 +12441,7 @@ var element = $('#676072da-c440-4b22-b72d-deffabdeb9a2');
       <td>-9999</td>
       <td>-9999</td>
       <td>27</td>
-      <td>0</td>
+      <td>1</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
@@ -12460,7 +12459,7 @@ var element = $('#676072da-c440-4b22-b72d-deffabdeb9a2');
       <td>-9999</td>
       <td>-9999</td>
       <td>28</td>
-      <td>0</td>
+      <td>1</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
@@ -12568,7 +12567,7 @@ var element = $('#676072da-c440-4b22-b72d-deffabdeb9a2');
       <td>-9999</td>
       <td>-9999</td>
       <td>38</td>
-      <td>1</td>
+      <td>0</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
@@ -12604,7 +12603,7 @@ var element = $('#676072da-c440-4b22-b72d-deffabdeb9a2');
       <td>-9999</td>
       <td>-9999</td>
       <td>40</td>
-      <td>1</td>
+      <td>0</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
@@ -12658,7 +12657,7 @@ var element = $('#676072da-c440-4b22-b72d-deffabdeb9a2');
       <td>-9999</td>
       <td>-9999</td>
       <td>43</td>
-      <td>1</td>
+      <td>0</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
@@ -12712,7 +12711,7 @@ var element = $('#676072da-c440-4b22-b72d-deffabdeb9a2');
       <td>-9999</td>
       <td>-9999</td>
       <td>46</td>
-      <td>1</td>
+      <td>0</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
@@ -12730,7 +12729,7 @@ var element = $('#676072da-c440-4b22-b72d-deffabdeb9a2');
       <td>-9999</td>
       <td>-9999</td>
       <td>47</td>
-      <td>1</td>
+      <td>0</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
@@ -12748,7 +12747,7 @@ var element = $('#676072da-c440-4b22-b72d-deffabdeb9a2');
       <td>-9999</td>
       <td>-9999</td>
       <td>48</td>
-      <td>1</td>
+      <td>0</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
@@ -12766,7 +12765,7 @@ var element = $('#676072da-c440-4b22-b72d-deffabdeb9a2');
       <td>-9999</td>
       <td>-9999</td>
       <td>49</td>
-      <td>0</td>
+      <td>1</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
@@ -13037,7 +13036,7 @@ var element = $('#676072da-c440-4b22-b72d-deffabdeb9a2');
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[2]:</div>
+<div class="prompt input_prompt">In&nbsp;[3]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="n">pick</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;subj&#39;</span><span class="p">:</span> <span class="n">input_selkey</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;session&#39;</span><span class="p">:</span> <span class="n">input_selkey</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[</span><span class="mi">2</span><span class="p">],</span> <span class="p">}</span>
@@ -13081,14 +13080,16 @@ var element = $('#676072da-c440-4b22-b72d-deffabdeb9a2');
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[3]:</div>
+<div class="prompt input_prompt">In&nbsp;[5]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="n">items</span> <span class="o">=</span> <span class="p">[</span><span class="n">widgets</span><span class="o">.</span><span class="n">Image</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s1">&#39;dwi b2000 bad vols&#39;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">dwi2000_bvolspng</span><span class="p">,</span>    <span class="n">format</span><span class="o">=</span><span class="s1">&#39;png&#39;</span><span class="p">,</span>    <span class="n">width</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>    <span class="n">height</span><span class="o">=</span><span class="mi">600</span><span class="p">),</span>
-        <span class="n">widgets</span><span class="o">.</span><span class="n">Image</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s1">&#39;dwi b2000 good vols&#39;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">dwi2000_gvolspng</span><span class="p">,</span>    <span class="n">format</span><span class="o">=</span><span class="s1">&#39;png&#39;</span><span class="p">,</span>    <span class="n">width</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>    <span class="n">height</span><span class="o">=</span><span class="mi">600</span><span class="p">)</span>
-        <span class="p">]</span>
-<span class="n">box_layout</span> <span class="o">=</span> <span class="n">widgets</span><span class="o">.</span><span class="n">Layout</span><span class="p">(</span><span class="n">display</span><span class="o">=</span><span class="s1">&#39;flex&#39;</span><span class="p">,</span> <span class="n">flex_flow</span><span class="o">=</span><span class="s1">&#39;row&#39;</span><span class="p">,</span> <span class="n">align_items</span><span class="o">=</span><span class="s1">&#39;stretch&#39;</span><span class="p">,</span> <span class="n">border</span><span class="o">=</span><span class="s1">&#39;solid&#39;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="s1">&#39;100%&#39;</span><span class="p">)</span>
-<span class="n">dwi_box</span> <span class="o">=</span> <span class="n">widgets</span><span class="o">.</span><span class="n">Box</span><span class="p">(</span><span class="n">children</span><span class="o">=</span><span class="n">items</span><span class="o">+</span><span class="p">[</span><span class="n">dwi_w</span><span class="p">],</span> <span class="n">layout</span><span class="o">=</span><span class="n">box_layout</span><span class="p">)</span>
+        <span class="n">widgets</span><span class="o">.</span><span class="n">Image</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s1">&#39;dwi b2000 good vols&#39;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">dwi2000_gvolspng</span><span class="p">,</span>    <span class="n">format</span><span class="o">=</span><span class="s1">&#39;png&#39;</span><span class="p">,</span>    <span class="n">width</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>    <span class="n">height</span><span class="o">=</span><span class="mi">600</span><span class="p">),]</span>
+<span class="c1">#items_layout = [widgets.Layout(flex-basis=&#39;50%&#39;, ), widgets.Layout(flex-basis=&#39;50%&#39;, widgets.Layout(flex-basis=&#39;100%&#39;,)]</span>
+<span class="n">box_layout</span> <span class="o">=</span> <span class="n">widgets</span><span class="o">.</span><span class="n">Layout</span><span class="p">(</span><span class="n">display</span><span class="o">=</span><span class="s1">&#39;flex&#39;</span><span class="p">,</span> <span class="n">align_items</span><span class="o">=</span><span class="s1">&#39;stretch&#39;</span><span class="p">,</span> <span class="n">border</span><span class="o">=</span><span class="s1">&#39;solid&#39;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="s1">&#39;100%&#39;</span><span class="p">)</span>
+<span class="n">top_box</span> <span class="o">=</span> <span class="n">widgets</span><span class="o">.</span><span class="n">HBox</span><span class="p">(</span><span class="n">children</span><span class="o">=</span><span class="n">items</span><span class="p">)</span>
+<span class="n">bottom_box</span> <span class="o">=</span> <span class="n">widgets</span><span class="o">.</span><span class="n">HBox</span><span class="p">(</span><span class="n">children</span><span class="o">=</span><span class="p">[</span><span class="n">dwi_w</span><span class="p">])</span>
+<span class="n">dwi_box</span> <span class="o">=</span> <span class="n">widgets</span><span class="o">.</span><span class="n">Box</span><span class="p">([</span><span class="n">top_box</span><span class="p">,</span> <span class="n">bottom_box</span><span class="p">],</span> <span class="n">layout</span><span class="o">=</span><span class="n">box_layout</span><span class="p">)</span>
 <span class="n">dwi_box</span>
 </pre></div>
 
@@ -13110,13 +13111,13 @@ var element = $('#676072da-c440-4b22-b72d-deffabdeb9a2');
 
  
  
-<div id="09cb05af-ef72-4c2f-87d1-abe0e7ac0a6a"></div>
+<div id="2d7071be-014c-4ec8-ac9a-e6b1dd72ba11"></div>
 <div class="output_subarea output_widget_view ">
 <script type="text/javascript">
-var element = $('#09cb05af-ef72-4c2f-87d1-abe0e7ac0a6a');
+var element = $('#2d7071be-014c-4ec8-ac9a-e6b1dd72ba11');
 </script>
 <script type="application/vnd.jupyter.widget-view+json">
-{"model_id": "8949da0d4a294e9193f33337456a9586", "version_minor": 0, "version_major": 2}
+{"model_id": "9a87691f95d84b499133b4d5fc0db983", "version_minor": 0, "version_major": 2}
 </script>
 </div>
 
@@ -13128,7 +13129,7 @@ var element = $('#09cb05af-ef72-4c2f-87d1-abe0e7ac0a6a');
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[4]:</div>
+<div class="prompt input_prompt">In&nbsp;[10]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="n">items</span> <span class="o">=</span> <span class="p">[</span><span class="n">widgets</span><span class="o">.</span><span class="n">Image</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s1">&#39;topup bad vols&#39;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">topup_bvolspng</span><span class="p">,</span>    <span class="n">format</span><span class="o">=</span><span class="s1">&#39;png&#39;</span><span class="p">,</span>    <span class="n">width</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span>    <span class="n">height</span><span class="o">=</span><span class="mi">600</span><span class="p">),</span>
@@ -13163,13 +13164,13 @@ var element = $('#09cb05af-ef72-4c2f-87d1-abe0e7ac0a6a');
 
  
  
-<div id="dda7fd32-e7ec-4bdd-b1dc-0fc56d5c68e8"></div>
+<div id="da159c1e-118c-45c4-9e29-2a8dd8b066bc"></div>
 <div class="output_subarea output_widget_view ">
 <script type="text/javascript">
-var element = $('#dda7fd32-e7ec-4bdd-b1dc-0fc56d5c68e8');
+var element = $('#da159c1e-118c-45c4-9e29-2a8dd8b066bc');
 </script>
 <script type="application/vnd.jupyter.widget-view+json">
-{"model_id": "31c94db234d8423e93be91a1073b4b37", "version_minor": 0, "version_major": 2}
+{"model_id": "55f60db7120b4d5cb2a2d5d054303405", "version_minor": 0, "version_major": 2}
 </script>
 </div>
 
@@ -13181,7 +13182,7 @@ var element = $('#dda7fd32-e7ec-4bdd-b1dc-0fc56d5c68e8');
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[5]:</div>
+<div class="prompt input_prompt">In&nbsp;[13]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="n">topupdn_w</span><span class="o">.</span><span class="n">get_changed_df</span><span class="p">()</span>
@@ -13197,23 +13198,23 @@ var element = $('#dda7fd32-e7ec-4bdd-b1dc-0fc56d5c68e8');
 
 <div class="output_area">
 
-<div class="prompt output_prompt">Out[5]:</div>
+<div class="prompt output_prompt">Out[13]:</div>
 
 
 
 <div class="output_html rendered_html output_subarea output_execute_result">
 <div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
+<style>
+    .dataframe thead tr:only-child th {
+        text-align: right;
+    }
+
+    .dataframe thead th {
+        text-align: left;
     }
 
     .dataframe tbody tr th {
         vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
     }
 </style>
 <table border="1" class="dataframe">
@@ -13302,233 +13303,233 @@ var element = $('#dda7fd32-e7ec-4bdd-b1dc-0fc56d5c68e8');
     </tr>
     <tr>
       <th>7</th>
-      <td>7</td>
+      <td>-9999</td>
       <td>7</td>
       <td>0</td>
-      <td>True</td>
-      <td>7</td>
+      <td>False</td>
       <td>-9999</td>
-      <td>True</td>
+      <td>-9999</td>
+      <td>False</td>
     </tr>
     <tr>
       <th>8</th>
       <td>-9999</td>
-      <td>8</td>
-      <td>-9999</td>
-      <td>NaN</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
+      <td>-9999</td>
+      <td>-9999</td>
+      <td>False</td>
     </tr>
     <tr>
       <th>9</th>
       <td>-9999</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
     </tr>
     <tr>
       <th>10</th>
       <td>-9999</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
     </tr>
     <tr>
       <th>11</th>
       <td>-9999</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
     </tr>
     <tr>
       <th>12</th>
       <td>-9999</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
     </tr>
     <tr>
       <th>13</th>
       <td>-9999</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
     </tr>
     <tr>
       <th>14</th>
       <td>-9999</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
     </tr>
     <tr>
       <th>15</th>
       <td>-9999</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
     </tr>
     <tr>
       <th>16</th>
       <td>-9999</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
     </tr>
     <tr>
       <th>17</th>
       <td>-9999</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
     </tr>
     <tr>
       <th>18</th>
       <td>-9999</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
     </tr>
     <tr>
       <th>19</th>
       <td>-9999</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
     </tr>
     <tr>
       <th>20</th>
       <td>-9999</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
     </tr>
     <tr>
       <th>21</th>
       <td>-9999</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
     </tr>
     <tr>
       <th>22</th>
       <td>-9999</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
     </tr>
     <tr>
       <th>23</th>
       <td>-9999</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
     </tr>
     <tr>
       <th>24</th>
       <td>-9999</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
     </tr>
     <tr>
       <th>25</th>
       <td>-9999</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
     </tr>
     <tr>
       <th>26</th>
       <td>-9999</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
     </tr>
     <tr>
       <th>27</th>
       <td>-9999</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
     </tr>
     <tr>
       <th>28</th>
       <td>-9999</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
     </tr>
     <tr>
       <th>29</th>
       <td>-9999</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
     </tr>
     <tr>
       <th>...</th>
@@ -13545,300 +13546,300 @@ var element = $('#dda7fd32-e7ec-4bdd-b1dc-0fc56d5c68e8');
       <td>-9999</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
     </tr>
     <tr>
       <th>36</th>
       <td>-9999</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
     </tr>
     <tr>
       <th>37</th>
       <td>-9999</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
     </tr>
     <tr>
       <th>38</th>
       <td>-9999</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
     </tr>
     <tr>
       <th>39</th>
       <td>-9999</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
     </tr>
     <tr>
       <th>40</th>
       <td>-9999</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
     </tr>
     <tr>
       <th>41</th>
       <td>-9999</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
     </tr>
     <tr>
       <th>42</th>
       <td>-9999</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
     </tr>
     <tr>
       <th>43</th>
       <td>-9999</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
     </tr>
     <tr>
       <th>44</th>
       <td>-9999</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
     </tr>
     <tr>
       <th>45</th>
       <td>-9999</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
     </tr>
     <tr>
       <th>46</th>
       <td>-9999</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
     </tr>
     <tr>
       <th>47</th>
       <td>-9999</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
     </tr>
     <tr>
       <th>48</th>
       <td>-9999</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
     </tr>
     <tr>
       <th>49</th>
       <td>-9999</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
     </tr>
     <tr>
       <th>50</th>
       <td>-9999</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
     </tr>
     <tr>
       <th>51</th>
       <td>-9999</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
     </tr>
     <tr>
       <th>52</th>
       <td>-9999</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
     </tr>
     <tr>
       <th>53</th>
       <td>-9999</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
     </tr>
     <tr>
       <th>54</th>
       <td>-9999</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
     </tr>
     <tr>
       <th>55</th>
       <td>-9999</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
     </tr>
     <tr>
       <th>56</th>
       <td>-9999</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
     </tr>
     <tr>
       <th>57</th>
       <td>-9999</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
     </tr>
     <tr>
       <th>58</th>
       <td>-9999</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
     </tr>
     <tr>
       <th>59</th>
       <td>-9999</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
     </tr>
     <tr>
       <th>60</th>
       <td>-9999</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
     </tr>
     <tr>
       <th>61</th>
       <td>-9999</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
     </tr>
     <tr>
       <th>62</th>
       <td>-9999</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
     </tr>
     <tr>
       <th>63</th>
       <td>-9999</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
     </tr>
     <tr>
       <th>64</th>
       <td>-9999</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
       <td>-9999</td>
       <td>-9999</td>
-      <td>NaN</td>
+      <td>False</td>
     </tr>
   </tbody>
 </table>
@@ -13854,7 +13855,7 @@ var element = $('#dda7fd32-e7ec-4bdd-b1dc-0fc56d5c68e8');
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[7]:</div>
+<div class="prompt input_prompt">In&nbsp;[14]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="n">dwi_w</span><span class="o">.</span><span class="n">get_changed_df</span><span class="p">()</span>
@@ -13870,23 +13871,23 @@ var element = $('#dda7fd32-e7ec-4bdd-b1dc-0fc56d5c68e8');
 
 <div class="output_area">
 
-<div class="prompt output_prompt">Out[7]:</div>
+<div class="prompt output_prompt">Out[14]:</div>
 
 
 
 <div class="output_html rendered_html output_subarea output_execute_result">
 <div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
+<style>
+    .dataframe thead tr:only-child th {
+        text-align: right;
+    }
+
+    .dataframe thead th {
+        text-align: left;
     }
 
     .dataframe tbody tr th {
         vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
     }
 </style>
 <table border="1" class="dataframe">
@@ -13917,7 +13918,7 @@ var element = $('#dda7fd32-e7ec-4bdd-b1dc-0fc56d5c68e8');
       <th>1</th>
       <td>2000</td>
       <td>0</td>
-      <td>0</td>
+      <td>1</td>
       <td>True</td>
       <td>1.0</td>
       <td>0.0</td>
@@ -13967,7 +13968,7 @@ var element = $('#dda7fd32-e7ec-4bdd-b1dc-0fc56d5c68e8');
       <th>6</th>
       <td>2000</td>
       <td>5</td>
-      <td>0</td>
+      <td>1</td>
       <td>True</td>
       <td>0.025</td>
       <td>-0.095</td>
@@ -13977,7 +13978,7 @@ var element = $('#dda7fd32-e7ec-4bdd-b1dc-0fc56d5c68e8');
       <th>7</th>
       <td>2000</td>
       <td>6</td>
-      <td>1</td>
+      <td>0</td>
       <td>True</td>
       <td>-0.853</td>
       <td>-0.004</td>
@@ -13987,7 +13988,7 @@ var element = $('#dda7fd32-e7ec-4bdd-b1dc-0fc56d5c68e8');
       <th>8</th>
       <td>2000</td>
       <td>7</td>
-      <td>0</td>
+      <td>1</td>
       <td>True</td>
       <td>-0.155</td>
       <td>0.904</td>
@@ -14047,7 +14048,7 @@ var element = $('#dda7fd32-e7ec-4bdd-b1dc-0fc56d5c68e8');
       <th>14</th>
       <td>2000</td>
       <td>13</td>
-      <td>0</td>
+      <td>1</td>
       <td>True</td>
       <td>0.355</td>
       <td>0.646</td>
@@ -14087,7 +14088,7 @@ var element = $('#dda7fd32-e7ec-4bdd-b1dc-0fc56d5c68e8');
       <th>18</th>
       <td>2000</td>
       <td>17</td>
-      <td>1</td>
+      <td>0</td>
       <td>True</td>
       <td>0.701</td>
       <td>-0.677</td>
@@ -14097,7 +14098,7 @@ var element = $('#dda7fd32-e7ec-4bdd-b1dc-0fc56d5c68e8');
       <th>19</th>
       <td>2000</td>
       <td>18</td>
-      <td>1</td>
+      <td>0</td>
       <td>True</td>
       <td>0.886</td>
       <td>0.432</td>
@@ -14117,7 +14118,7 @@ var element = $('#dda7fd32-e7ec-4bdd-b1dc-0fc56d5c68e8');
       <th>21</th>
       <td>2000</td>
       <td>20</td>
-      <td>1</td>
+      <td>0</td>
       <td>True</td>
       <td>0.385</td>
       <td>0.184</td>
@@ -14137,7 +14138,7 @@ var element = $('#dda7fd32-e7ec-4bdd-b1dc-0fc56d5c68e8');
       <th>23</th>
       <td>2000</td>
       <td>22</td>
-      <td>1</td>
+      <td>0</td>
       <td>True</td>
       <td>0.435</td>
       <td>-0.716</td>
@@ -14147,7 +14148,7 @@ var element = $('#dda7fd32-e7ec-4bdd-b1dc-0fc56d5c68e8');
       <th>24</th>
       <td>2000</td>
       <td>23</td>
-      <td>1</td>
+      <td>0</td>
       <td>True</td>
       <td>0.888</td>
       <td>0.352</td>
@@ -14157,8 +14158,8 @@ var element = $('#dda7fd32-e7ec-4bdd-b1dc-0fc56d5c68e8');
       <th>25</th>
       <td>2000</td>
       <td>24</td>
-      <td>1</td>
-      <td>False</td>
+      <td>0</td>
+      <td>True</td>
       <td>-0.872</td>
       <td>0.25</td>
       <td>0.421</td>
@@ -14167,7 +14168,7 @@ var element = $('#dda7fd32-e7ec-4bdd-b1dc-0fc56d5c68e8');
       <th>26</th>
       <td>2000</td>
       <td>25</td>
-      <td>0</td>
+      <td>1</td>
       <td>True</td>
       <td>-0.001</td>
       <td>-0.361</td>
@@ -14197,7 +14198,7 @@ var element = $('#dda7fd32-e7ec-4bdd-b1dc-0fc56d5c68e8');
       <th>29</th>
       <td>2000</td>
       <td>28</td>
-      <td>0</td>
+      <td>1</td>
       <td>True</td>
       <td>-0.514</td>
       <td>0.165</td>
@@ -14257,7 +14258,7 @@ var element = $('#dda7fd32-e7ec-4bdd-b1dc-0fc56d5c68e8');
       <th>39</th>
       <td>2000</td>
       <td>38</td>
-      <td>1</td>
+      <td>0</td>
       <td>True</td>
       <td>0.705</td>
       <td>-0.142</td>
@@ -14267,7 +14268,7 @@ var element = $('#dda7fd32-e7ec-4bdd-b1dc-0fc56d5c68e8');
       <th>40</th>
       <td>2000</td>
       <td>39</td>
-      <td>0</td>
+      <td>1</td>
       <td>True</td>
       <td>0.453</td>
       <td>-0.75</td>
@@ -14307,7 +14308,7 @@ var element = $('#dda7fd32-e7ec-4bdd-b1dc-0fc56d5c68e8');
       <th>44</th>
       <td>2000</td>
       <td>43</td>
-      <td>1</td>
+      <td>0</td>
       <td>True</td>
       <td>0.011</td>
       <td>0.995</td>
@@ -14337,8 +14338,8 @@ var element = $('#dda7fd32-e7ec-4bdd-b1dc-0fc56d5c68e8');
       <th>47</th>
       <td>2000</td>
       <td>46</td>
-      <td>1</td>
-      <td>False</td>
+      <td>0</td>
+      <td>True</td>
       <td>-0.541</td>
       <td>-0.76</td>
       <td>0.359</td>
@@ -14357,7 +14358,7 @@ var element = $('#dda7fd32-e7ec-4bdd-b1dc-0fc56d5c68e8');
       <th>49</th>
       <td>2000</td>
       <td>48</td>
-      <td>1</td>
+      <td>0</td>
       <td>True</td>
       <td>0.972</td>
       <td>0.079</td>
@@ -14527,7 +14528,7 @@ var element = $('#dda7fd32-e7ec-4bdd-b1dc-0fc56d5c68e8');
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[5]:</div>
+<div class="prompt input_prompt">In&nbsp;[11]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="n">all_dwi_visqc</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">dwi_w</span><span class="o">.</span><span class="n">get_changed_df</span><span class="p">(),</span> <span class="n">topupdn_w</span><span class="o">.</span><span class="n">get_changed_df</span><span class="p">()],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
