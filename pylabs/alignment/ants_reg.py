@@ -69,9 +69,9 @@ def subj2templ_applywarp(moving, ref_img, outfile, warpfiles, execwdir, dims=3, 
 def subj2T1(moving, ref_img, outfile, inargs=None):
     """
 
-    :param moving:
-    :param ref_img:
-    :param outfile:
+    :param moving: name of file to move into ref file's space
+    :param ref_img: the target space moving image is aligned to
+    :param outfile: stem file name of the result should end with _ ants will add its own suffixes
     :param inargs: input arguments -n <num cpu>
     :example inargs:  -n 30 -t s -p f -j 1 -s 10 -r 1
     :return:

@@ -90,7 +90,7 @@ def getnetworkdataroot(verbose=True):
 
 
 def tempfile(extension='.tmp'):
-    return os.path.join('/var/tmp',petname.Generate(3,'-')+extension)
+    return join('/var/tmp',petname.Generate(3,'-')+extension)
 
 def getpylabspath():
     return os.path.split(os.path.split(inspect.getabsfile(pylabs))[0])[0]
