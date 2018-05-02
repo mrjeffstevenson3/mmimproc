@@ -4,8 +4,8 @@ from pathlib import *
 import datetime
 import pylabs
 from pylabs.correlation.atlas import make_mask_fm_atlas_parts, make_mask_fm_tracts
-from pylabs.alignment.ants_reg import subj2templ_applywarp
-from pylabs.projects.genz.file_names import get_dwi_names, Optsd, project, SubjIdPicks, get_vfa_names
+from pylabs.alignment.ants_reg import subj2templ_applywarp, subj2T1
+from pylabs.projects.genz.file_names import get_dwi_names, Optsd, project, SubjIdPicks, get_vfa_names, merge_ftempl_dicts
 from pylabs.utils import *
 from pylabs.conversion.nifti2nrrd import nii2nrrd
 #set up provenance
@@ -72,38 +72,51 @@ picks = [
          ]
 setattr(subjids_picks, 'subjids', picks)
 
-dwi_picks =  get_dwi_names(subjids_picks)
-qt1_picks =  get_vfa_names(subjids_picks)
-
+dwi_picks, qt1_picks  =  get_dwi_names(subjids_picks), get_vfa_names(subjids_picks)
+if dwi_picks == qt1_picks:
+    picks = qt1_picks
+else:
+    raise ValueError('dwi and qt1 picks dict not aligned. stopping.')
 
 opts.test = True
 if opts.test:
     i = 0
-    dwi_picks = [dwi_picks[i]]
-    qt1_picks = [qt1_picks[i]]
+    picks = [picks[i]]
 
-
-
-ec_meth = 'cuda_repol_std2_S0mf3_v5'
-fa2t1_outdir = 'reg_subFA2suborigvbmpaired_run2'
-fadir = 'FA_fsl_wls_tensor_mf_ero_paired'
-dwi_templ = 'sub-bbc{sid}_ses-{snum}_{meth}_{runnum}'
-dwi_fnames = [dwi_templ.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r)) for s, ses, m, r in dwipairing]
-vbm_templ = 'bbc_pairedLH_sub-bbc{sid}_ses-{snum}_{meth}_{runnum}_brain_susan_nl_comroll'
-vbm_fnames = [vbm_templ.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r)) for s, ses, m, r in vbmpairing]
-templdir = fs / project / 'reg' / 'ants_vbm_pairedLH_in_template_space'
-vbm_statsdir = templdir / 'stats' / 'exchblks'
-MNI2templ_invwarp = templdir / 'bbc_pairedLH_template_reg2MNI_1InverseWarp.nii.gz'
-MNI2templ_aff = templdir / 'bbc_pairedLH_template_reg2MNI_0GenericAffine.mat'
-dwi2vbmsubjdir = fs / project / 'reg' / 'reg_subFA2suborigvbmpaired_run2'
-dwi_reg_append = '_eddy_corrected_repol_std2_wls_fsl_tensor_mf_FA_ero_reg2sorigvbm_'
+# ec_meth = 'cuda_repol_std2_S0mf3_v5'
+# fa2t1_outdir = 'reg_subFA2suborigvbmpaired_run2'
+# fadir = 'FA_fsl_wls_tensor_mf_ero_paired'
+# dwi_templ = 'sub-bbc{sid}_ses-{snum}_{meth}_{runnum}'
+#
+# vbm_templ = 'bbc_pairedLH_sub-bbc{sid}_ses-{snum}_{meth}_{runnum}_brain_susan_nl_comroll'
+#
+# templdir = fs / project / 'reg' / 'ants_vbm_pairedLH_in_template_space'
+# vbm_statsdir = templdir / 'stats' / 'exchblks'
+# MNI2templ_invwarp = templdir / 'bbc_pairedLH_template_reg2MNI_1InverseWarp.nii.gz'
+# MNI2templ_aff = templdir / 'bbc_pairedLH_template_reg2MNI_0GenericAffine.mat'
+# dwi2vbmsubjdir = fs / project / 'reg' / 'reg_subFA2suborigvbmpaired_run2'
+# dwi_reg_append = '_eddy_corrected_repol_std2_wls_fsl_tensor_mf_FA_ero_reg2sorigvbm_'
 
 
 
 #apply the warps
-for dwif, qt1f in zip(dwi_picks, vfa_picks):
+for pick in picks:
     output = tuple()
     # first warp MNI atlases to dwi space
+    reg_dir = Path(fs/project/'{subj}/{session}/reg/MNI2dwi'.format(**pick))
+    dwi_dir = Path(fs/project/'{subj}/{session}/dwi/{dwi_fits_dir}'.format(**merge_ftempl_dicts(dict1=pick, dict2=vars(opts))))
+    if not reg_dir.is_dir():
+        reg_dir.mkdir(parents=True)
+    with WorkingContext(reg_dir):
+        moving = mniT2comdwi
+        ref = dwi_dir/''
+
+
+
+
+
+
+
     for k, a in MNI_atlases.iteritems():
         # extract rois from atlases and make masks
         if 'mori' in k and not a['roi_list'] == None:

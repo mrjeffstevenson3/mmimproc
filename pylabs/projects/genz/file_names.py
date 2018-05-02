@@ -11,6 +11,8 @@
 import pylabs
 pylabs.datadir.target = 'jaba'
 from pathlib import *
+import numpy as np
+import socket
 from collections import defaultdict
 from pylabs.utils import removesuffix, getnetworkdataroot
 from pylabs.conversion.brain_convert import img_conv, genz_conv, is_empty
@@ -71,6 +73,7 @@ class Optsd(object):
             gaba_dyn = 120,
             gaba_ftempl = '{subj}_WIP_ACCGABAMM_TE{te}_{dyn}DYN_{wild}_raw_{type}.SDAT',
             b1corr = False,
+            b1maptr = np.array([60., 240.0]),
             vfa_tr = 21.0,
             vfa_fas = [4.0, 25.0],
             reg_mni2dwi = '{fs}/{project}/{subj}/{session}/reg/mni2dwi',
@@ -101,6 +104,7 @@ class Optsd(object):
         self.gaba_dyn = gaba_dyn
         self.gaba_ftempl = gaba_ftempl
         self.b1corr = b1corr
+        self.b1maptr = b1maptr
         self.vfa_tr = vfa_tr
         self.vfa_fas = vfa_fas
         self.reg_mni2dwi = reg_mni2dwi
@@ -118,15 +122,7 @@ templating = False
 
 opts = Optsd()
 
-
 qc_str = opts.dwi_pass_qc
-
-
-# known or expected from genz protocol
-spgr_tr = '12p0'
-spgr_fa = ['05', '10', '15', '20', '30']
-gaba_te = 80
-gaba_dyn = 120
 
 # for partial substitutions
 fname_templ_dd = {'subj': '{subj}', 'session': '{session}', 'scan_name': '{scan_name}', 'scan_info': '{scan_info}',
@@ -156,33 +152,15 @@ def merge_ftempl_dicts(dict1={}, dict2={}, dict3={}, base_dd=fname_templ_dd):
 mod_map = {'T2': '_3DT2W_', 'lt_match': '_AX_MATCH_LEFT_MEMP_VBM_TI1100_', 'rt_match': '_AX_MATCH_RIGHT_MEMP_VBM_TI1100_', 'b1map': '_B1MAP_',
           'dwi': '_DWI64_3SH_B0_B800_B2000_TOPUP_', 's0_up': '_DWI_B0_TOPDN_', 's0_dn': '_DWI_B0_TOPUP_', 'mpr': '_MEMP_FS_TI1100_', 'spgr': '_T1_MAP_'}
 
-
-# freesurfer, VBM, T2 file name lists
-b1map_fs_fnames = []
-freesurf_fnames = []
-t2_fnames = []
-# dwi file name lists
-topup_fnames = []
-topdn_fnames= []
-dwi_fnames = []
-# 3 flip qT1 file name lists for testing purposes
-for fa in ['05', '15', '30']:
-    exec('spgr3_fa%(fa)s_fnames = []' % {'fa': fa})
-
-b1map3_fnames = []
-# 5 flip qT1 file name lists
-for fa in spgr_fa:
-    exec('spgr5_fa%(fa)s_fnames = []' % {'fa': fa})
-b1map5_fnames = []
-
-
 def get_freesurf_names(subjids_picks):
+    fs_picks = []
     b1_ftempl = removesuffix(str(genz_conv['_B1MAP-QUIET_FC_']['fname_template']))
     fs_ftempl = removesuffix(str(genz_conv['MEMP_IFS_0p5mm_2echo_']['fname_template']))
     for subjid in subjids_picks.subjids:
-        b1map_fs_fnames.append(str(b1_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_B1MAP-QUIET_FC_'])))
-        freesurf_fnames.append(str(fs_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['MEMP_IFS_0p5mm_2echo_'], dict3={'scan_info': 'ti1200_rms'})))
-    return b1map_fs_fnames, freesurf_fnames
+        subjid['b1map_fname'] = str(b1_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_B1MAP-QUIET_FC_']))
+        subjid['freesurf_fname'] = str(fs_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['MEMP_IFS_0p5mm_2echo_'], dict3={'scan_info': 'ti1200_rms'}))
+        fs_picks.append(subjid)
+    return fs_picks
 
 def get_dwi_names(subjids_picks):
     dwi_picks = []
@@ -200,10 +178,12 @@ def get_dwi_names(subjids_picks):
             print('subjids needs to a dictionary.')
 
 def get_3dt2_names(subjids_picks):
-    t2_ftempl = removesuffix(str(img_conv[project]['_QUIET_3DT2W_0p5mm3_']['fname_template']))
+    t2_picks = []
+    t2_ftempl = removesuffix(str(img_conv[project]['_QUIET_3DT2W']['fname_template']))
     for subjid in subjids_picks.subjids:
-        t2_fnames.append(str(t2_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_QUIET_3DT2W_0p5mm3_'])))
-    return t2_fnames
+        subjid['t2_fname'] = str(t2_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_QUIET_3DT2W']))
+        t2_picks.append(subjid)
+    return t2_picks
 
 def get_gaba_names(subjids_picks):
     # gaba spectroscopy file lists
@@ -238,10 +218,14 @@ def get_vfa_names(subjids_picks):
     vfa_ftempl = str(removesuffix(str(genz_conv['_VFA_FA4-25_QUIET']['fname_template'])))
     for subjid in subjids_picks.subjids:
         subjid.update({'scan_name': genz_conv['_VFA_FA4-25_QUIET']['scan_name'], 'tr': '21p0'})
-        subjid['vfatr'] = getTRfromh5(opts.info_fname, subjid['subj'], subjid['session'], 'qt1', vfa_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=genz_conv['_VFA_FA4-25_QUIET'])))
         subjid['vfa_fname'] = vfa_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=genz_conv['_VFA_FA4-25_QUIET']))
         subjid['b1map_fname'] = b1_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=genz_conv['_B1MAP-QUIET_FC_']))
-        subjid['b1maptr'] = getTRfromh5(opts.info_fname, subjid['subj'], subjid['session'], 'fmap', b1_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=genz_conv['_B1MAP-QUIET_FC_'])))
+        if opts.info_fname.is_file():
+            subjid['vfatr'] = getTRfromh5(opts.info_fname, subjid['subj'], subjid['session'], 'qt1', vfa_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=genz_conv['_VFA_FA4-25_QUIET'])))
+            subjid['b1maptr'] = getTRfromh5(opts.info_fname, subjid['subj'], subjid['session'], 'fmap', b1_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=genz_conv['_B1MAP-QUIET_FC_'])))
+        else:
+            subjid['vfatr'] = 21.0
+            subjid['b1maptr'] = np.array([60., 240.0])
         subjid['vfa_fas'] = opts.vfa_fas
         qt1_picks.append(subjid)
     return qt1_picks
