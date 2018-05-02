@@ -117,7 +117,7 @@ for pick in picks:
         subj2T1(moving, ref, out_fname, inargs=ants_args)
         warpfiles = [str(reg_dir/replacesuffix(mniT2comdwi.name, '_reg2dwi_1Warp.nii.gz'))]
         affine_xfm = [str(reg_dir/replacesuffix(mniT2comdwi.name, '_reg2dwi_0GenericAffine.mat'))]
-        subj2templ_applywarp(moriMNIatlas, ref, dwi_dir/appendposix(moriMNIatlas, '_reg2dwi'), warpfiles, dwi_dir, affine_xform=affine_xfm)
+        subj2templ_applywarp(moriMNIatlas, ref, appendposix(moriMNIatlas, '_reg2dwi'), warpfiles, dwi_dir, affine_xform=affine_xfm)
 
 
 
