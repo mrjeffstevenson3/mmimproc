@@ -22,11 +22,10 @@ import collections
 from collections import defaultdict
 import pandas as pd
 from nibabel.mriutils import calculate_dwell_time
-from os.path import join, isfile
-from glob import glob
+from os.path import join
+from pylabs.structural.brain_extraction import extract_brain
 from pylabs.io.images import savenii
-from pylabs.utils.files import sortedParGlob, ScanReconSort
-from pylabs.utils import pr_examdate2pydatetime, pr_examdate2BIDSdatetime, ProvenanceWrapper, getnetworkdataroot, WorkingContext, replacesuffix
+from pylabs.utils import *
 prov = ProvenanceWrapper()
 fs = Path(getnetworkdataroot())
 import dill #to use as pickle replacement of lambda dict
@@ -412,7 +411,7 @@ def brain_proc_file(opts, scandict):
         setattr(opts, 'pre_proc', False)
         scandict[outerkey][middlekey] = opts2dict(opts)
 
-        #save rms and add new niftiDict data
+        #save rms and add new niftiDict data and extract brain
         if opts.rms:
             rms_middlekey = rms_basefilename.split('.')[0]
             scandict[outerkey][rms_middlekey] = opts2dict(opts)
@@ -423,11 +422,18 @@ def brain_proc_file(opts, scandict):
             rms_dict[outerkey][rms_middlekey]['zooms'] = rmshdr.get_zooms()
             rms_dict[outerkey][rms_middlekey]['b1corr'] = True
             rms_dict[outerkey][rms_middlekey]['orig_data_shape'] = rmsimg.shape
-            mergeddicts(scandict, rms_dict)
             np.testing.assert_almost_equal(affine, rmshdr.get_qform(), 3,
                                            err_msg='output qform in rms header does not match input qform')
             nibabel.save(rmsimg, str(rms_outfilename))
-            prov.log(str(rms_outfilename), 'rms file created by parrec2nii_convert', str(infile), script=__file__)
+            rms_brain, rms_mask, rms_cropped = extract_brain(rms_outfilename)
+            rms_dict[outerkey][rms_middlekey]['rms_brain'] = rms_brain
+            rms_dict[outerkey][rms_middlekey]['rms_mask'] = rms_mask
+            rms_dict[outerkey][rms_middlekey]['rms_cropped'] = rms_cropped
+            mergeddicts(scandict, rms_dict)
+            prov.log(str(rms_outfilename), 'rms file created by parrec2nii_convert', str(infile), script=__file__, provenance=scandict)
+            prov.log(str(rms_brain), 'brain extracted rms file created by parrec2nii_convert', str(infile), script=__file__, provenance=scandict)
+            prov.log(str(rms_mask), 'mask of extracted rms brain file created by parrec2nii_convert', str(infile), script=__file__, provenance=scandict)
+
             with WorkingContext(str(fs / opts.proj)):
                 try:
                     if Path(fs / opts.proj / 'tesla_backups', Path(rms_outfilename).name).is_symlink():

@@ -65,6 +65,7 @@ subjids_picks = SubjIdPicks()
 opts = Optsd()
 # must set fas mannually when patch used. not reported in PAR file correctly.
 picks = [
+        {'patch': True, 'project': project, 'subj': 'sub-genz510', 'session': 'ses-1', 'run': '1', 'fas': [4.0, 25.0],},
         {'patch': True, 'project': project, 'subj': 'sub-genz508', 'session': 'ses-1', 'run': '1', 'fas': [4.0, 25.0],},
         {'patch': True, 'project': project, 'subj': 'sub-genz501', 'session': 'ses-1', 'run': '1', 'fas': [4.0, 25.0],},
         {'patch': True, 'project': project, 'subj': 'sub-genz308', 'session': 'ses-1', 'run': '1', 'fas': [4.0, 25.0],},
@@ -109,8 +110,13 @@ for pick in picks:
         reg_dir.mkdir(parents=True)
     with WorkingContext(reg_dir):
         moving = mniT2comdwi
-        ref = dwi_dir/''
-
+        ref = dwi_dir/'{subj}_{session}_dwi_unwarped_ec_fslfit_tensor_mf_S0.nii.gz'.format(**pick)
+        out_fname = reg_dir/replacesuffix(mniT2comdwi.name, '_reg2dwi_')
+        ants_args = ['-n 30', '-t s',  '-p f',  '-j 1', '-s 10', '-r 1']
+        subj2T1(moving, ref, out_fname, inargs=ants_args)
+        warpfiles = [str(reg_dir/replacesuffix(mniT2comdwi.name, '_reg2dwi_1Warp.nii.gz'))]
+        affine_xfm = [str(reg_dir/replacesuffix(mniT2comdwi.name, '_reg2dwi_0GenericAffine.mat'))]
+        subj2templ_applywarp(moriMNIatlas, ref, dwi_dir/appendposix(moriMNIatlas, '_reg2dwi'), warpfiles, dwi_dir, affine_xform=affine_xfm)
 
 
 

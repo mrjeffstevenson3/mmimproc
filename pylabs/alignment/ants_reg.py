@@ -50,7 +50,7 @@ def subj2templ_applywarp(moving, ref_img, outfile, warpfiles, execwdir, dims=3, 
     t = datetime.datetime.now()
     output += (str(t),)
     output += (cmd,)
-    with WorkingContext(execwdir):
+    with WorkingContext(str(execwdir)):
         print(cmd)
         output += run_subprocess(cmd)
         with open('applywarp_log.json', mode='a') as logf:
