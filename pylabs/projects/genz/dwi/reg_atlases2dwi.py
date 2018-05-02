@@ -103,6 +103,7 @@ if opts.test:
 #apply the warps
 for pick in picks:
     output = tuple()
+    print('Woking on subject {subj} session {session}'.format(**pick))
     # first warp MNI atlases to dwi space
     reg_dir = Path(fs/project/'{subj}/{session}/reg/MNI2dwi'.format(**pick))
     dwi_dir = Path(fs/project/'{subj}/{session}/dwi/{dwi_fits_dir}'.format(**merge_ftempl_dicts(dict1=pick, dict2=vars(opts))))
