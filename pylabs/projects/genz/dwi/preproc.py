@@ -78,6 +78,7 @@ fsl_fit_cmds = ['dtifit -k %(ec_dwi_clamp_fname)s -o %(fsl_fits_out)s -m %(b0_br
                 'fslmaths %(fsl_fits_out)s_tensor%(mf_str)s -tensor_decomp %(fsl_fits_out)s_tensor%(mf_str)s',
                 'imcp %(fsl_fits_out)s_tensor%(mf_str)s_L1 %(fsl_fits_out)s_tensor%(mf_str)s_AD',
                 'fslmaths %(fsl_fits_out)s_tensor%(mf_str)s_L2 -add %(fsl_fits_out)s_tensor%(mf_str)s_L3 -div 2 %(fsl_fits_out)s_tensor%(mf_str)s_RD -odt float',
+                'imcp %(fsl_fits_out)s_S0 %(fsl_fits_out)s_tensor%(mf_str)s_S0',
                 ]
 
 # slicer UKF commands and default parameters to run
@@ -299,7 +300,6 @@ for i, pick in enumerate(dwi_picks):
     with WorkingContext(str(dwipath / opts.dwi_fits_dir)):
         # do fsl dtifit cmds incl median filter etc
         result += tuple([run_subprocess(c % pick) for c in fsl_fit_cmds])
-        fsl_S0_fname =
         # do dipy fits
         tenmodel = dti.TensorModel(ec_gtab, fit_method='WLS')
         data = nib.load(pick['ec_dwi_clamp_fname']).get_data().astype(np.float64)
