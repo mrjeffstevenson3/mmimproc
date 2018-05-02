@@ -107,6 +107,10 @@ for pick in picks:
     # first warp MNI atlases to dwi space
     reg_dir = Path(fs/project/'{subj}/{session}/reg/MNI2dwi'.format(**pick))
     dwi_dir = Path(fs/project/'{subj}/{session}/dwi/{dwi_fits_dir}'.format(**merge_ftempl_dicts(dict1=pick, dict2=vars(opts))))
+    vtk_dir = Path(fs/project/'{subj}/{session}/dwi/{dwi_fits_dir}/vtk'.format(**merge_ftempl_dicts(dict1=pick, dict2=vars(opts))))
+    if not vtk_dir.is_dir():
+        vtk_dir.mkdir(parents=True)
+        # ukf_fname = Path(fs/project/'{subj}/{session}/dwi/{dwi_fits_dir}/vtk/'.format(**merge_ftempl_dicts(dict1=pick, dict2=vars(opts))))
     if not reg_dir.is_dir():
         reg_dir.mkdir(parents=True)
     with WorkingContext(reg_dir):
@@ -121,9 +125,6 @@ for pick in picks:
         mori_in_fits_dir = dwi_dir/opts.dwi_fits_dir/appendposix(moriMNIatlas.name, '_reg2dwi')
         mori_in_fits_dir.symlink_to(dwi_dir/appendposix(moriMNIatlas.name, '_reg2dwi'))
 
-
-
-
     for k, a in MNI_atlases.iteritems():
         # extract rois from atlases and make masks
         if 'mori' in k and not a['roi_list'] == None:
@@ -135,7 +136,7 @@ for pick in picks:
         elif 'stats' in k:
             make_mask_fm_tracts(atlas=str(vbm_statsdir / a['atlas_fname']), volidx=a['roi_list'], thresh=stat_thr, mask_fname=str(pylabs_atlasdir / (a['atlas_fname'].split('.')[0]+'_thr%(fn_thr)s_bin.nii.gz' % stat_thr)))
         execwdir = fs / project / dwif.split('_')[0] / dwif.split('_')[1] / 'dwi'
-        ref = execwdir / str(dwif+'_S0_brain.nii')
+
         if 'mori' in k or 'aal_motor' in k:
             mov = pylabs_atlasdir / a['atlas_fname']
             outf = execwdir / str(dwif+'_'+k+'.nii')

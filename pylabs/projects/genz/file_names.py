@@ -65,6 +65,7 @@ class Optsd(object):
             eddy_corr_dir = 'eddy_cuda_repol_v1',   # output dir for eddy
             dwi_fits_dir = 'fits_v1',
             do_ukf = True,
+            vtk_dir = 'vtk_v1',
             dwi_reg_dir = 'MNI2dwi',
             run_bedpost = True,
             dwi_bedpost_dir = 'bedpost',
@@ -96,6 +97,7 @@ class Optsd(object):
         self.eddy_corr_dir = eddy_corr_dir
         self.dwi_fits_dir = dwi_fits_dir
         self.do_ukf = do_ukf
+        self.vtk_dir = vtk_dir
         self.dwi_reg_dir = dwi_reg_dir
         self.run_bedpost = run_bedpost
         self.dwi_bedpost_dir = dwi_bedpost_dir
