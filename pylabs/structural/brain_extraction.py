@@ -27,7 +27,7 @@ fs = getnetworkdataroot()  # should pick up datadir.target
 ext = pylabs.opts.nii_fext
 
 # new universal (hopefully) brain extraction method
-def extract_brain(file, f_factor=0.3, mmzshift=0.0, mode='T1', nii=False, dwi=False, robust=False):
+def extract_brain(file, f_factor=0.3, mmzshift=0.0, mode='T1', nii=False, dwi=False, robust=False, cleanup=True):
     '''
     simplest form pass a pathlib file name and brain extraction is performed
     :param file: pathlib path and file name to be extracted
@@ -112,6 +112,13 @@ def extract_brain(file, f_factor=0.3, mmzshift=0.0, mode='T1', nii=False, dwi=Fa
     prov.log(str(replacesuffix(file, '_brain_mask'+ext)), 'generic fsl bet brain mask', str(file), script=__file__, provenance={'f factor': f_factor, 'com': list(bet_com)})
     prov.log(str(replacesuffix(file, '_cropped'+ext)), 'generic fsl bet brain mask', str(file), script=__file__,
              provenance={'f factor': f_factor, 'com': list(bet_com)})
+    if cleanup:
+        Path(replacesuffix(file, '_comroi'+ext)).unlink()
+        Path(replacesuffix(file, '_comroi.mat')).unlink()
+        Path(replacesuffix(file, '_brain_skull'+ext)).unlink()
+        Path(replacesuffix(file, '_mask'+ext)).unlink()
+        if mmzshift == 0:
+            Path(appendposix(mat_fname, '_zshift'+str(mmzshift))).unlink()
     return replacesuffix(file, '_brain'+ext), replacesuffix(file, '_brain_mask'+ext), replacesuffix(file, '_cropped'+ext)
 
 
