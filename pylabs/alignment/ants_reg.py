@@ -62,8 +62,8 @@ def subj2templ_applywarp(moving, ref_img, outfile, warpfiles, execwdir, dims=3, 
     params['args'] = args
     params['cmd'] = cmd
     params['output'] = output
-    params['ref_img'] = ref_img
-    provenance.log(outfile, 'apply WarpImageMultiTransform', moving, script=__file__, provenance=params)
+    params['ref_img'] = str(ref_img)
+    provenance.log(str(outfile), 'apply WarpImageMultiTransform', str(moving), script=__file__, provenance=params)
     return tuple([(k, v) for k, v in params.iteritems()])
 
 def subj2T1(moving, ref_img, outfile, inargs=None):
@@ -96,7 +96,7 @@ def subj2T1(moving, ref_img, outfile, inargs=None):
     params['cmd'] = cmd
     params['output'] = output
     params['ref_img'] = ref_img
-    provenance.log(str(outfile), 'antsRegistrationSyN', str(moving), script=__file__, provenance=params)
+    provenance.log(str(outfile)+'Warped.nii.gz', 'antsRegistrationSyN', str(moving), script=__file__, provenance=params)
     return
 
 def fsl2ants_affine(execwdir, ref, src, fslmatfilename):

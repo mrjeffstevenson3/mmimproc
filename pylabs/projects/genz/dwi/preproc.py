@@ -359,17 +359,17 @@ for i, pick in enumerate(dwi_picks):
                 print('starting UKF tractography at {:%Y%m%d%H%M}'.format(datetime.datetime.now()))
                 result += ('starting UKF tractography at {:%Y%m%d%H%M}'.format(datetime.datetime.now()),)
                 result += run_subprocess([ukfcmds['UKF_whbr'] % pick])
-                ukf_fname = vtk_dir/'%(ec_dwi_fname)s_mf_clamp1_UKF_whbr.vtk' % pick
+                ukf_fname = vtk_dir/Path('%(ec_dwi_fname)s_mf_clamp1_UKF_whbr.vtk' % pick).name
                 ukf_fname.symlink_to('%(ec_dwi_fname)s_mf_clamp1_UKF_whbr.vtk' % pick)
                 print('finished UKF tractography at {:%Y%m%d%H%M} starting NODDI 1 tensor'.format(datetime.datetime.now()))
                 result += ('finished UKF tractography at {:%Y%m%d%H%M} starting NODDI 1 tensor'.format(datetime.datetime.now()),)
                 result += run_subprocess([ukfcmds['NODDI1'] % pick])
-                noddi1_fname = vtk_dir/'%(ec_dwi_fname)s_mf_clamp1_whbr_1tensor_noddi.vtk' % pick
+                noddi1_fname = vtk_dir/Path('%(ec_dwi_fname)s_mf_clamp1_whbr_1tensor_noddi.vtk' % pick).name
                 noddi1_fname.symlink_to('%(ec_dwi_fname)s_mf_clamp1_whbr_1tensor_noddi.vtk' % pick)
                 print('finished NODDI 1 tensor tractography at {:%Y%m%d%H%M} starting NODDI 2 tensor'.format(datetime.datetime.now()))
                 result += ('finished NODDI 1 tensor tractography at {:%Y%m%d%H%M} starting NODDI 2 tensor'.format(datetime.datetime.now()),)
                 result += run_subprocess([ukfcmds['NODDI2'] % pick])
-                noddi2_fname = vtk_dir/'%(ec_dwi_fname)s_mf_clamp1_whbr_2tensor_noddi.vtk' % pick
+                noddi2_fname = vtk_dir/Path('%(ec_dwi_fname)s_mf_clamp1_whbr_2tensor_noddi.vtk' % pick).name
                 noddi2_fname.symlink_to('%(ec_dwi_fname)s_mf_clamp1_whbr_2tensor_noddi.vtk' % pick)
                 print('finished NODDI 2 tensor tractography at {:%Y%m%d%H%M}'.format(datetime.datetime.now()))
                 result += ('finished NODDI 2 tensor tractography at {:%Y%m%d%H%M}'.format(datetime.datetime.now()),)

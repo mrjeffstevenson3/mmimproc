@@ -1,8 +1,10 @@
 # todo: recode to exctract tracts from UKF whole brain.
+import pylabs
+
 import os, inspect
 from pathlib import *
 import datetime
-import pylabs
+
 from pylabs.correlation.atlas import make_mask_fm_atlas_parts, make_mask_fm_tracts
 from pylabs.alignment.ants_reg import subj2templ_applywarp, subj2T1
 from pylabs.projects.genz.file_names import get_dwi_names, Optsd, project, SubjIdPicks, get_vfa_names, merge_ftempl_dicts
@@ -13,6 +15,16 @@ provenance = ProvenanceWrapper()
 #setup paths and file names to process
 fs = Path(getnetworkdataroot())
 slicer_path = getslicercmd(ver='stable', stable_linux_ver='Slicer-4.8.1-linux-amd64')
+
+mori_atlasd = {
+    'mori_LeftPostIntCap-35': {'vtk_fname': '{subj}_{session}_ukf_mori_LeftPostIntCap-35.vtk', 'roi_list': [35], 'Sl_cmd': 'FiberBundleLabelSelect '},
+    'mori_RightPostIntCap-123': {'vtk_fname': '{subj}_{session}_ukf_mori_RightPostIntCap-123.vtk', 'roi_list': [123], 'Sl_cmd': 'FiberBundleLabelSelect '},
+    'mori_CC': {'vtk_fname': '{subj}_{session}_ukf_mori_bilatCC-52to54-140to142.vtk', 'roi_list': [52, 53, 54, 140, 141, 142], 'Sl_cmd': 'FiberBundleLabelSelect '},
+    'mori_Left_IFOF-45-47': {'vtk_fname': '{subj}_{session}_ukf_mori_Left_IFOF-45-47.vtk', 'roi_list': [45, 47, 36], 'Sl_cmd': 'FiberBundleLabelSelect '},
+    'mori_Right_IFOF-133-135': {'vtk_fname': '{subj}_{session}_ukf_mori_Right_IFOF-133-135.vtk', 'roi_list': [133, 135, 124], 'Sl_cmd': 'FiberBundleLabelSelect '},
+    'mori_Left_SLF-43': {'vtk_fname': '{subj}_{session}_ukf_mori_Left_SLF-43.vtk', 'roi_list': [43], 'Sl_cmd': 'FiberBundleLabelSelect '},
+    'mori_Right_SLF-131': {'vtk_fname': '{subj}_{session}_ukf_mori_Right_SLF-131.vtk', 'roi_list': [131], 'Sl_cmd': 'FiberBundleLabelSelect '},
+    }
 
 MNI_atlases = {'mori': {'atlas_fname': 'JHU_MNI_SS_WMPM_Type_I_matched.nii.gz', 'roi_list': None, 'Sl_cmd': None},
                 'aal_motor': {'atlas_fname': 'aal_1mm_motorcortex.nii', 'roi_list': [1, 2, 3, 4, 7, 8, 19, 20, 23, 24, 57, 58, 59, 60, 61, 62, 63, 64, 69, 70], 'Sl_cmd': 'ModelMaker -l 1 -n '},
@@ -107,27 +119,40 @@ for pick in picks:
     # first warp MNI atlases to dwi space
     reg_dir = Path(fs/project/'{subj}/{session}/reg/MNI2dwi'.format(**pick))
     dwi_dir = Path(fs/project/'{subj}/{session}/dwi/{dwi_fits_dir}'.format(**merge_ftempl_dicts(dict1=pick, dict2=vars(opts))))
-    vtk_dir = Path(fs/project/'{subj}/{session}/dwi/{dwi_fits_dir}/vtk'.format(**merge_ftempl_dicts(dict1=pick, dict2=vars(opts))))
+    vtk_dir = Path(fs/project/'{subj}/{session}/dwi/{vtk_dir}'.format(**merge_ftempl_dicts(dict1=pick, dict2=vars(opts))))
     if not vtk_dir.is_dir():
         vtk_dir.mkdir(parents=True)
         # ukf_fname = Path(fs/project/'{subj}/{session}/dwi/{dwi_fits_dir}/vtk/'.format(**merge_ftempl_dicts(dict1=pick, dict2=vars(opts))))
     if not reg_dir.is_dir():
         reg_dir.mkdir(parents=True)
     with WorkingContext(reg_dir):
-        moving = mniT2comdwi
+        moving = MNI1mm_T2_brain_dwi
         ref = dwi_dir/'{subj}_{session}_dwi_unwarped_ec_fslfit_tensor_mf_S0.nii.gz'.format(**pick)
-        out_fname = reg_dir/replacesuffix(mniT2comdwi.name, '_reg2dwi_')
+        out_fname = reg_dir/replacesuffix(MNI1mm_T2_brain_dwi.name, '_reg2dwi_')
         ants_args = ['-n 30', '-t s',  '-p f',  '-j 1', '-s 10', '-r 1']
         subj2T1(moving, ref, out_fname, inargs=ants_args)
-        warpfiles = [str(reg_dir/replacesuffix(mniT2comdwi.name, '_reg2dwi_1Warp.nii.gz'))]
-        affine_xfm = [str(reg_dir/replacesuffix(mniT2comdwi.name, '_reg2dwi_0GenericAffine.mat'))]
-        subj2templ_applywarp(moriMNIatlas, ref, appendposix(moriMNIatlas.name, '_reg2dwi'), warpfiles, dwi_dir, affine_xform=affine_xfm)
-        mori_in_fits_dir = dwi_dir/opts.dwi_fits_dir/appendposix(moriMNIatlas.name, '_reg2dwi')
-        mori_in_fits_dir.symlink_to(dwi_dir/appendposix(moriMNIatlas.name, '_reg2dwi'))
+        warpfiles = [str(reg_dir/replacesuffix(MNI1mm_T2_brain_dwi.name, '_reg2dwi_1Warp.nii.gz'))]
+        affine_xfm = [str(reg_dir/replacesuffix(MNI1mm_T2_brain_dwi.name, '_reg2dwi_0GenericAffine.mat'))]
+        output += subj2templ_applywarp(moriMNIatlas, ref, dwi_dir/appendposix(moriMNIatlas.name, '_reg2dwi'), warpfiles, dwi_dir, affine_xform=affine_xfm)
+        mori_in_vtk_dir = vtk_dir/appendposix(moriMNIatlas.name, '_reg2dwi')
+        mori_in_vtk_dir.symlink_to(dwi_dir/appendposix(moriMNIatlas.name, '_reg2dwi'))
+        nii2nrrd(mori_in_vtk_dir, replacesuffix(mori_in_vtk_dir, '.nrrd'), ismask=True)
 
-    for k, a in MNI_atlases.iteritems():
-        # extract rois from atlases and make masks
-        if 'mori' in k and not a['roi_list'] == None:
+    with WorkingContext(vtk_dir):
+        for k, a in mori_atlasd.iteritems():
+            cmd = str(slicer_path)+a['Sl_cmd']+'-p '+','.join([str(x) for x in a['roi_list']])+' '+str(replacesuffix(mori_in_vtk_dir, '.nrrd'))
+            cmd += ' '+'{subj}_{session}_dwi-topup_64dir-3sh-800-2000_1_topdn_unwarped_ec_mf_clamp1_UKF_whbr.vtk'.format(**pick)
+            cmd += ' '+'{subj}_{session}_dwi-topup_64dir-3sh-800-2000_1_topdn_unwarped_ec_mf_clamp1_UKF_whbr_'.format(**pick)+k+'.vtk'
+
+
+
+
+
+            # extract rois from atlases and make masks
+            if 'mori_' in k:
+                make_mask_fm_atlas_parts(atlas=str(mori_in_vtk_dir), roi_list=a['roi_list'], mask_fname=str(a['atlas_fname']), makenrrd=True)
+
+
             make_mask_fm_atlas_parts(atlas=str(moriMNIatlas), roi_list=a['roi_list'], mask_fname=str(pylabs_atlasdir / a['atlas_fname']))
         elif 'JHU_' in k:
             make_mask_fm_tracts(atlas=str(JHUtracts_prob_atlas), volidx=a['roi_list'], thresh=JHU_thr, mask_fname=str(pylabs_atlasdir / (a['atlas_fname'] % JHU_thr)))
