@@ -1,4 +1,5 @@
 # todo: fssurf2subj and fslabel2subj
+# todo: antsreg general purpose registration
 import os, subprocess
 from pathlib import *
 from os.path import join
@@ -13,6 +14,7 @@ regd = { # first key is reg_fn called inside antsreg function
         }
 
 def antsreg(project, reg_fn, subjects, args=['-n 12'] ,quick=False):
+    """ incomplete """
     # make antscmd_spgr to reg list of spgr to 1 ref.
     antsRegistrationSyN = get_antsregsyn_cmd(quick)
     spgr_fntempl = eval(regd[reg_fn]['inftempl'] % {'project': project})

@@ -81,6 +81,7 @@ class Optsd(object):
             reg_qt12dwi = '{fs}/{project}/{subj}/{session}/reg/qt12dwi',
             JHU_thr = 5,
             stat_thr = 0.95,
+            ants_args = ['-n 30', '-t s', '-p f', '-j 1', '-s 10', '-r 1']
             ):
         # make them accessible as obj.var as well as dict
         self.project = project
@@ -113,6 +114,7 @@ class Optsd(object):
         self.reg_qt12dwi = reg_qt12dwi
         self.JHU_thr = JHU_thr
         self.stat_thr = stat_thr
+        self.ants_args = ants_args
 
 """
 # other future stages to run to move to opts settings

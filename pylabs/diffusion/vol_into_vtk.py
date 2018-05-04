@@ -6,6 +6,7 @@ import shutil
 import numpy as np
 import nibabel as nib
 from pylabs.utils import *
+popts = PylabsOptions()
 
 def inject_vol_data_into_vtk(working_dir, vol_fname, vtk_infname, vtk_outfname):
     results = ( '',)
@@ -31,7 +32,8 @@ def inject_vol_data_into_vtk(working_dir, vol_fname, vtk_infname, vtk_outfname):
         shutil.copy(str(aal_channel), 'channel.vtk')
         results += run_subprocess([str(vol2fiber)])
         Path('fnew.vtk').rename(vtk_outfname)
-        print("({})".format(", ".join(results)))
+        if popts.verbose:
+            print("({})".format(", ".join(results)))
     return
 
 '''

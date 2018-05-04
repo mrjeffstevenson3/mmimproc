@@ -1,5 +1,5 @@
 import pylabs, os
-#pylabs.opts.fslmultifilequit = 'FALSE'
+#pylabs.popts.fslmultifilequit = 'FALSE'
 os.environ["FSLMULTIFILEQUIT"] = 'FALSE'
 import socket, inspect, platform
 import petname
