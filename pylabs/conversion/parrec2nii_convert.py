@@ -430,9 +430,9 @@ def brain_proc_file(opts, scandict):
             rms_dict[outerkey][rms_middlekey]['rms_mask'] = rms_mask
             rms_dict[outerkey][rms_middlekey]['rms_cropped'] = rms_cropped
             mergeddicts(scandict, rms_dict)
-            prov.log(str(rms_outfilename), 'rms file created by parrec2nii_convert', str(infile), script=__file__, provenance=scandict)
-            prov.log(str(rms_brain), 'brain extracted rms file created by parrec2nii_convert', str(infile), script=__file__, provenance=scandict)
-            prov.log(str(rms_mask), 'mask of extracted rms brain file created by parrec2nii_convert', str(infile), script=__file__, provenance=scandict)
+            # prov.log(str(rms_outfilename), 'rms file created by parrec2nii_convert', str(infile), script=__file__, provenance=scandict)
+            # prov.log(str(rms_brain), 'brain extracted rms file created by parrec2nii_convert', str(infile), script=__file__, provenance=scandict)
+            # prov.log(str(rms_mask), 'mask of extracted rms brain file created by parrec2nii_convert', str(infile), script=__file__, provenance=scandict)
 
             with WorkingContext(str(fs / opts.proj)):
                 try:
