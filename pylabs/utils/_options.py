@@ -10,6 +10,7 @@ class PylabsOptions(object):
         rthreshpos (float): minimum positive r value for plot display. Default=0.7
         rthreshneg (float): minimum negative r value for plot display. Default=-0.7
     """
+    verbose = True
     p_thresh = 0.95
     r_thresh_pos = 0.7
     r_thresh_neg = -0.7

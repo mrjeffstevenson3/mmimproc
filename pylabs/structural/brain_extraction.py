@@ -1,5 +1,5 @@
 # todo: make ants version that works with dti cropped topup_dn_mean_brain images.
-# extract brain and mask function. now uses pylabs.opts to set file ext
+# extract brain and mask function. now uses pylabs.popts to set file ext
 import pylabs
 pylabs.datadir.target = 'jaba'
 from pathlib import *
@@ -15,16 +15,16 @@ from pylabs.io.images import savenii, gz2nii
 from pylabs.utils import *
 from pylabs.utils.paths import mnicom, mnimask, mniT2com
 from nipype.interfaces import fsl
-flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo', output_type=pylabs.opts.nii_ftype)
+flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo', output_type=pylabs.popts.nii_ftype)
 if nipype.__version__ == '0.12.0':
-    applyxfm = fsl.ApplyXfm(interp='nearestneighbour', output_type=pylabs.opts.nii_ftype)
+    applyxfm = fsl.ApplyXfm(interp='nearestneighbour', output_type=pylabs.popts.nii_ftype)
 else:
-    applyxfm = fsl.ApplyXFM(interp='nearestneighbour', output_type=pylabs.opts.nii_ftype)
+    applyxfm = fsl.ApplyXFM(interp='nearestneighbour', output_type=pylabs.popts.nii_ftype)
 
-bet = fsl.BET(output_type=pylabs.opts.nii_ftype)
+bet = fsl.BET(output_type=pylabs.popts.nii_ftype)
 prov = ProvenanceWrapper()
 fs = getnetworkdataroot()  # should pick up datadir.target
-ext = pylabs.opts.nii_fext
+ext = pylabs.popts.nii_fext
 
 # new universal (hopefully) brain extraction method
 def extract_brain(file, f_factor=0.3, mmzshift=0.0, mode='T1', nii=False, dwi=False, robust=False, cleanup=True):
@@ -40,7 +40,7 @@ def extract_brain(file, f_factor=0.3, mmzshift=0.0, mode='T1', nii=False, dwi=Fa
     :return: 
     '''
     # remove ext if .nii or .nii.gz output_type='NIFTI_GZ'
-    ext = pylabs.opts.nii_fext
+    ext = pylabs.popts.nii_fext
     file = Path(file)
     if not file.is_file():
         raise ValueError(str(file)+' file is not found. please check')

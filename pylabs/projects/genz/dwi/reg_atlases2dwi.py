@@ -10,6 +10,7 @@ from pylabs.alignment.ants_reg import subj2templ_applywarp, subj2T1
 from pylabs.projects.genz.file_names import get_dwi_names, Optsd, project, SubjIdPicks, get_vfa_names, merge_ftempl_dicts
 from pylabs.utils import *
 from pylabs.conversion.nifti2nrrd import nii2nrrd
+from pylabs.diffusion.vol_into_vtk import inject_vol_data_into_vtk
 #set up provenance
 provenance = ProvenanceWrapper()
 #setup paths and file names to process
@@ -91,6 +92,8 @@ if dwi_picks == qt1_picks:
 else:
     raise ValueError('dwi and qt1 picks dict not aligned. stopping.')
 
+opts.inject_qt1 = True
+
 opts.test = True
 if opts.test:
     i = 0
@@ -125,20 +128,33 @@ for pick in picks:
         # ukf_fname = Path(fs/project/'{subj}/{session}/dwi/{dwi_fits_dir}/vtk/'.format(**merge_ftempl_dicts(dict1=pick, dict2=vars(opts))))
     if not reg_dir.is_dir():
         reg_dir.mkdir(parents=True)
-    with WorkingContext(reg_dir):
-        moving = MNI1mm_T2_brain_dwi
-        ref = dwi_dir/'{subj}_{session}_dwi_unwarped_ec_fslfit_tensor_mf_S0.nii.gz'.format(**pick)
-        out_fname = reg_dir/replacesuffix(MNI1mm_T2_brain_dwi.name, '_reg2dwi_')
-        ants_args = ['-n 30', '-t s',  '-p f',  '-j 1', '-s 10', '-r 1']
-        subj2T1(moving, ref, out_fname, inargs=ants_args)
-        warpfiles = [str(reg_dir/replacesuffix(MNI1mm_T2_brain_dwi.name, '_reg2dwi_1Warp.nii.gz'))]
-        affine_xfm = [str(reg_dir/replacesuffix(MNI1mm_T2_brain_dwi.name, '_reg2dwi_0GenericAffine.mat'))]
-        output += subj2templ_applywarp(moriMNIatlas, ref, dwi_dir/appendposix(moriMNIatlas.name, '_reg2dwi'), warpfiles, dwi_dir, affine_xform=affine_xfm)
-        mori_in_vtk_dir = vtk_dir/appendposix(moriMNIatlas.name, '_reg2dwi')
-        mori_in_vtk_dir.symlink_to(dwi_dir/appendposix(moriMNIatlas.name, '_reg2dwi'))
-        nii2nrrd(mori_in_vtk_dir, replacesuffix(mori_in_vtk_dir, '.nrrd'), ismask=True)
+    mori_in_vtk_dir = vtk_dir / appendposix(moriMNIatlas.name, '_reg2dwi')
+    ref = dwi_dir / '{subj}_{session}_dwi_unwarped_ec_fslfit_tensor_mf_S0.nii.gz'.format(**pick)
+    if not (replacesuffix(mori_in_vtk_dir, '.nrrd')).is_file():
+        with WorkingContext(reg_dir):
+            moving = MNI1mm_T2_brain_dwi
+            out_fname = reg_dir/replacesuffix(MNI1mm_T2_brain_dwi.name, '_reg2dwi_')
+            subj2T1(moving, ref, out_fname, inargs=opts.ants_args)
+            warpfiles = [str(reg_dir/replacesuffix(MNI1mm_T2_brain_dwi.name, '_reg2dwi_1Warp.nii.gz'))]
+            affine_xfm = [str(reg_dir/replacesuffix(MNI1mm_T2_brain_dwi.name, '_reg2dwi_0GenericAffine.mat'))]
+            output += subj2templ_applywarp(moriMNIatlas, ref, dwi_dir/appendposix(moriMNIatlas.name, '_reg2dwi'), warpfiles, dwi_dir, affine_xform=affine_xfm)
+            mori_in_vtk_dir.symlink_to(dwi_dir/appendposix(moriMNIatlas.name, '_reg2dwi'))
+            nii2nrrd(mori_in_vtk_dir, replacesuffix(mori_in_vtk_dir, '.nrrd'), ismask=True)
 
     with WorkingContext(vtk_dir):
+        if opts.inject_qt1:
+            qt1_fname = fs/project/'{subj}/{session}/qt1/{subj}_{session}_vfa_qt1_b1corrmf_vlinregr-fit_clamped.nii'.format(**pick)
+            vol_in = '{subj}_{session}_vfa_qt1_b1corrmf_vlinregr-fit_clamped_reg2dwi_Warped.nii.gz'
+            if not qt1_fname.is_file():
+                raise ValueError('cannot find qt1 file '+str(qt1_fname))
+            if not Path(vol_in).is_file():
+                print('moving qt1 to dwi space.')
+                qt1_fnamevtk = vtk_dir/'{subj}_{session}_vfa_qt1_b1corrmf_vlinregr-fit_clamped.nii'.format(**pick)
+                qt1_fnamevtk.symlinc_to(qt1_fname)
+                subj2T1(qt1_fnamevtk, ref, replacesuffix(qt1_fname.name, '_reg2dwi_'), inargs=opts.ants_args)
+            vtk_in = '{subj}_{session}_dwi-topup_64dir-3sh-800-2000_1_topdn_unwarped_ec_mf_clamp1_UKF_whbr.vtk'
+            vtk_out = appendposix(vtk_in, '_qt1-inj')
+            inject_vol_data_into_vtk(Path('.'), vol_in, vtk_in, vtk_out)
         for k, a in mori_atlasd.iteritems():
             cmd = str(slicer_path)+a['Sl_cmd']+'-p '+','.join([str(x) for x in a['roi_list']])+' '+str(replacesuffix(mori_in_vtk_dir, '.nrrd'))
             cmd += ' '+'{subj}_{session}_dwi-topup_64dir-3sh-800-2000_1_topdn_unwarped_ec_mf_clamp1_UKF_whbr.vtk'.format(**pick)
