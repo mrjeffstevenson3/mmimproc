@@ -1,5 +1,6 @@
 # todo: fix brain extraction by increasing z dim (and maybe xy) to accomodate brain stem and cerebellum of dwi or pre-crop MNI before reg
 # todo: add timestamp to status updates
+# todo: add dipy save evals and evecs and convert to AFQ dt6.mat
 # first set global root data directory
 import pylabs
 pylabs.datadir.target = 'jaba'
@@ -36,7 +37,8 @@ from pylabs.utils import ProvenanceWrapper
 prov = ProvenanceWrapper()
 
 # project, subject, and file objects to work on
-from pylabs.projects.genz.file_names import project, SubjIdPicks, get_dwi_names, Optsd
+from pylabs.projects.genz.file_names import project, SubjIdPicks, get_dwi_names, Optsd, merge_ftempl_dicts
+from pylabs.conversion.brain_convert import genz_conv
 
 #setup paths and file names to process
 fs = Path(getnetworkdataroot())
@@ -147,7 +149,7 @@ pick dict guide:
 dwi_picks =  get_dwi_names(subjids_picks)
 
 if opts.test:
-    i = 0
+    i = 2
     dwi_picks = [dwi_picks[i]]
 # run conversion if needed
 if opts.convert:
@@ -335,6 +337,18 @@ for i, pick in enumerate(dwi_picks):
         savenii(ev1, affine, '{dipy_fits_out}_mf_AD.nii'.format(**pick))
         savenii(evals[1:].mean(0), affine, '{dipy_fits_out}_mf_RD.nii'.format(**pick))
         savenii(mode(fit_quad_form_mf), affine, '{dipy_fits_out}_mf_MO.nii'.format(**pick), minmax=(-1, 1))
+        # make AFQ dt6 file out of fsl
+        mempkey = [k for k in genz_conv.keys() if 'MEMP_' in k][0]
+        t1_fname = fs/project/('{subj}/{session}/anat/'+genz_conv[mempkey]['fname_template']).format(**merge_ftempl_dicts(
+            dict1=genz_conv[mempkey], dict2={'subj': 'sub-genz501', 'session': 'ses-1', 'run': 1, 'scan_info': 'ti1200_rms'}))
+        t1_fname = replacesuffix(t1_fname, '_brain.nii.gz')
+        if t1_fname.is_file():
+            fsl_S0_fname = '{subj}_{session}_dwi_unwarped_ec_fslfit_tensor_mf_S0.nii.gz'.format(**pick)
+            fsl_dt6_fname = '{subj}_{session}_dwi_unwarped_ec_fslfit_tensor_mf_dt6.mat'.format(**pick)
+            mcmd = 'matlab -nodesktop -nodisplay -nosplash -r "{0}"'
+            cmd = "addpath('{path}'); dtiMakeDt6FromFsl('{S0}', '{t1}', '{outf}'); quit".format(
+                **{'S0': fsl_S0_fname, 't1': str(t1_fname), 'outf': fsl_dt6_fname, 'path': pylabs_dir/'pylabs/diffusion'})
+            result += run_subprocess([mcmd.format(cmd)])
 
         # do denoise and dki
         sigma = estimate_sigma(data, N=4)
@@ -349,6 +363,7 @@ for i, pick in enumerate(dwi_picks):
         savenii(dkifit.mk(-3, 3), affine, '{dipy_dki_fits_out}_MK.nii'.format(**pick), minmax=(-3, 3))
         savenii(dkifit.rk(-3, 3), affine, '{dipy_dki_fits_out}_RK.nii'.format(**pick), minmax=(-3, 3))
         savenii(dkifit.ak(-3, 3), affine, '{dipy_dki_fits_out}_AK.nii'.format(**pick), minmax=(-3, 3))
+        # save evals and evecs for AFQ...
 
     if opts.do_ukf:
         vtk_dir = dwipath/opts.vtk_dir

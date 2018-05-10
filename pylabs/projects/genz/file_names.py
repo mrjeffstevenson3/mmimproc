@@ -52,7 +52,7 @@ class Optsd(object):
     def __init__(self,
             # define project variables here. will become dict using opts = Optsd; vars(opts).
             project = 'genz',
-            test = False,
+            test = True,
             overwrite = True,
             convert = False,
             spm_thresh = 0.80,

@@ -117,6 +117,20 @@ def getbctpath():
         bctpath = join(expanduser('~'), 'Software', 'BCT', '2017_01_15_BCT')
     return bctpath
 
+def getafqpath():
+    hostlist = ['redshirt.ilabs.uw.edu', 'uhora.ilabs.uw.edu', 'scotty.ilabs.uw.edu', 'sulu.ilabs.uw.edu', 'redshirt', 'uhora', 'scotty', 'sulu']
+    hostname = socket.gethostname()
+    if hostname in hostlist:
+        afqpath = join(expanduser('~'), 'Software', 'AFQ')
+    return afqpath
+
+def getvistasoftpath():
+    hostlist = ['redshirt.ilabs.uw.edu', 'uhora.ilabs.uw.edu', 'scotty.ilabs.uw.edu', 'sulu.ilabs.uw.edu', 'redshirt', 'uhora', 'scotty', 'sulu']
+    hostname = socket.gethostname()
+    if hostname in hostlist:
+        vistasoftpath = join(expanduser('~'), 'Software', 'vistasoft')
+    return vistasoftpath
+
 def test4working_gpu():
     hostname = socket.gethostname()
     if hostname in working_gpus:
