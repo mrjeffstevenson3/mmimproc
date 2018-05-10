@@ -126,8 +126,6 @@ templating = False
 
 opts = Optsd()
 
-qc_str = opts.dwi_pass_qc
-
 # for partial substitutions
 fname_templ_dd = {'subj': '{subj}', 'session': '{session}', 'scan_name': '{scan_name}', 'scan_info': '{scan_info}',
                   'run': '{run}', 'fa': '{fa}', 'tr': '{tr}', 'side': '{side}', 'te': '{te}', 'dyn': '{dyn}',
