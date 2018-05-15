@@ -12,8 +12,6 @@ import pylabs
 pylabs.datadir.target = 'jaba'
 from pathlib import *
 import numpy as np
-import socket
-from collections import defaultdict
 from pylabs.utils import removesuffix, getnetworkdataroot
 from pylabs.conversion.brain_convert import img_conv, genz_conv, is_empty
 from pylabs.io.mixed import getTRfromh5
@@ -24,26 +22,6 @@ project = 'genz'
 
 class SubjIdPicks(object):
     pass
-
-
-
-class Opts(object):
-    project = 'genz'
-    spm_thresh = 0.85
-    fsl_thresh = 0.23
-    dwi_pass_qc = '_passqc'
-    info_fname = fs / project / ('all_' + project + '_info.h5')
-    dwi_fname_excep = ['_DWI64_3SH_B0_B800_B2000_TOPUP_TE101_1p8mm3_', '_DWI6_B0_TOPUP_TE101_1p8mm3_', '_DWI6_B0_TOPDN_TE101_1p8mm3_']
-    gaba_te = 80
-    gaba_dyn = 120
-    gaba_ftempl = '{subj}_WIP_{side}GABAMM_TE{te}_{dyn}DYN_{wild}_raw_{type}.SDAT'
-    vfa_fas = [4.0, 25.0]
-    spgr_tr = '21p0'
-    gaba_te = 80
-    gaba_dyn = 120
-    genz_conv = img_conv[project]
-
-opts = Opts()
 
 class Optsd(object):
     """
@@ -226,6 +204,7 @@ def get_vfa_names(subjids_picks):
             subjid['vfatr'] = getTRfromh5(opts.info_fname, subjid['subj'], subjid['session'], 'qt1', vfa_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=genz_conv['_VFA_FA4-25_QUIET'])))
             subjid['b1maptr'] = getTRfromh5(opts.info_fname, subjid['subj'], subjid['session'], 'fmap', b1_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=genz_conv['_B1MAP-QUIET_FC_'])))
         else:
+            print('cannot find all_genz_info.h5 file. using fixed defaults: vfa TR=21.0 and b1map TR = 60.0 and 240.0')
             subjid['vfatr'] = 21.0
             subjid['b1maptr'] = np.array([60., 240.0])
         subjid['vfa_fas'] = opts.vfa_fas

@@ -340,7 +340,7 @@ for i, pick in enumerate(dwi_picks):
         # make AFQ dt6 file out of fsl
         mempkey = [k for k in genz_conv.keys() if 'MEMP_' in k][0]
         t1_fname = fs/project/('{subj}/{session}/anat/'+genz_conv[mempkey]['fname_template']).format(**merge_ftempl_dicts(
-            dict1=genz_conv[mempkey], dict2={'subj': 'sub-genz501', 'session': 'ses-1', 'run': 1, 'scan_info': 'ti1200_rms'}))
+            dict1=genz_conv[mempkey], dict2=pick, dict3={'scan_info': 'ti1200_rms'}))
         t1_fname = replacesuffix(t1_fname, '_brain.nii.gz')
         if t1_fname.is_file():
             fsl_S0_fname = '{subj}_{session}_dwi_unwarped_ec_fslfit_tensor_mf_S0.nii.gz'.format(**pick)
