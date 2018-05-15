@@ -420,10 +420,12 @@ for i, pick in enumerate(dwi_picks):
                     result += run_subprocess(['bedpostx bedpost -n 3 --model=2'])
 
     print('finished dwi preproc for {project} subject {subj} session {session}'.format(**pick))
-    print('ending time for pipeline is {:%Y %m %d %H:%M}'.format(datetime.datetime.now()))
+    print('ending time for this subjects pipeline is {:%Y %m %d %H:%M}'.format(datetime.datetime.now()))
     print('total elapsed time is '+str(datetime.timedelta(seconds=(time.time() - start_time))))
-    result += ('ending time for pipeline is {:%Y %m %d %H:%M}'.format(datetime.datetime.now()),)
+    result += ('ending time for this subjects pipeline is {:%Y %m %d %H:%M}'.format(datetime.datetime.now()),)
     result += ('total elapsed time is '+str(datetime.timedelta(seconds=(time.time() - start_time))),)
+
+
 ####################### end here for now
 '''
 
