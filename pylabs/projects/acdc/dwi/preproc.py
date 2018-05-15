@@ -7,6 +7,7 @@ pylabs.datadir.target = 'jaba'
 import os, itertools
 from pathlib import *
 from collections import defaultdict
+import time
 import nipype
 from nipype.interfaces import fsl
 import nibabel as nib
@@ -55,7 +56,7 @@ if not dwi_qc:
 subjids_picks = SubjIdPicks()
 # list of subject ids to operate on
 picks = [
-         {'subj': 'sub-acdc124', 'session': 'ses-1', 'run': '1', },  # subject selection info
+         {'subj': 'sub-acdc105', 'session': 'ses-1', 'run': '1', },  # subject selection info
          ]
 
 setattr(subjids_picks, 'subjids', picks)
@@ -152,9 +153,14 @@ if opts.test:
 if opts.convert:
     subjects = [x['subj'] for x in subjids_picks.subjids]
     niftiDict, niftiDF = conv_subjs(project, subjects)
-
+result = ('starting time for dwi preproc pipeline is {:%Y %m %d %H:%M}'.format(datetime.datetime.now()),)
 for i, pick in enumerate(dwi_picks):
-    result = ()
+    start_time = time.time()
+    pick['project'] = project
+    print('working on dwi preproc for {project} subject {subj} session {session}'.format(**pick))
+    print('starting time for pipeline is {:%Y %m %d %H:%M}'.format(datetime.datetime.now()))
+    result += ('working on dwi preproc for {project} subject {subj} session {session}'.format(**pick),)
+    result += ('starting time for pipeline is {:%Y %m %d %H:%M}'.format(datetime.datetime.now()),)
     dwipath = fs / project / '{subj}/{session}/dwi'.format(**pick)
     regpath = fs / project / '{subj}/{session}/reg'.format(**pick) / opts.dwi_reg_dir
     ec_dir = dwipath / opts.eddy_corr_dir
@@ -368,23 +374,23 @@ for i, pick in enumerate(dwi_picks):
             vtk_dir.mkdir(parents=True)
         try:
             with WorkingContext(str(ec_dir)):
-                print('starting UKF tractography at {:%Y%m%d%H%M}'.format(datetime.datetime.now()))
-                result += ('starting UKF tractography at {:%Y%m%d%H%M}'.format(datetime.datetime.now()),)
+                print('starting UKF tractography at {:%Y %m %d %H:%M}'.format(datetime.datetime.now()))
+                result += ('starting UKF tractography at {:%Y %m %d %H:%M}'.format(datetime.datetime.now()),)
                 result += run_subprocess([ukfcmds['UKF_whbr'] % pick])
                 ukf_fname = vtk_dir/Path('%(ec_dwi_fname)s_mf_clamp1_UKF_whbr.vtk' % pick).name
                 ukf_fname.symlink_to('%(ec_dwi_fname)s_mf_clamp1_UKF_whbr.vtk' % pick)
-                print('finished UKF tractography at {:%Y%m%d%H%M} starting NODDI 1 tensor'.format(datetime.datetime.now()))
-                result += ('finished UKF tractography at {:%Y%m%d%H%M} starting NODDI 1 tensor'.format(datetime.datetime.now()),)
+                print('finished UKF tractography at {:%Y %m %d %H:%M} starting NODDI 1 tensor'.format(datetime.datetime.now()))
+                result += ('finished UKF tractography at {:%Y %m %d %H:%M} starting NODDI 1 tensor'.format(datetime.datetime.now()),)
                 result += run_subprocess([ukfcmds['NODDI1'] % pick])
                 noddi1_fname = vtk_dir/Path('%(ec_dwi_fname)s_mf_clamp1_whbr_1tensor_noddi.vtk' % pick).name
                 noddi1_fname.symlink_to('%(ec_dwi_fname)s_mf_clamp1_whbr_1tensor_noddi.vtk' % pick)
-                print('finished NODDI 1 tensor tractography at {:%Y%m%d%H%M} starting NODDI 2 tensor'.format(datetime.datetime.now()))
-                result += ('finished NODDI 1 tensor tractography at {:%Y%m%d%H%M} starting NODDI 2 tensor'.format(datetime.datetime.now()),)
+                print('finished NODDI 1 tensor tractography at {:%Y %m %d %H:%M} starting NODDI 2 tensor'.format(datetime.datetime.now()))
+                result += ('finished NODDI 1 tensor tractography at {:%Y %m %d %H:%M} starting NODDI 2 tensor'.format(datetime.datetime.now()),)
                 result += run_subprocess([ukfcmds['NODDI2'] % pick])
                 noddi2_fname = vtk_dir/Path('%(ec_dwi_fname)s_mf_clamp1_whbr_2tensor_noddi.vtk' % pick).name
                 noddi2_fname.symlink_to('%(ec_dwi_fname)s_mf_clamp1_whbr_2tensor_noddi.vtk' % pick)
-                print('finished NODDI 2 tensor tractography at {:%Y%m%d%H%M}'.format(datetime.datetime.now()))
-                result += ('finished NODDI 2 tensor tractography at {:%Y%m%d%H%M}'.format(datetime.datetime.now()),)
+                print('finished NODDI 2 tensor tractography at {:%Y %m %d %H:%M}'.format(datetime.datetime.now()))
+                result += ('finished NODDI 2 tensor tractography at {:%Y %m %d %H:%M}'.format(datetime.datetime.now()),)
         except:
             print('ukf failed to run with {slicer}'.format(**{'slicer': slicer_path}))
 
@@ -413,7 +419,11 @@ for i, pick in enumerate(dwi_picks):
                 else:
                     result += run_subprocess(['bedpostx bedpost -n 3 --model=2'])
 
-
+    print('finished dwi preproc for {project} subject {subj} session {session}'.format(**pick))
+    print('ending time for pipeline is {:%Y %m %d %H:%M}'.format(datetime.datetime.now()))
+    print('total elapsed time is '+str(datetime.timedelta(seconds=(time.time() - start_time))))
+    result += ('ending time for pipeline is {:%Y %m %d %H:%M}'.format(datetime.datetime.now()),)
+    result += ('total elapsed time is '+str(datetime.timedelta(seconds=(time.time() - start_time))),)
 ####################### end here for now
 '''
 
