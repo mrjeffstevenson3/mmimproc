@@ -424,6 +424,7 @@ for i, pick in enumerate(dwi_picks):
     print('total elapsed time is '+str(datetime.timedelta(seconds=(time.time() - start_time))))
     result += ('ending time for this subjects pipeline is {:%Y %m %d %H:%M}'.format(datetime.datetime.now()),)
     result += ('total elapsed time is '+str(datetime.timedelta(seconds=(time.time() - start_time))),)
+    print(result)
 
 
 ####################### end here for now
