@@ -5,7 +5,7 @@
 import pylabs
 pylabs.datadir.target = 'jaba'
 from pathlib import *
-from collections import defaultdict
+import numpy as np
 from pylabs.io.mixed import getTRfromh5
 from pylabs.utils import *
 from pylabs.conversion.brain_convert import acdc_conv
