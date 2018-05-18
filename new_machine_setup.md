@@ -37,8 +37,17 @@ on brand new system:
 	`cd ~/Software && wget http://fsl.fmrib.ox.ac.uk/fsldownloads/patches/eddy-patch-fsl-5.0.9/centos6/{eddy_cuda7.5,eddy_openmp} && sudo cp {eddy_cuda7.5,eddy_openmp} /usr/share/fsl/5.0/bin && sudo chmod 777 /usr/share/fsl/5.0/bin/{eddy_cuda7.5,eddy_openmp}`
 19. Download and unpack Freesurfer and infant latest Linux-centos7 development release into ~/Software at `ftp://surfer.nmr.mgh.harvard.edu/pub/dist/freesurfer/dev` and copy your .license file into the folder and update ~/.bashrc with
 `# Freesurfer configuration
-export FREESURFER_HOME=/home/toddr/Software/freesurfer_dev20161104 #change date stamp to your dev release date 
-source $FREESURFER_HOME/SetUpFreeSurfer.sh`
+alias recon-alli='reconallinfant'
+alias recon-alla='reconalladult'
+function reconallinfant() { export FREESURFER_HOME=${HOME}/Software/freesurfer_dev20180503_infant;
+ 	source $FREESURFER_HOME/SetUpFreeSurfer.sh; export SUBJECTS_DIR=${PWD}; 
+	echo "Current freesurfer subject directory is now $SUBJECTS_DIR. running infant recon-all"; echo -e "mris_inflate -n 15\n" > freesurf_expert_opts.txt; recon-all "$@" ;
+	}
+function reconalladult() { export FREESURFER_HOME=${HOME}/Software/freesurfer_dev20180503_adult;
+ 	source $FREESURFER_HOME/SetUpFreeSurfer.sh; export SUBJECTS_DIR=${PWD}; 
+	echo "Current freesurfer subject directory is now $SUBJECTS_DIR. running adult recon-all"; echo -e "mris_inflate -n 15\n" > freesurf_expert_opts.txt; recon-all "$@" ;
+	}
+`
 20. install camino and R using ~/Software/Dropbox/bash_scripts/how_to_install_camino_and_R.txt
 21. using https://help.ubuntu.com/community/SettingUpNFSHowTo to set up NFS mounts:
     `sudo apt-get install nfs-common` and then `gksudo gedit /etc/fstab` and add the following tab delim line under #mount for NFS:
