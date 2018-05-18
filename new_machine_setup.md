@@ -2,16 +2,17 @@
 on brand new system:
 1. install chrome browser
 2. `mkdir ~/Software`
-3. `sudo apt-get install python-pip gfortran`
-4. `pip install conda`
+3. `sudo apt-get install gfortran cmake-curses-gui`
+4. 
 5. download to ~/Software the py2.7 64bit anaconda installer from https://www.continuum.io/downloads#linux
-6. in terminal `cd ~/Software && bash Anaconda2-4.2.0-Linux-x86_64.sh` #nb version numbers will change.
+6. in terminal `cd ~/Software && bash Anaconda2-5.1.0-Linux-x86_64.sh` #nb version numbers will change.
 7. review and accept license and enter install location as /home/toddr/Software/anaconda2  and say yes to prepend to .bashrc
 8. either open a new terminal or `source ~/.bashrc` 
-9. then add basic python dependencies: `pip install pynrrd pathlib pydicom`
-10. and from conda
-	`conda install --channel https://conda.anaconda.org/dfroger pygpgme`
-	`conda upgrade --all`
+9. update and configure conda and then add basic python dependencies/requirements:
+    `conda update conda; conda config --set channel_priority false; conda config --append channels conda-forge https://conda.anaconda.org/dfroger`
+    `conda install pip pathlib pathlib2 pygpgme`
+    `conda upgrade --all`
+    `pip install pynrrd pathlib pydicom`	
 11. install pycharm into ~/Software and register
 12. install pycharm plugins bashsupport and markdown, restart pycharm then in pycharm settings Project interpreter press cogwheel button add local and select the anaconda python interpreter at /home/mrjeffs/Software/anaconda2/bin/python
 13. clone your master branch of pylabs from your github repo into ~/Software: `cd ~/Software && git clone https://github.com/mrjeffs/pylabs.git` (Replace mrjeffs with your github account id.)
@@ -20,6 +21,7 @@ on brand new system:
 	`cd ~/Software && git clone https://github.com/nipy/nibabel.git && cd nibabel && python setup.py develop`
 	`cd ~/Software && git clone https://github.com/ilogue/niprov.git && cd niprov && python setup.py develop`
 	`cd ~/Software && git clone https://github.com/nipy/dipy.git && cd dipy && python setup.py develop`
+	`cd ~/Software && git clone https://github.com/ANTsX/ANTsPy.git && cd ANTsPy && python setup.py develop`
 16. install ANTS:
 	`sudo apt-get install cmake-curses-gui`
 	`cd ~/Software && git clone https://github.com/stnava/ANTs.git && mkdir antsbin && cd antsbin && ccmake ../ANTs`
@@ -33,7 +35,7 @@ on brand new system:
 	`sudo apt-get update && sudo apt-get install fsl-5.0-core`
 	when done download and copy into $FSLDIR/bin the cuda and/or openmp eddy current correction binaries
 	`cd ~/Software && wget http://fsl.fmrib.ox.ac.uk/fsldownloads/patches/eddy-patch-fsl-5.0.9/centos6/{eddy_cuda7.5,eddy_openmp} && sudo cp {eddy_cuda7.5,eddy_openmp} /usr/share/fsl/5.0/bin && sudo chmod 777 /usr/share/fsl/5.0/bin/{eddy_cuda7.5,eddy_openmp}`
-19. Download and unpack Freesurfer latest Linux-centos6 development release into ~/Software at `ftp://surfer.nmr.mgh.harvard.edu/pub/dist/freesurfer/dev` and copy your .license file into the folder and update ~/.bashrc with
+19. Download and unpack Freesurfer and infant latest Linux-centos7 development release into ~/Software at `ftp://surfer.nmr.mgh.harvard.edu/pub/dist/freesurfer/dev` and copy your .license file into the folder and update ~/.bashrc with
 `# Freesurfer configuration
 export FREESURFER_HOME=/home/toddr/Software/freesurfer_dev20161104 #change date stamp to your dev release date 
 source $FREESURFER_HOME/SetUpFreeSurfer.sh`
