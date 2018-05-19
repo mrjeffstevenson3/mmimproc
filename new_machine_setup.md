@@ -30,7 +30,7 @@ gcc -v
     `conda update conda; conda config --set channel_priority false; conda config --append channels conda-forge dfroger`
     `conda install pip pathlib pathlib2 pygpgme pydicom`
     `conda upgrade --all`
-    `pip install pynrrd `
+    `pip install pynrrd petname`
 11. install pycharm into ~/Software and register
 edit VM memory options to increase memory support for large files:
 -Xms4000m
