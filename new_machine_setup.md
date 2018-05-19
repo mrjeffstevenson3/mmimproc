@@ -70,7 +70,7 @@ paste till here
 	and copy into $FSLDIR/bin the eddy_cuda 7.5 and eddy_cuda8.0 and/or eddy_openmp eddy current correction binaries and bedpostx_gpu and bedpostx_postproc_gpu.sh
 	`mkdir -p ${HOME}/Software/fsl_patches && cd ${HOME}/Software/fsl_patches  && wget http://fsl.fmrib.ox.ac.uk/fsldownloads/patches/eddy-patch-fsl-5.0.11/centos6/{eddy_cuda7.5,eddy_openmp} \
 	 && wget https://fsl.fmrib.ox.ac.uk/fsldownloads/patches/bedpostx-patch-fsl-5.0.9/{bedpostx,bedpostx_gpu,bedpostx_postproc_gpu.sh} && \
-	 wget https://fsl.fmrib.ox.ac.uk/fsldownloads/patches/bedpostx-patch-fsl-5.0.9/CentOS6-64/bin/xfibres && sudo cp * $FSLDIR/bin && sudo chmod 777 $FSLDIR/bin/{eddy_cuda7.5,eddy_openmp,bedpostx,bedpostx_gpu,bedpostx_postproc_gpu.sh,xfibres}`
+	 wget https://fsl.fmrib.ox.ac.uk/fsldownloads/patches/bedpostx-patch-fsl-5.0.9/CentOS6-64/bin/xfibres && sudo cp * $FSLDIR/bin && sudo chmod 777 $FSLDIR/bin/{eddy_cuda7.5,eddy_cuda8.0,eddy_openmp,bedpostx,bedpostx_gpu,bedpostx_postproc_gpu.sh,xfibres}`
 19. Download and unpack Freesurfer and infant latest Linux-centos7 development release into ~/Software at `ftp://surfer.nmr.mgh.harvard.edu/pub/dist/freesurfer/dev` and copy your .license file into the folder and update ~/.bashrc with
 extract and rename freesurfer folders:
 infant folder name from extracting archive: freesurfer freesurfer_dev20180503_infant  # date will not change much
