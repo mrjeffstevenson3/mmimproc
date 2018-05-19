@@ -1,42 +1,92 @@
 **This file is a new machine setup recipe for brainteam sw on ubuntu 16.04 Mate system based on uhora.**
 on brand new system:
-1. install chrome browser
-2. `mkdir ~/Software`
-3. `sudo apt-get install python-pip gfortran`
-4. `pip install conda`
+1.
+2. `mkdir ${HOME}/Software`
+3. setup build/development environment
+sudo apt-get update && \
+sudo apt-get install build-essential gfortran cmake-curses-gui software-properties-common uuid-dev libtiff5-dev:i386 libtiff5-dev -y && \
+sudo apt-get install libinsighttoolkit4.9 libinsighttoolkit4-dev libinsighttoolkit4-dbg insighttoolkit4-python insighttoolkit4-examples libgdcm-tools -y && \
+sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y && \
+sudo apt-get update && \
+sudo apt-get install gcc-snapshot -y && \
+sudo apt-get update && \
+sudo apt-get install gcc-6 g++-6 -y && \
+sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-6 60 --slave /usr/bin/g++ g++ /usr/bin/g++-6 && \
+sudo apt-get install gcc-4.8 g++-4.8 -y && \
+sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.8 60 --slave /usr/bin/g++ g++ /usr/bin/g++-4.8;
+
+# When completed, you must change to the gcc you want to work with by default. Type in your terminal:
+sudo update-alternatives --config gcc
+
+# To verify if it worked. Just type in your terminal
+gcc -v
+
+4. 
 5. download to ~/Software the py2.7 64bit anaconda installer from https://www.continuum.io/downloads#linux
-6. in terminal `cd ~/Software && bash Anaconda2-4.2.0-Linux-x86_64.sh` #nb version numbers will change.
-7. review and accept license and enter install location as /home/toddr/Software/anaconda2  and say yes to prepend to .bashrc
-8. either open a new terminal or `source ~/.bashrc` 
-9. then add basic python dependencies: `pip install pynrrd pathlib pydicom`
-10. and from conda
-	`conda install --channel https://conda.anaconda.org/dfroger pygpgme`
-	`conda upgrade --all`
+   in terminal `cd ~/Software && bash Anaconda2-5.1.0-Linux-x86_64.sh` #nb version numbers will change.
+   review and accept license and enter install location as /home/toddr/Software/anaconda2  and say yes to prepend to .bashrc
+8. either open a new terminal to continue or `source ~/.bashrc`
+9. update and configure conda and then add basic python dependencies/requirements:
+    `conda update conda; conda config --set channel_priority false; conda config --append channels conda-forge dfroger`
+    `conda install pip pathlib pathlib2 pygpgme pydicom`
+    `conda upgrade --all`
+    `pip install pynrrd `
 11. install pycharm into ~/Software and register
-12. install pycharm plugins bashsupport and markdown, restart pycharm then in pycharm settings Project interpreter press cogwheel button add local and select the anaconda python interpreter at /home/mrjeffs/Software/anaconda2/bin/python
+edit VM memory options to increase memory support for large files:
+-Xms4000m
+-Xmx10000m
+
+12. install pycharm plugins bashsupport and markdown, restart pycharm then in pycharm settings Project interpreter press cogwheel button add local and select the anaconda python interpreter at ${HOME}/Software/anaconda2/bin/python
 13. clone your master branch of pylabs from your github repo into ~/Software: `cd ~/Software && git clone https://github.com/mrjeffs/pylabs.git` (Replace mrjeffs with your github account id.)
 14. Add the main pylabs repo as upstream: `cd ~/Software/pylabs && git remote add upstream https://github.com/ilabsbrainteam/pylabs.git`
-15. in `cd ~/Software` dir for each of the following github packages clone, cd into and `python setup.py develop`:
-	`cd ~/Software && git clone https://github.com/nipy/nibabel.git && cd nibabel && python setup.py develop`
-	`cd ~/Software && git clone https://github.com/ilogue/niprov.git && cd niprov && python setup.py develop`
-	`cd ~/Software && git clone https://github.com/nipy/dipy.git && cd dipy && python setup.py develop`
-16. install ANTS:
-	`sudo apt-get install cmake-curses-gui`
-	`cd ~/Software && git clone https://github.com/stnava/ANTs.git && mkdir antsbin && cd antsbin && ccmake ../ANTs`
-	when the cmake interface comes onscreen press c twice (to configure) till you see the option g appear on bottom middle, then press g to save and exit
-	then type `make -j 4`
+15. in `cd ~/Software` dir for each of the following github packages clone, cd into and `python setup.py develop:
+    `cd ${HOME}/Software && git clone https://github.com/nipy/nibabel.git && cd nibabel && python setup.py develop
+	cd ${HOME}/Software && git clone https://github.com/ilogue/niprov.git && cd niprov && python setup.py develop
+	cd ${HOME}/Software && git clone https://github.com/nipy/dipy.git && cd dipy && python setup.py develop
+	cd ${HOME}/Software && git clone https://github.com/ANTsX/ANTsPy.git && cd ANTsPy && python setup.py develop
+	cd ${HOME}/Software && git clone https://github.com/yeatmanlab/AFQ.git
+	cd ${HOME}/Software && git clone https://github.com/vistalab/vistasoft.git
+	cd ${HOME}/Software && git clone https://github.com/stnava/ANTs.git && mkdir antsbin && cd antsbin && ccmake ../ANTs`
+
+paste till here
+	when the cmake interface comes onscreen press c twice (to configure) till you see the option g appear on bottom middle, then press g to save and exit. then type
+	`make -j 4`
 	
 **and** open another terminal tab since this will take a while and there is more to do.
 17. If you like, Install and setup Dropbox `https://www.dropbox.com` and teamviewer `https://www.teamviewer.com/en/`
-18. install FSL. in terminal paste:
-	`wget -O- http://neuro.debian.net/lists/xenial.us-ca.full | sudo tee /etc/apt/sources.list.d/neurodebian.sources.list` and enter your admin pwd then
-	`sudo apt-get update && sudo apt-get install fsl-5.0-core`
-	when done download and copy into $FSLDIR/bin the cuda and/or openmp eddy current correction binaries
-	`cd ~/Software && wget http://fsl.fmrib.ox.ac.uk/fsldownloads/patches/eddy-patch-fsl-5.0.9/centos6/{eddy_cuda7.5,eddy_openmp} && sudo cp {eddy_cuda7.5,eddy_openmp} /usr/share/fsl/5.0/bin && sudo chmod 777 /usr/share/fsl/5.0/bin/{eddy_cuda7.5,eddy_openmp}`
-19. Download and unpack Freesurfer latest Linux-centos6 development release into ~/Software at `ftp://surfer.nmr.mgh.harvard.edu/pub/dist/freesurfer/dev` and copy your .license file into the folder and update ~/.bashrc with
+18. install FSL.
+    first check if platform function will work. either cat /etc/debian_version or in python
+    import platform;
+    platform.linux_distribution(full_distribution_name=0)
+    result should read ('debian', '16.04', '') or higher if ubuntu release is > 16.04.
+    if no release number the overwrite /etc/debian_version with actual number eg:
+    `cd ${HOME}/Software && echo "16.04" > debian_version && sudo cp debian_version /etc/debian_version`
+    then download fslinstaller.py from https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/FslInstallation/Linux
+	when done downloading type/paste and be sure to accept updating bashrc
+	`python fslinstaller.py && source ${HOME}/.bashrc`
+	or run this one liner:
+	brc=${HOME}/.bashrc && echo "FSLDIR=/usr/local/fsl" >> $brc && echo ". \${FSLDIR}/etc/fslconf/fsl.sh" >> $brc && echo "PATH=\${FSLDIR}/bin:\${PATH}" >> $brc && echo "export FSLDIR PATH" >> $brc && source $brc
+	download patches from https://fsl.fmrib.ox.ac.uk/fsldownloads/patches/
+	and copy into $FSLDIR/bin the eddy_cuda 7.5 and eddy_cuda8.0 and/or eddy_openmp eddy current correction binaries and bedpostx_gpu and bedpostx_postproc_gpu.sh
+	`mkdir -p ${HOME}/Software/fsl_patches && cd ${HOME}/Software/fsl_patches  && wget http://fsl.fmrib.ox.ac.uk/fsldownloads/patches/eddy-patch-fsl-5.0.11/centos6/{eddy_cuda7.5,eddy_openmp} \
+	 && wget https://fsl.fmrib.ox.ac.uk/fsldownloads/patches/bedpostx-patch-fsl-5.0.9/{bedpostx,bedpostx_gpu,bedpostx_postproc_gpu.sh} && \
+	 wget https://fsl.fmrib.ox.ac.uk/fsldownloads/patches/bedpostx-patch-fsl-5.0.9/CentOS6-64/bin/xfibres && sudo cp * $FSLDIR/bin && sudo chmod 777 $FSLDIR/bin/{eddy_cuda7.5,eddy_cuda8.0,eddy_openmp,bedpostx,bedpostx_gpu,bedpostx_postproc_gpu.sh,xfibres}`
+19. Download and unpack Freesurfer and infant latest Linux-centos7 development release into ~/Software at `ftp://surfer.nmr.mgh.harvard.edu/pub/dist/freesurfer/dev` and copy your .license file into the folder and update ~/.bashrc with
+extract and rename freesurfer folders:
+infant folder name from extracting archive: freesurfer freesurfer_dev20180503_infant  # date will not change much
+adult folder name from extracting archive: freesurfer freesurfer_dev20180503_adult   # date will change
 `# Freesurfer configuration
-export FREESURFER_HOME=/home/toddr/Software/freesurfer_dev20161104 #change date stamp to your dev release date 
-source $FREESURFER_HOME/SetUpFreeSurfer.sh`
+alias recon-alli='reconallinfant'
+alias recon-alla='reconalladult'
+function reconallinfant() { export FREESURFER_HOME=${HOME}/Software/freesurfer_dev20180503_infant;
+ 	source $FREESURFER_HOME/SetUpFreeSurfer.sh; export SUBJECTS_DIR=${PWD}; 
+	echo "Current freesurfer subject directory is now $SUBJECTS_DIR. running infant recon-all"; echo -e "mris_inflate -n 15\n" > freesurf_expert_opts.txt; recon-all "$@" ;
+	}
+function reconalladult() { export FREESURFER_HOME=${HOME}/Software/freesurfer_dev20180503_adult;
+ 	source $FREESURFER_HOME/SetUpFreeSurfer.sh; export SUBJECTS_DIR=${PWD}; 
+	echo "Current freesurfer subject directory is now $SUBJECTS_DIR. running adult recon-all"; echo -e "mris_inflate -n 15\n" > freesurf_expert_opts.txt; recon-all "$@" ;
+	}
+`
 20. install camino and R using ~/Software/Dropbox/bash_scripts/how_to_install_camino_and_R.txt
 21. using https://help.ubuntu.com/community/SettingUpNFSHowTo to set up NFS mounts:
     `sudo apt-get install nfs-common` and then `gksudo gedit /etc/fstab` and add the following tab delim line under #mount for NFS:
