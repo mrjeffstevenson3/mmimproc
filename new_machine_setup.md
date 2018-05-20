@@ -1,8 +1,9 @@
 **This file is a new machine setup recipe for brainteam sw on ubuntu 16.04 Mate system based on uhora.**
 on brand new system:
-1.
+1. DO NOT INSTALL PIP, CONDA, OR PYTHON FROM UBUNTU REPOS. USE ONLY CONDA AND DELETE ANY REFS IN ~/.local/bin or ~/.local/lib.
+    USE ONLY STEP 5 FOR PYTHON INSTALLATION.
 2. `mkdir ${HOME}/Software`
-3. setup build/development environment
+3. setup build/development environment (paste as 1 liner:
 sudo apt-get update && \
 sudo apt-get install build-essential gfortran cmake-curses-gui software-properties-common uuid-dev libtiff5-dev:i386 libtiff5-dev -y && \
 sudo apt-get install libinsighttoolkit4.9 libinsighttoolkit4-dev libinsighttoolkit4-dbg insighttoolkit4-python insighttoolkit4-examples libgdcm-tools -y && \
@@ -28,9 +29,9 @@ gcc -v
 8. either open a new terminal to continue or `source ~/.bashrc`
 9. update and configure conda and then add basic python dependencies/requirements:
     `conda update conda; conda config --set channel_priority false; conda config --append channels conda-forge dfroger`
-    `conda install pip pathlib pathlib2 pygpgme pydicom`
+    `conda install pip pathlib pathlib2 pygpgme pydicom qgrid`
     `conda upgrade --all`
-    `pip install pynrrd petname`
+    `pip install pynrrd petname latex shell argparse msgpack cloud nose-timer`
 11. install pycharm into ~/Software and register
 edit VM memory options to increase memory support for large files:
 -Xms4000m
