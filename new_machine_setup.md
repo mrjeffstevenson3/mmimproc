@@ -29,7 +29,7 @@ gcc -v
 8. either open a new terminal to continue or `source ~/.bashrc`
 9. update and configure conda and then add basic python dependencies/requirements:
     `conda update conda; conda config --set channel_priority false; conda config --append channels conda-forge dfroger`
-    `conda install pip pathlib pathlib2 pygpgme pydicom qgrid`
+    `conda install pip pathlib pathlib2 pygpgme pydicom qgrid pytest-xdist pytest-env`
     `conda upgrade --all`
     `pip install pynrrd petname latex shell argparse msgpack cloud nose-timer`
 11. install pycharm into ~/Software and register

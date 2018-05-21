@@ -1,6 +1,7 @@
 # todo: break apart individual project dataframes into file in each project folder.
 # todo: refactor conv_subjs to put in hdf file name and remove niftiDict
 # todo: capture spectroscopy meta data if present
+# todo: make img_conv multiindex. panel method deprecated.
 import pylabs
 pylabs.datadir.target = 'jaba'
 from pylabs.conversion.parrec2nii_convert import BrainOpts
