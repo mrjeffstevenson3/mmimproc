@@ -43,6 +43,7 @@ edit VM memory options to increase memory support for large files:
     `cd ${HOME}/Software && git clone https://github.com/nipy/nibabel.git && cd nibabel && python setup.py develop
 	cd ${HOME}/Software && git clone https://github.com/ilogue/niprov.git && cd niprov && python setup.py develop
 	cd ${HOME}/Software && git clone https://github.com/nipy/dipy.git && cd dipy && python setup.py develop
+	cd ${HOME}/Software && git clone https://github.com/euske/pdfminer.git && cd pdfminer && python setup.py install
 	cd ${HOME}/Software && git clone https://github.com/ANTsX/ANTsPy.git && cd ANTsPy && python setup.py develop
 	cd ${HOME}/Software && git clone https://github.com/yeatmanlab/AFQ.git
 	cd ${HOME}/Software && git clone https://github.com/vistalab/vistasoft.git
@@ -129,7 +130,7 @@ function reconalladult() { export FREESURFER_HOME=${HOME}/Software/freesurfer_de
         git clone https://github.com/nipy/PySurfer
         cd PySurfer
         python setup.py develop
-24. install vtk and mayavi and pysurfer as prereqs:
+XX24. install vtk and mayavi and pysurfer as prereqs: do not use
         cd ${HOME}/Software
         conda install vtk
         pip install mayavi pysurfer
@@ -177,12 +178,6 @@ function reconalladult() { export FREESURFER_HOME=${HOME}/Software/freesurfer_de
         **Run rclone config to setup. See rclone config docs for more details.**
         rclone config
             set up as teamdrive using existing google drive hierarchy eg ${HOME}/Software/gdrive/NBWR/subject_scans/results
-
-28. install into ${HOME}/Software pdfminer:
-        cd ${HOME}/Software
-        git clone https://github.com/euske/pdfminer.git
-        cd pdfminer/
-        python setup.py install
 
 29. install matlab NOT as root but as user in ${HOME}/Software/matlab${ReleaseDate}
     as of 9/19/2017 need latest release for python interface build and maybe (tbd) 2013b for inspector on linux 2016b on mac
