@@ -154,6 +154,7 @@ if opts.convert:
     subjects = [x['subj'] for x in subjids_picks.subjids]
     niftiDict, niftiDF = conv_subjs(project, subjects)
 result = ('starting time for dwi preproc pipeline is {:%Y %m %d %H:%M}'.format(datetime.datetime.now()),)
+
 for i, pick in enumerate(dwi_picks):
     start_time = time.time()
     pick['project'] = project
