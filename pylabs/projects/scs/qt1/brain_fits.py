@@ -1,9 +1,9 @@
 import pylabs
-pylabs.datadir.target = 'jaba'
+from pathlib import *
 import nibabel as nib
 import numpy as np
 from pylabs.utils import *
-from pylabs.io.images import savenii
+from pylabs.io.images import savenii, loadStack
 from pylabs.alignment.ants_reg import subj2T1, subj2templ_applywarp
 from pylabs.structural.brain_extraction import extract_brain
 from pylabs.fmap_correction.b1_map_corr import calcb1map
@@ -14,34 +14,34 @@ from pylabs.projects.scs.file_names import project, SubjIdPicks, get_spgr_names,
 # set up provenance
 prov = ProvenanceWrapper()
 # setup paths and file names to process
-fs = Path(getnetworkdataroot())
+fs = Path('/media/DiskArray/shared_data/js/')
 # instantiate opts and subject id list container
-subjids_picks = SubjIdPicks()
 opts = Optsd()
+
+subjids_picks = SubjIdPicks()
 # must set fas mannually when patch used. not reported in PAR file correctly.
 picks = [
-        # {'patch': True, 'project': project, 'subj': 'sub-genz508', 'session': 'ses-1', 'run': '1', 'fas': [4.0, 25.0],},
-        {'patch': True, 'project': project, 'subj': 'sub-genz501', 'session': 'ses-1', 'run': '1', 'fas': [4.0, 25.0],},
-        {'patch': True, 'project': project, 'subj': 'sub-genz308', 'session': 'ses-1', 'run': '1', 'fas': [4.0, 25.0],},
-        {'patch': True, 'project': project, 'subj': 'sub-genz311', 'session': 'ses-1', 'run': '1', 'fas': [4.0, 25.0],},
+        {'subjnum': 317, 'subj': 'SCS_317',},
+
          ]
 setattr(subjids_picks, 'subjids', picks)
 
-spgr_picks =  get_spgr_names(subjids_picks)
-opts.test = False
+spgr_picks = get_spgr_names(subjids_picks)
+
+opts.test = True
 if opts.test:
     i = 0
     spgr_picks = [spgr_picks[i]]
 
 # loop over subjects
 for pick in spgr_picks:
-    ses_dir = fs/'{project}/{subj}/{session}'.format(**pick)
-    b1_data = nib.load(str(ses_dir/'fmap'/pick['b1map_fname'])+'.nii').get_data().astype(np.float64)
-    b1_affine = nib.load(str(ses_dir/'fmap'/pick['b1map_fname'])+'.nii').affine
-    spgr_data = nib.load(str(ses_dir/'qt1'/pick['spgr_fname'])+'.nii').get_data().astype(np.float64)
-    spgr_affine = nib.load(str(ses_dir/'qt1'/pick['spgr_fname'])+'.nii').affine
-    savenii(spgr_data[:, :, :, 2], spgr_affine, ses_dir / 'qt1' / (pick['spgr_fname'] + '_fa25ec1.nii'))
-    spgr_brain, spgr_brain_mask, spgr_cropped = extract_brain(ses_dir / 'qt1' / (pick['spgr_fname'] + '_fa25ec1.nii'), f_factor=0.25)
+    ses_dir = fs/'{project}/scs{subjnum}'.format(**pick)
+    b1_data = nib.load(str(pick['b1map_fname'])).get_data().astype(np.float64)
+    b1_affine = nib.load(str(pick['b1map_fname'])).affine
+    spgrs, spgr_affine = loadStack([str(pick['spgr_02_fname']), str(pick['spgr_10_fname']), str(pick['spgr_20_fname'])])
+    spgr20_brain, spgr20_brain_mask, spgr20_cropped = extract_brain(str(pick['spgr_20_fname']), f_factor=0.25)
+    if not (ses_dir/'qt1').is_dir():
+        Path(ses_dir/'qt1').mkdir(parents=True)
     with WorkingContext(ses_dir/'qt1'):
         # calc b1map
         S1 = medianf(b1_data[:,:,:,0], size=7)
