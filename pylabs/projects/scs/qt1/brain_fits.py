@@ -39,35 +39,34 @@ for pick in spgr_picks:
     b1_data = nib.load(str(pick['b1map_fname'])).get_data().astype(np.float64)
     b1_affine = nib.load(str(pick['b1map_fname'])).affine
     spgrs, spgr_affine = loadStack([str(pick['spgr_02_fname']), str(pick['spgr_10_fname']), str(pick['spgr_20_fname'])])
-    spgr20_brain, spgr20_brain_mask, spgr20_cropped = extract_brain(str(pick['spgr_20_fname']), f_factor=0.25)
     if not (ses_dir/'qt1').is_dir():
         Path(ses_dir/'qt1').mkdir(parents=True)
     with WorkingContext(ses_dir/'qt1'):
+        spgr20_brain, spgr20_brain_mask, spgr20_cropped = extract_brain(str(pick['spgr_20_fname']), f_factor=0.25)
+
         # calc b1map
         S1 = medianf(b1_data[:,:,:,0], size=7)
         S2 = medianf(b1_data[:,:,:,1], size=7)
         b1map = calcb1map(S1, S2, pick['b1maptr'])
-        b1map_out_fname = ses_dir/'fmap'/'{subj}_{session}_b1map_phase_mf.nii'.format(**pick)
+        b1map_out_fname = ses_dir/'fmap'/'scs{subjnum}_b1map_phase_mf.nii'.format(**pick)
         savenii(b1map, b1_affine, str(b1map_out_fname))
-        savenii(S2, b1_affine, pick['b1map_fname'] + '_tr2_mf_mag.nii')
-        b1map_brain, b1map_brain_mask, b1map_cropped = extract_brain(pick['b1map_fname'] + '_tr2_mf_mag.nii', f_factor=0.6)
+        savenii(S2, b1_affine, appendposix(pick['b1map_fname'], '_mag120_mf'))
+        b1map120_brain, b1map120_brain_mask, b1map120_cropped = extract_brain(appendposix(pick['b1map_fname'], '_mag120_mf'), f_factor=0.6)
 
         # reg b1map and spgr and apply to mask
-        subj2T1(b1map_brain, spgr_brain, replacesuffix(b1map_brain, '_reg2spgr_'))
-        subj2templ_applywarp(b1map_out_fname, spgr_brain, appendposix(b1map_out_fname, '_reg2spgr'),
-                             [str(appendposix(b1map_brain, '_reg2spgr_1Warp')),], '.',
-                             affine_xform=[str(replacesuffix(b1map_brain, '_reg2spgr_0GenericAffine.mat')),])
+        subj2T1(b1map120_brain, spgr20_brain, replacesuffix(b1map120_brain, '_reg2spgr_'))
+        subj2templ_applywarp(b1map_out_fname, spgr20_brain, appendposix(b1map_out_fname, '_reg2spgr'),
+                             [str(appendposix(b1map120_brain, '_reg2spgr_1Warp')),], '.',
+                             affine_xform=[str(replacesuffix(b1map120_brain, '_reg2spgr_0GenericAffine.mat')),])
         reg_b1map = nib.load(str(appendposix(b1map_out_fname, '_reg2spgr'))).get_data().astype(np.float64)
 
-        # fit 2 echo 2 flip angle spgr and make b1corrected qt1 img
-        spgr_fa1 = spgr_data[:, :, :, :2]
-        spgr_fa2 = spgr_data[:, :, :, 2:4]
-        spgr_fa1_rms = np.sqrt(np.mean(np.square(spgr_fa1), axis=3))
-        spgr_fa2_rms = np.sqrt(np.mean(np.square(spgr_fa2), axis=3))
-        k = np.prod(spgr_fa1_rms.shape)
+        # fit 3 flip angle spgr and make b1corrected qt1 img
+
+        k = np.prod(spgrs.shape[1:4])
         data = np.zeros([len(pick['fas']), k])
-        data[0, :] = spgr_fa1_rms.flatten()
-        data[1, :] = spgr_fa2_rms.flatten()
+        data[0, :] = spgrs[0,:,:,:].flatten()
+        data[1, :] = spgrs[1,:,:,:].flatten()
+        data[2, :] = spgrs[2,:,:,:].flatten()
         fa_uncorr = np.zeros(data.shape)
         fa_b1corr = np.zeros(data.shape)
         for i, fa in enumerate(pick['fas']):
@@ -78,20 +77,20 @@ for pick in spgr_picks:
         y = data / np.sin(fa_b1corr_rad)
         x = data / np.tan(fa_b1corr_rad)
         m = np.zeros(k)
-        mask = nib.load(str(spgr_brain_mask)).get_data().astype('bool').flatten()
+        mask = nib.load(str(b1map120_brain_mask)).get_data().astype('bool').flatten()
         for v in range(k):
             if mask[v]:
                 m[v], intercept, r, p, std = stats.linregress(x[:, v], y[:, v])
         qT1_linregr = -pick['spgrtr'][0]/np.log(m)
-        qT1_linregr_data = qT1_linregr.reshape(spgr_fa1_rms.shape)
+        qT1_linregr_data = qT1_linregr.reshape(spgrs.shape[1:4])
         qT1_linregr_data[np.logical_or(qT1_linregr_data < 1.0, ~np.isfinite(qT1_linregr_data))] = 0
         qT1_linregr_data[qT1_linregr_data > 6000] = 6000
         qT1_linregr_data_clean = np.nan_to_num(qT1_linregr_data, copy=True)
         pick['mod'] = 'qt1'
-        qt1out_fname = ses_dir/'qt1'/'{subj}_{session}_spgr_{mod}_b1corrmf_vlinregr-fit_clamped.nii'.format(**pick)
+        qt1out_fname = ses_dir/'qt1'/'scs{subjnum}_spgr_{mod}_b1corrmf_vlinregr-fit_clamped.nii'.format(**pick)
         savenii(qT1_linregr_data_clean, spgr_affine, str(qt1out_fname))
         pick['mod'] = 'R1'
-        qt1out_fname = ses_dir/'qt1'/'{subj}_{session}_spgr_{mod}_b1corrmf_vlinregr-fit_clamped.nii'.format(**pick)
+        qt1out_fname = ses_dir/'qt1'/'scs{subjnum}_spgr_{mod}_b1corrmf_vlinregr-fit_clamped.nii'.format(**pick)
         with np.errstate(divide='ignore', invalid='ignore'):
             R1 = np.true_divide(1.0, qT1_linregr_data_clean)
             R1[ ~ np.isfinite(R1)] = 0
