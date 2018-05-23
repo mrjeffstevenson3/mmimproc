@@ -38,7 +38,7 @@ c
 	  DOUBLE PRECISION W(3)
 	real psavx(4),psavy(4),psavz(4),rmindistance(4),imindistance1(4),imindistance2(4)
 	real distancesav(200000),xwall(100),ywall(100),zwall(100)
-	real dti(256,256,256,6)
+	real dti(400,400,400,6)
 	integer iflagindex(7)
 	open(11,file = 'offsets.txt')
 	read(11,*)xoffset,yoffset,zoffset
