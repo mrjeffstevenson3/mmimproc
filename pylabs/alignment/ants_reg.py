@@ -1,4 +1,5 @@
 # todo: fssurf2subj and fslabel2subj
+# todo: antsreg general purpose registration
 import os, subprocess
 from pathlib import *
 from os.path import join
@@ -13,6 +14,7 @@ regd = { # first key is reg_fn called inside antsreg function
         }
 
 def antsreg(project, reg_fn, subjects, args=['-n 12'] ,quick=False):
+    """ incomplete """
     # make antscmd_spgr to reg list of spgr to 1 ref.
     antsRegistrationSyN = get_antsregsyn_cmd(quick)
     spgr_fntempl = eval(regd[reg_fn]['inftempl'] % {'project': project})
@@ -36,7 +38,7 @@ def subj2templ_applywarp(moving, ref_img, outfile, warpfiles, execwdir, dims=3, 
         cmd += 'WarpTimeSeriesImageMultiTransform 4 '
     if dims == 3 or dims == 2:
         cmd += 'WarpImageMultiTransform '+str(dims)+' '
-    cmd += moving+' '+outfile+' -R '+ref_img+' '
+    cmd += str(moving)+' '+str(outfile)+' -R '+str(ref_img)+' '
     if inv:
         print "inverse selected, reversing order of ants Warp and affine list for "+outfile
         cmd += ' '.join(['-i ' + a + ' ' + w for a, w in zip(reversed(affine_xform), reversed(warpfiles))])+' '
@@ -49,9 +51,8 @@ def subj2templ_applywarp(moving, ref_img, outfile, warpfiles, execwdir, dims=3, 
     output = ()
     t = datetime.datetime.now()
     output += (str(t),)
-    cmdt = (cmd,)
-    output += cmdt
-    with WorkingContext(execwdir):
+    output += (cmd,)
+    with WorkingContext(str(execwdir)):
         print(cmd)
         output += run_subprocess(cmd)
         with open('applywarp_log.json', mode='a') as logf:
@@ -63,16 +64,16 @@ def subj2templ_applywarp(moving, ref_img, outfile, warpfiles, execwdir, dims=3, 
     params['args'] = args
     params['cmd'] = cmd
     params['output'] = output
-    params['ref_img'] = ref_img
-    provenance.log(outfile, 'apply WarpImageMultiTransform', moving, script=__file__, provenance=params)
+    params['ref_img'] = str(ref_img)
+    provenance.log(str(outfile), 'apply WarpImageMultiTransform', str(moving), script=__file__, provenance=params)
     return tuple([(k, v) for k, v in params.iteritems()])
 
 def subj2T1(moving, ref_img, outfile, inargs=None):
     """
 
-    :param moving:
-    :param ref_img:
-    :param outfile:
+    :param moving: name of file to move into ref file's space
+    :param ref_img: the target space moving image is aligned to
+    :param outfile: stem file name of the result should end with _ ants will add its own suffixes
     :param inargs: input arguments -n <num cpu>
     :example inargs:  -n 30 -t s -p f -j 1 -s 10 -r 1
     :return:
@@ -97,7 +98,7 @@ def subj2T1(moving, ref_img, outfile, inargs=None):
     params['cmd'] = cmd
     params['output'] = output
     params['ref_img'] = ref_img
-    provenance.log(str(outfile), 'antsRegistrationSyN', str(moving), script=__file__, provenance=params)
+    provenance.log(str(outfile)+'Warped.nii.gz', 'antsRegistrationSyN', str(moving), script=__file__, provenance=params)
     return
 
 def fsl2ants_affine(execwdir, ref, src, fslmatfilename):

@@ -6,13 +6,13 @@ pylabs.datadir.target = 'jaba'
 import pandas as pd
 from pathlib import *
 import datetime, json
-from pylabs.utils import ProvenanceWrapper, run_subprocess, WorkingContext, getnetworkdataroot, appendposix
+from pylabs.utils import *
 from pylabs.projects.nbwr.file_names import project, SubjIdPicks, get_gaba_names
 from pylabs.io.mixed import getgabavalue, df2h5
 prov = ProvenanceWrapper()
 
 fs = Path(getnetworkdataroot())
-gannettpath = pylabs.utils.paths.getgannettpath()
+gannettpath = getgannettpath()
 all_info_fname = fs/project/'all_{project}_info.h5'.format(**{'project': project})
 pdf_only = True
 # instantiate subject id list container
@@ -34,8 +34,8 @@ setattr(subjids_picks, 'source_path', fs / project / 'sub-nbwr%(sid)s' / 'ses-1'
 rt_actfnames, rt_reffnames, lt_actfnames, lt_reffnames = get_gaba_names(subjids_picks)
 
 # for testing
-# i = 0
-# rt_act, rt_ref, lt_act, lt_ref = rt_actfnames[i], rt_reffnames[i], lt_actfnames[i], lt_reffnames[i]
+i = 0
+rt_act, rt_ref, lt_act, lt_ref = rt_actfnames[i], rt_reffnames[i], lt_actfnames[i], lt_reffnames[i]
 
 for rt_act, rt_ref, lt_act, lt_ref in zip(rt_actfnames, rt_reffnames, lt_actfnames, lt_reffnames):
     results_dir = rt_act.parents[1].joinpath('mrs')

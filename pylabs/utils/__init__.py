@@ -10,3 +10,4 @@ from ._context import WorkingContext  #noqa
 from ._chrono import pr_examdate2pydatetime, pr_examdate2BIDSdatetime, pr_date , matchscandate #noqa
 from .paths import *
 from .provenance import ProvenanceWrapper
+from .files import deconstructRandparFiles, deconstructFullRandparFiles, sortedParGlob, ScanReconSort

@@ -1,5 +1,6 @@
 # todo: fix brain extraction by increasing z dim (and maybe xy) to accomodate brain stem and cerebellum of dwi or pre-crop MNI before reg
 # todo: add timestamp to status updates
+# todo: add dipy save evals and evecs and convert to AFQ dt6.mat
 # first set global root data directory
 import pylabs
 pylabs.datadir.target = 'jaba'
@@ -36,7 +37,8 @@ from pylabs.utils import ProvenanceWrapper
 prov = ProvenanceWrapper()
 
 # project, subject, and file objects to work on
-from pylabs.projects.genz.file_names import project, SubjIdPicks, get_dwi_names, Optsd
+from pylabs.projects.genz.file_names import project, SubjIdPicks, get_dwi_names, Optsd, merge_ftempl_dicts
+from pylabs.conversion.brain_convert import genz_conv
 
 #setup paths and file names to process
 fs = Path(getnetworkdataroot())
@@ -52,8 +54,11 @@ if not dwi_qc:
 subjids_picks = SubjIdPicks()
 # list of subject ids to operate on
 picks = [
-         {'subj': 'sub-genz508', 'session': 'ses-1', 'run': '1',  # subject selection info
-          },
+         {'subj': 'sub-genz510', 'session': 'ses-1', 'run': '1',},  # subject selection info
+         {'subj': 'sub-genz508', 'session': 'ses-1', 'run': '1',},
+         {'subj': 'sub-genz501', 'session': 'ses-1', 'run': '1',},
+         {'subj': 'sub-genz308', 'session': 'ses-1', 'run': '1',},
+         {'subj': 'sub-genz311', 'session': 'ses-1', 'run': '1',},
          ]
 
 setattr(subjids_picks, 'subjids', picks)
@@ -74,7 +79,9 @@ fsl_fit_cmds = ['dtifit -k %(ec_dwi_clamp_fname)s -o %(fsl_fits_out)s -m %(b0_br
                 'fslmaths %(fsl_fits_out)s_tensor -fmedian %(fsl_fits_out)s_tensor%(mf_str)s',
                 'fslmaths %(fsl_fits_out)s_tensor%(mf_str)s -tensor_decomp %(fsl_fits_out)s_tensor%(mf_str)s',
                 'imcp %(fsl_fits_out)s_tensor%(mf_str)s_L1 %(fsl_fits_out)s_tensor%(mf_str)s_AD',
-                'fslmaths %(fsl_fits_out)s_tensor%(mf_str)s_L2 -add %(fsl_fits_out)s_tensor%(mf_str)s_L3 -div 2 %(fsl_fits_out)s_tensor%(mf_str)s_RD -odt float']
+                'fslmaths %(fsl_fits_out)s_tensor%(mf_str)s_L2 -add %(fsl_fits_out)s_tensor%(mf_str)s_L3 -div 2 %(fsl_fits_out)s_tensor%(mf_str)s_RD -odt float',
+                'imcp %(fsl_fits_out)s_S0 %(fsl_fits_out)s_tensor%(mf_str)s_S0',
+                ]
 
 # slicer UKF commands and default parameters to run
 ukfcmds =  {'UKF_whbr': str(slicer_path) + 'UKFTractography --dwiFile %(dwi_nrrd_fname)s --seedsFile %(b0_brain_mask_fname_nrrd)s'
@@ -142,7 +149,7 @@ pick dict guide:
 dwi_picks =  get_dwi_names(subjids_picks)
 
 if opts.test:
-    i = 0
+    i = 2
     dwi_picks = [dwi_picks[i]]
 # run conversion if needed
 if opts.convert:
@@ -175,13 +182,13 @@ for i, pick in enumerate(dwi_picks):
         test4file(f)
     # get data
     orig_dwi_img = nib.load(str(orig_dwif_fname))
-    orig_dwi_data = orig_dwi_img.get_data()
+    orig_dwi_data = orig_dwi_img.get_data().astype(np.float64)
     orig_dwi_affine = orig_dwi_img.affine
     orig_topup_img = nib.load(str(orig_topup_fname))
-    orig_topup_data = orig_topup_img.get_data()
+    orig_topup_data = orig_topup_img.get_data().astype(np.float64)
     orig_topup_affine = orig_topup_img.affine
     orig_topdn_img = nib.load(str(orig_topdn_fname))
-    orig_topdn_data = orig_topdn_img.get_data()
+    orig_topdn_data = orig_topdn_img.get_data().astype(np.float64)
     orig_topdn_affine = orig_topdn_img.affine
 
     # select volumes that pass dwi qc
@@ -263,13 +270,13 @@ for i, pick in enumerate(dwi_picks):
     pick['dwi_bvecs_ec_rot_fname'] = '{ec_dwi_fname}.eddy_rotated_bvecs'.format(**pick)
     if opts.eddy_corr or opts.overwrite:
         with WorkingContext(str(ec_dir)):
-            b0_brain_fname, b0_brain_mask_fname, b0_brain_cropped_fname = extract_brain('{topup_out}_unwarped_mean.nii.gz'.format(**pick), mode='T2')
+            b0_brain_fname, b0_brain_mask_fname, b0_brain_cropped_fname = extract_brain('{topup_out}_unwarped_mean.nii.gz'.format(**pick), mode='T2', dwi=True, f_factor=0.65, robust=True)
             pick['b0_brain_mask_fname'] = b0_brain_mask_fname
             nii2nrrd(pick['b0_brain_mask_fname'], replacesuffix(pick['b0_brain_mask_fname'], '.nrrd'), ismask=True)
             pick['b0_brain_mask_fname_nrrd'] = replacesuffix(pick['b0_brain_mask_fname'], '.nrrd')
             result += run_subprocess([eddy_cmd.format(**pick)])
             # clamp, filter, and make nrrd
-            ec_data = nib.load('{ec_dwi_fname}.nii.gz'.format(**pick)).get_data()
+            ec_data = nib.load('{ec_dwi_fname}.nii.gz'.format(**pick)).get_data().astype(np.float64)
             ec_data_affine = nib.load('{ec_dwi_fname}.nii.gz'.format(**pick)).affine
             bvals, ec_bvecs = read_bvals_bvecs(str(pick['dwi_bvals_fname']), pick['dwi_bvecs_ec_rot_fname'])
             ec_gtab = gradient_table(bvals, ec_bvecs)
@@ -297,9 +304,9 @@ for i, pick in enumerate(dwi_picks):
         result += tuple([run_subprocess(c % pick) for c in fsl_fit_cmds])
         # do dipy fits
         tenmodel = dti.TensorModel(ec_gtab, fit_method='WLS')
-        data = nib.load(pick['ec_dwi_clamp_fname']).get_data()
+        data = nib.load(pick['ec_dwi_clamp_fname']).get_data().astype(np.float64)
         affine = nib.load(pick['ec_dwi_clamp_fname']).affine
-        mask = nib.load(str(pick['b0_brain_mask_fname'])).get_data()
+        mask = nib.load(str(pick['b0_brain_mask_fname'])).get_data().astype(np.int64)
         fit = tenmodel.fit(data, mask)
         # filter and save all dipy files
         fit_quad_form = fit.quadratic_form
@@ -330,6 +337,18 @@ for i, pick in enumerate(dwi_picks):
         savenii(ev1, affine, '{dipy_fits_out}_mf_AD.nii'.format(**pick))
         savenii(evals[1:].mean(0), affine, '{dipy_fits_out}_mf_RD.nii'.format(**pick))
         savenii(mode(fit_quad_form_mf), affine, '{dipy_fits_out}_mf_MO.nii'.format(**pick), minmax=(-1, 1))
+        # make AFQ dt6 file out of fsl
+        mempkey = [k for k in genz_conv.keys() if 'MEMP_' in k][0]
+        t1_fname = fs/project/('{subj}/{session}/anat/'+genz_conv[mempkey]['fname_template']).format(**merge_ftempl_dicts(
+            dict1=genz_conv[mempkey], dict2=pick, dict3={'scan_info': 'ti1200_rms'}))
+        t1_fname = replacesuffix(t1_fname, '_brain.nii.gz')
+        if t1_fname.is_file():
+            fsl_S0_fname = '{subj}_{session}_dwi_unwarped_ec_fslfit_tensor_mf_S0.nii.gz'.format(**pick)
+            fsl_dt6_fname = '{subj}_{session}_dwi_unwarped_ec_fslfit_tensor_mf_dt6.mat'.format(**pick)
+            mcmd = 'matlab -nodesktop -nodisplay -nosplash -r "{0}"'
+            cmd = "addpath('{path}'); dtiMakeDt6FromFsl('{S0}', '{t1}', '{outf}'); quit".format(
+                **{'S0': fsl_S0_fname, 't1': str(t1_fname), 'outf': fsl_dt6_fname, 'path': pylabs_dir/'pylabs/diffusion'})
+            result += run_subprocess([mcmd.format(cmd)])
 
         # do denoise and dki
         sigma = estimate_sigma(data, N=4)
@@ -344,19 +363,29 @@ for i, pick in enumerate(dwi_picks):
         savenii(dkifit.mk(-3, 3), affine, '{dipy_dki_fits_out}_MK.nii'.format(**pick), minmax=(-3, 3))
         savenii(dkifit.rk(-3, 3), affine, '{dipy_dki_fits_out}_RK.nii'.format(**pick), minmax=(-3, 3))
         savenii(dkifit.ak(-3, 3), affine, '{dipy_dki_fits_out}_AK.nii'.format(**pick), minmax=(-3, 3))
+        # save evals and evecs for AFQ...
 
     if opts.do_ukf:
+        vtk_dir = dwipath/opts.vtk_dir
+        if not vtk_dir.is_dir():
+            vtk_dir.mkdir(parents=True)
         try:
             with WorkingContext(str(ec_dir)):
                 print('starting UKF tractography at {:%Y%m%d%H%M}'.format(datetime.datetime.now()))
                 result += ('starting UKF tractography at {:%Y%m%d%H%M}'.format(datetime.datetime.now()),)
                 result += run_subprocess([ukfcmds['UKF_whbr'] % pick])
+                ukf_fname = vtk_dir/Path('%(ec_dwi_fname)s_mf_clamp1_UKF_whbr.vtk' % pick).name
+                ukf_fname.symlink_to('%(ec_dwi_fname)s_mf_clamp1_UKF_whbr.vtk' % pick)
                 print('finished UKF tractography at {:%Y%m%d%H%M} starting NODDI 1 tensor'.format(datetime.datetime.now()))
                 result += ('finished UKF tractography at {:%Y%m%d%H%M} starting NODDI 1 tensor'.format(datetime.datetime.now()),)
                 result += run_subprocess([ukfcmds['NODDI1'] % pick])
+                noddi1_fname = vtk_dir/Path('%(ec_dwi_fname)s_mf_clamp1_whbr_1tensor_noddi.vtk' % pick).name
+                noddi1_fname.symlink_to('%(ec_dwi_fname)s_mf_clamp1_whbr_1tensor_noddi.vtk' % pick)
                 print('finished NODDI 1 tensor tractography at {:%Y%m%d%H%M} starting NODDI 2 tensor'.format(datetime.datetime.now()))
                 result += ('finished NODDI 1 tensor tractography at {:%Y%m%d%H%M} starting NODDI 2 tensor'.format(datetime.datetime.now()),)
                 result += run_subprocess([ukfcmds['NODDI2'] % pick])
+                noddi2_fname = vtk_dir/Path('%(ec_dwi_fname)s_mf_clamp1_whbr_2tensor_noddi.vtk' % pick).name
+                noddi2_fname.symlink_to('%(ec_dwi_fname)s_mf_clamp1_whbr_2tensor_noddi.vtk' % pick)
                 print('finished NODDI 2 tensor tractography at {:%Y%m%d%H%M}'.format(datetime.datetime.now()))
                 result += ('finished NODDI 2 tensor tractography at {:%Y%m%d%H%M}'.format(datetime.datetime.now()),)
         except:
@@ -377,6 +406,8 @@ for i, pick in enumerate(dwi_picks):
             os.rename(pick['b0_brain_mask_fname'].name, str(bedpost_dir/'nodif_brain_mask.nii.gz'))
             # run bedpost, probtracks, network, UKF, NODDI, and DKI here
             with WorkingContext(str(dwipath)):
+                if (dwipath / 'bedpost.bedpostX').is_dir() and opts.overwrite:
+                    bumptodefunct(dwipath / 'bedpost.bedpostX')
                 if test4working_gpu():
                     os.environ['FSLPARALLEL'] = ''
                     result += run_subprocess(['bedpostx_gpu bedpost -n 3 --model=2'])

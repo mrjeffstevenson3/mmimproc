@@ -19,12 +19,16 @@ fs = Path(getnetworkdataroot())
 subjids_picks = SubjIdPicks()
 opts = Optsd()
 # must set fas mannually when patch used. not reported in PAR file correctly.
-picks = [{'patch': True, 'project': project, 'subj': 'sub-genz501', 'session': 'ses-1', 'run': '1', 'fas': [4.0, 25.0],},
+picks = [
+        # {'patch': True, 'project': project, 'subj': 'sub-genz508', 'session': 'ses-1', 'run': '1', 'fas': [4.0, 25.0],},
+        {'patch': True, 'project': project, 'subj': 'sub-genz501', 'session': 'ses-1', 'run': '1', 'fas': [4.0, 25.0],},
+        {'patch': True, 'project': project, 'subj': 'sub-genz308', 'session': 'ses-1', 'run': '1', 'fas': [4.0, 25.0],},
+        {'patch': True, 'project': project, 'subj': 'sub-genz311', 'session': 'ses-1', 'run': '1', 'fas': [4.0, 25.0],},
          ]
 setattr(subjids_picks, 'subjids', picks)
 
 vfa_picks =  get_vfa_names(subjids_picks)
-opts.test = True
+opts.test = False
 if opts.test:
     i = 0
     vfa_picks = [vfa_picks[i]]
@@ -42,32 +46,33 @@ for pick in vfa_picks:
         # calc b1map
         S1 = medianf(b1_data[:,:,:,0], size=7)
         S2 = medianf(b1_data[:,:,:,1], size=7)
-        savenii(S2, b1_affine, ses_dir / 'qt1' / (pick['b1map_fname'] + '_tr2_mf_mag.nii'))
-        b1map_brain, b1map_brain_mask, b1map_cropped = extract_brain(ses_dir / 'qt1' / (pick['b1map_fname'] + '_tr2_mf_mag.nii'), f_factor=0.4)
         b1map = calcb1map(S1, S2, pick['b1maptr'])
         b1map_out_fname = ses_dir/'fmap'/'{subj}_{session}_b1map_phase_mf.nii'.format(**pick)
         savenii(b1map, b1_affine, str(b1map_out_fname))
+        savenii(S2, b1_affine, pick['b1map_fname'] + '_tr2_mf_mag.nii')
+        b1map_brain, b1map_brain_mask, b1map_cropped = extract_brain(pick['b1map_fname'] + '_tr2_mf_mag.nii', f_factor=0.6)
 
         # reg b1map and vfa and apply to mask
-        subj2T1(b1map_brain, vfa_brain, appendposix(b1map_brain, '_reg2vfa_'))
+        subj2T1(b1map_brain, vfa_brain, replacesuffix(b1map_brain, '_reg2vfa_'))
         subj2templ_applywarp(b1map_out_fname, vfa_brain, appendposix(b1map_out_fname, '_reg2vfa'),
-                             [appendposix(b1map_brain, '_reg2vfa_Warp1'),], '.',
-                             affine_xform=[appendposix(b1map_brain, '_reg2vfa_Affine0')])
+                             [str(appendposix(b1map_brain, '_reg2vfa_1Warp')),], '.',
+                             affine_xform=[str(replacesuffix(b1map_brain, '_reg2vfa_0GenericAffine.mat')),])
+        reg_b1map = nib.load(str(appendposix(b1map_out_fname, '_reg2vfa'))).get_data().astype(np.float64)
 
-        # fit vfa and make b1corrected qt1 img
-        vy_vfa2_ec1 = vfa_data[:,:,:,:2]
-        vy_vfa2_ec2 = vfa_data[:,:,:,2:4]
-        vy_vfa2_ec1_rms = np.sqrt(np.sum(np.square(vy_vfa2_ec1), axis=3)/vy_vfa2_ec1.shape[3])
-        vy_vfa2_ec2_rms = np.sqrt(np.sum(np.square(vy_vfa2_ec2), axis=3)/vy_vfa2_ec2.shape[3])
-        k = np.prod(vy_vfa2_ec1_rms.shape)
+        # fit 2 echo 2 flip angle vfa and make b1corrected qt1 img
+        vfa_fa1 = vfa_data[:, :, :, :2]
+        vfa_fa2 = vfa_data[:, :, :, 2:4]
+        vfa_fa1_rms = np.sqrt(np.mean(np.square(vfa_fa1), axis=3))
+        vfa_fa2_rms = np.sqrt(np.mean(np.square(vfa_fa2), axis=3))
+        k = np.prod(vfa_fa1_rms.shape)
         data = np.zeros([len(pick['fas']), k])
-        data[0,:] = vy_vfa2_ec1_rms.flatten()
-        data[1,:] = vy_vfa2_ec2_rms.flatten()
+        data[0, :] = vfa_fa1_rms.flatten()
+        data[1, :] = vfa_fa2_rms.flatten()
         fa_uncorr = np.zeros(data.shape)
         fa_b1corr = np.zeros(data.shape)
         for i, fa in enumerate(pick['fas']):
             fa_uncorr[i, :] = fa
-        fa_b1corr = fa_uncorr * b1map.flatten()  # uses broadcasting
+        fa_b1corr = fa_uncorr * reg_b1map.flatten()  # uses broadcasting
         fa_b1corr[fa_b1corr == np.inf] = np.nan
         fa_b1corr_rad = np.radians(fa_b1corr)
         y = data / np.sin(fa_b1corr_rad)
@@ -78,7 +83,7 @@ for pick in vfa_picks:
             if mask[v]:
                 m[v], intercept, r, p, std = stats.linregress(x[:, v], y[:, v])
         qT1_linregr = -pick['vfatr'][0]/np.log(m)
-        qT1_linregr_data = qT1_linregr.reshape(vy_vfa2_ec1_rms.shape)
+        qT1_linregr_data = qT1_linregr.reshape(vfa_fa1_rms.shape)
         qT1_linregr_data[np.logical_or(qT1_linregr_data < 1.0, ~np.isfinite(qT1_linregr_data))] = 0
         qT1_linregr_data[qT1_linregr_data > 6000] = 6000
         qT1_linregr_data_clean = np.nan_to_num(qT1_linregr_data, copy=True)

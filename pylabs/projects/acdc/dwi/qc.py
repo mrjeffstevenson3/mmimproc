@@ -25,8 +25,10 @@ opts = Optsd()
 subjids_picks = SubjIdPicks()
 # list of dicts of subject ids and info to operate on
 picks = [
-         {'subj': 'sub-acdc104', 'session': 'ses-1', 'run': '1',  # subject selection info
-          },
+         #{'subj': 'sub-acdc121', 'session': 'ses-1', 'run': '1',},
+         {'subj': 'sub-acdc125', 'session': 'ses-1', 'run': '1',},
+         #{'subj': 'sub-acdc120', 'session': 'ses-1', 'run': '1',},
+         {'subj': 'sub-acdc105', 'session': 'ses-1', 'run': '1',},
          ]
 
 setattr(subjids_picks, 'subjids', picks)

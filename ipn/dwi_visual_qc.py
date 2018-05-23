@@ -24,14 +24,14 @@ input_selkey.layout.width = '600px'
 input_selkey
 
 
-# In[18]:
+# In[2]:
 
 
 all_dwi_auto_qc = h52df(opts.info_fname, input_selkey.value)
-all_dwi_auto_qc
+#all_dwi_auto_qc
 
 
-# In[2]:
+# In[3]:
 
 
 pick = {'subj': input_selkey.value.split('/')[1], 'session': input_selkey.value.split('/')[2], }
@@ -68,18 +68,20 @@ dwi_w = qgrid.show_grid(dwi_auto_qc, show_toolbar=False)
 topupdn_w = qgrid.show_grid(topud_auto_qc, show_toolbar=False)
 
 
-# In[3]:
+# In[5]:
 
 
 items = [widgets.Image(description='dwi b2000 bad vols', value=dwi2000_bvolspng,    format='png',    width=500,    height=600),
-        widgets.Image(description='dwi b2000 good vols', value=dwi2000_gvolspng,    format='png',    width=500,    height=600)
-        ]
-box_layout = widgets.Layout(display='flex', flex_flow='row', align_items='stretch', border='solid', width='100%')
-dwi_box = widgets.Box(children=items+[dwi_w], layout=box_layout)
+        widgets.Image(description='dwi b2000 good vols', value=dwi2000_gvolspng,    format='png',    width=500,    height=600),]
+#items_layout = [widgets.Layout(flex-basis='50%', ), widgets.Layout(flex-basis='50%', widgets.Layout(flex-basis='100%',)]
+box_layout = widgets.Layout(display='flex', align_items='stretch', border='solid', width='100%')
+top_box = widgets.HBox(children=items)
+bottom_box = widgets.HBox(children=[dwi_w])
+dwi_box = widgets.Box([top_box, bottom_box], layout=box_layout)
 dwi_box
 
 
-# In[4]:
+# In[10]:
 
 
 items = [widgets.Image(description='topup bad vols', value=topup_bvolspng,    format='png',    width=400,    height=600),
@@ -96,19 +98,19 @@ topupdn_box = widgets.Box(children=items+[topupdn_w], layout=box_layout)
 topupdn_box
 
 
-# In[5]:
+# In[13]:
 
 
 topupdn_w.get_changed_df()
 
 
-# In[7]:
+# In[14]:
 
 
 dwi_w.get_changed_df()
 
 
-# In[5]:
+# In[11]:
 
 
 all_dwi_visqc = pd.concat([dwi_w.get_changed_df(), topupdn_w.get_changed_df()], axis=1)

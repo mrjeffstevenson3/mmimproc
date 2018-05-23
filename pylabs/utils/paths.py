@@ -1,5 +1,5 @@
 import pylabs, os
-#pylabs.opts.fslmultifilequit = 'FALSE'
+#pylabs.popts.fslmultifilequit = 'FALSE'
 os.environ["FSLMULTIFILEQUIT"] = 'FALSE'
 import socket, inspect, platform
 import petname
@@ -8,7 +8,10 @@ from os.path import expanduser, join
 from pathlib import *
 
 class RootDataDir(object):
-    target = 'jaba'
+
+
+    target = 'scotty'
+
     pass
 
 # hostnames with functioning gpus
@@ -17,14 +20,17 @@ working_gpus = ['redshirt.ilabs.uw.edu', 'redshirt'] # 'scotty.ilabs.uw.edu', 's
 pylabs_dir = Path(*Path(inspect.getabsfile(pylabs)).parts[:-2])
 pylabs_datadir = pylabs_dir / 'data'
 pylabs_atlasdir = pylabs_datadir / 'atlases'
+pylabs_atlaslabelsdir = pylabs_datadir / 'atlaslabels'
 moriMNIatlas = pylabs_atlasdir/'mori1_atlas.nii.gz'
 JHUMNIatlas = pylabs_atlasdir/'ilabsJHUtracts0_atlas.nii.gz'
+JHUtracts_prob_atlas = pylabs_atlasdir / 'JHU-ICBM-tracts-prob-1mm.nii.gz'
 MNI1mm_T1 = pylabs_atlasdir/'MNI152_T1_1mm.nii.gz'
 MNI1mm_T1_mask = pylabs_atlasdir/'MNI152_T1_1mm_mask.nii'
 MNI1mm_T1_brain = pylabs_atlasdir/'MNI152_T1_1mm_brain.nii.gz'
 MNI1mm_T1_brain_mask = pylabs_atlasdir/'MNI152_T1_1mm_brain_mask.nii.gz'
-MNI1mm_T2 = pylabs_atlasdir/'MNI152_T2_1mm.nii.gz'
-MNI1mm_T2_brain = pylabs_atlasdir/'MNI152_T2_1mm_brain.nii.gz'
+# MNI1mm_T2 = pylabs_atlasdir/'MNI152_T2_1mm.nii.gz'
+MNI1mm_T2_brain = pylabs_atlasdir/'MNI152_T2_1mm_brain.nii'
+MNI1mm_T2_brain_dwi = pylabs_atlasdir/'MNI152_T2_1mm_brain_dwi.nii'
 MNI1mm_T1_qa_mask = pylabs_atlasdir/'MNI152_T1_1mm_qa_mask.nii.gz'
 meg_head_mask = pylabs_atlasdir/'MNI152_T1_1mm_meg_mask.nii'
 # false input model for todd's vol2fiber fortran
@@ -39,6 +45,7 @@ vol2fiber = pylabs_dir/'pylabs/diffusion/writefiber_withpaint_may23_2017_qt1'
 mnicom = pylabs_atlasdir /'MNI152_T1_1mm_8kcomroi.nii'
 mnimask = pylabs_atlasdir /'MNI152_T1_1mm_mask.nii'
 mniT2com = pylabs_atlasdir /'MNI152_T2_1mm_8kcomroi.nii'
+mniT2comdwi = pylabs_atlasdir /'MNI152_T2_1mm_8kcomroi_dwi.nii'
 mniT2combr = pylabs_atlasdir /'MNI152_T2_1mm_brain_8kcomroi.nii'
 
 def getlocaldataroot():
@@ -62,7 +69,7 @@ def getnetworkdataroot(verbose=True):
     if pylabs.datadir.target == 'scotty':
         if verbose:
             print('setting root data directory to scotty.')
-        if hostname == 'scotty.ilabs.uw.edu':
+        if hostname in ['scotty.ilabs.uw.edu', 'scotty']:
             return '/media/DiskArray/shared_data/js/'
         elif hostname in ['redshirt.ilabs.uw.edu', 'redshirt', 'uhora.ilabs.uw.edu', 'uhora', 'sulu.ilabs.uw.edu', 'sulu', 'JVDB', 'spock', 'spock.ilabs.uw.edu']:
             return '/mnt/users/js/'
@@ -88,7 +95,7 @@ def getnetworkdataroot(verbose=True):
 
 
 def tempfile(extension='.tmp'):
-    return os.path.join('/var/tmp',petname.Generate(3,'-')+extension)
+    return join('/var/tmp',petname.Generate(3,'-')+extension)
 
 def getpylabspath():
     return os.path.split(os.path.split(inspect.getabsfile(pylabs))[0])[0]
@@ -112,6 +119,20 @@ def getbctpath():
         print('found dhcp hostname. assuming mrjeffs laptop' )
         bctpath = join(expanduser('~'), 'Software', 'BCT', '2017_01_15_BCT')
     return bctpath
+
+def getafqpath():
+    hostlist = ['redshirt.ilabs.uw.edu', 'uhora.ilabs.uw.edu', 'scotty.ilabs.uw.edu', 'sulu.ilabs.uw.edu', 'redshirt', 'uhora', 'scotty', 'sulu']
+    hostname = socket.gethostname()
+    if hostname in hostlist:
+        afqpath = join(expanduser('~'), 'Software', 'AFQ')
+    return afqpath
+
+def getvistasoftpath():
+    hostlist = ['redshirt.ilabs.uw.edu', 'uhora.ilabs.uw.edu', 'scotty.ilabs.uw.edu', 'sulu.ilabs.uw.edu', 'redshirt', 'uhora', 'scotty', 'sulu']
+    hostname = socket.gethostname()
+    if hostname in hostlist:
+        vistasoftpath = join(expanduser('~'), 'Software', 'vistasoft')
+    return vistasoftpath
 
 def test4working_gpu():
     hostname = socket.gethostname()

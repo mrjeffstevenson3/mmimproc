@@ -15,7 +15,7 @@ def loadStack(files):
     for f, fpath in enumerate(files):
         print('Loading image {} of {}..'.format(f+1, len(files)))
         img = nibabel.load(str(fpath))
-        sdata = img.get_data()
+        sdata = img.get_data().astype(numpy.float64)
         data.append(sdata)
         shapes.append(sdata.shape)
         affines.append(img.affine)
