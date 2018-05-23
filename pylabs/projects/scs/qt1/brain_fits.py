@@ -5,6 +5,7 @@ import numpy as np
 from pylabs.utils import *
 from pylabs.io.images import savenii, loadStack
 from pylabs.alignment.ants_reg import subj2T1, subj2templ_applywarp
+from pylabs.alignment.resample import reslice_roi
 from pylabs.structural.brain_extraction import extract_brain
 from pylabs.fmap_correction.b1_map_corr import calcb1map
 from scipy import stats
@@ -38,7 +39,15 @@ for pick in spgr_picks:
     ses_dir = fs/'{project}/scs{subjnum}'.format(**pick)
     b1_data = nib.load(str(pick['b1map_fname'])).get_data().astype(np.float64)
     b1_affine = nib.load(str(pick['b1map_fname'])).affine
+    b1_zooms = nib.load(str(pick['b1map_fname'])).header.get_zooms()[:3]
     spgrs, spgr_affine = loadStack([str(pick['spgr02_fname']), str(pick['spgr10_fname']), str(pick['spgr20_fname'])])
+    spgr_zooms = nib.load(str(pick['spgr20_fname'])).header.get_zooms()
+    b1_mag60_reslice, b1_mag60_reslice_affine = reslice_roi(b1_data[:, :, :, 0], b1_affine, b1_zooms, spgr_affine, spgr_zooms)
+    b1_mag120_reslice, b1_mag120_reslice_affine = reslice_roi(b1_data[:, :, :, 1], b1_affine, b1_zooms, spgr_affine, spgr_zooms)
+    offsets = np.round(np.subtract(spgr_affine[:, 3][:3], b1_mag120_reslice_affine[:, 3][:3]) / spgr_zooms, 0).astype(int)
+
+
+
     if not (ses_dir/'qt1').is_dir():
         Path(ses_dir/'qt1').mkdir(parents=True)
     with WorkingContext(ses_dir/'qt1'):
