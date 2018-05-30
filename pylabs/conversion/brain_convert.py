@@ -309,6 +309,10 @@ acdc_conv = pd.DataFrame({
                         'take_lowest_recon': True, 'verbose': True, 'compressed': False, 'permit_truncated': False, 'bvs': False, 'dwell_time': False, 'b1corr': False,
                         'field_strength': False, 'vol_info': False, 'origin': 'scanner', 'minmax': ('parse', 'parse'), 'store_header': True,
                         'scaling': 'dv', 'keep_trace': False, 'overwrite': True, 'strict_sort': False, 'multisession': (1, 2, 3), 'rms': False},
+            '_MT_MPF_': {'dirstruct': 'BIDS', 'outdir': 'qt1', 'scan_name': 'mt', 'scan_info': 'mpf', 'fname_template': '{subj}_{session}_{scan_name}_{scan_info}_{run}.nii',
+                        'verbose': True, 'compressed': False, 'permit_truncated': False, 'bvs': False, 'dwell_time': False, 'b1corr': False,
+                        'field_strength': False, 'vol_info': False, 'origin': 'scanner', 'minmax': ('parse', 'parse'), 'store_header': True,
+                        'scaling': 'fp', 'keep_trace': False, 'overwrite': True, 'strict_sort': True, 'multisession': (1, 2, 3), 'rms': False},
             })
 
 tadpole_conv = pd.DataFrame({
