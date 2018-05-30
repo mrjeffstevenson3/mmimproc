@@ -65,7 +65,7 @@ picks = [
 
 setattr(subjids_picks, 'subjids', picks)
 
-opts.test = True
+opts.test = False
 
 # commands and options are modified below.
 # topup command for unwarping dti
