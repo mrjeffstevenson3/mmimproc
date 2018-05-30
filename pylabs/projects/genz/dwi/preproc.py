@@ -8,6 +8,7 @@ import os, itertools
 from pathlib import *
 from collections import defaultdict
 import time
+import json
 import nipype
 from nipype.interfaces import fsl
 import nibabel as nib
@@ -55,11 +56,11 @@ if not dwi_qc:
 subjids_picks = SubjIdPicks()
 # list of subject ids to operate on
 picks = [
-         {'subj': 'sub-genz510', 'session': 'ses-1', 'run': '1',},  # subject selection info
-         {'subj': 'sub-genz508', 'session': 'ses-1', 'run': '1',},
-         {'subj': 'sub-genz501', 'session': 'ses-1', 'run': '1',},
-         {'subj': 'sub-genz308', 'session': 'ses-1', 'run': '1',},
-         {'subj': 'sub-genz311', 'session': 'ses-1', 'run': '1',},
+         {'subj': 'sub-genz505', 'session': 'ses-1', 'run': '1',},  # subject selection info
+         {'subj': 'sub-genz506', 'session': 'ses-1', 'run': '1',},
+         {'subj': 'sub-genz504', 'session': 'ses-1', 'run': '1',},
+         {'subj': 'sub-genz503', 'session': 'ses-1', 'run': '1',},
+         {'subj': 'sub-genz502', 'session': 'ses-1', 'run': '1',},
          ]
 
 setattr(subjids_picks, 'subjids', picks)
