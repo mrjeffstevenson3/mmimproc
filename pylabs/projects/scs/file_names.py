@@ -13,11 +13,11 @@ pylabs.datadir.target = 'scotty'
 from pathlib import *
 import numpy as np
 from pylabs.utils import *
-from pylabs.conversion.brain_convert import img_conv, genz_conv, is_empty
+from pylabs.conversion.brain_convert import self_control_conv, is_empty
 from pylabs.io.mixed import getTRfromh5
 
-fs = Path(getnetworkdataroot())
-project = 'self_control'
+fs = Path('/media/DiskArray/shared_data/js/')
+project = 'self_control/hbm_group_data/qT1'
 
 
 class SubjIdPicks(object):
@@ -29,13 +29,13 @@ class Optsd(object):
     """
     def __init__(self,
             # define project variables here. will become dict using opts = Optsd; vars(opts).
-            project = 'self_control',
+            project = 'self_control/hbm_group_data/qt1',
             test = True,
             overwrite = True,
             convert = False,
             spm_thresh = 0.80,
             fsl_thresh = 0.20,
-            info_fname = fs / project / ('all_' + project + '_info.h5'),
+            info_fname = fs / 'self_control' / 'all_self_control_info.h5',
             dwi_pass_qc = '_passqc',
             mf_str = '_mf',    # set to blank string '' to disable median filtering
             run_topup = True,
@@ -52,12 +52,12 @@ class Optsd(object):
             gaba_dyn = 120,
             gaba_ftempl = '{subj}_WIP_ACCGABAMM_TE{te}_{dyn}DYN_{wild}_raw_{type}.SDAT',
             b1corr = False,
-            b1maptr = np.array([60., 120.0]),
+            b1maptr = np.array([51.0, 120.0]),
             vfa_tr = 21.0,
             vfa_fas = [4.0, 25.0],
-            spgr_tr = 15.0,
-            spgr_fas = [5.0, 10.0, 15.0, 20.0, 30.0],
-            qt1_source_dir = '{fs}/{project}/hbm_/{subj}/{session}/qt1/mni2dwi',
+            spgr_tr = 11.0,
+            spgr_fas = [2.0, 10.0, 20.0],
+            qt1_source_dir = '{fs}/{project}/hbm_group_data/{subj}/{session}/qt1/mni2dwi',
             reg_mni2dwi = '{fs}/{project}/{subj}/{session}/reg/mni2dwi',
             reg_qt12dwi = '{fs}/{project}/{subj}/{session}/reg/qt12dwi',
             JHU_thr = 5,
@@ -100,22 +100,12 @@ class Optsd(object):
         self.stat_thr = stat_thr
         self.ants_args = ants_args
 
-"""
-# other future stages to run to move to opts settings
-subT2 = False   #wip ??
-bet = False
-prefilter = False
-templating = False
-"""
-
 opts = Optsd()
 
 # for partial substitutions
-fname_templ_dd = {'subj': '{subj}', 'session': '{session}', 'scan_name': '{scan_name}', 'scan_info': '{scan_info}',
+fname_templ_dd = {'subjnum': '{subjnum}', 'subj': '{subj}', 'session': '{session}', 'scan_name': '{scan_name}', 'scan_info': '{scan_info}',
                   'run': '{run}', 'fa': '{fa}', 'tr': '{tr}', 'side': '{side}', 'te': '{te}', 'dyn': '{dyn}',
                   'wild': '{wild}', 'type': '{type}'}
-
-gaba_ftempl = '{subj}{wild}_WIP_ACCGABAMM_TE{te}_{dyn}DYN_{wild}_raw_{type}.SDAT'
 
 def set_fname_templ_dd(dd, d):
     for k in d.keys():
@@ -134,25 +124,24 @@ def merge_ftempl_dicts(dict1={}, dict2={}, dict3={}, base_dd=fname_templ_dd):
     nd.update(dict3)  # modifies base dict with dict1 2 and 3 keys and values
     return nd
 
-#unused sofar
-mod_map = {'T2': '_3DT2W_', 'lt_match': '_AX_MATCH_LEFT_MEMP_VBM_TI1100_', 'rt_match': '_AX_MATCH_RIGHT_MEMP_VBM_TI1100_', 'b1map': '_B1MAP_',
-          'dwi': '_DWI64_3SH_B0_B800_B2000_TOPUP_', 's0_up': '_DWI_B0_TOPDN_', 's0_dn': '_DWI_B0_TOPUP_', 'mpr': '_MEMP_FS_TI1100_', 'spgr': '_T1_MAP_'}
-
 def get_spgr_names(subjids_picks):
     qt1_picks = []
-    b1_ftempl = '{subj}_{session}_b1map.nii'
-    spgr_ftempl = '{subj}_{session}_spgr.nii'
+    b1_ftempl = fs / project / 'scs{subjnum}/B1map_qT1/{subj}_WIP_B1MAP_SAG_TR51_TR120_60DEG_SPOIL120_SENSE_{wild}_1.nii'
+    spgr_ftempl = fs / project / 'scs{subjnum}/source_nii/{subj}_WIP_T1_MAP_{fa}B_SENSE_{wild}_1.nii'
     for subjid in subjids_picks.subjids:
-        subjid.update({'scan_name': genz_conv['_VFA_FA4-25_QUIET']['scan_name'], 'tr': '21p0'})
-        subjid['spgr_fname'] = spgr_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=genz_conv['_VFA_FA4-25_QUIET']))
-        subjid['b1map_fname'] = b1_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=genz_conv['_B1MAP-QUIET_FC_']))
-        if opts.info_fname.is_file():
-            subjid['spgrtr'] = getTRfromh5(opts.info_fname, subjid['subj'], subjid['session'], 'qt1', spgr_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=genz_conv['_VFA_FA4-25_QUIET'])))
-            subjid['b1maptr'] = getTRfromh5(opts.info_fname, subjid['subj'], subjid['session'], 'fmap', b1_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=genz_conv['_B1MAP-QUIET_FC_'])))
-        else:
-            print('cannot find all_genz_info.h5 file. using fixed defaults: spgr TR=21.0 and b1map TR = 60.0 and 240.0')
-            subjid['spgrtr'] = 21.0
-            subjid['b1maptr'] = np.array([60., 240.0])
+        subjid['wild'] = '*'
+        subjid['project'] = project
+        subjid['b1map_fname'] = list((Path(str(b1_ftempl).format(**subjid)).parent).glob(Path(str(b1_ftempl).format(**subjid)).name))[0]
+        if not subjid['b1map_fname'].is_file():
+            raise ValueError('file not found. {missing}'.format({'missing': subjid['b1map_fname']}))
+        subjid['b1maptr'] = np.array([60., 120.0])
         subjid['spgr_fas'] = opts.spgr_fas
+        subjid['spgr_tr'] = opts.spgr_tr
+        for ifa in subjid['spgr_fas']:
+            subjid['fa'] = str(int(ifa)).zfill(2)
+            spgr_fname = list((Path(str(spgr_ftempl).format(**subjid)).parent).glob(Path(str(spgr_ftempl).format(**subjid)).name))[0]
+            subjid['spgr%(fa)s_fname' % subjid] = spgr_fname
+            if not spgr_fname.is_file():
+                raise ValueError('file not found. {missing}'.format({'missing': spgr_fname}))
         qt1_picks.append(subjid)
     return qt1_picks

@@ -8,7 +8,10 @@ from os.path import expanduser, join
 from pathlib import *
 
 class RootDataDir(object):
-    target = 'jaba'
+
+
+    target = 'scotty'
+
     pass
 
 # hostnames with functioning gpus
@@ -66,7 +69,7 @@ def getnetworkdataroot(verbose=True):
     if pylabs.datadir.target == 'scotty':
         if verbose:
             print('setting root data directory to scotty.')
-        if hostname == 'scotty.ilabs.uw.edu':
+        if hostname in ['scotty.ilabs.uw.edu', 'scotty']:
             return '/media/DiskArray/shared_data/js/'
         elif hostname in ['redshirt.ilabs.uw.edu', 'redshirt', 'uhora.ilabs.uw.edu', 'uhora', 'sulu.ilabs.uw.edu', 'sulu', 'JVDB', 'spock', 'spock.ilabs.uw.edu']:
             return '/mnt/users/js/'
