@@ -1,4 +1,4 @@
-from pylabs.utils.provenance import ProvenanceWrapper
+import pylabs
 import os
 
 
@@ -26,3 +26,4 @@ class PylabsOptions(object):
     orientation = 'LAS+'
     overwrite = False
     fsldir = str(os.environ.get('FSLDIR'))
+    #datadir_target = pylabs.datadir.target
