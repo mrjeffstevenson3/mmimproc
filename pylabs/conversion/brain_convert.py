@@ -1,7 +1,7 @@
 # todo: break apart individual project dataframes into file in each project folder.
 # todo: refactor conv_subjs to put in hdf file name and remove niftiDict
 # todo: capture spectroscopy meta data if present
-# todo: make img_conv multiindex. panel method deprecated.
+
 import pylabs
 pylabs.datadir.target = 'jaba'
 from pylabs.conversion.parrec2nii_convert import BrainOpts
@@ -373,6 +373,10 @@ lilomom_conv = pd.DataFrame({
                         'take_lowest_recon': True, 'verbose': True, 'compressed': False, 'permit_truncated': False, 'bvs': False, 'dwell_time': False, 'b1corr': True,
                         'field_strength': False, 'vol_info': False, 'origin': 'scanner', 'minmax': ('parse', 'parse'), 'store_header': True,
                         'scaling': 'dv', 'keep_trace': False, 'overwrite': True, 'strict_sort': False, 'multisession': (1, 2, 3), 'rms': False},
+            '_3DI_MC_': {'dirstruct': 'BIDS', 'outdir': 'anat', 'scan_name': 'angio', 'scan_info': '', 'fname_template': '{subj}_{session}_{scan_name}_{run}.nii',
+                         'take_lowest_recon': True, 'verbose': True, 'compressed': False, 'permit_truncated': False, 'bvs': False, 'dwell_time': False, 'b1corr': False,
+                         'field_strength': False, 'vol_info': False, 'origin': 'scanner', 'minmax': ('parse', 'parse'), 'store_header': True,
+                         'scaling': 'dv', 'keep_trace': False, 'overwrite': True, 'strict_sort': False, 'multisession': (1, 2, 3), 'rms': False},
             })
 
 lilobaby_conv = pd.DataFrame({
@@ -452,7 +456,7 @@ def conv_subjs(project, subjects, hdf_fname=None):
     niftiDict = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
     niftiDF = pd.DataFrame()
     if project not in img_conv:
-        raise ValueError(project+" not in img_conv Panel. Please check")
+        raise ValueError(project+" not in img_conv dictionary. Please check brain_convert module.")
     setattr(opts, 'proj', project)
     scans = img_conv[project]
     scans.dropna(axis=1, how='all', inplace=True)

@@ -5,7 +5,7 @@ on brand new system:
 2. `mkdir ${HOME}/Software`
 3. setup build/development environment (paste as 1 liner:
 sudo apt-get update && \
-sudo apt-get install build-essential gfortran cmake-curses-gui software-properties-common uuid-dev libtiff5-dev:i386 libtiff5-dev -y && \
+sudo apt-get install build-essential autoconf autogen libtool gfortran cmake-curses-gui software-properties-common uuid-dev libtiff5-dev:i386 libtiff5-dev -y && \
 sudo apt-get install libinsighttoolkit4.9 libinsighttoolkit4-dev libinsighttoolkit4-dbg insighttoolkit4-python insighttoolkit4-examples libgdcm-tools -y && \
 sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y && \
 sudo apt-get update && \

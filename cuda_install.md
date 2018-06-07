@@ -4,12 +4,18 @@ if you need the make/model of your Graphics card do one of either:
 `sudo lshw -C video` or `sudo lspci | grep -i nvidia` then check that you have the appropriate driver installed by going to `http://www.nvidia.com/Download/index.aspx` and filling in info. download run file if on 16.04 until stock cuda7.5 available.
 redshirt=GK110B [GeForce GTX TITAN Black] or 700 series GTX titan black
 latest driver as of 7-18-2017 is 375.66
+# on https://www.geforce.com/drivers earliest recommended/certified geforce GTX 1080ti compatible driver is 375.82.
+
 
 #recover from bad install: deinstall everything
 sudo apt-get remove --purge nvidia*
 cd ~/Software
 sudo ./NVIDIA-Linux-x86_64-367.57.run --uninstall
 sudo ./cuda_7.5.18_linux.run --uninstall --silent
+# make sure most up to date xorg packages installed
+sudo apt-get install nouveau-firmware inxi
+sudo apt install --install-recommends linux-generic-hwe-16.04 xserver-xorg-hwe-16.04
+
 
 #then start with drivers 
 sudo apt-get install nvidia-367 gcc-4.9 gcc-5
