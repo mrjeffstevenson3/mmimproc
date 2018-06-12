@@ -21,7 +21,7 @@ sudo apt install --install-recommends linux-generic-hwe-16.04 xserver-xorg-hwe-1
 sudo apt-get install nvidia-367 gcc-4.9 gcc-5
 sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 20
 sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-5 10
-#use this to configure which version of gcc before pycuda making gcc 4.9 default
+#use this to configure which version of gcc before pycuda making gcc 4.8.5 default compiler 4.9 fails
 sudo update-alternatives --config gcc
 pip install pycuda
 #then run test of eddy_cuda7.5
@@ -109,4 +109,40 @@ Aborted (core dumped)
         
         deviceQuery, CUDA Driver = CUDART, CUDA Driver Version = 7.5, CUDA Runtime Version = 7.5, NumDevs = 1, Device0 = GeForce GTX TITAN Black
         Result = PASS
+
+
+
+###### new install procedure 6-jun-2018:
+1. make sure all new machine install items thru FSL install with cuda patches and sources in software-properties-gtk are turned on in the "Ubuntu Software" tab click "Source code"
+2. then ssh in and paste as one block
+sudo service lightdm stop && \
+# clear previous nvidia installations
+sudo apt-get purge nvidia* -y
+# update system
+sudo apt-get update && \
+sudo apt-get upgrade -y && \
+sudo apt-get dist-upgrade -y && \
+# download cuda dpkg but not install until after reboot
+cd ${HOME}/Software && wget https://developer.nvidia.com/compute/cuda/8.0/Prod2/local_installers/cuda-repo-ubuntu1604-8-0-local-ga2_8.0.61-1_amd64-deb && \
+wget https://developer.nvidia.com/compute/cuda/8.0/Prod2/patches/2/cuda-repo-ubuntu1604-8-0-local-cublas-performance-update_8.0.61-1_amd64-deb && \
+# disable generic graphics driver 
+echo -e "blacklist nouveau\nblacklist lbm-nouveau\noptions nouveau modeset=0\nalias nouveau off\nalias lbm-nouveau off\n" | sudo tee /etc/modprobe.d/blacklist-nouveau.conf && \
+echo options nouveau modeset=0 | sudo tee -a /etc/modprobe.d/nouveau-kms.conf && \
+sudo update-initramfs -u && \
+# get drm modules if missing (likely)
+sudo apt-get install linux-image-extra-virtual && \
+# install source and headers (make sure sources are on in software-properties-gtk)
+sudo apt-get install linux-source -y && \
+sudo apt-get source linux-image-$(uname -r) && \
+sudo apt-get install linux-headers-$(uname -r) -y
+
+sudo reboot
+
+# after reboot:
+sudo synaptic
+# select the 384.130
+
+
+
+
 
