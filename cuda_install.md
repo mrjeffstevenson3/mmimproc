@@ -113,7 +113,8 @@ Aborted (core dumped)
 
 
 ###### new install procedure 6-jun-2018:
-1. make sure all new machine install items thru FSL install with cuda patches and sources in software-properties-gtk are turned on in the "Ubuntu Software" tab click "Source code"
+1. ssh in to machine and make sure all new machine install items thru FSL install with cuda patches and sources in software-properties-gtk are turned on in the "Ubuntu Software" tab click "Source code"
+# test that gcc is version at 6 not 4 or 5 or kernel compile wont work
 2. then ssh in and paste as one block
 sudo service lightdm stop && \
 # clear previous nvidia installations
@@ -154,6 +155,8 @@ sudo apt-get update && \
 sudo apt-get install cuda -y
 
 sudo reboot
+
+# test cuda install
 
 
 
