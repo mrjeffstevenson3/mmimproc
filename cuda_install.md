@@ -117,7 +117,7 @@ Aborted (core dumped)
 2. then ssh in and paste as one block
 sudo service lightdm stop && \
 # clear previous nvidia installations
-sudo apt-get purge nvidia* -y
+sudo apt-get purge nvidia* -y && \
 # update system
 sudo apt-get update && \
 sudo apt-get upgrade -y && \
@@ -130,7 +130,7 @@ echo -e "blacklist nouveau\nblacklist lbm-nouveau\noptions nouveau modeset=0\nal
 echo options nouveau modeset=0 | sudo tee -a /etc/modprobe.d/nouveau-kms.conf && \
 sudo update-initramfs -u && \
 # get drm modules if missing (likely)
-sudo apt-get install linux-image-extra-virtual && \
+sudo apt-get install linux-image-extra-virtual -y && \
 # install source and headers (make sure sources are on in software-properties-gtk)
 sudo apt-get install linux-source -y && \
 sudo apt-get source linux-image-$(uname -r) && \
@@ -139,10 +139,21 @@ sudo apt-get install linux-headers-$(uname -r) -y
 sudo reboot
 
 # after reboot:
+gcc -v && \
+# should read gcc-6. if not fix before going on
+sudo service lightdm stop && \
 sudo synaptic
-# select the 384.130
+# select the 384.130 driver and dependencies and apply
+sudo reboot
+# test installation with 
+nvidia-smi
+# if driver seen by nvidia-smi proceed else troubleshoot till working
+cd ${HOME}/Software && \
+sudo dpkg -i cuda-repo-ubuntu1604-8-0-local-ga2_8.0.61-1_amd64.deb && \
+sudo apt-get update && \
+sudo apt-get install cuda -y
 
-
+sudo reboot
 
 
 

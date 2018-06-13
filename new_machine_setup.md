@@ -14,7 +14,7 @@ sudo apt-get update && \
 sudo apt-get install gcc-6 g++-6 -y && \
 sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-6 60 --slave /usr/bin/g++ g++ /usr/bin/g++-6 && \
 sudo apt-get install gcc-4.8 g++-4.8 -y && \
-sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.8 60 --slave /usr/bin/g++ g++ /usr/bin/g++-4.8;
+sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.8 40 --slave /usr/bin/g++ g++ /usr/bin/g++-4.8;
 
 # When completed, you must change to the gcc you want to work with by default. Type in your terminal:
 sudo update-alternatives --config gcc
