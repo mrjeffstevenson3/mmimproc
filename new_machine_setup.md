@@ -4,6 +4,7 @@ on brand new system:
     USE ONLY STEP 5 FOR PYTHON INSTALLATION.
 2. `mkdir ${HOME}/Software`
 3. setup build/development environment (paste as 1 liner:
+```
 sudo apt-get update && \
 sudo apt-get install build-essential synaptic autoconf autogen libtool gfortran cmake-curses-gui software-properties-common uuid-dev libtiff5-dev:i386 libtiff5-dev -y && \
 sudo apt-get install libinsighttoolkit4.9 libinsighttoolkit4-dev libinsighttoolkit4-dbg insighttoolkit4-python insighttoolkit4-examples libgdcm-tools -y && \
@@ -15,23 +16,24 @@ sudo apt-get install gcc-6 g++-6 -y && \
 sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-6 60 --slave /usr/bin/g++ g++ /usr/bin/g++-6 && \
 sudo apt-get install gcc-4.8 g++-4.8 -y && \
 sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.8 40 --slave /usr/bin/g++ g++ /usr/bin/g++-4.8;
-
-# When completed, you must change to the gcc you want to work with by default. Type in your terminal:
-sudo update-alternatives --config gcc
+```
+# When completed, you must change to the gcc you want (here gcc 6) to work with by default. Type in your terminal:
+`sudo update-alternatives --config gcc`
 
 # To verify if it worked. Just type in your terminal
-gcc -v
+`gcc -v`
 
-4. 
 5. download to ~/Software the py2.7 64bit anaconda installer from https://www.continuum.io/downloads#linux
    in terminal `cd ~/Software && bash Anaconda2-5.1.0-Linux-x86_64.sh` #nb version numbers will change.
    review and accept license and enter install location as /home/toddr/Software/anaconda2  and say yes to prepend to .bashrc
 8. either open a new terminal to continue or `source ~/.bashrc`
 9. update and configure conda and then add basic python dependencies/requirements:
-    `conda update conda; conda config --set channel_priority false; conda config --append channels conda-forge dfroger`
-    `conda install pip pathlib pathlib2 pygpgme pydicom qgrid pytest-xdist pytest-env`
-    `conda upgrade --all`
-    `pip install pynrrd petname latex shell argparse msgpack cloud nose-timer`
+    ```
+    conda update conda; conda config --set channel_priority false; conda config --append channels conda-forge dfroger
+    conda install pip pathlib pathlib2 pygpgme pydicom qgrid pytest-xdist pytest-env
+    conda upgrade --all
+    pip install pynrrd petname latex shell argparse msgpack cloud nose-timer
+    ```
 11. install pycharm into ~/Software and register
 edit VM memory options to increase memory support for large files:
 -Xms4000m
@@ -39,40 +41,55 @@ edit VM memory options to increase memory support for large files:
 
 12. install pycharm plugins bashsupport and markdown, restart pycharm then in pycharm settings Project interpreter press cogwheel button add local and select the anaconda python interpreter at ${HOME}/Software/anaconda2/bin/python
 13. clone your master branch of pylabs from your github repo into ~/Software: `cd ~/Software && git clone https://github.com/mrjeffs/pylabs.git` (Replace mrjeffs with your github account id.)
-14. Add the main pylabs repo as upstream: `cd ~/Software/pylabs && git remote add upstream https://github.com/ilabsbrainteam/pylabs.git`
+14. Add the main pylabs repo as upstream:
+    `cd ~/Software/pylabs && git remote add upstream https://github.com/ilabsbrainteam/pylabs.git`
 15. in `cd ~/Software` dir for each of the following github packages clone, cd into and `python setup.py develop:
-    `cd ${HOME}/Software && git clone https://github.com/nipy/nibabel.git && cd nibabel && python setup.py develop
+    ```
+    cd ${HOME}/Software && git clone https://github.com/nipy/nibabel.git && cd nibabel && python setup.py develop
 	cd ${HOME}/Software && git clone https://github.com/ilogue/niprov.git && cd niprov && python setup.py develop
 	cd ${HOME}/Software && git clone https://github.com/nipy/dipy.git && cd dipy && python setup.py develop
 	cd ${HOME}/Software && git clone https://github.com/euske/pdfminer.git && cd pdfminer && python setup.py install
 	cd ${HOME}/Software && git clone https://github.com/ANTsX/ANTsPy.git && cd ANTsPy && python setup.py develop
 	cd ${HOME}/Software && git clone https://github.com/yeatmanlab/AFQ.git
 	cd ${HOME}/Software && git clone https://github.com/vistalab/vistasoft.git
-	cd ${HOME}/Software && git clone https://github.com/stnava/ANTs.git && mkdir antsbin && cd antsbin && ccmake ../ANTs`
-
+	cd ${HOME}/Software && git clone https://github.com/stnava/ANTs.git && mkdir antsbin && cd antsbin && ccmake ../ANTs
+	```
 paste till here
-	when the cmake interface comes onscreen press c twice (to configure) till you see the option g appear on bottom middle, then press g to save and exit. then type
+	when the cmake interface comes onscreen press c twice (to configure) till you see the option g appear on bottom middle, then press g twice to save and exit. then type
 	`make -j 4`
 	
 **and** open another terminal tab since this will take a while and there is more to do.
 17. If you like, Install and setup Dropbox `https://www.dropbox.com` and teamviewer `https://www.teamviewer.com/en/`
-18. install FSL.
-    first check if platform function will work. either cat /etc/debian_version or in python
+18. install FSL. first install requirements for for fsleyes:
+    ```
+    sudo apt-get update
+    sudo apt-get install freeglut3 libsdl1.2debian
+    sudo apt-get install libgtk2.0-dev libgtk-3-dev libwebkitgtk-dev libwebkitgtk-3.0-dev
+    sudo apt-get install libjpeg-turbo8-dev libtiff5-dev libsdl1.2-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libnotify-dev freeglut3-dev
+    ```
+    check if platform function will work. either `cat /etc/debian_version` or in python
+    ```python
     import platform;
     platform.linux_distribution(full_distribution_name=0)
+    ```
     result should read ('debian', '16.04', '') or higher if ubuntu release is > 16.04.
-    if no release number the overwrite /etc/debian_version with actual number eg:
+    if result not release number the overwrite /etc/debian_version with actual number eg:
     `cd ${HOME}/Software && echo "16.04" > debian_version && sudo cp debian_version /etc/debian_version`
     then download fslinstaller.py from https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/FslInstallation/Linux
 	when done downloading type/paste and be sure to accept updating bashrc
 	`python fslinstaller.py && source ${HOME}/.bashrc`
 	or run this one liner:
-	brc=${HOME}/.bashrc && echo "FSLDIR=/usr/local/fsl" >> $brc && echo ". \${FSLDIR}/etc/fslconf/fsl.sh" >> $brc && echo "PATH=\${FSLDIR}/bin:\${PATH}" >> $brc && echo "export FSLDIR PATH" >> $brc && source $brc
-	download patches from https://fsl.fmrib.ox.ac.uk/fsldownloads/patches/
-	and copy into $FSLDIR/bin the eddy_cuda 7.5 and eddy_cuda8.0 and/or eddy_openmp eddy current correction binaries and bedpostx_gpu and bedpostx_postproc_gpu.sh
-	`mkdir -p ${HOME}/Software/fsl_patches && cd ${HOME}/Software/fsl_patches  && wget http://fsl.fmrib.ox.ac.uk/fsldownloads/patches/eddy-patch-fsl-5.0.11/centos6/{eddy_cuda7.5,eddy_openmp} \
-	 && wget https://fsl.fmrib.ox.ac.uk/fsldownloads/patches/bedpostx-patch-fsl-5.0.9/{bedpostx,bedpostx_gpu,bedpostx_postproc_gpu.sh} && \
-	 wget https://fsl.fmrib.ox.ac.uk/fsldownloads/patches/bedpostx-patch-fsl-5.0.9/CentOS6-64/bin/xfibres && sudo cp * $FSLDIR/bin && sudo chmod 777 $FSLDIR/bin/{eddy_cuda7.5,eddy_cuda8.0,eddy_openmp,bedpostx,bedpostx_gpu,bedpostx_postproc_gpu.sh,xfibres}`
+	```
+	brc=${HOME}/.bashrc && echo "FSLDIR=/usr/local/fsl" >> $brc && echo ". \${FSLDIR}/etc/fslconf/fsl.sh" >> $brc && \
+	echo "PATH=\${FSLDIR}/bin:\${PATH}" >> $brc && echo "export FSLDIR PATH" >> $brc && source $brc
+	```
+	download eddy and bedpostx patches from https://fsl.fmrib.ox.ac.uk/fsldownloads/patches/ and https://users.fmrib.ox.ac.uk/~moisesf/Bedpostx_GPU/Installation.html and copy into $FSLDIR/bin and /lib dirs
+	```
+	mkdir -p ${HOME}/Software/fsl_patches/bedpostx_gpu_cuda8.0 && cd ${HOME}/Software/fsl_patches && wget https://fsl.fmrib.ox.ac.uk/fsldownloads/patches/eddy-patch-fsl-5.0.11/centos6/eddy_cuda8.0 && \
+	cd bedpostx_gpu_cuda8.0 && wget http://users.fmrib.ox.ac.uk/~moisesf/Bedpostx_GPU/CUDA_8.0/bedpostx_gpu.zip && unzip bedpostx_gpu.zip && \
+	sudo mv ${FSLDIR}/lib/libbedpostx_cuda.so ${FSLDIR}/lib/libbedpostx_cuda.so_orig && sudo cp lib/libbedpostx_cuda.so ${FSLDIR}/lib/libbedpostx_cuda.so && sudo chmod 777 ${FSLDIR}/lib/libbedpostx_cuda.so && \
+	for f in `ls bin`: do sudo mv ${FSLDIR}/bin/${f} ${FSLDIR}/bin/${f}_orig; sudo cp bin/$f ${FSLDIR}/bin; sudo chmod 777 ${FSLDIR}/bin/$f; done && \
+	```
 19. Download and unpack Freesurfer and infant latest Linux-centos7 development release into ~/Software at `ftp://surfer.nmr.mgh.harvard.edu/pub/dist/freesurfer/dev` and copy your .license file into the folder and update ~/.bashrc with
 extract and rename freesurfer folders:
 infant folder name from extracting archive: freesurfer freesurfer_dev20180503_infant  # date will not change much
