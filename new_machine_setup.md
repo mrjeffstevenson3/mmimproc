@@ -1,9 +1,9 @@
-**This file is a new machine setup recipe for brainteam sw on ubuntu 16.04 Mate system based on uhora.**
+# This file is a new machine setup recipe for brainteam sw on ubuntu 16.04 Mate system based on uhora.
 on brand new system:
-1. DO NOT INSTALL PIP, CONDA, OR PYTHON FROM UBUNTU REPOS. USE ONLY CONDA AND DELETE ANY REFS IN ~/.local/bin or ~/.local/lib.
-    USE ONLY STEP 5 FOR PYTHON INSTALLATION.
+1. **DO NOT INSTALL PIP, CONDA, OR PYTHON FROM UBUNTU REPOS. USE ONLY CONDA AND DELETE ANY REFS IN ~/.local/bin or ~/.local/lib.
+    USE ONLY STEP 5 FOR PYTHON INSTALLATION.**
 2. `mkdir ${HOME}/Software`
-3. setup build/development environment (paste as 1 liner:
+3. setup build/development environment (paste as 1 liner):
 ```
 sudo apt-get update && \
 sudo apt-get install build-essential synaptic autoconf autogen libtool gfortran cmake-curses-gui software-properties-common uuid-dev libtiff5-dev:i386 libtiff5-dev -y && \
@@ -17,14 +17,14 @@ sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-6 60 --slave /u
 sudo apt-get install gcc-4.8 g++-4.8 -y && \
 sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.8 40 --slave /usr/bin/g++ g++ /usr/bin/g++-4.8;
 ```
-# When completed, you must change to the gcc you want (here gcc 6) to work with by default. Type in your terminal:
+#### When completed, you must change to the gcc you want (here gcc 6) to work with by default. Type in your terminal:
 `sudo update-alternatives --config gcc`
 
-# To verify if it worked. Just type in your terminal
+##### To verify if it worked. Just type in your terminal
 `gcc -v`
 
 5. download to ~/Software the py2.7 64bit anaconda installer from https://www.continuum.io/downloads#linux
-   in terminal `cd ~/Software && bash Anaconda2-5.1.0-Linux-x86_64.sh` #nb version numbers will change.
+   in terminal `cd ~/Software && bash Anaconda2-5.1.0-Linux-x86_64.sh` **#nb version numbers will change.**
    review and accept license and enter install location as /home/toddr/Software/anaconda2  and say yes to prepend to .bashrc
 8. either open a new terminal to continue or `source ~/.bashrc`
 9. update and configure conda and then add basic python dependencies/requirements:
@@ -54,11 +54,10 @@ edit VM memory options to increase memory support for large files:
 	cd ${HOME}/Software && git clone https://github.com/vistalab/vistasoft.git
 	cd ${HOME}/Software && git clone https://github.com/stnava/ANTs.git && mkdir antsbin && cd antsbin && ccmake ../ANTs
 	```
-paste till here
-	when the cmake interface comes onscreen press c twice (to configure) till you see the option g appear on bottom middle, then press g twice to save and exit. then type
+	#### when the cmake interface comes onscreen press c twice (to configure) till you see the option g appear on bottom middle, then press g twice to save and exit. then type
 	`make -j 4`
 	
-**and** open another terminal tab since this will take a while and there is more to do.
+    **and** open another terminal tab since this will take a while and there is more to do.
 17. If you like, Install and setup Dropbox `https://www.dropbox.com` and teamviewer `https://www.teamviewer.com/en/`
 18. install FSL. first install requirements for for fsleyes:
     ```
@@ -91,21 +90,22 @@ paste till here
 	for f in `ls bin`: do sudo mv ${FSLDIR}/bin/${f} ${FSLDIR}/bin/${f}_orig; sudo cp bin/$f ${FSLDIR}/bin; sudo chmod 777 ${FSLDIR}/bin/$f; done && \
 	```
 19. Download and unpack Freesurfer and infant latest Linux-centos7 development release into ~/Software at `ftp://surfer.nmr.mgh.harvard.edu/pub/dist/freesurfer/dev` and copy your .license file into the folder and update ~/.bashrc with
-extract and rename freesurfer folders:
-infant folder name from extracting archive: freesurfer freesurfer_dev20180503_infant  # date will not change much
-adult folder name from extracting archive: freesurfer freesurfer_dev20180503_adult   # date will change
-`# Freesurfer configuration
-alias recon-alli='reconallinfant'
-alias recon-alla='reconalladult'
-function reconallinfant() { export FREESURFER_HOME=${HOME}/Software/freesurfer_dev20180503_infant;
- 	source $FREESURFER_HOME/SetUpFreeSurfer.sh; export SUBJECTS_DIR=${PWD}; 
-	echo "Current freesurfer subject directory is now $SUBJECTS_DIR. running infant recon-all"; echo -e "mris_inflate -n 15\n" > freesurf_expert_opts.txt; recon-all "$@" ;
-	}
-function reconalladult() { export FREESURFER_HOME=${HOME}/Software/freesurfer_dev20180503_adult;
- 	source $FREESURFER_HOME/SetUpFreeSurfer.sh; export SUBJECTS_DIR=${PWD}; 
-	echo "Current freesurfer subject directory is now $SUBJECTS_DIR. running adult recon-all"; echo -e "mris_inflate -n 15\n" > freesurf_expert_opts.txt; recon-all "$@" ;
-	}
-`
+    extract and rename freesurfer folders:
+    infant folder name from extracting archive: freesurfer freesurfer_dev20180503_infant  # date will not change much
+    adult folder name from extracting archive: freesurfer freesurfer_dev20180503_adult   # date will change
+    ```
+    # Freesurfer configuration
+    alias recon-alli='reconallinfant'
+    alias recon-alla='reconalladult'
+    function reconallinfant() { export FREESURFER_HOME=${HOME}/Software/freesurfer_dev20180503_infant;
+        source $FREESURFER_HOME/SetUpFreeSurfer.sh; export SUBJECTS_DIR=${PWD}; 
+        echo "Current freesurfer subject directory is now $SUBJECTS_DIR. running infant recon-all"; echo -e "mris_inflate -n 15\n" > freesurf_expert_opts.txt; recon-all "$@" ;
+        }
+    function reconalladult() { export FREESURFER_HOME=${HOME}/Software/freesurfer_dev20180503_adult;
+        source $FREESURFER_HOME/SetUpFreeSurfer.sh; export SUBJECTS_DIR=${PWD}; 
+        echo "Current freesurfer subject directory is now $SUBJECTS_DIR. running adult recon-all"; echo -e "mris_inflate -n 15\n" > freesurf_expert_opts.txt; recon-all "$@" ;
+        }
+    ```
 20. install camino and R using ~/Software/Dropbox/bash_scripts/how_to_install_camino_and_R.txt
 21. using https://help.ubuntu.com/community/SettingUpNFSHowTo to set up NFS mounts:
     `sudo apt-get install nfs-common` and then `gksudo gedit /etc/fstab` and add the following tab delim line under #mount for NFS:
@@ -114,18 +114,20 @@ function reconalladult() { export FREESURFER_HOME=${HOME}/Software/freesurfer_de
     on scotty set up /etc/exports add to /exports AND /exports/users lines ` <your_new_ip_addr>(rw,nohide,insecure,no_subtree_check,async)` - pls include leading space.
 22. copy scotty .bashrc appropriate elements to ${HOME}/.bashrc (hint use pycharm compare file fn)
     here are some pylabs env vars to put at the end to make sure bash scripts find their way:
-        #set up pylabs env variables
-        PYLABSD=`python -c "from pylabs.utils import pylabs_datadir; print str(pylabs_datadir)"`
-        PYLABS=`python -c "from pylabs.utils import pylabs_dir; print str(pylabs_dir)"`
-        DATADIR=`python -c "import pylabs; pylabs.datadir.target = 'jaba'; from pylabs.utils.paths import getnetworkdataroot; fs = getnetworkdataroot(verbose=False); print fs"`
-        PATH="$PYLABS:$PYLABSD:$PYLABS/pylabs:$PYLABS/bin:$PATH"
-        MORIMNI=`python -c "from pylabs.utils import moriMNIatlas; print str(moriMNIatlas)"`
-        JHUMNI=`python -c "from pylabs.utils import JHUMNIatlas; print str(JHUMNIatlas)"`
-        FS=`python -c "import pylabs; pylabs.datadir.target = 'jaba'; from pylabs.utils.paths import getnetworkdataroot; fs = getnetworkdataroot(verbose=False); print fs"`
-        export PYLABS PYLABSD DATADIR PATH FS MORIMNI JHUMNI
-
+    ```
+    #set up pylabs env variables
+    PYLABSD=`python -c "from pylabs.utils import pylabs_datadir; print str(pylabs_datadir)"`
+    PYLABS=`python -c "from pylabs.utils import pylabs_dir; print str(pylabs_dir)"`
+    DATADIR=`python -c "import pylabs; pylabs.datadir.target = 'jaba'; from pylabs.utils.paths import getnetworkdataroot; fs = getnetworkdataroot(verbose=False); print fs"`
+    PATH="$PYLABS:$PYLABSD:$PYLABS/pylabs:$PYLABS/bin:$PATH"
+    MORIMNI=`python -c "from pylabs.utils import moriMNIatlas; print str(moriMNIatlas)"`
+    JHUMNI=`python -c "from pylabs.utils import JHUMNIatlas; print str(JHUMNIatlas)"`
+    FS=`python -c "import pylabs; pylabs.datadir.target = 'jaba'; from pylabs.utils.paths import getnetworkdataroot; fs = getnetworkdataroot(verbose=False); print fs"`
+    export PYLABS PYLABSD DATADIR PATH FS MORIMNI JHUMNI
+    ```
 23. install and start condor: `sudo apt install htcondor && sudo service condor start`
-24xx. do not use!_--- wait on this one-bugs! ----install sip, pyqt4, mayavi, pysurfer:_ 
+
+    ~~**do not use! --- wait on this one-bugs!** ----install sip, pyqt4, mayavi, pysurfer:
         cd ${HOME}/Software
         https://riverbankcomputing.com/software/sip/download
         example docs:
@@ -148,10 +150,10 @@ function reconalladult() { export FREESURFER_HOME=${HOME}/Software/freesurfer_de
         git clone https://github.com/nipy/PySurfer
         cd PySurfer
         python setup.py develop
-XX24. install vtk and mayavi and pysurfer as prereqs: do not use
+    XX24. install vtk and mayavi and pysurfer as prereqs: do not use
         cd ${HOME}/Software
         conda install vtk
-        pip install mayavi pysurfer
+        pip install mayavi pysurfer~~
         
 25. install into ${HOME}/Software the nightly build of mne-c from https://www.martinos.org/mne/stable/getting_started.html (need user name, pwd, and lic)
         library problems: libxp6, libquicktime, libgfortran (or gfortran installed above),
@@ -215,9 +217,7 @@ XX24. install vtk and mayavi and pysurfer as prereqs: do not use
         
 31. install inspector sw in ${HOME}/Software (depends on matlab R2013b )
 
-32. install spm12 sw in ${HOME}/Software (depends on matlab)
-
-##33. install vtk and mayavi
+32. install spm12 and spm8 sw in ${HOME}/Software (depends on matlab)
 
 33. install octave:
     linux: sudo apt-get install octave
