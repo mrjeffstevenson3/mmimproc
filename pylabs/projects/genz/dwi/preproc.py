@@ -74,7 +74,7 @@ topup_cmd += ' --iout={topup_out}_unwarped.nii.gz --fout={topup_out}_topdn_conca
 # makes mean of unwarped topup down b0 for brain extraction, mask, b0
 mean_b0_cmd = 'fslmaths {topup_out}_unwarped -Tmean {topup_out}_unwarped_mean.nii.gz'
 # fsl eddy cmd using cuda for speedup
-eddy_cmd = 'eddy_cuda7.5 --imain={dwif_fname} --mask={b0_brain_mask_fname} --acqp=../acq_params.txt  --index=../index.txt'
+eddy_cmd = 'eddy_cuda8.0 --imain={dwif_fname} --mask={b0_brain_mask_fname} --acqp=../acq_params.txt  --index=../index.txt'
 eddy_cmd += ' --bvecs={dwi_bvecs_fname} --bvals={dwi_bvals_fname} --topup={topup_out} --repol --ol_nstd=1.96 --out={ec_dwi_fname}'
 # fsl dtifit command dict to make FA, MD maps etc. then filter tensor, then recon filtered data
 fsl_fit_cmds = ['dtifit -k %(ec_dwi_clamp_fname)s -o %(fsl_fits_out)s -m %(b0_brain_mask_fname)s -b %(dwi_bvals_fname)s -r %(dwi_bvecs_ec_rot_fname)s --save_tensor --wls --sse',

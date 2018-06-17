@@ -87,7 +87,7 @@ edit VM memory options to increase memory support for large files:
 	mkdir -p ${HOME}/Software/fsl_patches/bedpostx_gpu_cuda8.0 && cd ${HOME}/Software/fsl_patches && wget https://fsl.fmrib.ox.ac.uk/fsldownloads/patches/eddy-patch-fsl-5.0.11/centos6/eddy_cuda8.0 && \
 	cd bedpostx_gpu_cuda8.0 && wget http://users.fmrib.ox.ac.uk/~moisesf/Bedpostx_GPU/CUDA_8.0/bedpostx_gpu.zip && unzip bedpostx_gpu.zip && \
 	sudo mv ${FSLDIR}/lib/libbedpostx_cuda.so ${FSLDIR}/lib/libbedpostx_cuda.so_orig && sudo cp lib/libbedpostx_cuda.so ${FSLDIR}/lib/libbedpostx_cuda.so && sudo chmod 777 ${FSLDIR}/lib/libbedpostx_cuda.so && \
-	for f in `ls bin`: do sudo mv ${FSLDIR}/bin/${f} ${FSLDIR}/bin/${f}_orig; sudo cp bin/$f ${FSLDIR}/bin; sudo chmod 777 ${FSLDIR}/bin/$f; done && \
+	for f in `ls bin`; do sudo mv ${FSLDIR}/bin/${f} ${FSLDIR}/bin/${f}_orig; sudo cp bin/${f} ${FSLDIR}/bin; sudo chmod 777 ${FSLDIR}/bin/${f}; done && \
 	```
 19. Download and unpack Freesurfer and infant latest Linux-centos7 development release into ~/Software at `ftp://surfer.nmr.mgh.harvard.edu/pub/dist/freesurfer/dev` and copy your .license file into the folder and update ~/.bashrc with
     extract and rename freesurfer folders:
