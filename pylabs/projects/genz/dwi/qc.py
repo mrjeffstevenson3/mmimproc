@@ -25,27 +25,10 @@ opts.test = False
 subjids_picks = SubjIdPicks()
 # list of dicts of subject ids and info to operate on
 picks = [
-         {'subj': 'sub-genz312', 'session': 'ses-1', 'run': '1', }, # subject selection info
-         {'subj': 'sub-genz313', 'session': 'ses-1', 'run': '1', },
-        {'subj': 'sub-genz310', 'session': 'ses-1', 'run': '1', },
-        {'subj': 'sub-genz212', 'session': 'ses-1', 'run': '1', },
-        {'subj': 'sub-genz211', 'session': 'ses-1', 'run': '1', },
-        {'subj': 'sub-genz315', 'session': 'ses-1', 'run': '1', },
-        {'subj': 'sub-genz307', 'session': 'ses-1', 'run': '1', },
-        {'subj': 'sub-genz306', 'session': 'ses-1', 'run': '1', },
-        {'subj': 'sub-genz208', 'session': 'ses-1', 'run': '1', },
-        {'subj': 'sub-genz209', 'session': 'ses-1', 'run': '1', },
-        {'subj': 'sub-genz102', 'session': 'ses-1', 'run': '1', },
-        {'subj': 'sub-genz402', 'session': 'ses-1', 'run': '1', },
-        {'subj': 'sub-genz401', 'session': 'ses-1', 'run': '1', },
-        {'subj': 'sub-genz406', 'session': 'ses-1', 'run': '1', },
-        {'subj': 'sub-genz105', 'session': 'ses-1', 'run': '1', },
-        {'subj': 'sub-genz404', 'session': 'ses-1', 'run': '1', },
-        {'subj': 'sub-genz106', 'session': 'ses-1', 'run': '1', },
-        {'subj': 'sub-genz408', 'session': 'ses-1', 'run': '1', },
-        {'subj': 'sub-genz202', 'session': 'ses-1', 'run': '1', },
-        {'subj': 'sub-genz410', 'session': 'ses-1', 'run': '1', },
-        {'subj': 'sub-genz504', 'session': 'ses-1', 'run': '1', },
+         #{'subj': 'sub-genz204', 'session': 'ses-1', 'run': '1', }, # subject selection info
+        {'subj': 'sub-genz405', 'session': 'ses-1', 'run': '1', },
+        {'subj': 'sub-genz412', 'session': 'ses-1', 'run': '1', },
+        {'subj': 'sub-genz514', 'session': 'ses-1', 'run': '1', },
          ]
 
 setattr(subjids_picks, 'subjids', picks)
