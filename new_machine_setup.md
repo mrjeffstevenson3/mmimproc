@@ -22,7 +22,6 @@ sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.8 40 --slave 
 
 ##### To verify if it worked. Just type in your terminal
 `gcc -v`
-
 5. download to ~/Software the py2.7 64bit anaconda installer from https://www.continuum.io/downloads#linux
    in terminal `cd ~/Software && bash Anaconda2-5.1.0-Linux-x86_64.sh` **#nb version numbers will change.**
    review and accept license and enter install location as /home/toddr/Software/anaconda2  and say yes to prepend to .bashrc
@@ -30,9 +29,9 @@ sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.8 40 --slave 
 9. update and configure conda and then add basic python dependencies/requirements:
     ```
     conda update conda; conda config --set channel_priority false; conda config --append channels conda-forge dfroger
-    conda install pip pathlib pathlib2 pygpgme pydicom qgrid pytest-xdist pytest-env
+    conda install pip sh pathlib pathlib2 pygpgme pydicom qgrid pytest-xdist pytest-env nose-timer
     conda upgrade --all
-    pip install pynrrd petname latex shell argparse msgpack cloud nose-timer
+    pip install pynrrd petname latex shell argparse msgpack cloud
     ```
 11. install pycharm into ~/Software and register
 edit VM memory options to increase memory support for large files:
@@ -48,6 +47,7 @@ edit VM memory options to increase memory support for large files:
     cd ${HOME}/Software && git clone https://github.com/nipy/nibabel.git && cd nibabel && python setup.py develop
 	cd ${HOME}/Software && git clone https://github.com/ilogue/niprov.git && cd niprov && python setup.py develop
 	cd ${HOME}/Software && git clone https://github.com/nipy/dipy.git && cd dipy && python setup.py develop
+	cd ${HOME}/Software && git clone https://github.com/nipy/nipype.git && cd nipype && python setup.py develop
 	cd ${HOME}/Software && git clone https://github.com/euske/pdfminer.git && cd pdfminer && python setup.py install
 	cd ${HOME}/Software && git clone https://github.com/ANTsX/ANTsPy.git && cd ANTsPy && python setup.py develop
 	cd ${HOME}/Software && git clone https://github.com/yeatmanlab/AFQ.git

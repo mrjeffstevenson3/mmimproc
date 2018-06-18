@@ -356,7 +356,10 @@ for i, pick in enumerate(dwi_picks):
             mcmd = 'matlab -nodesktop -nodisplay -nosplash -r "{0}"'
             cmd = "addpath('{path}'); dtiMakeDt6FromFsl('{S0}', '{t1}', '{outf}'); quit".format(
                 **{'S0': fsl_S0_fname, 't1': str(t1_fname), 'outf': fsl_dt6_fname, 'path': pylabs_dir/'pylabs/diffusion'})
-            result += run_subprocess([mcmd.format(cmd)])
+            if which('matlab') == None:
+                print('matlab not found or installed on this machine. please check. skipping dt6.mat ')
+            else:
+                result += run_subprocess([mcmd.format(cmd)])
 
         # do denoise and dki
         sigma = estimate_sigma(data, N=4)
