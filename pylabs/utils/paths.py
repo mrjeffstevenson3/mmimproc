@@ -80,7 +80,7 @@ def getnetworkdataroot(verbose=True):
     if pylabs.datadir.target == 'jaba':
         if verbose:
             print('setting root data directory to jaba.')
-        if hostname in ['scotty.ilabs.uw.edu', 'scotty', 'redshirt.ilabs.uw.edu', 'redshirt', 'uhora.ilabs.uw.edu', 'uhora', 'sulu.ilabs.uw.edu', 'sulu', 'JVDB', 'spock', 'spock.ilabs.uw.edu']:
+        if hostname in ['scotty.ilabs.uw.edu', 'scotty', 'redshirt.ilabs.uw.edu', 'redshirt', 'uhora.ilabs.uw.edu', 'uhora', 'sulu.ilabs.uw.edu', 'sulu', 'JVDB', 'spock', 'spock.ilabs.uw.edu', 'mccoy', 'mccoy.ilabs.uw.edu']:
             return '/brainstudio/data'
         if hostname in ['emalia.ilabs.washington.edu', 'emalia',]:
             return '/Volumes/MRI-DTI/data'
