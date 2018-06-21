@@ -258,6 +258,7 @@ for i, pick in enumerate(dwi_picks):
 
     # topup distortion correction
     if opts.run_topup or opts.overwrite:
+        print('starting time for topup is {:%Y %m %d %H:%M}'.format(datetime.datetime.now()))
         topup_dn_data_concat = np.concatenate((topup_data, topdn_data), axis=3)
         topup_dn_data_concat_mf = medianf(topup_dn_data_concat, size=3)
         pick['topup_dn_fname'] = dwipath / '{topup_fname}_topdn_concat_mf.nii.gz'.format(**pick)
@@ -271,6 +272,7 @@ for i, pick in enumerate(dwi_picks):
             result += run_subprocess([topup_cmd.format(**pick)])
             result += run_subprocess([mean_b0_cmd.format(**pick)])
             prov.log('{topup_out}_unwarped_mean.nii.gz'.format(**pick), 'median filtered mean of topup-dn S0 vols', [str(topup_fname), str(topdn_fname)])
+            print('end time for topup is {:%Y %m %d %H:%M}'.format(datetime.datetime.now()))
 
 
     # eddy current correction
@@ -278,6 +280,7 @@ for i, pick in enumerate(dwi_picks):
     pick['dwi_bvecs_ec_rot_fname'] = '{ec_dwi_fname}.eddy_rotated_bvecs'.format(**pick)
     if opts.eddy_corr or opts.overwrite:
         with WorkingContext(str(ec_dir)):
+            print('starting time for eddy is {:%Y %m %d %H:%M}'.format(datetime.datetime.now()))
             b0_brain_fname, b0_brain_mask_fname, b0_brain_cropped_fname = extract_brain('{topup_out}_unwarped_mean.nii.gz'.format(**pick), mode='T2', dwi=True, f_factor=0.65, robust=True)
             pick['b0_brain_mask_fname'] = b0_brain_mask_fname
             nii2nrrd(pick['b0_brain_mask_fname'], replacesuffix(pick['b0_brain_mask_fname'], '.nrrd'), ismask=True)
@@ -299,6 +302,7 @@ for i, pick in enumerate(dwi_picks):
             nii2nrrd(pick['ec_dwi_clamp_fname'], str(replacesuffix(pick['ec_dwi_clamp_fname'], '.nhdr')), bvalsf=pick['dwi_bvals_fname'], bvecsf=pick['dwi_bvecs_ec_rot_fname'])
             pick['dwi_nrrd_fname'] = replacesuffix(pick['ec_dwi_clamp_fname'], '.nhdr')
             prov.log(str(replacesuffix(pick['ec_dwi_clamp_fname'], '.nhdr')), 'nrrd converted median filtered mean of topup-dn S0 vols', pick['ec_dwi_clamp_fname'])
+            print('ending time for pipeline is {:%Y %m %d %H:%M}'.format(datetime.datetime.now()))
 
 
     # do fsl fits and dipy fits
@@ -308,6 +312,7 @@ for i, pick in enumerate(dwi_picks):
     pick['dipy_fits_out'] = dwipath / opts.dwi_fits_dir / '{subj}_{session}_dwi_unwarped_ec_dipyfit'.format(**pick)
     pick['dipy_dki_fits_out'] = dwipath / opts.dwi_fits_dir / '{subj}_{session}_dwi_unwarped_ec_dki_dipyfit'.format(**pick)
     with WorkingContext(str(dwipath / opts.dwi_fits_dir)):
+        print('starting time for fiting is {:%Y %m %d %H:%M}'.format(datetime.datetime.now()))
         # do fsl dtifit cmds incl median filter etc
         result += tuple([run_subprocess(c % pick) for c in fsl_fit_cmds])
         # do dipy fits
@@ -376,6 +381,8 @@ for i, pick in enumerate(dwi_picks):
         savenii(dkifit.ak(-3, 3), affine, '{dipy_dki_fits_out}_AK.nii'.format(**pick), minmax=(-3, 3))
         # save evals and evecs for AFQ...
 
+        print('ending time for fitting is {:%Y %m %d %H:%M}'.format(datetime.datetime.now()))
+
     if opts.do_ukf:
         vtk_dir = dwipath/opts.vtk_dir
         if not vtk_dir.is_dir():
@@ -407,6 +414,7 @@ for i, pick in enumerate(dwi_picks):
         if not bedpost_dir.is_dir():
             bedpost_dir.mkdir()
         with WorkingContext(str(bedpost_dir)):
+            print('starting time for bedpost is {:%Y %m %d %H:%M}'.format(datetime.datetime.now()))
             shutil.copy(pick['ec_dwi_clamp_fname'], str(bedpost_dir))
             os.rename(Path(pick['ec_dwi_clamp_fname']).name, str(bedpost_dir/'data.nii.gz'))
             shutil.copy(pick['dwi_bvecs_ec_rot_fname'], str(bedpost_dir))
