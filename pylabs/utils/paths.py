@@ -15,7 +15,8 @@ class RootDataDir(object):
     pass
 
 # hostnames with functioning gpus
-working_gpus = ['redshirt.ilabs.uw.edu', 'redshirt'] # 'scotty.ilabs.uw.edu', 'scotty'
+working_gpus = ['redshirt.ilabs.uw.edu', 'redshirt', 'scotty', 'scotty.ilabs.uw.edu', 'mccoy', 'mccoy.ilabs.uw.edu',
+                'uhora', 'uhora.ilabs.uw.edu', 'spock', 'spock.ilabs.uw.edu', ]
 
 pylabs_dir = Path(*Path(inspect.getabsfile(pylabs)).parts[:-2])
 pylabs_datadir = pylabs_dir / 'data'
