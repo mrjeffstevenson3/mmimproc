@@ -30,7 +30,7 @@ sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.8 40 --slave 
 9. update and configure conda and then add basic python dependencies/requirements:
     ```
     conda update conda && conda config --set channel_priority false && conda config --append channels conda-forge && conda config --append channels dfroger
-    conda install pip sh pathlib pathlib2 pygpgme pydicom qgrid pytest-xdist pytest-env nose-timer
+    conda install pip sh pathlib pathlib2 pygpgme pydicom qgrid pytest-xdist pytest-env nose-timer flake8
     conda upgrade --all
     pip install pynrrd petname latex shell argparse msgpack cloud
     ```
@@ -86,6 +86,7 @@ edit VM memory options to increase memory support for large files:
 	download eddy and bedpostx patches from https://fsl.fmrib.ox.ac.uk/fsldownloads/patches/ and https://users.fmrib.ox.ac.uk/~moisesf/Bedpostx_GPU/Installation.html and copy into $FSLDIR/bin and /lib dirs
 	```
 	mkdir -p ${HOME}/Software/fsl_patches/bedpostx_gpu_cuda8.0 && cd ${HOME}/Software/fsl_patches && wget https://fsl.fmrib.ox.ac.uk/fsldownloads/patches/eddy-patch-fsl-5.0.11/centos6/eddy_cuda8.0 && \
+	sudo cp eddy_cuda8.0 ${FSLDIR}/bin && sudo chmod 777 ${FSLDIR}/bin/eddy_cuda8.0 && \
 	cd bedpostx_gpu_cuda8.0 && wget http://users.fmrib.ox.ac.uk/~moisesf/Bedpostx_GPU/CUDA_8.0/bedpostx_gpu.zip && unzip bedpostx_gpu.zip && \
 	sudo mv ${FSLDIR}/lib/libbedpostx_cuda.so ${FSLDIR}/lib/libbedpostx_cuda.so_orig && sudo cp lib/libbedpostx_cuda.so ${FSLDIR}/lib/libbedpostx_cuda.so && sudo chmod 777 ${FSLDIR}/lib/libbedpostx_cuda.so && \
 	for f in `ls bin`; do sudo mv ${FSLDIR}/bin/${f} ${FSLDIR}/bin/${f}_orig; sudo cp bin/${f} ${FSLDIR}/bin; sudo chmod 777 ${FSLDIR}/bin/${f}; done && \
