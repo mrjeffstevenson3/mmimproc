@@ -58,7 +58,7 @@ subjids_picks = SubjIdPicks()
 picks = [
          #{'subj': 'sub-genz505', 'session': 'ses-1', 'run': '1',},  # subject selection info
          #{'subj': 'sub-genz506', 'session': 'ses-1', 'run': '1',},
-         {'subj': 'sub-genz311', 'session': 'ses-1', 'run': '1',},
+         {'subj': 'sub-genz504', 'session': 'ses-1', 'run': '1',},
          #{'subj': 'sub-genz503', 'session': 'ses-1', 'run': '1',},
          #{'subj': 'sub-genz502', 'session': 'ses-1', 'run': '1',},
          ]
@@ -359,8 +359,8 @@ for i, pick in enumerate(dwi_picks):
             fsl_S0_fname = '{subj}_{session}_dwi_unwarped_ec_fslfit_tensor_mf_S0.nii.gz'.format(**pick)
             fsl_dt6_fname = '{subj}_{session}_dwi_unwarped_ec_fslfit_tensor_mf_dt6.mat'.format(**pick)
             mcmd = 'matlab -nodesktop -nodisplay -nosplash -r "{0}"'
-            cmd = "addpath('{path}'); dtiMakeDt6FromFsl('{S0}', '{t1}', '{outf}'); quit".format(
-                **{'S0': fsl_S0_fname, 't1': str(t1_fname), 'outf': fsl_dt6_fname, 'path': pylabs_dir/'pylabs/diffusion'})
+            cmd = "addpath('{path1}', genpath('{path2}')); dtiMakeDt6FromFsl('{S0}', '{t1}', '{outf}'); quit".format(
+                **{'S0': fsl_S0_fname, 't1': str(t1_fname), 'outf': fsl_dt6_fname, 'path1': pylabs_dir/'pylabs/diffusion', 'path2': pylabs_dir.parent/'vistasoft'})
             if which('matlab') == None:
                 print('matlab not found or installed on this machine. please check. skipping dt6.mat ')
             else:

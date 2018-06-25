@@ -44,21 +44,21 @@ edit VM memory options to increase memory support for large files:
 14. Add the main pylabs repo as upstream:
     `cd ~/Software/pylabs && git remote add upstream https://github.com/ilabsbrainteam/pylabs.git`
 15. in `cd ~/Software` dir for each of the following github packages clone, cd into and `python setup.py develop:
-    ```
-    cd ${HOME}/Software && git clone https://github.com/nipy/nibabel.git && cd nibabel && python setup.py develop
-	cd ${HOME}/Software && git clone https://github.com/ilogue/niprov.git && cd niprov && python setup.py develop
-	cd ${HOME}/Software && git clone https://github.com/nipy/dipy.git && cd dipy && python setup.py develop
-	cd ${HOME}/Software && git clone https://github.com/nipy/nipype.git && cd nipype && python setup.py develop
-	cd ${HOME}/Software && git clone https://github.com/euske/pdfminer.git && cd pdfminer && python setup.py install
-	cd ${HOME}/Software && git clone https://github.com/ANTsX/ANTsPy.git && cd ANTsPy && python setup.py develop
-	cd ${HOME}/Software && git clone https://github.com/yeatmanlab/AFQ.git
-	cd ${HOME}/Software && git clone https://github.com/vistalab/vistasoft.git
-	cd ${HOME}/Software && git clone https://github.com/stnava/ANTs.git && mkdir antsbin && cd antsbin && ccmake ../ANTs
-	```
-	#### when the cmake interface comes onscreen press c twice (to configure) till you see the option g appear on bottom middle, then press g twice to save and exit. then type
-	`make -j 4`
+```bash
+cd ${HOME}/Software && git clone https://github.com/nipy/nibabel.git && cd nibabel && python setup.py develop && \
+cd ${HOME}/Software && git clone https://github.com/ilogue/niprov.git && cd niprov && python setup.py develop && \
+cd ${HOME}/Software && git clone https://github.com/nipy/dipy.git && cd dipy && python setup.py develop && \
+cd ${HOME}/Software && git clone https://github.com/nipy/nipype.git && cd nipype && python setup.py develop && \
+cd ${HOME}/Software && git clone https://github.com/euske/pdfminer.git && cd pdfminer && python setup.py install && \
+cd ${HOME}/Software && git clone https://github.com/ANTsX/ANTsPy.git && cd ANTsPy && python setup.py develop && \
+cd ${HOME}/Software && git clone https://github.com/yeatmanlab/AFQ.git && \
+cd ${HOME}/Software && git clone https://github.com/vistalab/vistasoft.git && \
+cd ${HOME}/Software && git clone https://github.com/stnava/ANTs.git && mkdir antsbin && cd antsbin && ccmake ../ANTs
+```
+#### when the cmake interface comes onscreen press c twice (to configure) till you see the option g appear on bottom middle, then press g twice to save and exit. then type
+`make -j 4`
 	
-    **and** open another terminal tab since this will take a while and there is more to do.
+**and** open another terminal tab since this will take a while and there is more to do.
 17. If you like, Install and setup Dropbox `https://www.dropbox.com` and teamviewer `https://www.teamviewer.com/en/`
 18. install FSL. first install requirements for for fsleyes:
     ```
