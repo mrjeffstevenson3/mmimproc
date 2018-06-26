@@ -58,7 +58,7 @@ subjids_picks = SubjIdPicks()
 picks = [
          #{'subj': 'sub-genz505', 'session': 'ses-1', 'run': '1',},  # subject selection info
          #{'subj': 'sub-genz506', 'session': 'ses-1', 'run': '1',},
-         {'subj': 'sub-genz311', 'session': 'ses-1', 'run': '1',},
+         {'subj': 'sub-genz504', 'session': 'ses-1', 'run': '1',},
          #{'subj': 'sub-genz503', 'session': 'ses-1', 'run': '1',},
          #{'subj': 'sub-genz502', 'session': 'ses-1', 'run': '1',},
          ]
@@ -364,7 +364,9 @@ for i, pick in enumerate(dwi_picks):
             if which('matlab') == None:
                 print('matlab not found or installed on this machine. please check. skipping dt6.mat ')
             else:
+                print('start time for mat file is {:%Y %m %d %H:%M}'.format(datetime.datetime.now()))
                 result += run_subprocess([mcmd.format(cmd)])
+                print('ending time for mat file is {:%Y %m %d %H:%M}'.format(datetime.datetime.now()))
 
         # do denoise and dki
         sigma = estimate_sigma(data, N=4)
