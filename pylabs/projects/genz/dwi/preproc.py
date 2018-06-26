@@ -58,7 +58,7 @@ subjids_picks = SubjIdPicks()
 picks = [
          #{'subj': 'sub-genz505', 'session': 'ses-1', 'run': '1',},  # subject selection info
          #{'subj': 'sub-genz506', 'session': 'ses-1', 'run': '1',},
-         {'subj': 'sub-genz504', 'session': 'ses-1', 'run': '1',},
+         {'subj': 'sub-genz311', 'session': 'ses-1', 'run': '1',},
          #{'subj': 'sub-genz503', 'session': 'ses-1', 'run': '1',},
          #{'subj': 'sub-genz502', 'session': 'ses-1', 'run': '1',},
          ]
@@ -295,7 +295,7 @@ for i, pick in enumerate(dwi_picks):
                 S0 = ec_data[:, :, :, gtab.b0s_mask]
                 S0_mf = medianf(S0, size=3)
                 ec_data[:, :, :, gtab.b0s_mask] = S0_mf
-            ec_data[ec_data <= 0.1] = 0
+            ec_data[ec_data <= 0] = 0
             pick['ec_dwi_clamp_fname'] = '{ec_dwi_fname}{mf_str}_clamp1.nii.gz'.format(**mergeddicts(pick, vars(opts)))
             savenii(ec_data, ec_data_affine, pick['ec_dwi_clamp_fname'])
             prov.log(pick['ec_dwi_clamp_fname'], 'median filtered mean of topup-dn S0 vols clamped','{ec_dwi_fname}.nii.gz'.format(**pick))
