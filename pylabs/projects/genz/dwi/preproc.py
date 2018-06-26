@@ -295,14 +295,14 @@ for i, pick in enumerate(dwi_picks):
                 S0 = ec_data[:, :, :, gtab.b0s_mask]
                 S0_mf = medianf(S0, size=3)
                 ec_data[:, :, :, gtab.b0s_mask] = S0_mf
-            ec_data[ec_data <= 0.1] = 0
+            ec_data[ec_data <= 0] = 0
             pick['ec_dwi_clamp_fname'] = '{ec_dwi_fname}{mf_str}_clamp1.nii.gz'.format(**mergeddicts(pick, vars(opts)))
             savenii(ec_data, ec_data_affine, pick['ec_dwi_clamp_fname'])
             prov.log(pick['ec_dwi_clamp_fname'], 'median filtered mean of topup-dn S0 vols clamped','{ec_dwi_fname}.nii.gz'.format(**pick))
             nii2nrrd(pick['ec_dwi_clamp_fname'], str(replacesuffix(pick['ec_dwi_clamp_fname'], '.nhdr')), bvalsf=pick['dwi_bvals_fname'], bvecsf=pick['dwi_bvecs_ec_rot_fname'])
             pick['dwi_nrrd_fname'] = replacesuffix(pick['ec_dwi_clamp_fname'], '.nhdr')
             prov.log(str(replacesuffix(pick['ec_dwi_clamp_fname'], '.nhdr')), 'nrrd converted median filtered mean of topup-dn S0 vols', pick['ec_dwi_clamp_fname'])
-            print('ending time for pipeline is {:%Y %m %d %H:%M}'.format(datetime.datetime.now()))
+            print('ending time for eddy is {:%Y %m %d %H:%M}'.format(datetime.datetime.now()))
 
 
     # do fsl fits and dipy fits
