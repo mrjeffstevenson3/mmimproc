@@ -20,10 +20,45 @@ subjids_picks = SubjIdPicks()
 opts = Optsd()
 # must set fas mannually when patch used. not reported in PAR file correctly.
 picks = [
-        # {'patch': True, 'project': project, 'subj': 'sub-genz508', 'session': 'ses-1', 'run': '1', 'fas': [4.0, 25.0],},
-        {'patch': True, 'project': project, 'subj': 'sub-genz501', 'session': 'ses-1', 'run': '1', 'fas': [4.0, 25.0],},
+        # {'patch': True, 'project': project, 'subj': 'sub-genz102', 'session': 'ses-1', 'run': '1', 'fas': [4.0, 25.0],},
+        # {'patch': True, 'project': project, 'subj': 'sub-genz103', 'session': 'ses-1', 'run': '1', 'fas': [4.0, 25.0],},
+        # {'patch': True, 'project': project, 'subj': 'sub-genz104', 'session': 'ses-1', 'run': '1', 'fas': [4.0, 25.0],},
+        # {'patch': True, 'project': project, 'subj': 'sub-genz105', 'session': 'ses-1', 'run': '1', 'fas': [4.0, 25.0],},
+        # {'patch': True, 'project': project, 'subj': 'sub-genz106', 'session': 'ses-1', 'run': '1', 'fas': [4.0, 25.0],},
+        # {'patch': True, 'project': project, 'subj': 'sub-genz201', 'session': 'ses-1', 'run': '1', 'fas': [4.0, 25.0],},
+        # {'patch': True, 'project': project, 'subj': 'sub-genz202', 'session': 'ses-1', 'run': '1', 'fas': [4.0, 25.0],},
+        # {'patch': True, 'project': project, 'subj': 'sub-genz203', 'session': 'ses-1', 'run': '1', 'fas': [4.0, 25.0],},
+        ## {'patch': True, 'project': project, 'subj': 'sub-genz204', 'session': 'ses-1', 'run': '1', 'fas': [4.0, 25.0],},
+        {'patch': True, 'project': project, 'subj': 'sub-genz205', 'session': 'ses-1', 'run': '1', 'fas': [4.0, 25.0],},
+        {'patch': True, 'project': project, 'subj': 'sub-genz208', 'session': 'ses-1', 'run': '1', 'fas': [4.0, 25.0],},
+        {'patch': True, 'project': project, 'subj': 'sub-genz209', 'session': 'ses-1', 'run': '1', 'fas': [4.0, 25.0],},
+        {'patch': True, 'project': project, 'subj': 'sub-genz211', 'session': 'ses-1', 'run': '1', 'fas': [4.0, 25.0],},
+        # #{'patch': True, 'project': project, 'subj': 'sub-genz301', 'session': 'ses-2', 'run': '1', 'fas': [4.0, 25.0],},
+        {'patch': True, 'project': project, 'subj': 'sub-genz302', 'session': 'ses-1', 'run': '1', 'fas': [4.0, 25.0],},
+        {'patch': True, 'project': project, 'subj': 'sub-genz303', 'session': 'ses-1', 'run': '1', 'fas': [4.0, 25.0],},
+        {'patch': True, 'project': project, 'subj': 'sub-genz304', 'session': 'ses-1', 'run': '1', 'fas': [4.0, 25.0],},
+        {'patch': True, 'project': project, 'subj': 'sub-genz305', 'session': 'ses-1', 'run': '1', 'fas': [4.0, 25.0],},
+        {'patch': True, 'project': project, 'subj': 'sub-genz306', 'session': 'ses-1', 'run': '1', 'fas': [4.0, 25.0],},
+        #{'patch': True, 'project': project, 'subj': 'sub-genz307', 'session': 'ses-1', 'run': '1', 'fas': [4.0, 25.0],},
         {'patch': True, 'project': project, 'subj': 'sub-genz308', 'session': 'ses-1', 'run': '1', 'fas': [4.0, 25.0],},
+        {'patch': True, 'project': project, 'subj': 'sub-genz310', 'session': 'ses-1', 'run': '1', 'fas': [4.0, 25.0],},
         {'patch': True, 'project': project, 'subj': 'sub-genz311', 'session': 'ses-1', 'run': '1', 'fas': [4.0, 25.0],},
+        {'patch': True, 'project': project, 'subj': 'sub-genz312', 'session': 'ses-1', 'run': '1', 'fas': [4.0, 25.0],},
+        {'patch': True, 'project': project, 'subj': 'sub-genz313', 'session': 'ses-1', 'run': '1', 'fas': [4.0, 25.0],},
+        {'patch': True, 'project': project, 'subj': 'sub-genz315', 'session': 'ses-1', 'run': '1', 'fas': [4.0, 25.0],},
+        {'patch': True, 'project': project, 'subj': 'sub-genz401', 'session': 'ses-1', 'run': '1', 'fas': [4.0, 25.0],},
+        {'patch': True, 'project': project, 'subj': 'sub-genz402', 'session': 'ses-1', 'run': '1', 'fas': [4.0, 25.0],},
+        {'patch': True, 'project': project, 'subj': 'sub-genz404', 'session': 'ses-1', 'run': '1', 'fas': [4.0, 25.0],},
+        {'patch': True, 'project': project, 'subj': 'sub-genz408', 'session': 'ses-1', 'run': '1', 'fas': [4.0, 25.0],},
+        {'patch': True, 'project': project, 'subj': 'sub-genz410', 'session': 'ses-1', 'run': '1', 'fas': [4.0, 25.0],},
+        {'patch': True, 'project': project, 'subj': 'sub-genz501', 'session': 'ses-1', 'run': '1', 'fas': [4.0, 25.0],},
+        {'patch': True, 'project': project, 'subj': 'sub-genz502', 'session': 'ses-1', 'run': '1', 'fas': [4.0, 25.0],},
+        {'patch': True, 'project': project, 'subj': 'sub-genz503', 'session': 'ses-1', 'run': '1', 'fas': [4.0, 25.0],},
+        {'patch': True, 'project': project, 'subj': 'sub-genz504', 'session': 'ses-1', 'run': '1', 'fas': [4.0, 25.0],},
+        {'patch': True, 'project': project, 'subj': 'sub-genz505', 'session': 'ses-1', 'run': '1', 'fas': [4.0, 25.0],},
+        {'patch': True, 'project': project, 'subj': 'sub-genz506', 'session': 'ses-1', 'run': '1', 'fas': [4.0, 25.0],},
+        {'patch': True, 'project': project, 'subj': 'sub-genz508', 'session': 'ses-1', 'run': '1', 'fas': [4.0, 25.0],},
+        {'patch': True, 'project': project, 'subj': 'sub-genz510', 'session': 'ses-1', 'run': '1', 'fas': [4.0, 25.0],},
          ]
 setattr(subjids_picks, 'subjids', picks)
 
@@ -35,6 +70,7 @@ if opts.test:
 
 # loop over subjects
 for pick in vfa_picks:
+    print('working on {project}/{subj}/{session}'.format(**pick))
     ses_dir = fs/'{project}/{subj}/{session}'.format(**pick)
     b1_data = nib.load(str(ses_dir/'fmap'/pick['b1map_fname'])+'.nii').get_data().astype(np.float64)
     b1_affine = nib.load(str(ses_dir/'fmap'/pick['b1map_fname'])+'.nii').affine

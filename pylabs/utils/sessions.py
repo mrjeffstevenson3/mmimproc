@@ -1,4 +1,5 @@
 #todo: need to trap empty scans dict otherwise concat fails line 23
+import pylabs
 import pandas as pd
 import os
 from os.path import join
@@ -20,7 +21,7 @@ def make_sessions_fm_dict(niidict, project, subject):
         sessions.append(session)
         scans.append(pd.DataFrame.from_dict(s, orient='index'))
 
-    sessionsDF = pd.concat(scans, keys=sessions)
+    sessionsDF = pd.concat(scans, keys=sessions, sort=True)
     sessionsDF.index.rename('modality', level=0, inplace=True)
     sessionsDF.index.rename('scan_name', level=1, inplace=True)
     remain_cols = [x for x in sessionsDF.columns.values if x not in col_order]

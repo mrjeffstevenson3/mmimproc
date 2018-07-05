@@ -1,9 +1,9 @@
 # todo: break apart individual project dataframes into file in each project folder.
 # todo: refactor conv_subjs to put in hdf file name and remove niftiDict
 # todo: capture spectroscopy meta data if present
-# todo: make img_conv multiindex. panel method deprecated.
+
 import pylabs
-pylabs.datadir.target = 'scotty'
+pylabs.datadir.target = 'jaba'
 from pylabs.conversion.parrec2nii_convert import BrainOpts
 from pathlib import *
 import pandas as pd
@@ -309,6 +309,10 @@ acdc_conv = pd.DataFrame({
                         'take_lowest_recon': True, 'verbose': True, 'compressed': False, 'permit_truncated': False, 'bvs': False, 'dwell_time': False, 'b1corr': False,
                         'field_strength': False, 'vol_info': False, 'origin': 'scanner', 'minmax': ('parse', 'parse'), 'store_header': True,
                         'scaling': 'dv', 'keep_trace': False, 'overwrite': True, 'strict_sort': False, 'multisession': (1, 2, 3), 'rms': False},
+            '_MT_MPF_': {'dirstruct': 'BIDS', 'outdir': 'qt1', 'scan_name': 'mt', 'scan_info': 'mpf', 'fname_template': '{subj}_{session}_{scan_name}_{scan_info}_{run}.nii',
+                        'verbose': True, 'compressed': False, 'permit_truncated': False, 'bvs': False, 'dwell_time': False, 'b1corr': False,
+                        'field_strength': False, 'vol_info': False, 'origin': 'scanner', 'minmax': ('parse', 'parse'), 'store_header': True,
+                        'scaling': 'fp', 'keep_trace': False, 'overwrite': True, 'strict_sort': True, 'multisession': (1, 2, 3), 'rms': False},
             })
 
 tadpole_conv = pd.DataFrame({
@@ -329,9 +333,95 @@ tadpole_conv = pd.DataFrame({
                          'scaling': 'dv', 'keep_trace': False, 'overwrite': True, 'strict_sort': False,
                          'multisession': (1, 2, 3), 'rms': False},
             })
+lilomom_conv = pd.DataFrame({
+            '_B1MAP-QUIET_FC_': {'dirstruct': 'BIDS', 'outdir': 'fmap', 'scan_name': 'b1map', 'scan_info': 'fc', 'fname_template': '{subj}_{session}_{scan_name}_{scan_info}_{run}.nii',
+                        'verbose': True, 'compressed': False, 'permit_truncated': False, 'bvs': False, 'dwell_time': False, 'b1corr': False,
+                        'field_strength': False, 'vol_info': False, 'origin': 'scanner', 'minmax': ('parse', 'parse'), 'store_header': True,
+                        'scaling': 'fp', 'keep_trace': False, 'overwrite': True, 'strict_sort': True, 'multisession': (1, 2, 3), 'rms': False},
+            '_VFA_FA4-25_QUIET': {'dirstruct': 'BIDS', 'outdir': 'qt1', 'scan_name': 'vfa', 'scan_info': 'fa-4-25',   # hard code flip angles because vy patch can't assign correct values in PAR file
+                                   'fname_template': '{subj}_{session}_{scan_name}_{scan_info}-tr-{tr}_{run}.nii',
+                        'verbose': True, 'compressed': False, 'permit_truncated': False, 'bvs': False, 'dwell_time': False, 'b1corr': False,
+                        'field_strength': False, 'vol_info': False, 'origin': 'scanner', 'minmax': ('parse', 'parse'), 'store_header': True,
+                        'scaling': 'fp', 'keep_trace': False, 'overwrite': True, 'strict_sort': True, 'multisession': (1, 2, 3), 'rms': False},
+            '_MT_MPF_QUIET': {'dirstruct': 'BIDS', 'outdir': 'qt1', 'scan_name': 'mt', 'scan_info': 'mpf',
+                           'fname_template': '{subj}_{session}_{scan_name}_{scan_info}_{run}.nii',
+                           'verbose': True, 'compressed': False, 'permit_truncated': False, 'bvs': False,
+                           'dwell_time': False, 'b1corr': False,
+                           'field_strength': False, 'vol_info': False, 'origin': 'scanner',
+                           'minmax': ('parse', 'parse'), 'store_header': True,
+                           'scaling': 'fp', 'keep_trace': False, 'overwrite': True, 'strict_sort': False,
+                           'multisession': (1, 2, 3), 'rms': False},
+            '_DWI64_3SH_B0_B800_B2000_TOPUP_': {'dirstruct': 'BIDS', 'outdir': 'dwi', 'scan_name': 'dwi-topup', 'scan_info': '64dir-3sh-800-2000', 'fname_template': '{subj}_{session}_{scan_name}_{scan_info}_{run}.nii',
+                        'take_lowest_recon': True, 'verbose': True, 'compressed': False, 'permit_truncated': True, 'bvs': True, 'dwell_time': True, 'b1corr': False,
+                        'field_strength': 3.0, 'vol_info': False, 'origin': 'scanner', 'minmax': ('parse', 'parse'), 'store_header': True,
+                        'scaling': 'dv', 'keep_trace': False, 'overwrite': True, 'strict_sort': False, 'multisession': (1, 2, 3), 'rms': False},
+            '_DWI6_B0_TOPDN_': {'dirstruct': 'BIDS', 'outdir': 'dwi', 'scan_name': 'dwi-topdn', 'scan_info': '6S0',
+                        'fname_template': '{subj}_{session}_{scan_name}_{scan_info}_{run}.nii', 'verbose': True, 'compressed': False, 'permit_truncated': True, 'bvs': True,
+                        'dwell_time': True, 'b1corr': False, 'field_strength': 3.0, 'vol_info': False, 'origin': 'scanner',
+                        'minmax': ('parse', 'parse'), 'store_header': True, 'scaling': 'dv', 'keep_trace': True, 'overwrite': True, 'strict_sort': False,
+                        'multisession': (1, 2, 3), 'rms': False},
+            '_DWI6_B0_TOPUP_': {'dirstruct': 'BIDS', 'outdir': 'dwi', 'scan_name': 'dwi-topup', 'scan_info': '6S0', 'fname_template': '{subj}_{session}_{scan_name}_{scan_info}_{run}.nii',
+                        'verbose': True, 'compressed': False, 'permit_truncated': True, 'bvs': True, 'dwell_time': True, 'b1corr': False,
+                        'field_strength': 3.0, 'vol_info': False, 'origin': 'scanner', 'minmax': ('parse', 'parse'), 'store_header': True,
+                        'scaling': 'dv', 'keep_trace': True, 'overwrite': True, 'strict_sort': False, 'multisession': (1, 2, 3), 'rms': False},
+            'MEMP_IFS_0p5mm_2echo_': {'dirstruct': 'BIDS', 'outdir': 'anat', 'scan_name': 'fsmempr', 'scan_info': 'ti1200',
+                        'fname_template': '{subj}_{session}_{scan_name}_{scan_info}_{run}.nii', 'take_lowest_recon': True,
+                        'verbose': True, 'compressed': False, 'permit_truncated': False, 'bvs': False,
+                        'dwell_time': False, 'b1corr': False,'field_strength': False, 'vol_info': False, 'origin': 'scanner', 'minmax': ('parse', 'parse'),
+                        'store_header': True,'scaling': 'dv', 'keep_trace': False, 'overwrite': True, 'strict_sort': True, 'multisession': (1, 2, 3), 'rms': True},
+            '_QUIET_3DT2W': {'dirstruct': 'BIDS', 'outdir': 'anat', 'scan_name': '3dt2', 'scan_info': '', 'fname_template': '{subj}_{session}_{scan_name}_{run}.nii',
+                        'take_lowest_recon': True, 'verbose': True, 'compressed': False, 'permit_truncated': False, 'bvs': False, 'dwell_time': False, 'b1corr': True,
+                        'field_strength': False, 'vol_info': False, 'origin': 'scanner', 'minmax': ('parse', 'parse'), 'store_header': True,
+                        'scaling': 'dv', 'keep_trace': False, 'overwrite': True, 'strict_sort': False, 'multisession': (1, 2, 3), 'rms': False},
+            '_3DI_MC_': {'dirstruct': 'BIDS', 'outdir': 'anat', 'scan_name': 'angio', 'scan_info': '', 'fname_template': '{subj}_{session}_{scan_name}_{run}.nii',
+                         'take_lowest_recon': True, 'verbose': True, 'compressed': False, 'permit_truncated': False, 'bvs': False, 'dwell_time': False, 'b1corr': False,
+                         'field_strength': False, 'vol_info': False, 'origin': 'scanner', 'minmax': ('parse', 'parse'), 'store_header': True,
+                         'scaling': 'dv', 'keep_trace': False, 'overwrite': True, 'strict_sort': True, 'multisession': (1, 2, 3), 'rms': False},
+            })
+
+lilobaby_conv = pd.DataFrame({
+            '_B1MAP-QUIET_': {'dirstruct': 'BIDS', 'outdir': 'fmap', 'scan_name': 'b1map-fp', 'scan_info': '', 'fname_template': '{subj}_{session}_{scan_name}_{scan_info}{run}.nii',
+                        'verbose': True, 'compressed': False, 'permit_truncated': False, 'bvs': False, 'dwell_time': False, 'b1corr': False,
+                        'field_strength': False, 'vol_info': False, 'origin': 'scanner', 'minmax': ('parse', 'parse'), 'store_header': True,
+                        'scaling': 'fp', 'keep_trace': False, 'overwrite': True, 'strict_sort': True, 'multisession': (1, 2, 3), 'rms': False},
+            '_VFA_FA4-25_': {'dirstruct': 'BIDS', 'outdir': 'qt1', 'scan_name': 'vfa', 'scan_info': '', 'fname_template': '{subj}_{session}_{scan_name}_fa-4-25-tr-{tr}_{run}.nii',
+                        'verbose': True, 'compressed': False, 'permit_truncated': False, 'bvs': False, 'dwell_time': False, 'b1corr': False,
+                        'field_strength': False, 'vol_info': False, 'origin': 'scanner', 'minmax': ('parse', 'parse'), 'store_header': True,
+                        'scaling': 'fp', 'keep_trace': False, 'overwrite': True, 'strict_sort': True, 'multisession': (1, 2, 3), 'rms': False},
+            '_DWI64_135FH_B0_B800_B2000_TOPUP_TE97_1p8mm3_': {'dirstruct': 'BIDS', 'outdir': 'dwi', 'scan_name': 'dwi-topup', 'scan_info': '64dir-3sh-800-2000', 'fname_template': '{subj}_{session}_{scan_name}_{scan_info}_{run}.nii',
+                        'take_lowest_recon': True, 'verbose': True, 'compressed': False, 'permit_truncated': True, 'bvs': True, 'dwell_time': True, 'b1corr': False,
+                        'field_strength': 3.0, 'vol_info': False, 'origin': 'scanner', 'minmax': ('parse', 'parse'), 'store_header': True,
+                        'scaling': 'dv', 'keep_trace': False, 'overwrite': True, 'strict_sort': False, 'multisession': (1, 2, 3), 'rms': False},
+            '_DWI6_135FH_B0_TOPDN_TE97_1p8mm3_': {'dirstruct': 'BIDS', 'outdir': 'dwi', 'scan_name': 'dwi-topdn', 'scan_info': '6S0',
+                        'fname_template': '{subj}_{session}_{scan_name}_{scan_info}_{run}.nii', 'verbose': True, 'compressed': False, 'permit_truncated': True, 'bvs': True,
+                        'dwell_time': True, 'b1corr': False, 'field_strength': 3.0, 'vol_info': False, 'origin': 'scanner',
+                        'minmax': ('parse', 'parse'), 'store_header': True, 'scaling': 'dv', 'keep_trace': True, 'overwrite': True, 'strict_sort': False,
+                        'multisession': (1, 2, 3), 'rms': False},
+            '_DWI6_135FH_B0_TOPUP_TE97_1p8mm3_': {'dirstruct': 'BIDS', 'outdir': 'dwi', 'scan_name': 'dwi-topup', 'scan_info': '6S0', 'fname_template': '{subj}_{session}_{scan_name}_{scan_info}_{run}.nii',
+                        'verbose': True, 'compressed': False, 'permit_truncated': True, 'bvs': True, 'dwell_time': True, 'b1corr': False,
+                        'field_strength': 3.0, 'vol_info': False, 'origin': 'scanner', 'minmax': ('parse', 'parse'), 'store_header': True,
+                        'scaling': 'dv', 'keep_trace': True, 'overwrite': True, 'strict_sort': False, 'multisession': (1, 2, 3), 'rms': False},
+            '_MEMP_': {'dirstruct': 'BIDS', 'outdir': 'anat', 'scan_name': 'fsmempr', 'scan_info': 'ti1200',        # 1.3S1.5P2200SI_OPTION_
+                        'fname_template': '{subj}_{session}_{scan_name}_{scan_info}_{run}.nii', 'take_lowest_recon': True,
+                        'verbose': True, 'compressed': False, 'permit_truncated': False, 'bvs': False,
+                        'dwell_time': False, 'b1corr': False, 'field_strength': False, 'vol_info': False, 'origin': 'scanner', 'minmax': ('parse', 'parse'),
+                        'store_header': True, 'scaling': 'dv', 'keep_trace': False, 'overwrite': True, 'strict_sort': True, 'multisession': (1, 2, 3), 'rms': True},
+            '_3DT2W_': {'dirstruct': 'BIDS', 'outdir': 'anat', 'scan_name': '3dt2', 'scan_info': '', 'fname_template': '{subj}_{session}_{scan_name}_{run}.nii',
+                        'take_lowest_recon': True, 'verbose': True, 'compressed': False, 'permit_truncated': False, 'bvs': False, 'dwell_time': False, 'b1corr': True,
+                        'field_strength': False, 'vol_info': False, 'origin': 'scanner', 'minmax': ('parse', 'parse'), 'store_header': True,
+                        'scaling': 'dv', 'keep_trace': False, 'overwrite': True, 'strict_sort': False, 'multisession': (1, 2, 3), 'rms': False},
+            '_3DI_MC_': {'dirstruct': 'BIDS', 'outdir': 'anat', 'scan_name': 'angio', 'scan_info': '', 'fname_template': '{subj}_{session}_{scan_name}_{run}.nii',
+                        'take_lowest_recon': True, 'verbose': True, 'compressed': False, 'permit_truncated': False, 'bvs': False, 'dwell_time': False, 'b1corr': False,
+                        'field_strength': False, 'vol_info': False, 'origin': 'scanner', 'minmax': ('parse', 'parse'), 'store_header': True,
+                        'scaling': 'dv', 'keep_trace': False, 'overwrite': True, 'strict_sort': True, 'multisession': (1, 2, 3), 'rms': False},
+            '_MT_MPF_': {'dirstruct': 'BIDS', 'outdir': 'qt1', 'scan_name': 'mt', 'scan_info': 'mpf', 'fname_template': '{subj}_{session}_{scan_name}_{scan_info}_{run}.nii',
+                        'verbose': True, 'compressed': False, 'permit_truncated': False, 'bvs': False, 'dwell_time': False, 'b1corr': False,
+                        'field_strength': False, 'vol_info': False, 'origin': 'scanner', 'minmax': ('parse', 'parse'), 'store_header': True,
+                        'scaling': 'fp', 'keep_trace': False, 'overwrite': True, 'strict_sort': True, 'multisession': (1, 2, 3), 'rms': False},
+            })
 
 #new project DataFrame objects to be added to Panel here
-img_conv = pd.Panel({'phantom_qT1_slu': slu_phant_conv,
+img_conv = {'phantom_qT1_slu': slu_phant_conv,
             'phantom_qT1_disc': disc_phant_conv,
             'self_control': self_control_conv,
             'roots_of_empathy': roots_conv,
@@ -340,7 +430,9 @@ img_conv = pd.Panel({'phantom_qT1_slu': slu_phant_conv,
             'tadpole': tadpole_conv,
             'genz': genz_conv,
             'acdc': acdc_conv,
-            })
+            'lilomom': lilomom_conv,
+            'lilobaby': lilobaby_conv,
+            }
 
 opts = BrainOpts()
 
@@ -364,7 +456,7 @@ def conv_subjs(project, subjects, hdf_fname=None):
     niftiDict = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
     niftiDF = pd.DataFrame()
     if project not in img_conv:
-        raise ValueError(project+" not in img_conv Panel. Please check")
+        raise ValueError(project+" not in img_conv dictionary. Please check brain_convert module.")
     setattr(opts, 'proj', project)
     scans = img_conv[project]
     scans.dropna(axis=1, how='all', inplace=True)

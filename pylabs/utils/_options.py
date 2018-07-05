@@ -1,4 +1,4 @@
-from pylabs.utils.provenance import ProvenanceWrapper
+import pylabs
 import os
 
 
