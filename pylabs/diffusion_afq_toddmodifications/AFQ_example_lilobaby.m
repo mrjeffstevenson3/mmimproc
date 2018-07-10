@@ -9,41 +9,42 @@
 
 % First we can use AFQ_directories to find the directories that contain the
 % AFQ software and data on your local machine.
-% First we can use AFQ_directories to find the directories that contain the
-% AFQ software and data on your local machine.
 [AFQbase AFQdata AFQfunc AFQutil AFQdoc AFQgui] = AFQ_directories;
 
 % The directory path to the first example subject within the AFQdata folder
 % will be:
-sub_dir = fullfile(AFQdata, 'sub-acdc105');
+sub_dir = fullfile(AFQdata, 'sub-lilobaby');
 
 % Load the subject's dt6 file (generated from dtiInit).
-dt = dtiLoadDt6(fullfile(sub_dir,'dt6.mat'));
+dt = dtiLoadDt6(fullfile(sub_dir,'dti52trilin','dt6.mat'));
+% this dt6.mat was created using my macro called
+% prepare_for_dti6todd_lilobaby.m
 
 
 % Track every fiber from a mask of white matter voxels. Use 'test' mode to
 % track fewer fibers and make the example run quicker.
-wholebrainFG = AFQ_WholebrainTractography_infant(dt);
+wholebrainFG = AFQ_WholebrainTractography(dt);
 
 % Visualize the wholebrain fiber group.  Because there are a few hundred
 % thousand fibers we will use the 'numfibers' input to AFQ_RenderFibers to
 % randomly select 1,000 fibers to render. The 'color' input is used to set
 % the rgb values that specify the desired color of the fibers.
-AFQ_RenderFibers(wholebrainFG, 'numfibers',1000, 'color', [1 .6 .1]);
-
-
+AFQ_RenderFibers(wholebrainFG, 'numfibers',1000, 'color', [1 .6 .2]);
 
 % Add a sagittal slice from the subject's b0 image to the plot. First load
-% the b0 image.
+% the b0 image
 b0 = readFileNifti(fullfile(sub_dir,'b0.nii.gz'));
+%this b0.nii.gz was created by extracting the
+%non diffusion image from the dwi data set and rotating
+%using Nudge to get the brain straight
+
 
 % Then add the slice X = -2 to the 3d rendering.
 AFQ_AddImageTo3dPlot(b0,[-2, 0, 0]);
 
 %% Step 2: Fiber tract segmentation
-
 % Segment the whole-brain fiber group into 20 fiber tracts
-fg_classified = AFQ_SegmentFiberGroups_todd(dt, wholebrainFG);
+fg_classified = AFQ_SegmentFiberGroups(dt, wholebrainFG);
 
 % fg_classified.subgroup defines the fascicle that each fiber belongs to.
 % We can convert fg_classified to a 1x20 structured array of fiber groups
@@ -66,21 +67,10 @@ AFQ_RenderFibers(fg_classified(17),'numfibers',400,'color',[1 1 0],'newfig',fals
 
 % Render 400 arcuate fibers in green.
 AFQ_RenderFibers(fg_classified(19),'numfibers',400,'color',[1 0 0],'newfig',false)
-% Render 400 corticospinal tract fibers in blue.
-AFQ_RenderFibers(fg_classified(4),'numfibers',400,'color',[0 0 1],'newfig',false);
-
-AFQ_RenderFibers(fg_classified(12),'numfibers',400,'color',[0 1 0],'newfig',false)
-
-% Render 400 uncinate fibers in yellow
-AFQ_RenderFibers(fg_classified(18),'numfibers',400,'color',[1 1 0],'newfig',false)
-
-% Render 400 arcuate fibers in green.
-AFQ_RenderFibers(fg_classified(20),'numfibers',400,'color',[1 0 0],'newfig',false)
 
 % Then add the slice X = -2 to the 3d rendering.
 AFQ_AddImageTo3dPlot(b0,[-2, 0, 0]);
 
- 
 %% Step 3: Fiber tract cleaning
 
 % Even though the fiber tracts produced by AFQ_SegementFiberGroups conform

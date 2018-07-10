@@ -58,7 +58,7 @@ subjids_picks = SubjIdPicks()
 picks = [
          #{'subj': 'sub-genz505', 'session': 'ses-1', 'run': '1',},  # subject selection info
          #{'subj': 'sub-genz506', 'session': 'ses-1', 'run': '1',},
-         {'subj': 'sub-genz514', 'session': 'ses-1', 'run': '1',},
+         {'subj': 'sub-genz504', 'session': 'ses-1', 'run': '1',},
          #{'subj': 'sub-genz503', 'session': 'ses-1', 'run': '1',},
          #{'subj': 'sub-genz502', 'session': 'ses-1', 'run': '1',},
          ]
@@ -295,14 +295,14 @@ for i, pick in enumerate(dwi_picks):
                 S0 = ec_data[:, :, :, gtab.b0s_mask]
                 S0_mf = medianf(S0, size=3)
                 ec_data[:, :, :, gtab.b0s_mask] = S0_mf
-            ec_data[ec_data <= 0.1] = 0
+            ec_data[ec_data <= 0] = 0
             pick['ec_dwi_clamp_fname'] = '{ec_dwi_fname}{mf_str}_clamp1.nii.gz'.format(**mergeddicts(pick, vars(opts)))
             savenii(ec_data, ec_data_affine, pick['ec_dwi_clamp_fname'])
             prov.log(pick['ec_dwi_clamp_fname'], 'median filtered mean of topup-dn S0 vols clamped','{ec_dwi_fname}.nii.gz'.format(**pick))
             nii2nrrd(pick['ec_dwi_clamp_fname'], str(replacesuffix(pick['ec_dwi_clamp_fname'], '.nhdr')), bvalsf=pick['dwi_bvals_fname'], bvecsf=pick['dwi_bvecs_ec_rot_fname'])
             pick['dwi_nrrd_fname'] = replacesuffix(pick['ec_dwi_clamp_fname'], '.nhdr')
             prov.log(str(replacesuffix(pick['ec_dwi_clamp_fname'], '.nhdr')), 'nrrd converted median filtered mean of topup-dn S0 vols', pick['ec_dwi_clamp_fname'])
-            print('ending time for pipeline is {:%Y %m %d %H:%M}'.format(datetime.datetime.now()))
+            print('ending time for eddy is {:%Y %m %d %H:%M}'.format(datetime.datetime.now()))
 
 
     # do fsl fits and dipy fits
@@ -359,12 +359,14 @@ for i, pick in enumerate(dwi_picks):
             fsl_S0_fname = '{subj}_{session}_dwi_unwarped_ec_fslfit_tensor_mf_S0.nii.gz'.format(**pick)
             fsl_dt6_fname = '{subj}_{session}_dwi_unwarped_ec_fslfit_tensor_mf_dt6.mat'.format(**pick)
             mcmd = 'matlab -nodesktop -nodisplay -nosplash -r "{0}"'
-            cmd = "addpath('{path}'); dtiMakeDt6FromFsl('{S0}', '{t1}', '{outf}'); quit".format(
-                **{'S0': fsl_S0_fname, 't1': str(t1_fname), 'outf': fsl_dt6_fname, 'path': pylabs_dir/'pylabs/diffusion'})
+            cmd = "addpath('{path1}', genpath('{path2}')); dtiMakeDt6FromFsl('{S0}', '{t1}', '{outf}'); quit".format(
+                **{'S0': fsl_S0_fname, 't1': str(t1_fname), 'outf': fsl_dt6_fname, 'path1': pylabs_dir/'pylabs/diffusion', 'path2': pylabs_dir.parent/'vistasoft'})
             if which('matlab') == None:
                 print('matlab not found or installed on this machine. please check. skipping dt6.mat ')
             else:
+                print('start time for mat file is {:%Y %m %d %H:%M}'.format(datetime.datetime.now()))
                 result += run_subprocess([mcmd.format(cmd)])
+                print('ending time for mat file is {:%Y %m %d %H:%M}'.format(datetime.datetime.now()))
 
         # do denoise and dki
         sigma = estimate_sigma(data, N=4)
