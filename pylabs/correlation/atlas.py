@@ -295,6 +295,41 @@ mori_network_regions = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 1
                         27, 40, 41, 57, 59, 60, 61, 62, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103,
                         104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 128, 129, 145, 147, 148, 149, 150]
 
+mori_language_regions = {
+        # supramarginal gyrus
+        23: 'SUPRAMARGINAL_GYRUS',
+        111: 'SUPRAMARGINAL_GYRUS_right',
+
+        # angular gyrus
+        8: 'ANGULAR_GYRUS_left',
+        96: 'ANGULAR_GYRUS_right',
+        73: 'ANGULAR_WM_left',
+        161: 'ANGULAR_WM_right',
+
+        # White matter
+        43: 'Superior_longitudinal_fasciculus_left',
+        45: 'Inferior_fronto-occipital_fasciculus_left',
+        131: 'Superior_longitudinal_fasciculus_right',
+        133: 'Inferior_fronto-occipital_fasciculus_right',
+        70: 'INFERIOR_FRONTAL_WM_left',
+        158: 'INFERIOR_FRONTAL_WM_right',
+        136: 'Uncinate_fasciculus_right',
+        48: 'Uncinate_fasciculus_left',
+
+        5: 'INFERIOR_FRONTAL_GYRUS_left',
+        93: 'INFERIOR_FRONTAL_GYRUS_right',
+
+        18: 'SUPERIOR_TEMPORAL_GYRUS',
+        20: 'MIDDLE_TEMPORAL_GYRUS',
+        106: 'SUPERIOR_TEMPORAL_GYRUS_right',
+        108: 'MIDDLE_TEMPORAL_GYRUS_right',
+
+        134: 'Sagittal_stratum_right',
+        46: 'Sagittal_stratum_left',
+        135: 'External_capsule_right',
+        47: 'External_capsule_left',
+        }
+
 # from fsl atlas label file JHU-tracts.xml
 JHUtracts_region_labels = {
         0: 'Background',
