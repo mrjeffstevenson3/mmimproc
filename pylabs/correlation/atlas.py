@@ -1,3 +1,5 @@
+# todo: add making of lookup table to isolate_atlas_regions.
+
 import pylabs
 import os, inspect
 from pathlib import *
@@ -70,13 +72,28 @@ def make_mask_fm_atlas_parts(atlas, roi_list, mask_fname, makenrrd=False):
     mask = np.zeros(img_data.shape).astype('int16')
     for roi in roi_list:
         mask[img_data == roi] = 1
-    savenii(mask, img.affine, mask_fname, minmax=(0,1))
+    savenii(mask, img.affine, mask_fname, minmax=(0, 1))
     if makenrrd:
         nii2nrrd(mask_fname, replacesuffix(mask_fname, '.nrrd'), ismask=True)
-    roi_list_dict = {}
-    roi_list_dict['roi_list'] = roi_list
+    roi_list_dict = {'roi_list': roi_list}
     provenance.log(str(mask_fname), 'extract roi_list regions from atlas into mask', str(atlas), script=__file__, provenance=roi_list_dict)
     return
+
+def isolate_atlas_regions(atlas, roi_list, newatlas_fname, makenrrd=False):   #  lut_fname=None,
+    if not Path(pylabs_atlasdir/atlas).is_file():
+        raise IOError(atlas + " atlas file File Does not Exist. Please check.")
+    img = nib.load(str(atlas))
+    img_data = img.get_data()
+    newatlas = np.zeros(img_data.shape).astype('int16')
+    for roi in roi_list:
+        newatlas[img_data == roi] = roi
+    savenii(newatlas, img.affine, newatlas_fname, minmax=(0, int(np.max(roi_list))))
+    if makenrrd:
+        nii2nrrd(newatlas_fname, replacesuffix(newatlas_fname, '.nrrd'), ismask=True)
+    roi_list_dict = {'roi_list': roi_list}
+    provenance.log(str(newatlas_fname), 'extract roi_list regions from atlas into mask', str(atlas), script=__file__, provenance=roi_list_dict)
+    return
+
 
 def make_mask_fm_tracts(atlas, volidx, thresh, mask_fname):
     if not Path(pylabs_atlasdir/atlas).is_file():
@@ -345,6 +362,19 @@ mori_language_regions = {
         109: 'LATERAL_FRONTO_ORBITAL_GYRUS_right',   # rt uncinate
         169: 'SUPERIOR_TEMPORAL_WM_right',   #  rt slf
 
+
+        }
+
+# FSL's JHU atlas language tracts labels
+JHU_language_fibertracts = {
+        11: 'Inferior_fronto_occipital_fasciculus_L',
+        12: 'Inferior_fronto_occipital_fasciculus_R',
+        15: 'Superior_longitudinal_fasciculus_L',
+        16: 'Superior_longitudinal_fasciculus_R',
+        17: 'Uncinate_fasciculus_L',
+        18: 'Uncinate_fasciculus_R',
+        19: 'Superior_longitudinal_fasciculus_(temporal_part)_L',
+        20: 'Superior_longitudinal_fasciculus_(temporal_part)_R',
 
         }
 
