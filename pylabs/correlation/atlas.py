@@ -335,6 +335,7 @@ mori_language_regions = {
         21: 'LATERAL_FRONTO_ORBITAL_GYRUS',   # lt uncinate
         71: 'PRECENTRAL_WM_left',   #  lt slf
         72: 'POSTCENTRAL_WM_left',   #  lt slf
+        81: 'SUPERIOR_TEMPORAL_WM_left',   #  lt slf
         86: 'SUPRAMARGINAL_WM_left',   #  lt slf
         94: 'PRECENTRAL_GYRUS_right',   #  rt slf
         95: 'POSTCENTRAL_GYRUS_right',   #  rt slf
@@ -342,6 +343,7 @@ mori_language_regions = {
         160: 'POSTCENTRAL_WM_right',   #  rt slf
         174: 'SUPRAMARGINAL_WM_right',   #  rt slf
         109: 'LATERAL_FRONTO_ORBITAL_GYRUS_right',   # rt uncinate
+        169: 'SUPERIOR_TEMPORAL_WM_right',   #  rt slf
 
 
         }
