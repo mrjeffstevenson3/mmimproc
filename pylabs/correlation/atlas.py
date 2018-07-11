@@ -328,6 +328,18 @@ mori_language_regions = {
         46: 'Sagittal_stratum_left',
         135: 'External_capsule_right',
         47: 'External_capsule_left',
+
+        # js edits
+        6: 'PRECENTRAL_GYRUS_left',
+        7: 'POSTCENTRAL_GYRUS_left',
+        71: 'PRECENTRAL_WM_left',
+        72: 'POSTCENTRAL_WM_left',
+        94: 'PRECENTRAL_GYRUS_right',
+        95: 'POSTCENTRAL_GYRUS_right',
+        159: 'PRECENTRAL_WM_right',
+        160: 'POSTCENTRAL_WM_right',
+
+
         }
 
 # from fsl atlas label file JHU-tracts.xml

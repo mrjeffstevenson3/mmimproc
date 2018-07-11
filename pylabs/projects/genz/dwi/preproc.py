@@ -1,6 +1,7 @@
 # todo: fix brain extraction by increasing z dim (and maybe xy) to accomodate brain stem and cerebellum of dwi or pre-crop MNI before reg
 # todo: add timestamp to status updates
 # todo: add dipy save evals and evecs and convert to AFQ dt6.mat
+# todo fix save nrrd function
 # first set global root data directory
 import pylabs
 pylabs.datadir.target = 'jaba'
@@ -58,7 +59,7 @@ subjids_picks = SubjIdPicks()
 picks = [
          #{'subj': 'sub-genz505', 'session': 'ses-1', 'run': '1',},  # subject selection info
          #{'subj': 'sub-genz506', 'session': 'ses-1', 'run': '1',},
-         {'subj': 'sub-genz504', 'session': 'ses-1', 'run': '1',},
+         {'subj': 'sub-genz514', 'session': 'ses-1', 'run': '1',},
          #{'subj': 'sub-genz503', 'session': 'ses-1', 'run': '1',},
          #{'subj': 'sub-genz502', 'session': 'ses-1', 'run': '1',},
          ]
