@@ -330,14 +330,18 @@ mori_language_regions = {
         47: 'External_capsule_left',
 
         # js edits
-        6: 'PRECENTRAL_GYRUS_left',
-        7: 'POSTCENTRAL_GYRUS_left',
-        71: 'PRECENTRAL_WM_left',
-        72: 'POSTCENTRAL_WM_left',
-        94: 'PRECENTRAL_GYRUS_right',
-        95: 'POSTCENTRAL_GYRUS_right',
-        159: 'PRECENTRAL_WM_right',
-        160: 'POSTCENTRAL_WM_right',
+        6: 'PRECENTRAL_GYRUS_left',   #  lt slf
+        7: 'POSTCENTRAL_GYRUS_left',   #  lt slf
+        21: 'LATERAL_FRONTO_ORBITAL_GYRUS',   # lt uncinate
+        71: 'PRECENTRAL_WM_left',   #  lt slf
+        72: 'POSTCENTRAL_WM_left',   #  lt slf
+        86: 'SUPRAMARGINAL_WM_left',   #  lt slf
+        94: 'PRECENTRAL_GYRUS_right',   #  rt slf
+        95: 'POSTCENTRAL_GYRUS_right',   #  rt slf
+        159: 'PRECENTRAL_WM_right',   #  rt slf
+        160: 'POSTCENTRAL_WM_right',   #  rt slf
+        174: 'SUPRAMARGINAL_WM_right',   #  rt slf
+        109: 'LATERAL_FRONTO_ORBITAL_GYRUS_right',   # rt uncinate
 
 
         }
