@@ -14,6 +14,8 @@ def nii2nrrd(niftifile, nrrd_fname, bvalsf=None, bvecsf=None, istensor=False, is
     This function converts nifti files to nrrd.
     '''
     # test consistency
+    if Path(nrrd_fname).suffix is not 'nhdr':
+        raise ValueError('non nhdr files no longer compatible with Slicer. Please use .nhdr extension.')
     if istensor + ismask > 1:
         raise ValueError("Only one can be True. istensor= "+istensor+", ismask= "+ismask)
 
@@ -93,7 +95,20 @@ def nii2nrrd(niftifile, nrrd_fname, bvalsf=None, bvecsf=None, istensor=False, is
         options[u'space directions'] = [list(x) for x in affine[:3,:3].astype(str)]
         options[u'thicknesses'] = ['NaN', 'NaN', str(hdr['pixdim'][3])]
     options[ u'space origin'] = [x for x in affine[:3,3].astype(str)]
+
     nrrd.write(str(nrrd_fname), img_data, options=options)
+    with open(str(nrrd_fname), 'r') as orig_nhdr:
+        bad_nhdr = orig_nhdr.read()
+    good_nhdr = ''
+    for line in bad_nhdr.splitlines():
+        if '(n,o,n,e)' in line:
+            good_nhdr += line.replace('(n,o,n,e)', 'none') + '\n'
+        elif 'data file:' in line:
+            good_nhdr += 'data file: ' + Path(line.replace('data file:', '')).name + '\n'
+        else:
+            good_nhdr += line + '\n'
+    with open(str(nrrd_fname), 'w') as fixed_nhdr:
+        fixed_nhdr.write(good_nhdr)
     provenance.log(str(nrrd_fname), 'convert nii to nrrd using pynrrd', str(niftifile), script=__file__, provenance=options)
     return
 
