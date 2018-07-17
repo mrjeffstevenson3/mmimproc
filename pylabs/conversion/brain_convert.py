@@ -474,7 +474,7 @@ def conv_subjs(project, subjects, hdf_fname=None):
             subj_dd = brain_proc_file(opts, subj_dd)
         if not is_empty(subj_dd):
             subjDF = make_sessions_fm_dict(subj_dd, project, subject)
-            niftiDF = niftiDF.append(subjDF)
+            niftiDF = niftiDF.append(subjDF, sort=True)
             niftiDict = mergeddicts(niftiDict, subj_dd)
             # save scan info to hdf info file for pipelines
             if not hdf_fname == None:
