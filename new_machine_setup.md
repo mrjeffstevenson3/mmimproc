@@ -63,9 +63,9 @@ cd ${HOME}/Software && git clone https://github.com/stnava/ANTs.git && mkdir ant
 18. install FSL. first install requirements for for fsleyes:
     ```
     sudo apt-get update
-    sudo apt-get install freeglut3 libsdl1.2debian
-    sudo apt-get install libgtk2.0-dev libgtk-3-dev libwebkitgtk-dev libwebkitgtk-3.0-dev
-    sudo apt-get install libjpeg-turbo8-dev libtiff5-dev libsdl1.2-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libnotify-dev freeglut3-dev
+    sudo apt-get install freeglut3 libsdl1.2debian -y
+    sudo apt-get install libgtk2.0-dev libgtk-3-dev libwebkitgtk-dev libwebkitgtk-3.0-dev -y
+    sudo apt-get install libjpeg-turbo8-dev libtiff5-dev libsdl1.2-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libnotify-dev freeglut3-dev -y
     ```
     check if platform function will work. either `cat /etc/debian_version` or in python
     ```python
@@ -108,6 +108,8 @@ cd ${HOME}/Software && git clone https://github.com/stnava/ANTs.git && mkdir ant
         echo "Current freesurfer subject directory is now $SUBJECTS_DIR. running adult recon-all"; echo -e "mris_inflate -n 15\n" > freesurf_expert_opts.txt; recon-all "$@" ;
         }
     ```
+    check that freeview works if not and you get missing libjpg try
+    ```cd /usr/lib/x86_64-linux-gnu && sudo ln -s libjpeg.so.8 libjpeg.so.62 && cd ${home}/Software```
 20. install camino and R using ~/Software/Dropbox/bash_scripts/how_to_install_camino_and_R.txt
 21. using https://help.ubuntu.com/community/SettingUpNFSHowTo to set up NFS mounts:
     `sudo apt-get install nfs-common` and then `gksudo gedit /etc/fstab` and add the following tab delim line under #mount for NFS:
