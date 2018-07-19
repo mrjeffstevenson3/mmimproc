@@ -333,13 +333,13 @@ mori_language_regions = {
         136: 'Uncinate_fasciculus_right',
         48: 'Uncinate_fasciculus_left',
 
-        5: 'INFERIOR_FRONTAL_GYRUS_left',
-        93: 'INFERIOR_FRONTAL_GYRUS_right',
+        5: 'INFERIOR_FRONTAL_GYRUS_left', #
+        93: 'INFERIOR_FRONTAL_GYRUS_right', #
 
-        18: 'SUPERIOR_TEMPORAL_GYRUS',
-        20: 'MIDDLE_TEMPORAL_GYRUS',
-        106: 'SUPERIOR_TEMPORAL_GYRUS_right',
-        108: 'MIDDLE_TEMPORAL_GYRUS_right',
+        18: 'SUPERIOR_TEMPORAL_GYRUS', #
+        20: 'MIDDLE_TEMPORAL_GYRUS', #
+        106: 'SUPERIOR_TEMPORAL_GYRUS_right', #
+        108: 'MIDDLE_TEMPORAL_GYRUS_right', #
 
         134: 'Sagittal_stratum_right',
         46: 'Sagittal_stratum_left',
