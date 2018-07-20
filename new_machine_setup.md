@@ -129,6 +129,8 @@ cd ${HOME}/Software && git clone https://github.com/stnava/ANTs.git && mkdir ant
     `cd /usr/local/bin && sudo ln -s ${HOME}/Software/MATLAB/matlabR2018a/bin/matlab matlab`
     then install matlab to python engine:
     `cd ${HOME}/Software/MATLAB/matlabR2018a/extern/engines/python && python setup.py install`
+    to test success try:
+    `which matlab && python -c "import matlab.engine; eng = matlab.engine.start_matlab("-noFigureWindows -nodesktop -nodisplay -nosplash")"`
     
 20. install camino and R using ~/Software/Dropbox/bash_scripts/how_to_install_camino_and_R.txt
 21. using https://help.ubuntu.com/community/SettingUpNFSHowTo to set up NFS mounts:
