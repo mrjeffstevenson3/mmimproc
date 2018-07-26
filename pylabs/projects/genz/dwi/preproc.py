@@ -57,7 +57,10 @@ subjids_picks = SubjIdPicks()
 # list of subject ids to operate on
 picks = [
          ## {'subj': 'sub-genz311', 'session': 'ses-1', 'run': '1',},  # subject selection info
-         {'subj': 'sub-genz518', 'session': 'ses-1', 'run': '1',},
+         {'subj': 'sub-genz516', 'session': 'ses-1', 'run': '1',},
+         {'subj': 'sub-genz513', 'session': 'ses-1', 'run': '1',},
+         {'subj': 'sub-genz512', 'session': 'ses-1', 'run': '1',},
+         {'subj': 'sub-genz509', 'session': 'ses-1', 'run': '1', },
          ]
 
 setattr(subjids_picks, 'subjids', picks)
