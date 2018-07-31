@@ -39,7 +39,7 @@ from pylabs.utils import ProvenanceWrapper
 prov = ProvenanceWrapper()
 
 # project, subject, and file objects to work on
-from pylabs.projects.acdc.file_names import project, SubjIdPicks, get_dwi_names, Optsd, merge_ftempl_dicts
+from pylabs.projects.genz.file_names import project, SubjIdPicks, get_dwi_names, Optsd, merge_ftempl_dicts
 from pylabs.conversion.brain_convert import genz_conv
 
 #setup paths and file names to process
@@ -56,9 +56,9 @@ if not dwi_qc:
 subjids_picks = SubjIdPicks()
 # list of subject ids to operate on
 picks = [
-         {'subj': 'sub-acdc117', 'session': 'ses-2', 'run': '1', },  # subject selection info
-         {'subj': 'sub-acdc117', 'session': 'ses-1', 'run': '1', },
-	]
+         ## {'subj': 'sub-genz311', 'session': 'ses-1', 'run': '1',},  # subject selection info
+        {'subj': 'sub-genz415', 'session': 'ses-1', 'run': '1', },
+         ]
 
 setattr(subjids_picks, 'subjids', picks)
 
@@ -148,7 +148,7 @@ pick dict guide:
 dwi_picks = get_dwi_names(subjids_picks)
 
 if opts.test:
-    i = 0
+    i = 2
     dwi_picks = [dwi_picks[i]]
 # run conversion if needed
 if opts.convert:
