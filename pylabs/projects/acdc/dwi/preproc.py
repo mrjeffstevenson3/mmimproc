@@ -40,7 +40,7 @@ prov = ProvenanceWrapper()
 
 # project, subject, and file objects to work on
 from pylabs.projects.acdc.file_names import project, SubjIdPicks, get_dwi_names, Optsd, merge_ftempl_dicts
-from pylabs.conversion.brain_convert import genz_conv
+from pylabs.conversion.brain_convert import acdc_conv
 
 #setup paths and file names to process
 fs = Path(getnetworkdataroot())
@@ -56,8 +56,8 @@ if not dwi_qc:
 subjids_picks = SubjIdPicks()
 # list of subject ids to operate on
 picks = [
-         {'subj': 'sub-acdc117', 'session': 'ses-2', 'run': '1', },  # subject selection info
-         {'subj': 'sub-acdc117', 'session': 'ses-1', 'run': '1', },
+         {'subj': 'sub-acdc104', 'session': 'ses-2', 'run': '1', },  # subject selection info
+         {'subj': 'sub-acdc104', 'session': 'ses-1', 'run': '1', },
 	]
 
 setattr(subjids_picks, 'subjids', picks)
@@ -348,9 +348,9 @@ for i, pick in enumerate(dwi_picks):
         savenii(evals[1:].mean(0), affine, '{dipy_fits_out}_mf_RD.nii'.format(**pick))
         savenii(mode(fit_quad_form_mf), affine, '{dipy_fits_out}_mf_MO.nii'.format(**pick), minmax=(-1, 1))
         # make AFQ dt6 file out of fsl
-        mempkey = [k for k in genz_conv.keys() if 'MEMP_' in k][0]
-        t1_fname = fs/project/('{subj}/{session}/anat/'+genz_conv[mempkey]['fname_template']).format(**merge_ftempl_dicts(
-            dict1=genz_conv[mempkey], dict2=pick, dict3={'scan_info': 'ti1200_rms'}))
+        mempkey = [k for k in acdc_conv.keys() if 'MEMP_' in k][0]
+        t1_fname = fs/project/('{subj}/{session}/anat/'+acdc_conv[mempkey]['fname_template']).format(**merge_ftempl_dicts(
+            dict1=acdc_conv[mempkey], dict2=pick, dict3={'scan_info': 'ti1200_rms'}))
         t1_fname = replacesuffix(t1_fname, '_brain.nii.gz')
         if t1_fname.is_file():
             fsl_S0_fname = '{subj}_{session}_dwi_unwarped_ec_fslfit_tensor_mf_S0.nii.gz'.format(**pick)
