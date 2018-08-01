@@ -218,6 +218,8 @@ for i, pick in enumerate(dwi_picks):
         gtab = gradient_table(bvals, bvecs)
         if orig_topup_data.shape[2] % 2 == 0:
             even_sl = True
+        else:
+            even_sl = False
         #add topup and dn qc vols select
         if even_sl:
             topup_data = orig_topup_data[:, :, :, np.array(topup_goodvols.index)]
