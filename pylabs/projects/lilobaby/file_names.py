@@ -47,7 +47,7 @@ class Optsd(object):
             dwi_reg_dir = 'MNI2dwi',
             run_bedpost = True,
             dwi_bedpost_dir = 'bedpost',
-            dwi_fname_excep = ['_DWI64_3SH_B0_B800_B2000_TOPUP_TE101_1p8mm3_', '_DWI6_B0_TOPUP_TE101_1p8mm3_', '_DWI6_B0_TOPDN_TE101_1p8mm3_'],
+            dwi_fname_excep = [],
             gaba_te = 80,
             gaba_dyn = 120,
             gaba_ftempl = '{subj}_WIP_ACCGABAMM_TE{te}_{dyn}DYN_{wild}_raw_{type}.SDAT',

@@ -35,12 +35,11 @@ from pylabs.io.images import savenii
 from pylabs.io.mixed import h52df
 from pylabs.utils import *
 #set up provenance
-from pylabs.utils import ProvenanceWrapper
 prov = ProvenanceWrapper()
 
 # project, subject, and file objects to work on
-from pylabs.projects.genz.file_names import project, SubjIdPicks, get_dwi_names, Optsd, merge_ftempl_dicts
-from pylabs.conversion.brain_convert import genz_conv
+from pylabs.projects.lilobaby.file_names import project, SubjIdPicks, get_dwi_names, Optsd, merge_ftempl_dicts
+from pylabs.conversion.brain_convert import lilobaby_conv
 
 #setup paths and file names to process
 fs = Path(getnetworkdataroot())
@@ -56,8 +55,7 @@ if not dwi_qc:
 subjids_picks = SubjIdPicks()
 # list of subject ids to operate on
 picks = [
-         ## {'subj': 'sub-genz311', 'session': 'ses-1', 'run': '1',},  # subject selection info
-        {'subj': 'sub-genz415', 'session': 'ses-1', 'run': '1', },
+         {'subj': 'sub-lilobabyS220', 'session': 'ses-1', 'run': '1',},  # subject selection info
          ]
 
 setattr(subjids_picks, 'subjids', picks)
@@ -218,9 +216,15 @@ for i, pick in enumerate(dwi_picks):
         bvecs = dwi_good_vols[[u'x_bvec', u'y_bvec', u'z_bvec']].T.values
         bvals = pd.DataFrame(dwi_good_vols[u'bvals']).T.values[0]
         gtab = gradient_table(bvals, bvecs)
+        if orig_topup_data.shape[2] % 2 == 0:
+            even_sl = True
         #add topup and dn qc vols select
-        topup_data = orig_topup_data[:,:,:,np.array(topup_goodvols.index)]
-        topdn_data = orig_topdn_data[:, :, :, np.array(topdn_goodvols.index)]
+        if even_sl:
+            topup_data = orig_topup_data[:, :, :, np.array(topup_goodvols.index)]
+            topdn_data = orig_topdn_data[:, :, :, np.array(topdn_goodvols.index)]
+        else:
+            topup_data = orig_topup_data[:, :, 1:, np.array(topup_goodvols.index)]
+            topdn_data = orig_topdn_data[:, :, 1:, np.array(topdn_goodvols.index)]
         savenii(topup_data, orig_topup_affine, topup_fname)
         savenii(topdn_data, orig_topdn_affine, topdn_fname)
     # select all volumes
@@ -230,11 +234,15 @@ for i, pick in enumerate(dwi_picks):
         dwif_fname = orig_dwif_fname
         pick['dwif_fname'] = dwif_fname
         dwi_bvals_fname = orig_dwi_bvals_fname
-        dwi_bvecs_fname =orig_dwi_bvecs_fname
+        dwi_bvecs_fname = orig_dwi_bvecs_fname
         topup_fname = orig_topup_fname
         topdn_fname = orig_topdn_fname
-        topup_data = orig_topup_data
-        topdn_data = orig_topdn_data
+        if even_sl:
+            topup_data = orig_topup_data
+            topdn_data = orig_topdn_data
+        else:
+            topup_data = orig_topup_data[:, :, 1:, :]
+            topdn_data = orig_topdn_data[:, :, 1:, :]
 
     # make acq_params and index files for fsl eddy
     with open(str(topup_dwellt_fname), 'r') as tud:
@@ -282,6 +290,10 @@ for i, pick in enumerate(dwi_picks):
             pick['b0_brain_mask_fname'] = b0_brain_mask_fname
             nii2nrrd(pick['b0_brain_mask_fname'], replacesuffix(pick['b0_brain_mask_fname'], '.nhdr'), ismask=True)
             pick['b0_brain_mask_fname_nrrd'] = replacesuffix(pick['b0_brain_mask_fname'], '.nhdr')
+            if not even_sl:
+                dwi_data_orig = nib.load(str(pick['dwif_fname'])).get_data().astype(np.float64)
+                dwi_orig_affine = nib.load(str(pick['dwif_fname'])).affine
+                savenii(dwi_data_orig[:, :, 1:, :], dwi_orig_affine, pick['dwif_fname'])
             result += run_subprocess([eddy_cmd.format(**pick)])
             # clamp, filter, and make nrrd
             ec_data = nib.load('{ec_dwi_fname}.nii.gz'.format(**pick)).get_data().astype(np.float64)
@@ -348,9 +360,9 @@ for i, pick in enumerate(dwi_picks):
         savenii(evals[1:].mean(0), affine, '{dipy_fits_out}_mf_RD.nii'.format(**pick))
         savenii(mode(fit_quad_form_mf), affine, '{dipy_fits_out}_mf_MO.nii'.format(**pick), minmax=(-1, 1))
         # make AFQ dt6 file out of fsl
-        mempkey = [k for k in genz_conv.keys() if 'MEMP_' in k][0]
-        t1_fname = fs/project/('{subj}/{session}/anat/'+genz_conv[mempkey]['fname_template']).format(**merge_ftempl_dicts(
-            dict1=genz_conv[mempkey], dict2=pick, dict3={'scan_info': 'ti1200_rms'}))
+        mempkey = [k for k in lilobaby_conv.keys() if 'MEMP_' in k][0]
+        t1_fname = fs/project/('{subj}/{session}/anat/'+lilobaby_conv[mempkey]['fname_template']).format(**merge_ftempl_dicts(
+            dict1=lilobaby_conv[mempkey], dict2=pick, dict3={'scan_info': 'ti1200_rms'}))
         t1_fname = replacesuffix(t1_fname, '_brain.nii.gz')
         if t1_fname.is_file():
             fsl_S0_fname = '{subj}_{session}_dwi_unwarped_ec_fslfit_tensor_mf_S0.nii.gz'.format(**pick)
