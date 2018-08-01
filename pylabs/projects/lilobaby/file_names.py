@@ -1,4 +1,4 @@
-# todo: make roll_brain_to_com function with affine transform outfile to place brain at center of image fro ANTS.
+# todo: make roll_brain_to_com function with affine transform outfile to place brain at center of image for ANTS.
 # orig_dwi are the original dwi source files output from conversion -> inputs to topup
 # set as a triple tuple (topup_dwi_6S0 6 vol S0 1st, topdn_dwi_6S0 6 vol S0 2nd, dwi-topup_64dir-3sh-800-2000 multishell 64 dir dwi 3rd)
 # topup_dwi_6S0 and topdn_dwi_6S0 are inputs to topup along with dwell time
@@ -45,6 +45,7 @@ class Optsd(object):
             do_ukf = True,
             vtk_dir = 'vtk_v1',
             dwi_reg_dir = 'MNI2dwi',
+            dwi_extr_br_f_factor = 0.6,
             run_bedpost = True,
             dwi_bedpost_dir = 'bedpost',
             dwi_fname_excep = [],
@@ -78,6 +79,7 @@ class Optsd(object):
         self.do_ukf = do_ukf
         self.vtk_dir = vtk_dir
         self.dwi_reg_dir = dwi_reg_dir
+        self.dwi_extr_br_f_factor = dwi_extr_br_f_factor
         self.run_bedpost = run_bedpost
         self.dwi_bedpost_dir = dwi_bedpost_dir
         self.dwi_fname_excep = dwi_fname_excep
