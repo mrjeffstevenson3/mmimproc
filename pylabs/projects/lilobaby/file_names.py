@@ -3,6 +3,7 @@
 # set as a triple tuple (topup_dwi_6S0 6 vol S0 1st, topdn_dwi_6S0 6 vol S0 2nd, dwi-topup_64dir-3sh-800-2000 multishell 64 dir dwi 3rd)
 # topup_dwi_6S0 and topdn_dwi_6S0 are inputs to topup along with dwell time
 # topup_unwarped is the output from topup and input to eddy
+# todo: vfa fa 25 ec 1 brain extract factor 0.5 best on S220
 
 # here there are no subj ids, those are called out by the picks list inside SubjIdPicks object.
 
