@@ -41,6 +41,7 @@ class Optsd(object):
             run_bedpost = True,
             dwi_bedpost_dir = 'bedpost',
             dwi_fname_excep = ['_DWI64_3SH_B0_B800_B2000_TOPUP_TE101_1p8mm3_', '_DWI6_B0_TOPUP_TE101_1p8mm3_', '_DWI6_B0_TOPDN_TE101_1p8mm3_'],
+            dwi_extr_br_f_factor=0.5,
             gaba_te = 80,
             gaba_dyn = 120,
             gaba_ftempl = '{subj}_WIP_{side}GABAMM_TE{te}_{dyn}DYN_{wild}_raw_{type}.SDAT',
@@ -74,6 +75,7 @@ class Optsd(object):
         self.run_bedpost = run_bedpost
         self.dwi_bedpost_dir = dwi_bedpost_dir
         self.dwi_fname_excep = dwi_fname_excep
+        self.dwi_extr_br_f_factor = dwi_extr_br_f_factor
         self.gaba_te = gaba_te
         self.gaba_dyn = gaba_dyn
         self.gaba_ftempl = gaba_ftempl

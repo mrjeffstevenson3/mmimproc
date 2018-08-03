@@ -60,7 +60,7 @@ picks = [
 
 setattr(subjids_picks, 'subjids', picks)
 
-opts.test = False
+opts.test = True
 
 # commands and options are modified below.
 # topup command for unwarping dti
@@ -146,8 +146,9 @@ pick dict guide:
 dwi_picks = get_dwi_names(subjids_picks)
 
 if opts.test:
-    i = 2
+    i = 0
     dwi_picks = [dwi_picks[i]]
+    pick = dwi_picks[0]
 # run conversion if needed
 if opts.convert:
     subjects = [x['subj'] for x in subjids_picks.subjids]

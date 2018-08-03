@@ -46,7 +46,7 @@ class Optsd(object):
             do_ukf = True,
             vtk_dir = 'vtk_v1',
             dwi_reg_dir = 'MNI2dwi',
-            dwi_extr_br_f_factor = 0.6,
+            dwi_extr_br_f_factor = 0.5,
             run_bedpost = True,
             dwi_bedpost_dir = 'bedpost',
             dwi_fname_excep = [],
