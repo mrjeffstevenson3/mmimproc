@@ -1051,23 +1051,45 @@ c now write out the tensors to new vtk file with conditional colors based on cha
 c
 	write(6,*)'itensors 2nd time ',itensors
 c
+c diagnostic images output
+c
+	open(21,file = 'dti1.img',form = 'unformatted')
+	do k=1,76
+	do j=1,160
+	do i=1,160
+	dti(i,j,k,4) = 0
+	enddo
+	enddo
+	enddo
+
 	do i=1,itensors
 	rxsize = ixsize
 	rysize = iysize
 	rzsize = izsize
 
-	rx = ((polysav(i,1,1)/rxdim))+(xoffset)
+	rx = 160-(((polysav(i,1,1)/rxdim))+(xoffset))
 	ry = ((polysav(i,2,1)/rydim))+(yoffset)
 	rz = ((polysav(i,3,1)/abs(rzdim))+zoffset)
 	ix = nint(rx)
 	iy = nint(ry)
 	iz = nint(rz)
 	tensors(i,1) = dti(ix,iy,iz,1)
+	dti(ix,iy,iz,4) = dti(ix,iy,iz,1)
 c
 
 	enddo  !itensors
 
-
+	do k=1,76
+	do j=1,160
+	do i=1,160
+	dtistats(i) = dti(i,j,k,4)
+	enddo
+	do i=1,160*4
+	call fputc(21,cdti(i),istate)
+	enddo
+	enddo
+	enddo
+	close(21)
 
 
 c  end paint your fibers with input 

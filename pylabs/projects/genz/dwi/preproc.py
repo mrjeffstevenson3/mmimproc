@@ -35,7 +35,6 @@ from pylabs.io.images import savenii
 from pylabs.io.mixed import h52df
 from pylabs.utils import *
 #set up provenance
-from pylabs.utils import ProvenanceWrapper
 prov = ProvenanceWrapper()
 
 # project, subject, and file objects to work on
@@ -56,11 +55,8 @@ if not dwi_qc:
 subjids_picks = SubjIdPicks()
 # list of subject ids to operate on
 picks = [
-         #{'subj': 'sub-genz505', 'session': 'ses-1', 'run': '1',},  # subject selection info
-         #{'subj': 'sub-genz506', 'session': 'ses-1', 'run': '1',},
-         {'subj': 'sub-genz504', 'session': 'ses-1', 'run': '1',},
-         #{'subj': 'sub-genz503', 'session': 'ses-1', 'run': '1',},
-         #{'subj': 'sub-genz502', 'session': 'ses-1', 'run': '1',},
+         ## {'subj': 'sub-genz311', 'session': 'ses-1', 'run': '1',},  # subject selection info
+        {'subj': 'sub-genz415', 'session': 'ses-1', 'run': '1', },
          ]
 
 setattr(subjids_picks, 'subjids', picks)
@@ -221,9 +217,17 @@ for i, pick in enumerate(dwi_picks):
         bvecs = dwi_good_vols[[u'x_bvec', u'y_bvec', u'z_bvec']].T.values
         bvals = pd.DataFrame(dwi_good_vols[u'bvals']).T.values[0]
         gtab = gradient_table(bvals, bvecs)
+        if orig_topup_data.shape[2] % 2 == 0:
+            even_sl = True
+        else:
+            even_sl = False
         #add topup and dn qc vols select
-        topup_data = orig_topup_data[:,:,:,np.array(topup_goodvols.index)]
-        topdn_data = orig_topdn_data[:, :, :, np.array(topdn_goodvols.index)]
+        if even_sl:
+            topup_data = orig_topup_data[:, :, :, np.array(topup_goodvols.index)]
+            topdn_data = orig_topdn_data[:, :, :, np.array(topdn_goodvols.index)]
+        else:
+            topup_data = orig_topup_data[:, :, 1:, np.array(topup_goodvols.index)]
+            topdn_data = orig_topdn_data[:, :, 1:, np.array(topdn_goodvols.index)]
         savenii(topup_data, orig_topup_affine, topup_fname)
         savenii(topdn_data, orig_topdn_affine, topdn_fname)
     # select all volumes
@@ -233,11 +237,15 @@ for i, pick in enumerate(dwi_picks):
         dwif_fname = orig_dwif_fname
         pick['dwif_fname'] = dwif_fname
         dwi_bvals_fname = orig_dwi_bvals_fname
-        dwi_bvecs_fname =orig_dwi_bvecs_fname
+        dwi_bvecs_fname = orig_dwi_bvecs_fname
         topup_fname = orig_topup_fname
         topdn_fname = orig_topdn_fname
-        topup_data = orig_topup_data
-        topdn_data = orig_topdn_data
+        if even_sl:
+            topup_data = orig_topup_data
+            topdn_data = orig_topdn_data
+        else:
+            topup_data = orig_topup_data[:, :, 1:, :]
+            topdn_data = orig_topdn_data[:, :, 1:, :]
 
     # make acq_params and index files for fsl eddy
     with open(str(topup_dwellt_fname), 'r') as tud:
@@ -283,8 +291,12 @@ for i, pick in enumerate(dwi_picks):
             print('starting time for eddy is {:%Y %m %d %H:%M}'.format(datetime.datetime.now()))
             b0_brain_fname, b0_brain_mask_fname, b0_brain_cropped_fname = extract_brain('{topup_out}_unwarped_mean.nii.gz'.format(**pick), mode='T2', dwi=True, f_factor=0.65, robust=True)
             pick['b0_brain_mask_fname'] = b0_brain_mask_fname
-            nii2nrrd(pick['b0_brain_mask_fname'], replacesuffix(pick['b0_brain_mask_fname'], '.nrrd'), ismask=True)
-            pick['b0_brain_mask_fname_nrrd'] = replacesuffix(pick['b0_brain_mask_fname'], '.nrrd')
+            nii2nrrd(pick['b0_brain_mask_fname'], replacesuffix(pick['b0_brain_mask_fname'], '.nhdr'), ismask=True)
+            pick['b0_brain_mask_fname_nrrd'] = replacesuffix(pick['b0_brain_mask_fname'], '.nhdr')
+            if not even_sl:
+                dwi_data_orig = nib.load(str(pick['dwif_fname'])).get_data().astype(np.float64)
+                dwi_orig_affine = nib.load(str(pick['dwif_fname'])).affine
+                savenii(dwi_data_orig[:, :, 1:, :], dwi_orig_affine, pick['dwif_fname'])
             result += run_subprocess([eddy_cmd.format(**pick)])
             # clamp, filter, and make nrrd
             ec_data = nib.load('{ec_dwi_fname}.nii.gz'.format(**pick)).get_data().astype(np.float64)
@@ -299,8 +311,8 @@ for i, pick in enumerate(dwi_picks):
             pick['ec_dwi_clamp_fname'] = '{ec_dwi_fname}{mf_str}_clamp1.nii.gz'.format(**mergeddicts(pick, vars(opts)))
             savenii(ec_data, ec_data_affine, pick['ec_dwi_clamp_fname'])
             prov.log(pick['ec_dwi_clamp_fname'], 'median filtered mean of topup-dn S0 vols clamped','{ec_dwi_fname}.nii.gz'.format(**pick))
-            nii2nrrd(pick['ec_dwi_clamp_fname'], str(replacesuffix(pick['ec_dwi_clamp_fname'], '.nhdr')), bvalsf=pick['dwi_bvals_fname'], bvecsf=pick['dwi_bvecs_ec_rot_fname'])
             pick['dwi_nrrd_fname'] = replacesuffix(pick['ec_dwi_clamp_fname'], '.nhdr')
+            nii2nrrd(pick['ec_dwi_clamp_fname'], str(pick['dwi_nrrd_fname']), bvalsf=pick['dwi_bvals_fname'], bvecsf=pick['dwi_bvecs_ec_rot_fname'])
             prov.log(str(replacesuffix(pick['ec_dwi_clamp_fname'], '.nhdr')), 'nrrd converted median filtered mean of topup-dn S0 vols', pick['ec_dwi_clamp_fname'])
             print('ending time for eddy is {:%Y %m %d %H:%M}'.format(datetime.datetime.now()))
 

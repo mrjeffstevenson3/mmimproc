@@ -7,7 +7,7 @@ on brand new system:
 3. setup build/development environment (paste as 1 liner):
 ```
 sudo apt-get update && \
-sudo apt-get install build-essential synaptic autoconf python-gpgme autogen libtool gfortran cmake-curses-gui software-properties-common uuid-dev libtiff5-dev:i386 libtiff5-dev -y && \
+sudo apt-get install build-essential synaptic autoconf python-gpgme autogen csh tcsh libtool gfortran cmake-curses-gui software-properties-common uuid-dev libtiff5-dev:i386 libtiff5-dev -y && \
 sudo apt-get install libinsighttoolkit4.9 libinsighttoolkit4-dev libinsighttoolkit4-dbg insighttoolkit4-python insighttoolkit4-examples libgdcm-tools -y && \
 sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y && \
 sudo apt-get update && \
@@ -63,9 +63,9 @@ cd ${HOME}/Software && git clone https://github.com/stnava/ANTs.git && mkdir ant
 18. install FSL. first install requirements for for fsleyes:
     ```
     sudo apt-get update
-    sudo apt-get install freeglut3 libsdl1.2debian
-    sudo apt-get install libgtk2.0-dev libgtk-3-dev libwebkitgtk-dev libwebkitgtk-3.0-dev
-    sudo apt-get install libjpeg-turbo8-dev libtiff5-dev libsdl1.2-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libnotify-dev freeglut3-dev
+    sudo apt-get install freeglut3 libsdl1.2debian -y
+    sudo apt-get install libgtk2.0-dev libgtk-3-dev libwebkitgtk-dev libwebkitgtk-3.0-dev -y
+    sudo apt-get install libjpeg-turbo8-dev libtiff5-dev libsdl1.2-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libnotify-dev freeglut3-dev -y
     ```
     check if platform function will work. either `cat /etc/debian_version` or in python
     ```python
@@ -108,6 +108,30 @@ cd ${HOME}/Software && git clone https://github.com/stnava/ANTs.git && mkdir ant
         echo "Current freesurfer subject directory is now $SUBJECTS_DIR. running adult recon-all"; echo -e "mris_inflate -n 15\n" > freesurf_expert_opts.txt; recon-all "$@" ;
         }
     ```
+    check that freeview works if not and you get missing libjpg try
+    ```cd /usr/lib/x86_64-linux-gnu && sudo ln -s libjpeg.so.8 libjpeg.so.62 && cd ${home}/Software```
+
+20. install matlab installer in ${HOME}/Software/MATLAB/matlabR2018i dir:
+    `mkdir ${HOME}/Software/MATLAB/{matlabR2018i,matlabR2018a}`
+    using https://www.mathworks.com/login using acct name: kuhllab@uw.edu, pwd: Speech1982!
+    start installer with `bash ${HOME}/Software/MATLAB/matlabR2018i/install glnxa64`
+    set target path for installer to `${HOME}/Software/MATLAB/matlabR2018a`
+    then select active license and choose the following toolboxe dependancies (16 selections total):
+    neural network
+    curve fiting
+    parallel computing
+    DSP system
+    Image processing
+    signal processing
+    wavelet toolbox
+    
+    after activation set the path for launching matlab:
+    `cd /usr/local/bin && sudo ln -s ${HOME}/Software/MATLAB/matlabR2018a/bin/matlab matlab`
+    then install matlab to python engine:
+    `cd ${HOME}/Software/MATLAB/matlabR2018a/extern/engines/python && python setup.py install`
+    to test success try:
+    `which matlab && python -c 'import matlab.engine; eng = matlab.engine.start_matlab("-noFigureWindows -nodesktop -nodisplay -nosplash")'`
+    
 20. install camino and R using ~/Software/Dropbox/bash_scripts/how_to_install_camino_and_R.txt
 21. using https://help.ubuntu.com/community/SettingUpNFSHowTo to set up NFS mounts:
     `sudo apt-get install nfs-common` and then `gksudo gedit /etc/fstab` and add the following tab delim line under #mount for NFS:

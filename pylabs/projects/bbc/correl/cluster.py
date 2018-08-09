@@ -1,3 +1,5 @@
+# incomplete cluster analysis prog. in codus interuptus
+
 from pathlib import *
 import pandas as pd
 import numpy as np

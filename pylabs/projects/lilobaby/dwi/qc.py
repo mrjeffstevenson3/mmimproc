@@ -1,4 +1,3 @@
-# use all_topup_idx, topdn_idx, auto_dwi_vol_idx for mapping qc index to image vol index
 # first set global root data directory
 import pylabs
 pylabs.datadir.target = 'jaba'
@@ -12,7 +11,7 @@ from pylabs.io.mixed import df2h5
 from pylabs.utils import *
 from pylabs.diffusion.dti_qc import dwi_qc_1bv
 # project and subjects and files to run on
-from pylabs.projects.acdc.file_names import project, SubjIdPicks, get_dwi_names, Optsd
+from pylabs.projects.lilobaby.file_names import project, SubjIdPicks, get_dwi_names, Optsd
 
 #set up provenance
 prov = ProvenanceWrapper()
@@ -26,7 +25,8 @@ opts.test = False
 subjids_picks = SubjIdPicks()
 # list of dicts of subject ids and info to operate on
 picks = [
-         {'subj': 'sub-acdc117', 'session': 'ses-2', 'run': '1',},
+        ## {'subj': 'sub-lilobaby107', 'session': 'ses-1', 'run': '1', },  # subject selection info
+        {'subj': 'sub-lilobabyS220', 'session': 'ses-1', 'run': '1', },
          ]
 
 setattr(subjids_picks, 'subjids', picks)

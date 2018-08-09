@@ -1,3 +1,5 @@
+## current cuda version is 8.0. current nvidia driver is .130
+
 
 ###### new install procedure 6-jun-2018:
 1. ssh in to machine and make sure all new machine install items thru FSL install with cuda patches and sources in software-properties-gtk are turned on in the "Ubuntu Software" tab click "Source code"

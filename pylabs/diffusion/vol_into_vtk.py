@@ -17,7 +17,11 @@ def inject_vol_data_into_vtk(working_dir, vol_fname, vtk_infname, vtk_outfname):
         img = nib.load(str(vol_fname))
         img_data = img.get_data().astype(np.float32)
         affine = img.affine
-        offsets = {'x': affine[0, 3], 'y': affine[1, 3], 'z': affine[2, 3]}
+        vol_hdr = run_subprocess(['fslhd -x '+str(vol_fname)])
+        for line in vol_hdr[0].splitlines():
+            if 'qto_ijk_matrix' in line:
+                ijk_off = line.replace('qto_ijk_matrix =', '').split(' ')
+                offsets = {'x': ijk_off[6], 'y': ijk_off[10], 'z': ijk_off[14]}
         nib.save(nib.AnalyzeImage(img_data, affine),'stats1.hdr')
         with open('usechannel.txt', 'w') as uc:
             uc.write('1\n')

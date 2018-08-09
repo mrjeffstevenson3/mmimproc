@@ -1,3 +1,5 @@
+# todo: add making of lookup table to isolate_atlas_regions.
+
 import pylabs
 import os, inspect
 from pathlib import *
@@ -70,13 +72,28 @@ def make_mask_fm_atlas_parts(atlas, roi_list, mask_fname, makenrrd=False):
     mask = np.zeros(img_data.shape).astype('int16')
     for roi in roi_list:
         mask[img_data == roi] = 1
-    savenii(mask, img.affine, mask_fname, minmax=(0,1))
+    savenii(mask, img.affine, mask_fname, minmax=(0, 1))
     if makenrrd:
         nii2nrrd(mask_fname, replacesuffix(mask_fname, '.nrrd'), ismask=True)
-    roi_list_dict = {}
-    roi_list_dict['roi_list'] = roi_list
+    roi_list_dict = {'roi_list': roi_list}
     provenance.log(str(mask_fname), 'extract roi_list regions from atlas into mask', str(atlas), script=__file__, provenance=roi_list_dict)
     return
+
+def isolate_atlas_regions(atlas, roi_list, newatlas_fname, makenrrd=False):   #  lut_fname=None,
+    if not Path(pylabs_atlasdir/atlas).is_file():
+        raise IOError(atlas + " atlas file File Does not Exist. Please check.")
+    img = nib.load(str(atlas))
+    img_data = img.get_data()
+    newatlas = np.zeros(img_data.shape).astype('int16')
+    for roi in roi_list:
+        newatlas[img_data == roi] = roi
+    savenii(newatlas, img.affine, newatlas_fname, minmax=(0, int(np.max(roi_list))))
+    if makenrrd:
+        nii2nrrd(newatlas_fname, replacesuffix(newatlas_fname, '.nrrd'), ismask=True)
+    roi_list_dict = {'roi_list': roi_list}
+    provenance.log(str(newatlas_fname), 'extract roi_list regions from atlas into mask', str(atlas), script=__file__, provenance=roi_list_dict)
+    return
+
 
 def make_mask_fm_tracts(atlas, volidx, thresh, mask_fname):
     if not Path(pylabs_atlasdir/atlas).is_file():
@@ -294,6 +311,72 @@ mori_region_labels = {
 mori_network_regions = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26,
                         27, 40, 41, 57, 59, 60, 61, 62, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103,
                         104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 128, 129, 145, 147, 148, 149, 150]
+
+mori_language_regions = {
+        # supramarginal gyrus
+        23: 'SUPRAMARGINAL_GYRUS',
+        111: 'SUPRAMARGINAL_GYRUS_right',
+
+        # angular gyrus
+        8: 'ANGULAR_GYRUS_left',
+        96: 'ANGULAR_GYRUS_right',
+        73: 'ANGULAR_WM_left',
+        161: 'ANGULAR_WM_right',
+
+        # White matter
+        43: 'Superior_longitudinal_fasciculus_left',
+        45: 'Inferior_fronto-occipital_fasciculus_left',
+        131: 'Superior_longitudinal_fasciculus_right',
+        133: 'Inferior_fronto-occipital_fasciculus_right',
+        70: 'INFERIOR_FRONTAL_WM_left',
+        158: 'INFERIOR_FRONTAL_WM_right',
+        136: 'Uncinate_fasciculus_right',
+        48: 'Uncinate_fasciculus_left',
+
+        5: 'INFERIOR_FRONTAL_GYRUS_left', #
+        93: 'INFERIOR_FRONTAL_GYRUS_right', #
+
+        18: 'SUPERIOR_TEMPORAL_GYRUS', #
+        20: 'MIDDLE_TEMPORAL_GYRUS', #
+        106: 'SUPERIOR_TEMPORAL_GYRUS_right', #
+        108: 'MIDDLE_TEMPORAL_GYRUS_right', #
+
+        134: 'Sagittal_stratum_right',
+        46: 'Sagittal_stratum_left',
+        135: 'External_capsule_right',
+        47: 'External_capsule_left',
+
+        # js edits
+        6: 'PRECENTRAL_GYRUS_left',   #  lt slf
+        7: 'POSTCENTRAL_GYRUS_left',   #  lt slf
+        21: 'LATERAL_FRONTO_ORBITAL_GYRUS',   # lt uncinate
+        71: 'PRECENTRAL_WM_left',   #  lt slf
+        72: 'POSTCENTRAL_WM_left',   #  lt slf
+        81: 'SUPERIOR_TEMPORAL_WM_left',   #  lt slf
+        86: 'SUPRAMARGINAL_WM_left',   #  lt slf
+        94: 'PRECENTRAL_GYRUS_right',   #  rt slf
+        95: 'POSTCENTRAL_GYRUS_right',   #  rt slf
+        159: 'PRECENTRAL_WM_right',   #  rt slf
+        160: 'POSTCENTRAL_WM_right',   #  rt slf
+        174: 'SUPRAMARGINAL_WM_right',   #  rt slf
+        109: 'LATERAL_FRONTO_ORBITAL_GYRUS_right',   # rt uncinate
+        169: 'SUPERIOR_TEMPORAL_WM_right',   #  rt slf
+
+
+        }
+
+# FSL's JHU atlas language tracts labels
+JHU_language_fibertracts = {
+        11: 'Inferior_fronto_occipital_fasciculus_L',
+        12: 'Inferior_fronto_occipital_fasciculus_R',
+        15: 'Superior_longitudinal_fasciculus_L',
+        16: 'Superior_longitudinal_fasciculus_R',
+        17: 'Uncinate_fasciculus_L',
+        18: 'Uncinate_fasciculus_R',
+        19: 'Superior_longitudinal_fasciculus_(temporal_part)_L',
+        20: 'Superior_longitudinal_fasciculus_(temporal_part)_R',
+
+        }
 
 # from fsl atlas label file JHU-tracts.xml
 JHUtracts_region_labels = {

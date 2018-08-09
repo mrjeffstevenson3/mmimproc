@@ -41,7 +41,7 @@ def copyqform2sform(file):
     run_subprocess(cmd)
 
 def savenii(data, affine, outfile, header=None, minmax=('parse', 'parse'), qform_code=1):
-    if header == None:
+    if header is None:
         img = nibabel.nifti1.Nifti1Image(data, affine)
     else:
         img = nibabel.nifti1.Nifti1Image(data, affine, header)
@@ -53,8 +53,8 @@ def savenii(data, affine, outfile, header=None, minmax=('parse', 'parse'), qform
         img.header['cal_max'] = data.max()
     else:
         img.header['cal_max'] = float(minmax[1])
-    img.set_qform(img.affine, code=qform_code)
-    numpy.testing.assert_almost_equal(affine, img.get_qform(), 3,
+    img.set_qform(affine, code=qform_code)
+    numpy.testing.assert_almost_equal(affine, img.affine, 4,
                                    err_msg='output qform in header does not match input qform')
     nibabel.save(img, str(outfile))
     return

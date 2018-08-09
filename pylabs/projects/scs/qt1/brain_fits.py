@@ -2,6 +2,8 @@ import pylabs
 from pathlib import *
 import nibabel as nib
 import numpy as np
+from dipy.align.imaffine import (transform_centers_of_mass, AffineMap, MutualInformationMetric, AffineRegistration)
+from dipy.align.transforms import (TranslationTransform3D, RigidTransform3D, AffineTransform3D)
 from pylabs.utils import *
 from pylabs.io.images import savenii, loadStack
 from pylabs.alignment.ants_reg import subj2T1, subj2templ_applywarp
@@ -22,8 +24,8 @@ opts = Optsd()
 subjids_picks = SubjIdPicks()
 # must set fas mannually when patch used. not reported in PAR file correctly.
 picks = [
+        {'subjnum': 318, 'subj': 'SCS318',},
         {'subjnum': 317, 'subj': 'SCS_317',},
-
          ]
 setattr(subjids_picks, 'subjids', picks)
 
@@ -44,8 +46,54 @@ for pick in spgr_picks:
     spgr_zooms = nib.load(str(pick['spgr20_fname'])).header.get_zooms()
     b1_mag60_reslice, b1_mag60_reslice_affine = reslice_roi(b1_data[:, :, :, 0], b1_affine, b1_zooms, spgr_affine, spgr_zooms)
     b1_mag120_reslice, b1_mag120_reslice_affine = reslice_roi(b1_data[:, :, :, 1], b1_affine, b1_zooms, spgr_affine, spgr_zooms)
-    offsets = np.round(np.subtract(spgr_affine[:, 3][:3], b1_mag120_reslice_affine[:, 3][:3]) / spgr_zooms, 0).astype(int)
+    voffsets = np.round(np.subtract(spgr_affine[:, 3][:3], b1_mag120_reslice_affine[:, 3][:3]) / spgr_zooms, 0).astype(int)
+    shape_diff = np.round(np.subtract(spgrs.shape[1:], b1_mag120_reslice.shape)).astype(int)
+    x_start = np.round(shape_diff[0] / 2).astype(int)
+    x_end = spgrs.shape[1] - (shape_diff[0] - x_start)
+    y_start = abs(voffsets[1])
+    y_end = spgrs.shape[2] - 1
+    z_start = voffsets[2]
+    z_end = b1_mag120_reslice.shape[2] - abs((z_start - abs(shape_diff[2])))
+    b1_mag60_matchspgr = np.zeros(spgrs.shape[1:])
+    b1_mag120_matchspgr = np.zeros(spgrs.shape[1:])
 
+    b1_mag60_matchspgr[x_start:x_end, y_start:y_end, :] = b1_mag60_reslice[:, :abs(y_end - y_start), z_start:z_end]
+    b1_mag120_matchspgr[x_start:x_end, y_start:y_end, :] = b1_mag120_reslice[:, :abs(y_end - y_start), z_start:z_end]
+
+    savenii(b1_mag60_matchspgr, spgr_affine, fs/project/'scs{subjnum}/B1map_qT1/scs{subjnum}_b1mag60_inspgrspace.nii'.format(**pick))
+    savenii(b1_mag60_matchspgr, spgr_affine, fs/project/'scs{subjnum}/B1map_qT1/scs{subjnum}_b1mag120_inspgrspace.nii'.format(**pick))
+
+    nbins = 64
+    sampling_prop = None
+    metric = MutualInformationMetric(nbins, sampling_prop)
+    level_iters = [10000, 1000, 100]
+    sigmas = [3.0, 1.0, 0.0]
+    factors = [4, 2, 1]
+    affreg = AffineRegistration(metric=metric, level_iters=level_iters, sigmas=sigmas, factors=factors)
+    transform = TranslationTransform3D()
+    params0 = None
+
+    translation = affreg.optimize(spgrs[2, :, :, :], b1_mag120_matchspgr, transform, params0, spgr_affine, spgr_affine,
+                                  starting_affine=np.eye(4))
+
+    transformed120 = translation.transform(b1_mag120_matchspgr)
+    transformed60 = translation.transform(b1_mag60_matchspgr)
+    savenii(transformed120, spgr_affine.dot(translation.affine), fs/project/'scs{subjnum}/B1map_qT1/scs{subjnum}_b1mag120_translatonly.nii'.format(**pick))
+    savenii(transformed60, spgr_affine.dot(translation.affine), fs / project / 'scs{subjnum}/B1map_qT1/scs{subjnum}_b1mag60_translatonly.nii'.format(**pick))
+
+    transform = RigidTransform3D()
+    params0 = None
+    starting_affine = translation.affine
+    rigid = affreg.optimize(spgrs[2, :, :, :], b1_mag120_matchspgr, transform, params0, spgr_affine, spgr_affine,
+                            starting_affine=starting_affine)
+
+    rig_transformed120 = rigid.transform(b1_mag120_matchspgr)
+    rig_transformed60 = rigid.transform(b1_mag60_matchspgr)
+    savenii(rig_transformed120, spgr_affine.dot(rigid.affine), fs / project / 'scs{subjnum}/B1map_qT1/scs{subjnum}_b1mag120_rigidxfm2spgr.nii'.format(**pick))
+    savenii(rig_transformed60, spgr_affine.dot(rigid.affine), fs / project / 'scs{subjnum}/B1map_qT1/scs{subjnum}_b1mag60_rigidxfm2spgr.nii'.format(**pick))
+
+
+#####################
 
 
     if not (ses_dir/'qt1').is_dir():

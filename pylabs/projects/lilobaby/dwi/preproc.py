@@ -35,12 +35,11 @@ from pylabs.io.images import savenii
 from pylabs.io.mixed import h52df
 from pylabs.utils import *
 #set up provenance
-from pylabs.utils import ProvenanceWrapper
 prov = ProvenanceWrapper()
 
 # project, subject, and file objects to work on
-from pylabs.projects.acdc.file_names import project, SubjIdPicks, get_dwi_names, Optsd, merge_ftempl_dicts
-from pylabs.conversion.brain_convert import acdc_conv
+from pylabs.projects.lilobaby.file_names import project, SubjIdPicks, get_dwi_names, Optsd, merge_ftempl_dicts
+from pylabs.conversion.brain_convert import lilobaby_conv
 
 #setup paths and file names to process
 fs = Path(getnetworkdataroot())
@@ -56,13 +55,12 @@ if not dwi_qc:
 subjids_picks = SubjIdPicks()
 # list of subject ids to operate on
 picks = [
-         {'subj': 'sub-acdc104', 'session': 'ses-2', 'run': '1', },  # subject selection info
-         {'subj': 'sub-acdc104', 'session': 'ses-1', 'run': '1', },
-	]
+         {'subj': 'sub-lilobabyS220', 'session': 'ses-1', 'run': '1',},  # subject selection info
+         ]
 
 setattr(subjids_picks, 'subjids', picks)
 
-opts.test = False
+opts.test = True
 
 # commands and options are modified below.
 # topup command for unwarping dti
@@ -150,6 +148,7 @@ dwi_picks = get_dwi_names(subjids_picks)
 if opts.test:
     i = 0
     dwi_picks = [dwi_picks[i]]
+    pick = dwi_picks[0]
 # run conversion if needed
 if opts.convert:
     subjects = [x['subj'] for x in subjids_picks.subjids]
@@ -290,7 +289,7 @@ for i, pick in enumerate(dwi_picks):
     if opts.eddy_corr or opts.overwrite:
         with WorkingContext(str(ec_dir)):
             print('starting time for eddy is {:%Y %m %d %H:%M}'.format(datetime.datetime.now()))
-            b0_brain_fname, b0_brain_mask_fname, b0_brain_cropped_fname = extract_brain('{topup_out}_unwarped_mean.nii.gz'.format(**pick), mode='T2', dwi=True, f_factor=0.65, robust=True)
+            b0_brain_fname, b0_brain_mask_fname, b0_brain_cropped_fname = extract_brain('{topup_out}_unwarped_mean.nii.gz'.format(**pick), mode='T2', dwi=True, f_factor=opts.dwi_extr_br_f_factor, robust=True)
             pick['b0_brain_mask_fname'] = b0_brain_mask_fname
             nii2nrrd(pick['b0_brain_mask_fname'], replacesuffix(pick['b0_brain_mask_fname'], '.nhdr'), ismask=True)
             pick['b0_brain_mask_fname_nrrd'] = replacesuffix(pick['b0_brain_mask_fname'], '.nhdr')
@@ -364,9 +363,9 @@ for i, pick in enumerate(dwi_picks):
         savenii(evals[1:].mean(0), affine, '{dipy_fits_out}_mf_RD.nii'.format(**pick))
         savenii(mode(fit_quad_form_mf), affine, '{dipy_fits_out}_mf_MO.nii'.format(**pick), minmax=(-1, 1))
         # make AFQ dt6 file out of fsl
-        mempkey = [k for k in acdc_conv.keys() if 'MEMP_' in k][0]
-        t1_fname = fs/project/('{subj}/{session}/anat/'+acdc_conv[mempkey]['fname_template']).format(**merge_ftempl_dicts(
-            dict1=acdc_conv[mempkey], dict2=pick, dict3={'scan_info': 'ti1200_rms'}))
+        mempkey = [k for k in lilobaby_conv.keys() if 'MEMP_' in k][0]
+        t1_fname = fs/project/('{subj}/{session}/anat/'+lilobaby_conv[mempkey]['fname_template']).format(**merge_ftempl_dicts(
+            dict1=lilobaby_conv[mempkey], dict2=pick, dict3={'scan_info': 'ti1200_rms'}))
         t1_fname = replacesuffix(t1_fname, '_brain.nii.gz')
         if t1_fname.is_file():
             fsl_S0_fname = '{subj}_{session}_dwi_unwarped_ec_fslfit_tensor_mf_S0.nii.gz'.format(**pick)
