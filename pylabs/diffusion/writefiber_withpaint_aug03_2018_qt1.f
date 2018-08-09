@@ -1,15 +1,15 @@
-c gfortran  -O3 -mcmodel=medium -g writefiber_withpaint_june05_2017_noddi_qt1_megmovie.f -o writefiber_withpaint_june05_2017_noddi_qti_megmovie -ffixed-line-length-none
+c gfortran  -O3 -mcmodel=medium -g writefiber_withpaint_aug03_2018_qt1.f -o writefiber_withpaint_aug03_2018_qt1 -ffixed-line-length-none -fno-range-check
 
 c read DTI fiber track vtk and quantify the FA and several other parameters
 c read vtk binary file
 c
 	character*40 cfn,cfnin,cfnin2
-	character*1 vtk(2075593303),c10(10),cspace(1),chead(348)
+	character*1 vtk(5075593303),c10(10),cspace(1),chead(348)
 	equivalence (chead,ihead)
 	equivalence (chead,rhead)
 	integer*2 ihead(174)
 	real rhead(87)
-	integer*1 ivtk(2075593303)
+	integer*1 ivtk(5075593303)
 	equivalence (vtk,ivtk)
 	character*5 c6,c6ufk
 	character*37 c37
@@ -18,8 +18,8 @@ c
 	character*1 a1,cnmr(1000000),cint(1000000),cnmr11(1000000)
 	integer*1 inmr(1000000),inmr2(1000000),icint(1000000),icint2(1000000)
 	integer*1 isav(1000000)
-	real nmr(25000),dtistats(256)
-	character*1 cdti(1024)
+	real nmr(25000),dtistats(400)
+	character*1 cdti(1600)
 	equivalence (cdti,dtistats)
 	integer iint(25000)
 	equivalence (icint2,iint)
@@ -38,7 +38,7 @@ c
 	  DOUBLE PRECISION W(3)
 	real psavx(4),psavy(4),psavz(4),rmindistance(4),imindistance1(4),imindistance2(4)
 	real distancesav(200000),xwall(100),ywall(100),zwall(100)
-	real dti(256,256,256,6)
+	real dti(400,400,400,6)
 	integer iflagindex(7)
 	open(11,file = 'offsets.txt')
 	read(11,*)xoffset,yoffset,zoffset
@@ -97,28 +97,12 @@ c
 	call fgetc(11,cdti(i),istate)
 	enddo
 	do i=1,ixsize
-	dti(i,j,k,1) = dtistats(i)    !qt1
+	dti(i,j,k,it) = dtistats(i)
 	enddo  !i
 	enddo  !j
 	enddo  !k
 	enddo  !it
 	close(11)
-	open(11,file = 'meg.img',form='unformatted')
-
-	do it=1,itsize
-	do k=1,izsize
-	do j=1,iysize
-	do i=1,ixsize*4
-	call fgetc(11,cdti(i),istate)
-	enddo
-	do i=1,ixsize
-	dti(i,j,k,2) = dtistats(i)    !meg
-	enddo  !i
-	enddo  !j
-	enddo  !k
-	enddo  !it
-	close(11)
-
 c
 
 
@@ -757,6 +741,211 @@ c	write(6,*)'distance ',dnmr(i),i,ipsize
 	close(11)
 	isize = ivtksize
 	ivtkcounter=0
+	open(11,file = 'f.vtk')
+
+	do i=1,isize
+	call fgetc(11,vtk(i),istate)
+
+	enddo
+	do i=1,isize
+	if(vtk(i).eq.'s'.and.vtk(i+1).eq.'o'.and.vtk(i+2).eq.'r'.and.vtk(i+3).eq.'1')then
+	iset = i
+	write(6,*)'find sors',iset,i,(vtk(ii),ii=i-15,i+5)
+	endif
+	enddo
+	do i=iset,iset+100
+c	write(6,*)'vtk ivtk ',vtk(i),ivtk(i),i,i-iset
+	enddo
+
+	do i=iset+5,iset+80
+	if(ivtk(i).eq.97.and.ivtk(i+1).eq.116.and.ivtk(i+2).eq.10)then
+	write(6,*)'found endmarker for tensor for fnew ',i
+	imarktensor = i+2
+	endif
+	enddo
+
+	close(11)
+c
+c
+c now write out the tensors to new vtk file with conditional colors based on channel pass through
+c
+c
+c this part below will repaint the tensor a different color if the fiber 
+c went through the channel
+c  if the fiber does not pass through the channel it will remain
+c with its normal tensor color
+c
+
+	itensors = numpointsa
+	write(6,*)'number of tensors ',c6,itensors
+
+	
+c
+c now read in the tensors
+c
+	icountbytes = 0
+	do i=1,itensors
+	do ii=1,9*4
+	cnmr(ii) = vtk(imarktensor+ii)
+c	write(6,*)'test after tensor start ',cnmr(ii),inmr(ii),ii,i
+	icountbytes = icountbytes+1
+	enddo
+	imarktensor = imarktensor + (9*4)
+	incs = 1
+	do ii=1,9
+c	inmr2(incs) = inmr(incs+3)
+c	inmr2(incs+1) = inmr(incs+2)
+c	inmr2(incs+2) = inmr(incs+1)
+c	inmr2(incs+3) = inmr(incs)
+	inmr2(incs+3) = inmr(incs)
+	inmr2(incs+2) = inmr(incs+1)
+	inmr2(incs+1) = inmr(incs+2)
+	inmr2(incs) = inmr(incs+3)
+
+	incs = incs+4
+	enddo
+
+	do ii=1,9
+	tensors(i,ii) = nmr(ii)
+c	write(6,*)'tensor ',nmr(ii),ii
+	enddo
+	diff = abs(tensors(i,1)-0.00018878)
+c	if(i.eq.16)write(6,*)'found evil tensor ',i
+	enddo  !ilines
+	write(6,*)'icountbytes ',icountbytes
+	do ii=1,9
+c	write(6,*)'tensor ',tensors(16,ii),i
+	enddo
+c
+c test output 
+c	do i=1250000,1250010
+c	write(6,*)'tensor test ',tensors(i,1),i
+c	enddo
+
+	do i=1,3
+c	if(tensors(i,1).lt.-1e-7.and.tensors(i,1).gt.-1e-4.and.tensors(i+1,1).lt.-1e-7.and.tensors(i+1,1).gt.-1e-4.and.tensors(i+2,1).lt.-1e-7.and.tensors(i+2,1).gt.-1e-4)then
+c	write(6,*)'found good tensor ',tensors(i,1),i
+c	pause
+c	endif
+c	enddo
+	do ii=1,9
+	write(6,*)'tensors 1st time ',tensors(i,ii),ii,i
+	enddo
+	enddo
+
+	do ii=1,9
+c	write(6,*)'tensors end ',tensors(itensors,ii),ii
+	enddo
+c
+c test to see the next tensor
+c
+	do ii=1,200
+	call fgetc(11,cnmr(1),istate)
+c	write(6,*),'testing tensor2 ',cnmr(ii),inmr(ii),ii
+	enddo
+
+c
+c now loop through ONLY the fibers that passed through the box
+c
+	inc = 1
+	rmaxr1 = 0
+	rmaxr2 = 0
+	rmaxr3 = 0
+	do i=1,itensors
+	
+	a(1,1) = abs(tensors(i,1))
+	a(1,2) = abs(tensors(i,2))
+	a(1,3) = abs(tensors(i,3))
+	a(2,1) = abs(tensors(i,4))
+	a(2,2) = abs(tensors(i,5))
+	a(2,3) = abs(tensors(i,6))
+	a(3,1) = abs(tensors(i,7))
+	a(3,2) = abs(tensors(i,8))
+	a(3,3) = abs(tensors(i,9))
+c	write(6,*)'a ',a
+c	pause
+	call DSYEVJ3(A, Q, W)
+	r1 = w(2)
+	r2 = w(1)
+	r3 = w(3)
+	if(a(1,1).ne.0.and.a(2,2).ne.0)then
+	call fa_calc(r1,r2,r3,rfa1,axial,radial,rmd,volumeratio)
+	else
+	r1 = 0
+	r2 =0
+	r3 = 0
+	rfa1=0
+	axial =0
+	radial = 0
+	rmd = 0
+	volumeratio=0
+	endif
+
+c
+c for each set of tensors calculate FA
+c
+	dnmrsav(inc,1) = rfa1
+	dnmrsav(inc,2) = axial
+	dnmrsav(inc,3) = radial
+	dnmrsav(inc,4) = rmd
+	dnmrsav(inc,5) = volumeratio
+
+	inc = inc+1
+c	write(6,*)'rfa1 axial radial rmd volumeratio ',r1,r2,r3,rfa1,axial,radial,rmd,volumeratio,i
+c	pause
+c	if(rfa1.lt.0.15)write(6,*)'fa ',rfa1,inc
+	rmaxr1 = max(rmaxr1,abs(r1))
+	rmaxr2 = max(rmaxr2,abs(r2))
+	rmaxr3 = max(rmaxr3,abs(r3))
+	enddo  !tensors
+	isizeb = inc-1
+	write(6,*)'did you make it this far isizeb rmaxr1',isizeb,rmaxr1,rmaxr2,rmaxr3
+
+	do ifil=1,5
+	inc2 = 1
+		do i=1,isizeb
+		do ii=1,ifinalcount
+		ipoly = polyfinal(ii,1)
+		if(i.eq.ipoly.and.dnmrsav(i,1).ne.0)then
+		dnmr(inc2) = dnmrsav(i,ifil)
+c		write(6,*)'dnmr(inc2) ',dnmr(inc2),inc2,i,ii
+
+		inc2 = inc2+1
+		endif
+		enddo   !ii
+		enddo  !i
+
+	isize = inc2-1
+	if(isize.gt.0)then
+	call average(aver,stdev,ste)
+	final(ifil) = aver
+	else
+	aver = 0
+	stdev = 0
+	final(ifil)=0
+	endif
+	write(6,*)'average stdev ',aver,stdev,ifil,final(ifil),isize
+	enddo
+	final(6) = averlength
+	final(7) = igood
+	final(8) = igood+ibad
+	open(20,file = 'dti_header.txt')
+	open(19,file = 'dti_results.txt')
+	write(20,*)'fa ','ax ','ra ','md ','vo ','len ','fnum '
+	write(19,*)(final(ii),ii=1,8)
+	close(19)
+	close(20)
+	write(6,*)'fa = DTI fractional anisotropy '
+	write(6,*)'ax = DTI axial diffusivity '
+	write(6,*)'ra = DTI radial diffusivity '
+	write(6,*)'md = DTI mean diffusivity '
+	write(6,*)'vo = DTI volume ratio '
+	write(6,*)'len = average DTI fiber length '
+	write(6,*)'fnum = number of DTI fiber '
+
+	close(11)
+	close(12)
+	close(13)
 c
 c  this is the part to write out the new vtk file 
 c
@@ -769,9 +958,8 @@ c
 	call fgetc(11,vtk(i),istate)
 
 	enddo
-
 	do i=1,isize
-	if(vtk(i).eq.'n'.and.vtk(i+1).eq.'t'.and.vtk(i+2).eq.'y'.and.vtk(i+3).eq.' ')then
+	if(vtk(i).eq.'F'.and.vtk(i+1).eq.'A'.and.vtk(i+2).eq.'1'.and.vtk(i+3).eq.' ')then
 	iset = i
 	write(6,*)'find float ',iset,i,(vtk(ii),ii=i-15,i+5)
 	endif
@@ -782,7 +970,7 @@ c	write(6,*)'vtk ivtk ',vtk(i),ivtk(i),i,i-iset
 
 	do i=iset+5,iset+80
 	if(ivtk(i).eq.97.and.ivtk(i+1).eq.116.and.ivtk(i+2).eq.10)then
-	write(6,*)'found endmarker for tensor for Viso ',i
+	write(6,*)'found endmarker for tensor for fa1 ',i
 	imarktensor = i+10
 	endif
 	enddo
@@ -802,7 +990,7 @@ c test on May 10, 2017
 
 c	write(6,*)'iset ',iset
 	do i=iset,iset+40
-	write(6,*)'vtk after uncertainty ',vtk(i),i
+c	write(6,*)'vtk ',vtk(i),i
 	enddo
 	close(11)
 
@@ -830,7 +1018,6 @@ c	write(6,*)'fa1 ',nmr(ii),ii
 c
 c read in fa1 into the array tensor
 c
-	itensors = numpointsa
 	do i=1,itensors
 	do ii=1,1*4
 	cnmr(ii) = vtk(imarktensor+ii)
@@ -852,20 +1039,16 @@ c	inmr2(incs+3) = inmr(incs)
 
 	do ii=1,1
 	tensors(i,ii) = nmr(ii)
-c	write(6,*)'viso ',nmr(ii),ii
+c	write(6,*)'tensor ',nmr(ii),ii
 	enddo
 
 	enddo  !itensors
 
-	do i=1,20
-	write(6,*)'viso values ',tensors(i,1)
-	enddo
 
 c
 c
 c now write out the tensors to new vtk file with conditional colors based on channel pass through
 c
-
 	write(6,*)'itensors 2nd time ',itensors
 c
 	do i=1,itensors
@@ -879,28 +1062,10 @@ c
 	ix = nint(rx)
 	iy = nint(ry)
 	iz = nint(rz)
-	if(dti(ix,iy,iz,2).ne.0.0)then  ! This means meg has a nonzero value
-	  if(dti(ix,iy,iz,2).gt.3.0)then   !Threshold the meg to greater than 3
-	   tensors(i,1) = (dti(ix,iy,iz,2)*50)  ! scale the meg to land less than 400 so it doesnot conflict with qT1
-	  else
-	   tensors(i,1) = 0  ! set value to 0 if not above threshold
-	  endif
-	else
-	  if(dti(ix,iy,iz,1).gt.500.and.dti(ix,iy,iz,1).le.3000.0)then  !clip the qT1 to land between 500 to 3000
-	  tensors(i,1) = dti(ix,iy,iz,1)
-	  else
-	  tensors(i,1) = 0   ! set value to 0 if qt1 is outside the good range
-	  endif
-	endif
-c
-c set the right side to zero values but fibers will still be there
-c
-	if(polysav(i,1,1).gt.0)tensors(i,1) = 0   ! x coordinate is used to decide the right hemisphere of the brain
+	tensors(i,1) = dti(ix,iy,iz,1)
 c
 
 	enddo  !itensors
-c array called tensors is used to paint the fibers
-c
 
 
 
