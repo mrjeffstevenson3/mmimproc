@@ -56,7 +56,7 @@ subjids_picks = SubjIdPicks()
 # list of subject ids to operate on
 picks = [
          ## {'subj': 'sub-genz311', 'session': 'ses-1', 'run': '1',},  # subject selection info
-        {'subj': 'sub-genz415', 'session': 'ses-1', 'run': '1', },
+        {'subj': 'sub-genz103', 'session': 'ses-1', 'run': '1', },
          ]
 
 setattr(subjids_picks, 'subjids', picks)
@@ -289,7 +289,7 @@ for i, pick in enumerate(dwi_picks):
     if opts.eddy_corr or opts.overwrite:
         with WorkingContext(str(ec_dir)):
             print('starting time for eddy is {:%Y %m %d %H:%M}'.format(datetime.datetime.now()))
-            b0_brain_fname, b0_brain_mask_fname, b0_brain_cropped_fname = extract_brain('{topup_out}_unwarped_mean.nii.gz'.format(**pick), mode='T2', dwi=True, f_factor=0.65, robust=True)
+            b0_brain_fname, b0_brain_mask_fname, b0_brain_cropped_fname = extract_brain('{topup_out}_unwarped_mean.nii.gz'.format(**pick), mode='T2', dwi=True, f_factor=0.5, robust=True)
             pick['b0_brain_mask_fname'] = b0_brain_mask_fname
             nii2nrrd(pick['b0_brain_mask_fname'], replacesuffix(pick['b0_brain_mask_fname'], '.nhdr'), ismask=True)
             pick['b0_brain_mask_fname_nrrd'] = replacesuffix(pick['b0_brain_mask_fname'], '.nhdr')
