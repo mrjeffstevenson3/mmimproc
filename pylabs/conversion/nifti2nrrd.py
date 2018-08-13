@@ -14,7 +14,7 @@ def nii2nrrd(niftifile, nrrd_fname, bvalsf=None, bvecsf=None, istensor=False, is
     This function converts nifti files to nrrd.
     '''
     # test consistency
-    if Path(nrrd_fname).suffix == '.nhdr':
+    if Path(nrrd_fname).suffix != '.nhdr':
         print('nrrd files no longer compatible with Slicer. switching to .nhdr extension.')
         nrrd_fname = replacesuffix(nrrd_fname, '.nhdr')
     if istensor + ismask > 1:
