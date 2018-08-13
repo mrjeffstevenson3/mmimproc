@@ -4,12 +4,12 @@ c read DTI fiber track vtk and quantify the FA and several other parameters
 c read vtk binary file
 c
 	character*40 cfn,cfnin,cfnin2
-	character*1 vtk(1075593303),c10(10),cspace(1),chead(348)
+	character*1 vtk(2075593303),c10(10),cspace(1),chead(348)
 	equivalence (chead,ihead)
 	equivalence (chead,rhead)
 	integer*2 ihead(174)
 	real rhead(87)
-	integer*1 ivtk(1075593303)
+	integer*1 ivtk(2075593303)
 	equivalence (vtk,ivtk)
 	character*5 c6,c6ufk
 	character*37 c37

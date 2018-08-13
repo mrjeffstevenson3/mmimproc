@@ -4,7 +4,7 @@ c read DTI fiber track vtk and quantify the FA and several other parameters
 c read vtk binary file
 c
 	character*40 cfn,cfnin,cfnin2
-	character*1 vtk(1075593303),c10(10),cspace(1),chead(348)
+	character*1 vtk(1100072618),c10(10),cspace(1),chead(348)
 	equivalence (chead,ihead)
 	equivalence (chead,rhead)
 	integer*2 ihead(174)
@@ -385,7 +385,7 @@ c	write(25,*)'1'
 	write(26,*)ilines
 	iprogress = 1
 c	do i=1,ilines  ! fix this later on TR 02/27/2017
-	do i=1,ilines,1000
+	do i=1,ilines,10   !  was 1,ilines,1000
 	if(iprogress.gt.1000)then
 	r1 = i
 	rtotal = ilines
