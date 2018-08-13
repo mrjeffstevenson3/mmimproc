@@ -1,4 +1,4 @@
-c gfortran  -O3 -mcmodel=medium -g writefiber_withpaint_aug03_2018_qt1.f -o writefiber_withpaint_aug03_2018_qt1 -ffixed-line-length-none -fno-range-check
+c gfortran  -O3 -mcmodel=medium -g writefiber_withpaint_aug03_2018_qt1_noconversion.f -o writefiber_withpaint_aug03_2018_qt1_noconversion -ffixed-line-length-none -fno-range-check
 
 c read DTI fiber track vtk and quantify the FA and several other parameters
 c read vtk binary file
@@ -1074,22 +1074,17 @@ c
 	iy = nint(ry)
 	iz = nint(rz)
 	tensors(i,1) = dti(ix,iy,iz,1)
-c
-c convert to vasily's myelin density
-c
-	rt1 = dti(ix,iy,iz,1)/100.0
-	rt2 = (rt1-3.9)/0.21
-	dti(ix,iy,iz,4) = rt2 * 100.0
+	dti(ix,iy,iz,4) = dti(ix,iy,iz,1)
 c
 
 	enddo  !itensors
 
-	do k=1,76
-	do j=1,160
-	do i=1,160
+	do k=1,izsize
+	do j=1,iysize
+	do i=1,ixsize
 	dtistats(i) = dti(i,j,k,4)
 	enddo
-	do i=1,160*4
+	do i=1,ixsize*4
 	call fputc(21,cdti(i),istate)
 	enddo
 	enddo
