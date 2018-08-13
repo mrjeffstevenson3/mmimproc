@@ -1,4 +1,4 @@
-c gfortran  -O3 -mcmodel=medium -g writefiber_withpaint_aug03_2018_qt1.f -o writefiber_withpaint_aug03_2018_qt1 -ffixed-line-length-none -fno-range-check
+c gfortran  -O3 -mcmodel=medium -g writefiber_withpaint_aug13_2018_myelin_density.f -o writefiber_withpaint_aug13_2018_myelin_density -ffixed-line-length-none -fno-range-check
 
 c read DTI fiber track vtk and quantify the FA and several other parameters
 c read vtk binary file
@@ -1084,12 +1084,12 @@ c
 
 	enddo  !itensors
 
-	do k=1,76
-	do j=1,160
-	do i=1,160
+	do k=1,izsize
+	do j=1,iysize
+	do i=1,ixsize
 	dtistats(i) = dti(i,j,k,4)
 	enddo
-	do i=1,160*4
+	do i=1,ixsize*4
 	call fputc(21,cdti(i),istate)
 	enddo
 	enddo
