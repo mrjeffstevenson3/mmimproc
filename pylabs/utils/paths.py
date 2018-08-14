@@ -40,7 +40,8 @@ aal_base = pylabs_atlasdir/'base.vtk'
 aal_channel = pylabs_atlasdir/'channel.vtk'
 
 # todds fortran programs
-vol2fiber = pylabs_dir/'pylabs/diffusion/writefiber_withpaint_aug03_2018_qt1'
+vol2fiber = pylabs_dir/'pylabs/diffusion/writefiber_withpaint_aug03_2018_qt1_noconversion'
+vol2myelin_density = pylabs_dir/'pylabs/diffusion/writefiber_withpaint_aug13_2018_myelin_density'
 
 
 mnicom = pylabs_atlasdir /'MNI152_T1_1mm_8kcomroi.nii'
