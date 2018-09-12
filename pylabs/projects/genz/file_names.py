@@ -18,7 +18,7 @@ from pylabs.io.mixed import getTRfromh5
 
 fs = Path(getnetworkdataroot())
 project = 'genz'
-
+dwi_excluded = {project: ['sub-genz403', 'sub-genz906']}
 
 class SubjIdPicks(object):
     pass

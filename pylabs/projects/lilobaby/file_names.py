@@ -19,6 +19,7 @@ from pylabs.io.mixed import getTRfromh5
 
 fs = Path(getnetworkdataroot())
 project = 'lilobaby'
+dwi_excluded = {project: []}
 
 
 class SubjIdPicks(object):
