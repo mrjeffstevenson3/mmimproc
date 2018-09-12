@@ -12,7 +12,7 @@ import nipype
 from nipype.interfaces import fsl
 from pylabs.conversion.parrec2nii_convert import brain_proc_file
 from pylabs.utils.sessions import make_sessions_fm_dict
-from pylabs.io.mixed import conv_df2h5, backup_source_dirs
+from pylabs.io.mixed import conv_df2h5, backup_source_dirs, get_h5_keys
 import os
 from os.path import join
 from datetime import datetime
@@ -451,6 +451,25 @@ def default_to_regular(d):
     if isinstance(d, defaultdict):
         d = {k: default_to_regular(v) for k, v in d.iteritems()}
     return d
+
+def find_subjs2conv(project, idthresh=800, leadalphan=False, wild_multipl=1):
+
+    if leadalphan:
+        wild = '?' * len(str(idthresh)) + '?' * wild_multipl
+    else:
+        wild = '?' * len(str(idthresh))
+    converted = sorted(get_h5_keys(fs/project/'all_{project}_info.h5'.format(**{'project': project}), 'conv'))
+    conv_subj_ses = sorted(['/'.join(x.split('/')[1:3]) for x in sorted(converted) if int(x.split('/')[1][-len(str(idthresh)):]) < idthresh])
+    subjid_list_dirs = sorted(list((fs/project).glob('sub-{project}{wild}'.format(**{'project': project, 'wild': wild}))))
+    subjid_list_dirs_wses, hassesdir = [], []
+    for sid_ses_dirs in subjid_list_dirs:
+        for s in img_conv[project][img_conv[project].keys()[0]]['multisession']:
+            subjid_list_dirs_wses.append(sid_ses_dirs.joinpath('ses-'+str(s)))
+    for d in subjid_list_dirs_wses:
+        if d.is_dir() and int(d.parts[-2][-len(str(idthresh)):]) < idthresh:
+            hassesdir.append('/'.join(d.parts[-2:]))
+    subjects = sorted([x.split('/')[0] for x in list(set(hassesdir) - set(conv_subj_ses))])
+    return subjects
 
 def conv_subjs(project, subjects, hdf_fname=None):
     niftiDict = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
