@@ -507,15 +507,15 @@ def conv_subjs(project, subjects, hdf_fname=None):
 def get_dwi_picks(project, idthresh=800, leadalphan=False, wild_multipl=1, excluded=[]):
     """
 
-    :param project: name of project as in 'acdc' or 'genz'
-    :param idthresh: threshold integer subj id number above which is excluded as in test subjs or devel scans
-    :param leadalphan: True only if 1 or more letters precede id number and not in project name eg C6124
-    :param wild_multipl: default is 1 letter before id number, change if more than 1 qualifier letter as in CG6124 = 2
-    :param excluded: list of subject/session combos to exclude from picks lists
-    :return: auto_qc_picks, vis_qc_picks, preproc_picks
-    auto_qc_picks are the subjects that haven't had the auto qc script run
-    vis_qc_picks are the subjects who have had the auto_qc run but NOT the visual qc
-    preproc_picks are the subjects who have had BOTH the auto_qc AND the visual qc run but have NOT been pre processed
+    :param project:  name of project as in 'acdc' or 'genz'
+    :param idthresh:  threshold integer subj id number above which is excluded as in test subjs or devel scans
+    :param leadalphan:  True only if 1 or more letters precede id number and not in project name eg C6124
+    :param wild_multipl:  default is 1 letter before id number, change if more than 1 qualifier letter as in CG6124 = 2
+    :param excluded:  list of subject/session combos to exclude from picks lists
+    :return:  auto_qc_picks, vis_qc_picks, preproc_picks
+    :auto_qc_picks: are the subjects that haven't had the auto qc script run\n
+    :vis_qc_picks: are the subjects who have had the auto_qc run but NOT the visual qc\n
+    :preproc_picks: are the subjects who have had BOTH the auto_qc AND the visual qc run but have NOT been pre processed\n
     """
     if project == 'genz' and excluded == []:
         excluded = ['sub-genz403/ses-1', ]   ## has bad or no  dwi
