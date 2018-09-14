@@ -208,5 +208,8 @@ def get_vfa_names(subjids_picks):
             subjid['vfatr'] = 21.0
             subjid['b1maptr'] = np.array([60., 240.0])
         subjid['vfa_fas'] = opts.vfa_fas
+        if subjids_picks.getR1_MPF_names:
+            subjid['r1_fname'] = subjids_picks.r1_fname_templ.format(**subjid)
+            subjid['mpf_fname'] = subjids_picks.mpf_fname_templ.format(**subjid)
         qt1_picks.append(subjid)
     return qt1_picks

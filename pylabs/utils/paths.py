@@ -144,12 +144,15 @@ def test4working_gpu():
         print('current hostname not in working gpu list in pylabs.utils.paths. using un-accelerated methods.')
         return False
 
-def get_antsregsyn_cmd(quick=False, warps=False, warpts=False, N4bias=False):
+def get_antsregsyn_cmd(quick=False, warps=False, warpts=False, N4bias=False, default_cmd_str=False):
     if N4bias:
         if not Path(os.environ.get('ANTSPATH'), 'N4BiasFieldCorrection').is_file():
             raise ValueError('must have ants installed with N4BiasFieldCorrection in $ANTSPATH directory.')
         else:
-            return Path(os.environ.get('ANTSPATH'), 'N4BiasFieldCorrection')
+            if default_cmd_str:
+                return os.environ.get('ANTSPATH') + 'N4BiasFieldCorrection -d 3 -i {infile} -o {outfile}'
+            else:
+                return Path(os.environ.get('ANTSPATH'), 'N4BiasFieldCorrection')
     if warps:
         if not Path(os.environ.get('ANTSPATH'), 'WarpImageMultiTransform').is_file():
             raise ValueError('must have ants installed with WarpImageMultiTransform in $ANTSPATH directory.')
@@ -164,12 +167,19 @@ def get_antsregsyn_cmd(quick=False, warps=False, warpts=False, N4bias=False):
         if not (Path(os.environ.get('ANTSPATH')) / 'antsRegistrationSyNQuick.sh').is_file():
             raise ValueError('must have ants installed with antsRegistrationSyNQuick.sh in $ANTSPATH directory.')
         else:
-            return Path(os.environ.get('ANTSPATH'), 'antsRegistrationSyNQuick.sh')
+            if default_cmd_str:
+                return os.environ.get('ANTSPATH') + 'antsRegistrationSyNQuick.sh -d 3 -m {moving} -f {fixed} -o {outfile} -n 30 -t s -p f -j 1 -s 10 -r 1'
+            else:
+                return Path(os.environ.get('ANTSPATH'), 'antsRegistrationSyNQuick.sh')
     if not (Path(os.environ.get('ANTSPATH')) / 'antsRegistrationSyN.sh').is_file():
         raise ValueError('must have ants installed with antsRegistrationSyN.sh in $ANTSPATH directory.')
     else:
-        antsRegistrationSyN = Path(os.environ.get('ANTSPATH'), 'antsRegistrationSyN.sh')
-        return antsRegistrationSyN
+        if default_cmd_str:
+            antsRegistrationSyN = os.environ.get('ANTSPATH') + 'antsRegistrationSyN.sh -d 3 -m {moving} -f {fixed} -o {outfile} -n 30 -t s -p f -j 1 -s 10 -r 1'
+            return antsRegistrationSyN
+        else:
+            antsRegistrationSyN = Path(os.environ.get('ANTSPATH'), 'antsRegistrationSyN.sh')
+            return antsRegistrationSyN
 
 def getslicercmd(ver='stable', stable_linux_ver='Slicer-4.8.1-linux-amd64', dev_linux_ver='Slicer-4.9.0-2018-02-08-linux-amd64', dev_mac_ver='Slicer_dev4p7_7-16-2017.app', stable_mac_ver='Slicer_dev4p7_7-16-2017.app'):
     if platform.system() == 'Darwin' and ver == 'dev':
