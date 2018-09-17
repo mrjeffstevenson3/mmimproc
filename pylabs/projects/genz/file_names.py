@@ -31,6 +31,7 @@ class Optsd(object):
             # define project variables here. will become dict using opts = Optsd; vars(opts).
             project = 'genz',
             test = True,
+            ext = '.nii.gz',
             overwrite = True,
             convert = False,
             spm_thresh = 0.80,
@@ -64,6 +65,7 @@ class Optsd(object):
         # make them accessible as obj.var as well as dict
         self.project = project
         self.test = test
+        self.ext = ext
         self.overwrite = overwrite
         self.convert = convert
         self.spm_thresh = spm_thresh
@@ -152,6 +154,10 @@ def get_dwi_names(subjids_picks):
             subjid['topup_fname'] = str(topup_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_DWI6_B0_TOPUP_']))
             subjid['topdn_fname'] = str(topdn_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_DWI6_B0_TOPDN_']))
             subjid['dwi_fname'] = str(dwi_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_DWI64_3SH_B0_B800_B2000_TOPUP_']))
+            subjid['anat_dir'] = fs / project / '{subj}/{session}/anat'.format(**subjid)
+            subjid['dwi_dir'] = fs / project / '{subj}/{session}/dwi'.format(**subjid)
+            subjid['vtk_dir'] = fs / project / '{subj}/{session}/dwi'.format(**subjid) / opts.vtk_dir
+            subjid['eddy_dir'] = fs / project / '{subj}/{session}/dwi'.format(**subjid) / opts.eddy_corr_dir
             dwi_picks.append(subjid)
         return dwi_picks
     except TypeError as e:
@@ -211,5 +217,16 @@ def get_vfa_names(subjids_picks):
         if subjids_picks.getR1_MPF_names:
             subjid['r1_fname'] = subjids_picks.r1_fname_templ.format(**subjid)
             subjid['mpf_fname'] = subjids_picks.mpf_fname_templ.format(**subjid)
+            topup_ftempl = removesuffix(str(genz_conv['_DWI6_B0_TOPUP_']['fname_template']))
+            subjid['topup_brain_fname'] = str(removesuffix(str(genz_conv['_DWI6_B0_TOPUP_']['fname_template']))).\
+                format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_DWI6_B0_TOPUP_'])) + '_topdn_concat_mf_unwarped_mean_brain'
+            subjid['UKF_fname'] = '{subj}_{session}_dwi-topup_64dir-3sh-800-2000_1_topdn_unwarped_ec_mf_clamp1_UKF_whbr.vtk'.format(**subjid)
+        # add dirs to dict
+        subjid['anat_dir'] = fs/project/'{subj}/{session}/anat'.format(**subjid)
+        subjid['dwi_dir'] = fs / project / '{subj}/{session}/dwi'.format(**subjid)
+        subjid['vtk_dir'] = fs / project / '{subj}/{session}/dwi'.format(**subjid) / opts.vtk_dir
+        subjid['eddy_dir'] = fs / project / '{subj}/{session}/dwi'.format(**subjid) / opts.eddy_corr_dir
+        subjid['qt1_dir'] = fs / project / '{subj}/{session}/qt1'.format(**subjid)
+        subjid['reg2dwi_dir'] = fs / project / '{subj}/{session}/reg/qt12dwi'.format(**subjid)
         qt1_picks.append(subjid)
     return qt1_picks
