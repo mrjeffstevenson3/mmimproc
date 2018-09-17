@@ -8,7 +8,7 @@ import nibabel as nib
 from pylabs.utils import *
 popts = PylabsOptions()
 
-def inject_vol_data_into_vtk(working_dir, vol_fname, vtk_infname, vtk_outfname):
+def inject_vol_data_into_vtk(working_dir, vol_fname, vtk_infname, vtk_outfname, myelin_density=False):
     results = ( '',)
     with WorkingContext(working_dir):
         vtk_infname = Path(vtk_infname)
@@ -34,7 +34,10 @@ def inject_vol_data_into_vtk(working_dir, vol_fname, vtk_infname, vtk_outfname):
         shutil.copy(str(aal_motor), 'aal_motor.vtk')
         shutil.copy(str(aal_base), 'base.vtk')
         shutil.copy(str(aal_channel), 'channel.vtk')
-        results += run_subprocess([str(vol2fiber)])
+        if myelin_density:
+            results += run_subprocess([str(vol2myelin_density)])
+        else:
+            results += run_subprocess([str(vol2fiber)])
         Path('fnew.vtk').rename(vtk_outfname)
         if popts.verbose:
             print("({})".format(", ".join(results)))

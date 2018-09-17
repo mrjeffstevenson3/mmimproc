@@ -35,7 +35,6 @@ from pylabs.io.images import savenii
 from pylabs.io.mixed import h52df
 from pylabs.utils import *
 #set up provenance
-from pylabs.utils import ProvenanceWrapper
 prov = ProvenanceWrapper()
 
 # project, subject, and file objects to work on

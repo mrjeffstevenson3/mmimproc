@@ -5,9 +5,10 @@ from pathlib import *
 class WorkingContext(object):
     """
     Used to execute a command in directory other than python working dir.
+    Now compatible with pathlib.
     Example
     -------
-    from pylabs.util import WorkingContext
+    from pylabs.utils import WorkingContext
     with WorkingContext("/myworkingdir"):
         execute commands to run with "/myworkingdir" as cwd.
 

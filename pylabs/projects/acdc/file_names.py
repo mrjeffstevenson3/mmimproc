@@ -12,6 +12,7 @@ from pylabs.conversion.brain_convert import acdc_conv
 
 fs = Path(getnetworkdataroot())
 project = 'acdc'
+dwi_excluded = {project: []}
 
 class SubjIdPicks(object):
     pass

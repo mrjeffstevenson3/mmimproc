@@ -14,7 +14,7 @@ def nii2nrrd(niftifile, nrrd_fname, bvalsf=None, bvecsf=None, istensor=False, is
     This function converts nifti files to nrrd.
     '''
     # test consistency
-    if Path(nrrd_fname).suffix == '.nhdr':
+    if Path(nrrd_fname).suffix != '.nhdr':
         print('nrrd files no longer compatible with Slicer. switching to .nhdr extension.')
         nrrd_fname = replacesuffix(nrrd_fname, '.nhdr')
     if istensor + ismask > 1:
@@ -67,7 +67,7 @@ def nii2nrrd(niftifile, nrrd_fname, bvalsf=None, bvecsf=None, istensor=False, is
     ornt = io_orientation(np.diag([-1, 1, 1, 1]).dot(img.affine))
     if np.all(ornt == [[0, 1],
                        [1, 1],
-                       [2, 1]]):  # already in LPS+
+                       [2, 1]]):  # already in RAS+
         t_aff = np.eye(4)
         affine = img.affine
     else:  # Not in RAS+. fix affine and apply correct orientation
@@ -79,6 +79,7 @@ def nii2nrrd(niftifile, nrrd_fname, bvalsf=None, bvecsf=None, istensor=False, is
     else:
         img_data = np.float32(img_data)
     options[u'dimension'] = unicode(len(img_data.shape))
+    # this is the standard RAS+ frame
     options[u'measurement frame'] = [['-1', '0', '0'], ['0', '1', '0'], ['0', '0', '1']]
     options[u'sizes'] = list(img_data.shape)
     options[u'type'] = unicode(img_data.dtype.str[1:])

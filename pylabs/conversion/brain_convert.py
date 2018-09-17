@@ -12,7 +12,7 @@ import nipype
 from nipype.interfaces import fsl
 from pylabs.conversion.parrec2nii_convert import brain_proc_file
 from pylabs.utils.sessions import make_sessions_fm_dict
-from pylabs.io.mixed import conv_df2h5, backup_source_dirs
+from pylabs.io.mixed import conv_df2h5, backup_source_dirs, get_h5_keys
 import os
 from os.path import join
 from datetime import datetime
@@ -452,6 +452,25 @@ def default_to_regular(d):
         d = {k: default_to_regular(v) for k, v in d.iteritems()}
     return d
 
+def find_subjs2conv(project, idthresh=800, leadalphan=False, wild_multipl=1):
+
+    if leadalphan:
+        wild = '?' * len(str(idthresh)) + '?' * wild_multipl
+    else:
+        wild = '?' * len(str(idthresh))
+    converted = sorted(get_h5_keys(fs/project/'all_{project}_info.h5'.format(**{'project': project}), 'conv'))
+    conv_subj_ses = sorted(['/'.join(x.split('/')[1:3]) for x in sorted(converted) if int(x.split('/')[1][-len(str(idthresh)):]) < idthresh])
+    subjid_list_dirs = sorted(list((fs/project).glob('sub-{project}{wild}'.format(**{'project': project, 'wild': wild}))))
+    subjid_list_dirs_wses, hassesdir = [], []
+    for sid_ses_dirs in subjid_list_dirs:
+        for s in img_conv[project][img_conv[project].keys()[0]]['multisession']:
+            subjid_list_dirs_wses.append(sid_ses_dirs.joinpath('ses-'+str(s)))
+    for d in subjid_list_dirs_wses:
+        if d.is_dir() and int(d.parts[-2][-len(str(idthresh)):]) < idthresh:
+            hassesdir.append('/'.join(d.parts[-2:]))
+    subjects = sorted([x.split('/')[0] for x in list(set(hassesdir) - set(conv_subj_ses))])
+    return subjects
+
 def conv_subjs(project, subjects, hdf_fname=None):
     niftiDict = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
     niftiDF = pd.DataFrame()
@@ -484,6 +503,55 @@ def conv_subjs(project, subjects, hdf_fname=None):
             else:
                 raise ValueError('missing hdf file name.')
     return niftiDict, niftiDF
+
+def get_dwi_picks(project, idthresh=800, leadalphan=False, wild_multipl=1, excluded=[]):
+    """
+
+    :param project:  name of project as in 'acdc' or 'genz'
+    :param idthresh:  threshold integer subj id number above which is excluded as in test subjs or devel scans
+    :param leadalphan:  True only if 1 or more letters precede id number and not in project name eg C6124
+    :param wild_multipl:  default is 1 letter before id number, change if more than 1 qualifier letter as in CG6124 = 2
+    :param excluded:  list of subject/session combos to exclude from picks lists
+    :return:  auto_qc_picks, vis_qc_picks, preproc_picks
+    :auto_qc_picks: are the subjects that haven't had the auto qc script run\n
+    :vis_qc_picks: are the subjects who have had the auto_qc run but NOT the visual qc\n
+    :preproc_picks: are the subjects who have had BOTH the auto_qc AND the visual qc run but have NOT been pre processed\n
+    """
+    if project == 'genz' and excluded == []:
+        excluded = ['sub-genz403/ses-1', ]   ## has bad or no  dwi
+    if leadalphan:
+        wild = '?' * len(str(idthresh)) + '?' * wild_multipl
+    else:
+        wild = '?' * len(str(idthresh))
+    auto_qc_subjs = sorted(get_h5_keys(fs/project/'all_{project}_info.h5'.format(**{'project': project}), 'auto_qc'))
+    auto_qc_subjs = sorted(['/'.join(x.split('/')[1:3]) for x in sorted(auto_qc_subjs) if int(x.split('/')[1][-len(str(idthresh)):]) < idthresh])
+    vis_qc_subjs = sorted(get_h5_keys(fs/project/'all_{project}_info.h5'.format(**{'project': project}), 'vis_qc'))
+    vis_qc_subjs = sorted(['/'.join(x.split('/')[1:3]) for x in sorted(vis_qc_subjs) if int(x.split('/')[1][-len(str(idthresh)):]) < idthresh])
+    subjid_list_dirs = sorted(list((fs/project).glob('sub-{project}{wild}'.format(**{'project': project, 'wild': wild}))))
+    all_subjids = sorted([Path(x.parts[-1]) for x in subjid_list_dirs if int(x.parts[-1][-len(str(idthresh)):]) < idthresh])
+    all_subjids_ses, has_ses, hasbedpdir = [], [], []
+    for s in all_subjids:
+        for sn in img_conv[project][img_conv[project].keys()[0]]['multisession']:
+            all_subjids_ses.append(s.joinpath('ses-'+str(sn)))
+    for s in all_subjids_ses:
+        if (fs/project).joinpath(s, 'dwi/bedpost.bedpostX').is_dir():
+            hasbedpdir.append(str(s))
+        if (fs/project).joinpath(s, 'dwi').is_dir():
+            has_ses.append(str(s))
+
+    no_auto_qc = sorted(list(set(has_ses) - set(auto_qc_subjs) - set(excluded)))
+    no_vis_qc = sorted(list(set(auto_qc_subjs) - set(vis_qc_subjs) - set(excluded)))
+    no_preproc = sorted(list(set(vis_qc_subjs) - set(hasbedpdir) - set(excluded)))
+    auto_qc_picks, vis_qc_picks, preproc_picks = [], [], []
+    for p in no_auto_qc:
+        auto_qc_picks.append({'subj': p.split('/')[0], 'session': p.split('/')[1], 'run': '1', })
+    for p in no_vis_qc:
+        vis_qc_picks.append('/'+p+'/dwi/auto_qc')
+    for p in no_preproc:
+        preproc_picks.append({'subj': p.split('/')[0], 'session': p.split('/')[1], 'run': '1', })
+    return auto_qc_picks, vis_qc_picks, preproc_picks
+
+
 
 # this is now obsolete with new b1map
 def b1corr_anat(project, niftiDict):
