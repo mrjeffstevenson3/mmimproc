@@ -24,8 +24,8 @@ def reslice_niivol(ref_vol, in_vol, out_vol, ismask=False):
 
     :param ref_vol: The volume to match resampled voxels to.
     :param in_vol:  The volume to be resampled.
-    :param ismask: If True then data type set to integer
-    :return: saves nifti file to disk and returns resampled data and affine
+    :param ismask: If True then data type set to integer 32 (slicer compatibility is int16).
+    :return: saves nifti file to disk and returns resampled data and affine.
     """
     ref_vol, in_vol = Path(ref_vol), Path(in_vol)
     if not ref_vol.is_file() or not in_vol.is_file():
@@ -39,7 +39,7 @@ def reslice_niivol(ref_vol, in_vol, out_vol, ismask=False):
     out_data, new_affine = reslice(orig_data, orig_affine, orig_zooms, ref_zooms)
 
     if ismask:
-        out_data = np.int16(np.ceil(out_data))
+        out_data = np.int32(np.ceil(out_data))
 
     savenii(out_data, new_affine, out_vol)
     return out_data, new_affine
