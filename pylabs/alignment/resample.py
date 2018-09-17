@@ -39,7 +39,7 @@ def reslice_niivol(ref_vol, in_vol, out_vol, ismask=False):
     out_data, new_affine = reslice(orig_data, orig_affine, orig_zooms, ref_zooms)
 
     if ismask:
-        out_data = np.ceil(out_data)
+        out_data = np.int16(np.ceil(out_data))
 
     savenii(out_data, new_affine, out_vol)
     return out_data, new_affine
