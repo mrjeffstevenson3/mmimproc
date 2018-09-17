@@ -40,6 +40,7 @@ c
 	real distancesav(200000),xwall(100),ywall(100),zwall(100)
 	real dti(400,400,400,6)
 	integer iflagindex(7)
+	integer*8 ivtksize
 	open(11,file = 'offsets.txt')
 	read(11,*)xoffset,yoffset,zoffset
 	close(11)
