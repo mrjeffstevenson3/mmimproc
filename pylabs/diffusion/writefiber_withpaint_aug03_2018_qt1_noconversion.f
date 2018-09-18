@@ -1055,9 +1055,9 @@ c
 c diagnostic images output
 c
 	open(21,file = 'dti1.img',form = 'unformatted')
-	do k=1,76
-	do j=1,160
-	do i=1,160
+	do k=1,izsize
+	do j=1,iysize
+	do i=1,ixsize
 	dti(i,j,k,4) = 0
 	enddo
 	enddo
@@ -1068,7 +1068,7 @@ c
 	rysize = iysize
 	rzsize = izsize
 
-	rx = 160-(((polysav(i,1,1)/rxdim))+(xoffset))
+	rx = ixsize-(((polysav(i,1,1)/rxdim))+(xoffset))
 	ry = ((polysav(i,2,1)/rydim))+(yoffset)
 	rz = ((polysav(i,3,1)/abs(rzdim))+zoffset)
 	ix = nint(rx)

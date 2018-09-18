@@ -1068,7 +1068,7 @@ c
 	rysize = iysize
 	rzsize = izsize
 
-	rx = 160-(((polysav(i,1,1)/rxdim))+(xoffset))
+	rx = ixsize-(((polysav(i,1,1)/rxdim))+(xoffset))
 	ry = ((polysav(i,2,1)/rydim))+(yoffset)
 	rz = ((polysav(i,3,1)/abs(rzdim))+zoffset)
 	ix = nint(rx)
