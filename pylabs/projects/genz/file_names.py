@@ -28,7 +28,7 @@ class Optsd(object):
     Define constants for genz project with dict like mapping using opts = Optsd; **vars(opts).
     """
     def __init__(self,
-            # define project variables here. will become dict using opts = Optsd; vars(opts).
+            # define project global parameters here. will become dict using opts = Optsd(); vars(opts).
             project = 'genz',
             test = True,
             ext = '.nii.gz',
@@ -40,7 +40,9 @@ class Optsd(object):
             dwi_pass_qc = '_passqc',
             mf_str = '_mf',    # set to blank string '' to disable median filtering
             run_topup = True,
+            dwi_add_blanks = True,
             eddy_corr = True,
+            dwi_bet_ffac = 0.5,                     # fsl bet f factor threshold for mean topup brain (empirical)
             eddy_corr_dir = 'eddy_cuda_repol_v1',   # output dir for eddy
             dwi_fits_dir = 'fits_v1',
             do_ukf = True,
@@ -74,7 +76,9 @@ class Optsd(object):
         self.mf_str = mf_str
         self.info_fname = info_fname
         self.run_topup = run_topup
+        self.dwi_add_blanks = dwi_add_blanks
         self.eddy_corr = eddy_corr
+        self.dwi_bet_ffac = dwi_bet_ffac
         self.eddy_corr_dir = eddy_corr_dir
         self.dwi_fits_dir = dwi_fits_dir
         self.do_ukf = do_ukf

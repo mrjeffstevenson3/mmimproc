@@ -36,6 +36,7 @@ def reslice_niivol(ref_vol, in_vol, out_vol, ismask=False):
     orig_zooms = orig_img.header.get_zooms()
     ref_img = nib.load(str(ref_vol))
     ref_zooms = ref_img.header.get_zooms()
+    ref_affine = ref_img.affine
     out_data, new_affine = reslice(orig_data, orig_affine, orig_zooms, ref_zooms)
 
     if ismask:

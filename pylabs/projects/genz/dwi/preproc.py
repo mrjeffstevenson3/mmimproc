@@ -26,7 +26,7 @@ import shutil
 import datetime
 from scipy.ndimage.filters import median_filter as medianf
 from pylabs.structural.brain_extraction import extract_brain
-from pylabs.conversion.brain_convert import conv_subjs
+from pylabs.conversion.brain_convert import conv_subjs, find_subjs2conv
 from pylabs.conversion.nifti2nrrd import nii2nrrd
 from pylabs.conversion.parrec2nii_convert import mergeddicts
 from pylabs.alignment.ants_reg import subj2templ_applywarp
@@ -55,11 +55,7 @@ if not dwi_qc:
 subjids_picks = SubjIdPicks()
 # list of subject ids to operate on
 picks = [
-        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz102'},
-        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz501'},
-        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz504'},
-        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz507'},
-        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz510'},
+        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz311'},
     ]
 
 setattr(subjids_picks, 'subjids', picks)
@@ -153,8 +149,8 @@ if opts.test:
     i = 2
     dwi_picks = [dwi_picks[i]]
 # run conversion if needed
-if opts.convert:
-    subjects = [x['subj'] for x in subjids_picks.subjids]
+if opts.convert:  # add test for overwrite converted and test if subjects in picks dict list.
+    subjects = find_subjs2conv(project)
     niftiDict, niftiDF = conv_subjs(project, subjects)
 result = ('starting time for dwi preproc pipeline is {:%Y %m %d %H:%M}'.format(datetime.datetime.now()),)
 
@@ -197,6 +193,10 @@ for i, pick in enumerate(dwi_picks):
     orig_topdn_img = nib.load(str(orig_topdn_fname))
     orig_topdn_data = orig_topdn_img.get_data().astype(np.float64)
     orig_topdn_affine = orig_topdn_img.affine
+    if orig_topup_data.shape[2] % 2 == 0:
+        even_sl = True
+    else:
+        even_sl = False
 
     # select volumes that pass dwi qc
     if dwi_qc:
@@ -205,50 +205,105 @@ for i, pick in enumerate(dwi_picks):
         dwi_good_vols = vis_qc[vis_qc.dwi_visqc]
         topup_goodvols = vis_qc[vis_qc.itopup_visqc]
         topdn_goodvols = vis_qc[vis_qc.itopdn_visqc]
-        qc_dwi_data = orig_dwi_data[:, :, :, np.array(dwi_good_vols.index)]
-        dwif_fname = appendposix(orig_dwif_fname, opts.dwi_pass_qc)
-        pick['dwif_fname'] = dwif_fname
         dwi_bvals_fname = appendposix(orig_dwi_bvals_fname, opts.dwi_pass_qc)
         pick['dwi_bvals_fname'] = dwi_bvals_fname
         dwi_bvecs_fname = appendposix(orig_dwi_bvecs_fname, opts.dwi_pass_qc)
         pick['dwi_bvecs_fname'] = dwi_bvecs_fname
         topup_fname = appendposix(orig_topup_fname, opts.dwi_pass_qc)
         topdn_fname = appendposix(orig_topdn_fname, opts.dwi_pass_qc)
-        savenii(qc_dwi_data, orig_dwi_affine, dwif_fname)
+        pick['dwif_fname'] = appendposix(orig_dwif_fname, opts.dwi_pass_qc)
         dwi_good_vols[[u'x_bvec', u'y_bvec', u'z_bvec']].T.to_csv(str(dwi_bvecs_fname), index=False, header=False, sep=' ')
         pd.DataFrame(dwi_good_vols[u'bvals']).T.to_csv(str(dwi_bvals_fname), index=False, header=False, sep=' ')
         bvecs = dwi_good_vols[[u'x_bvec', u'y_bvec', u'z_bvec']].T.values
         bvals = pd.DataFrame(dwi_good_vols[u'bvals']).T.values[0]
         gtab = gradient_table(bvals, bvecs)
-        if orig_topup_data.shape[2] % 2 == 0:
-            even_sl = True
+        # set target shapes
+        if even_sl:
+            if opts.dwi_add_blanks:  # add slice above and below
+                topup_goodvols_shape = orig_topup_data[:2] + (orig_topup_data[2] + 2,) + (topup_goodvols.index.max,)
+                topdn_goodvols_shape = orig_topdn_data[:2] + (orig_topdn_data[2] + 2,) + (topdn_goodvols.index.max,)
+                dwi_goodvols_shape = orig_dwi_data[:2] + (orig_dwi_data[2] + 2,) + (dwi_good_vols.index.max,)
+                topup_data = np.zeros(topup_goodvols_shape)
+                topdn_data = np.zeros(topdn_goodvols_shape)
+                dwi_data = np.zeros(dwi_goodvols_shape)
+                topup_data[:, :, 1:topup_goodvols_shape[2]-1, :] = orig_topup_data[:,:,:,np.array(topup_goodvols.index)]
+                topdn_data[:, :, 1:topdn_goodvols_shape[2]-1, :] = orig_topdn_data[:,:,:,np.array(topdn_goodvols.index)]
+                dwi_data[:, :, 1:dwi_goodvols_shape[2]-1, :] = orig_dwi_data[:,:,:,np.array(dwi_good_vols.index)]
+            else: # keep original slices with good volumes and run eddy
+                topup_data = orig_topup_data[:,:,:,np.array(topup_goodvols.index)]
+                topdn_data = orig_topdn_data[:,:,:,np.array(topdn_goodvols.index)]
+                dwi_data = orig_dwi_data[:,:,:,np.array(dwi_good_vols.index)]
         else:
             even_sl = False
-        #add topup and dn qc vols select
-        if even_sl:
-            topup_data = orig_topup_data[:, :, :, np.array(topup_goodvols.index)]
-            topdn_data = orig_topdn_data[:, :, :, np.array(topdn_goodvols.index)]
-        else:
-            topup_data = orig_topup_data[:, :, 1:, np.array(topup_goodvols.index)]
-            topdn_data = orig_topdn_data[:, :, 1:, np.array(topdn_goodvols.index)]
-        savenii(topup_data, orig_topup_affine, topup_fname)
-        savenii(topdn_data, orig_topdn_affine, topdn_fname)
-    # select all volumes
-    else:
+            if opts.dwi_add_blanks:# correct odd number slices with 2 blanks on top and 1 on bottom
+                topup_goodvols_shape = orig_topup_data[:2] + (orig_topup_data[2] + 3,) + (topup_goodvols.index.max,)
+                topdn_goodvols_shape = orig_topdn_data[:2] + (orig_topdn_data[2] + 3,) + (topdn_goodvols.index.max,)
+                dwi_goodvols_shape = orig_dwi_data[:2] + (orig_dwi_data[2] + 3,) + (dwi_good_vols.index.max,)
+                topup_data = np.zeros(topup_goodvols_shape)
+                topdn_data = np.zeros(topdn_goodvols_shape)
+                dwi_data = np.zeros(dwi_goodvols_shape)
+                topup_data[:, :, 1:orig_topup_data[2]-2, :] = orig_topup_data[:,:,:,np.array(topup_goodvols.index)]
+                topdn_data[:, :, 1:orig_topdn_data[2]-2, :] = orig_topdn_data[:,:,:,np.array(topdn_goodvols.index)]
+                dwi_data[:, :, 1:dwi_goodvols_shape[2]-2, :] = orig_dwi_data[:,:,:,np.array(dwi_good_vols.index)]
+            else: # correct odd number slices with 1 blank on top
+                topup_goodvols_shape = orig_topup_data[:2] + (orig_topup_data[2] + 1,) + (topup_goodvols.index.max,)
+                topdn_goodvols_shape = orig_topdn_data[:2] + (orig_topdn_data[2] + 1,) + (topdn_goodvols.index.max,)
+                dwi_goodvols_shape = orig_dwi_data[:2] + (orig_dwi_data[2] + 1,) + (dwi_good_vols.index.max,)
+                topup_data = np.zeros(topup_goodvols_shape)
+                topdn_data = np.zeros(topdn_goodvols_shape)
+                dwi_data = np.zeros(dwi_goodvols_shape)
+                topup_data[:, :, :-1, :] = orig_topup_data[:,:,:,np.array(topup_goodvols.index)]
+                topdn_data[:, :, :-1, :] = orig_topdn_data[:,:,:,np.array(topdn_goodvols.index)]
+                dwi_data[:, :, :-1, :] = orig_dwi_data[:,:,:,np.array(dwi_good_vols.index)]
+
+    else:   # select all volumes without any qc
         bvals, bvecs = read_bvals_bvecs(str(orig_dwi_bvals_fname), str(orig_dwi_bvecs_fname))
         gtab = gradient_table(bvals, bvecs)
-        dwif_fname = orig_dwif_fname
-        pick['dwif_fname'] = dwif_fname
+        pick['dwif_fname'] = orig_dwif_fname
         dwi_bvals_fname = orig_dwi_bvals_fname
         dwi_bvecs_fname = orig_dwi_bvecs_fname
         topup_fname = orig_topup_fname
         topdn_fname = orig_topdn_fname
         if even_sl:
-            topup_data = orig_topup_data
-            topdn_data = orig_topdn_data
+            if opts.dwi_add_blanks:
+                topup_shape = orig_topup_data[:2] + (orig_topup_data[2] + 2,) + ( orig_topup_data[3],)
+                topdn_shape = orig_topdn_data[:2] + (orig_topdn_data[2] + 2,) + (orig_topdn_data[3],)
+                dwi_shape = orig_dwi_data[:2] + (orig_dwi_data[2] + 2,) + (orig_dwi_data[3],)
+                topup_data = np.zeros(topup_shape)
+                topdn_data = np.zeros(topdn_shape)
+                dwi_data = np.zeros(dwi_shape)
+                topup_data[:, :, 1:-1, :] = orig_topup_data
+                topdn_data[:, :, 1:-1, :] = orig_topdn_data
+                dwi_data[:, :, 1:-1, :] = orig_dwi_data
+            else:
+                topup_data = orig_topup_data
+                topdn_data = orig_topdn_data
+                dwi_data = orig_dwi_data
         else:
-            topup_data = orig_topup_data[:, :, 1:, :]
-            topdn_data = orig_topdn_data[:, :, 1:, :]
+            if opts.dwi_add_blanks:
+                topup_shape = orig_topup_data[:2] + (orig_topup_data[2] + 3,) + (orig_topup_data[3],)
+                topdn_shape = orig_topdn_data[:2] + (orig_topdn_data[2] + 3,) + (orig_topdn_data[3],)
+                dwi_shape = orig_dwi_data[:2] + (orig_dwi_data[2] + 3,) + (orig_dwi_data[3],)
+                topup_data = np.zeros(topup_shape)
+                topdn_data = np.zeros(topdn_shape)
+                dwi_data = np.zeros(dwi_shape)
+                topup_data[:, :, 1:-2, :] = orig_topup_data
+                topdn_data[:, :, 1:-2, :] = orig_topdn_data
+                dwi_data[:, :, 1:-2, :] = orig_dwi_data
+            else:
+                topup_shape = orig_topup_data[:2] + (orig_topup_data[2] + 1,) + (orig_topup_data[3],)
+                topdn_shape = orig_topdn_data[:2] + (orig_topdn_data[2] + 1,) + (orig_topdn_data[3],)
+                dwi_shape = orig_dwi_data[:2] + (orig_dwi_data[2] + 1,) + (orig_dwi_data[3],)
+                topup_data = np.zeros(topup_shape)
+                topdn_data = np.zeros(topdn_shape)
+                dwi_data = np.zeros(dwi_shape)
+                topup_data[:, :, :-1, :] = orig_topup_data
+                topdn_data[:, :, :-1, :] = orig_topdn_data
+                dwi_data[:, :, :-1, :] = orig_dwi_data
+
+    savenii(topup_data, orig_topup_affine, topup_fname)
+    savenii(topdn_data, orig_topdn_affine, topdn_fname)
+    savenii(dwi_data, orig_dwi_affine, pick['dwif_fname'])
 
     # make acq_params and index files for fsl eddy
     with open(str(topup_dwellt_fname), 'r') as tud:
@@ -292,14 +347,11 @@ for i, pick in enumerate(dwi_picks):
     if opts.eddy_corr or opts.overwrite:
         with WorkingContext(str(ec_dir)):
             print('starting time for eddy is {:%Y %m %d %H:%M}'.format(datetime.datetime.now()))
-            b0_brain_fname, b0_brain_mask_fname, b0_brain_cropped_fname = extract_brain('{topup_out}_unwarped_mean.nii.gz'.format(**pick), mode='T2', dwi=True, f_factor=0.5, robust=True)
+            b0_brain_fname, b0_brain_mask_fname, b0_brain_cropped_fname = extract_brain('{topup_out}_unwarped_mean.nii.gz'.format(**pick), mode='T2', dwi=True, f_factor=opts.dwi_bet_ffac, robust=True)
             pick['b0_brain_mask_fname'] = b0_brain_mask_fname
             nii2nrrd(pick['b0_brain_mask_fname'], replacesuffix(pick['b0_brain_mask_fname'], '.nhdr'), ismask=True)
             pick['b0_brain_mask_fname_nrrd'] = replacesuffix(pick['b0_brain_mask_fname'], '.nhdr')
-            if not even_sl:
-                dwi_data_orig = nib.load(str(pick['dwif_fname'])).get_data().astype(np.float64)
-                dwi_orig_affine = nib.load(str(pick['dwif_fname'])).affine
-                savenii(dwi_data_orig[:, :, 1:, :], dwi_orig_affine, pick['dwif_fname'])
+            # run eddy correction
             result += run_subprocess([eddy_cmd.format(**pick)])
             # clamp, filter, and make nrrd
             ec_data = nib.load('{ec_dwi_fname}.nii.gz'.format(**pick)).get_data().astype(np.float64)
