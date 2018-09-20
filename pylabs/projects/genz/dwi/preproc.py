@@ -220,9 +220,9 @@ for i, pick in enumerate(dwi_picks):
         # set target shapes
         if even_sl:
             if opts.dwi_add_blanks:  # add slice above and below
-                topup_goodvols_shape = orig_topup_data[:2] + (orig_topup_data[2] + 2,) + (topup_goodvols.index.max,)
-                topdn_goodvols_shape = orig_topdn_data[:2] + (orig_topdn_data[2] + 2,) + (topdn_goodvols.index.max,)
-                dwi_goodvols_shape = orig_dwi_data[:2] + (orig_dwi_data[2] + 2,) + (dwi_good_vols.index.max,)
+                topup_goodvols_shape = orig_topup_data.shape[:2] + (orig_topup_data.shape[2] + 2,) + (topup_goodvols.index.max,)
+                topdn_goodvols_shape = orig_topdn_data.shape[:2] + (orig_topdn_data.shape[2] + 2,) + (topdn_goodvols.index.max,)
+                dwi_goodvols_shape = orig_dwi_data.shape[:2] + (orig_dwi_data.shape[2] + 2,) + (dwi_good_vols.index.max,)
                 topup_data = np.zeros(topup_goodvols_shape)
                 topdn_data = np.zeros(topdn_goodvols_shape)
                 dwi_data = np.zeros(dwi_goodvols_shape)
@@ -236,9 +236,9 @@ for i, pick in enumerate(dwi_picks):
         else:
             even_sl = False
             if opts.dwi_add_blanks:# correct odd number slices with 2 blanks on top and 1 on bottom
-                topup_goodvols_shape = orig_topup_data[:2] + (orig_topup_data[2] + 3,) + (topup_goodvols.index.max,)
-                topdn_goodvols_shape = orig_topdn_data[:2] + (orig_topdn_data[2] + 3,) + (topdn_goodvols.index.max,)
-                dwi_goodvols_shape = orig_dwi_data[:2] + (orig_dwi_data[2] + 3,) + (dwi_good_vols.index.max,)
+                topup_goodvols_shape = orig_topup_data.shape[:2] + (orig_topup_data.shape[2] + 3,) + (topup_goodvols.index.max,)
+                topdn_goodvols_shape = orig_topdn_data.shape[:2] + (orig_topdn_data.shape[2] + 3,) + (topdn_goodvols.index.max,)
+                dwi_goodvols_shape = orig_dwi_data.shape[:2] + (orig_dwi_data.shape[2] + 3,) + (dwi_good_vols.index.max,)
                 topup_data = np.zeros(topup_goodvols_shape)
                 topdn_data = np.zeros(topdn_goodvols_shape)
                 dwi_data = np.zeros(dwi_goodvols_shape)
@@ -246,9 +246,9 @@ for i, pick in enumerate(dwi_picks):
                 topdn_data[:, :, 1:orig_topdn_data[2]-2, :] = orig_topdn_data[:,:,:,np.array(topdn_goodvols.index)]
                 dwi_data[:, :, 1:dwi_goodvols_shape[2]-2, :] = orig_dwi_data[:,:,:,np.array(dwi_good_vols.index)]
             else: # correct odd number slices with 1 blank on top
-                topup_goodvols_shape = orig_topup_data[:2] + (orig_topup_data[2] + 1,) + (topup_goodvols.index.max,)
-                topdn_goodvols_shape = orig_topdn_data[:2] + (orig_topdn_data[2] + 1,) + (topdn_goodvols.index.max,)
-                dwi_goodvols_shape = orig_dwi_data[:2] + (orig_dwi_data[2] + 1,) + (dwi_good_vols.index.max,)
+                topup_goodvols_shape = orig_topup_data.shape[:2] + (orig_topup_data.shape[2] + 1,) + (topup_goodvols.index.max,)
+                topdn_goodvols_shape = orig_topdn_data.shape[:2] + (orig_topdn_data.shape[2] + 1,) + (topdn_goodvols.index.max,)
+                dwi_goodvols_shape = orig_dwi_data.shape[:2] + (orig_dwi_data.shape[2] + 1,) + (dwi_good_vols.index.max,)
                 topup_data = np.zeros(topup_goodvols_shape)
                 topdn_data = np.zeros(topdn_goodvols_shape)
                 dwi_data = np.zeros(dwi_goodvols_shape)
@@ -266,9 +266,9 @@ for i, pick in enumerate(dwi_picks):
         topdn_fname = orig_topdn_fname
         if even_sl:
             if opts.dwi_add_blanks:
-                topup_shape = orig_topup_data[:2] + (orig_topup_data[2] + 2,) + ( orig_topup_data[3],)
-                topdn_shape = orig_topdn_data[:2] + (orig_topdn_data[2] + 2,) + (orig_topdn_data[3],)
-                dwi_shape = orig_dwi_data[:2] + (orig_dwi_data[2] + 2,) + (orig_dwi_data[3],)
+                topup_shape = orig_topup_data.shape[:2] + (orig_topup_data.shape[2] + 2,) + ( orig_topup_data.shape[3],)
+                topdn_shape = orig_topdn_data.shape[:2] + (orig_topdn_data.shape[2] + 2,) + (orig_topdn_data.shape[3],)
+                dwi_shape = orig_dwi_data.shape[:2] + (orig_dwi_data.shape[2] + 2,) + (orig_dwi_data.shape[3],)
                 topup_data = np.zeros(topup_shape)
                 topdn_data = np.zeros(topdn_shape)
                 dwi_data = np.zeros(dwi_shape)
@@ -281,9 +281,9 @@ for i, pick in enumerate(dwi_picks):
                 dwi_data = orig_dwi_data
         else:
             if opts.dwi_add_blanks:
-                topup_shape = orig_topup_data[:2] + (orig_topup_data[2] + 3,) + (orig_topup_data[3],)
-                topdn_shape = orig_topdn_data[:2] + (orig_topdn_data[2] + 3,) + (orig_topdn_data[3],)
-                dwi_shape = orig_dwi_data[:2] + (orig_dwi_data[2] + 3,) + (orig_dwi_data[3],)
+                topup_shape = orig_topup_data.shape[:2] + (orig_topup_data.shape[2] + 3,) + (orig_topup_data.shape[3],)
+                topdn_shape = orig_topdn_data.shape[:2] + (orig_topdn_data.shape[2] + 3,) + (orig_topdn_data.shape[3],)
+                dwi_shape = orig_dwi_data.shape[:2] + (orig_dwi_data.shape[2] + 3,) + (orig_dwi_data.shape[3],)
                 topup_data = np.zeros(topup_shape)
                 topdn_data = np.zeros(topdn_shape)
                 dwi_data = np.zeros(dwi_shape)
@@ -291,9 +291,9 @@ for i, pick in enumerate(dwi_picks):
                 topdn_data[:, :, 1:-2, :] = orig_topdn_data
                 dwi_data[:, :, 1:-2, :] = orig_dwi_data
             else:
-                topup_shape = orig_topup_data[:2] + (orig_topup_data[2] + 1,) + (orig_topup_data[3],)
-                topdn_shape = orig_topdn_data[:2] + (orig_topdn_data[2] + 1,) + (orig_topdn_data[3],)
-                dwi_shape = orig_dwi_data[:2] + (orig_dwi_data[2] + 1,) + (orig_dwi_data[3],)
+                topup_shape = orig_topup_data.shape[:2] + (orig_topup_data.shape[2] + 1,) + (orig_topup_data.shape[3],)
+                topdn_shape = orig_topdn_data.shape[:2] + (orig_topdn_data.shape[2] + 1,) + (orig_topdn_data.shape[3],)
+                dwi_shape = orig_dwi_data.shape[:2] + (orig_dwi_data.shape[2] + 1,) + (orig_dwi_data.shape[3],)
                 topup_data = np.zeros(topup_shape)
                 topdn_data = np.zeros(topdn_shape)
                 dwi_data = np.zeros(dwi_shape)
