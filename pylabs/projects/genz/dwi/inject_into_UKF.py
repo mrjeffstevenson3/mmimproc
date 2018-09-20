@@ -46,11 +46,13 @@ for pick in qt1_picks:
         pick['fixed'] = pick['dwi_dir'] / '{topup_brain_fname}_resampled2qt1.nii.gz'.format(**pick)
         pick['outfile'] = pick['reg2dwi_dir'].joinpath(pick['r1_fname'] + '_brain_reg2resampleddwi_')
         results += run_subprocess([antsRegistrationSyN_cmd.format(**pick)])
-        results += run_subprocess(['ln -sf {outfile}Warped.nii.gz ../../dwi/{vtk_dir}/{r1_fname}_brain_reg2resampleddwi.nii.gz'.format(**merge_ftempl_dicts(pick, vars(opts)))])
+        with WorkingContext(pick['vtk_dir']):
+            results += run_subprocess(['ln -sf ../../reg/{qt12dwi_reg_dir}/{outfile}Warped.nii.gz {r1_fname}_brain_reg2resampleddwi.nii.gz'.format(**merge_ftempl_dicts(pick, vars(opts)))])
         pick['moving'] = pick['qt1_dir'] / '{mpf_fname}_brain.nii.gz'.format(**pick)
         pick['outfile'] = pick['reg2dwi_dir'].joinpath(pick['mpf_fname'] + '_brain_reg2resampleddwi_')
         results += run_subprocess([antsRegistrationSyN_cmd.format(**pick)])
-        results += run_subprocess(['ln -sf {outfile}Warped.nii.gz ../../dwi/{vtk_dir}/{mpf_fname}_brain_reg2resampleddwi.nii.gz'.format(**merge_ftempl_dicts(pick, vars(opts)))])
+        with WorkingContext(pick['vtk_dir']):
+            results += run_subprocess(['ln -sf ../../reg/{qt12dwi_reg_dir}/{outfile}Warped.nii.gz {mpf_fname}_brain_reg2resampleddwi.nii.gz'.format(**merge_ftempl_dicts(pick, vars(opts)))])
     try:
         with WorkingContext(pick['vtk_dir']):
             print('Injecting {UKF_fname} for {subj} and {session} with {r1_fname}'.format(**pick))
@@ -61,12 +63,11 @@ for pick in qt1_picks:
             results += run_subprocess([str(vol2myelin_density)])
             mwf_fname = replacesuffix(pick['UKF_fname'], '_resampledB0_injectMyelinWaterFrac.vtk')
             Path('fnew.vtk').rename(mwf_fname)
+            print('Successful Injection of {UKF_fname} for {subj} and {session} with {r1_fname} and {mpf_fname}'.format(**pick))
     except:
         print('injection failed with errors for {subj} and {session} on vtk file {UKF_fname} and injection file {r1_fname} or {mpf_fname}.'.format(**pick))
-        errors += 'injection failed with errors for {subj} and {session} on vtk file {UKF_fname} and injection file {r1_fname} or {mpf_fname}.\n'.format(**pick)
+        errors += ('injection failed with errors for {subj} and {session} on vtk file {UKF_fname} and injection file {r1_fname} or {mpf_fname}.\n'.format(**pick),)
         print(results)
-    finally:
-        print('Successful Injection of {UKF_fname} for {subj} and {session} with {r1_fname} and {mpf_fname}'.format(**pick))
 
 print(errors)
 

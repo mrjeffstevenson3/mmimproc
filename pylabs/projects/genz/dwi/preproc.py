@@ -55,7 +55,7 @@ if not dwi_qc:
 subjids_picks = SubjIdPicks()
 # list of subject ids to operate on
 picks = [
-        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz305'},
+        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz311'},
     ]
 
 setattr(subjids_picks, 'subjids', picks)
@@ -461,8 +461,13 @@ for i, pick in enumerate(dwi_picks):
                 print('starting UKF tractography at {:%Y %m %d %H:%M}'.format(datetime.datetime.now()))
                 result += ('starting UKF tractography at {:%Y %m %d %H:%M}'.format(datetime.datetime.now()),)
                 result += run_subprocess([ukfcmds['UKF_whbr'] % pick])
+                with WorkingContext(vtk_dir):
+                    result += run_subprocess(['ln -sf {eddy_corr_dir}/{outfile}Warped.nii.gz {r1_fname}_brain_reg2resampleddwi.nii.gz'.format(**merge_ftempl_dicts(pick, vars(opts)))])
+
+
                 ukf_fname = vtk_dir/Path('%(ec_dwi_fname)s_mf_clamp1_UKF_whbr.vtk' % pick).name
                 ukf_fname.symlink_to('%(ec_dwi_fname)s_mf_clamp1_UKF_whbr.vtk' % pick)
+
                 print('finished UKF tractography at {:%Y %m %d %H:%M} starting NODDI 1 tensor'.format(datetime.datetime.now()))
                 result += ('finished UKF tractography at {:%Y %m %d %H:%M} starting NODDI 1 tensor'.format(datetime.datetime.now()),)
                 result += run_subprocess([ukfcmds['NODDI1'] % pick])

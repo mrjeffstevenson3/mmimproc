@@ -47,7 +47,8 @@ class Optsd(object):
             dwi_fits_dir = 'fits_v1',
             do_ukf = True,
             vtk_dir = 'vtk_v1',
-            dwi_reg_dir = 'MNI2dwi',
+            MNI2dwi_reg_dir = 'MNI2dwi',
+            qt12dwi_reg_dir = 'qt12dwi',
             run_bedpost = True,
             dwi_bedpost_dir = 'bedpost',
             dwi_fname_excep = ['_DWI64_3SH_B0_B800_B2000_TOPUP_TE101_1p8mm3_', '_DWI6_B0_TOPUP_TE101_1p8mm3_', '_DWI6_B0_TOPDN_TE101_1p8mm3_'],
@@ -83,7 +84,8 @@ class Optsd(object):
         self.dwi_fits_dir = dwi_fits_dir
         self.do_ukf = do_ukf
         self.vtk_dir = vtk_dir
-        self.dwi_reg_dir = dwi_reg_dir
+        self.MNI2dwi_reg_dir = MNI2dwi_reg_dir
+        self.qt12dwi_reg_dir = qt12dwi_reg_dir
         self.run_bedpost = run_bedpost
         self.dwi_bedpost_dir = dwi_bedpost_dir
         self.dwi_fname_excep = dwi_fname_excep
@@ -231,6 +233,6 @@ def get_vfa_names(subjids_picks):
         subjid['vtk_dir'] = fs / project / '{subj}/{session}/dwi'.format(**subjid) / opts.vtk_dir
         subjid['eddy_dir'] = fs / project / '{subj}/{session}/dwi'.format(**subjid) / opts.eddy_corr_dir
         subjid['qt1_dir'] = fs / project / '{subj}/{session}/qt1'.format(**subjid)
-        subjid['reg2dwi_dir'] = fs / project / '{subj}/{session}/reg/qt12dwi'.format(**subjid)
+        subjid['reg2dwi_dir'] = fs / project / '{subj}/{session}/reg/'.format(**subjid) / opts.qt12dwi_reg_dir
         qt1_picks.append(subjid)
     return qt1_picks
