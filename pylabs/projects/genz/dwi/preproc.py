@@ -488,16 +488,16 @@ for i, pick in enumerate(dwi_picks):
     if opts.run_bedpost or opts.overwrite:
         if not pick['bedpost_path'].is_dir():
             pick['bedpost_path'].mkdir()
-        with WorkingContext(str(bedpost_dir)):
+        with WorkingContext(pick['bedpost_path']):
             print('starting time for bedpost is {:%Y %m %d %H:%M}'.format(datetime.datetime.now()))
-            shutil.copy(pick['ec_dwi_clamp_fname'], str(subjid['bedpost_path']))
-            os.rename(Path(pick['ec_dwi_clamp_fname']).name, str(subjid['bedpost_path']/'data.nii.gz'))
-            shutil.copy(pick['dwi_bvecs_ec_rot_fname'], str(subjid['bedpost_path']))
-            os.rename(Path(pick['dwi_bvecs_ec_rot_fname']).name, str(subjid['bedpost_path']/'bvecs'))
-            shutil.copy(str(pick['dwi_bvals_fname']), str(subjid['bedpost_path']))
-            os.rename(Path(pick['dwi_bvals_fname']).name, str(subjid['bedpost_path']/'bvals'))
-            shutil.copy(str(pick['b0_brain_mask_fname']), str(subjid['bedpost_path']))
-            os.rename(pick['b0_brain_mask_fname'].name, str(subjid['bedpost_path']/'nodif_brain_mask.nii.gz'))
+            shutil.copy(pick['ec_dwi_clamp_fname'], str(pick['bedpost_path']))
+            os.rename(Path(pick['ec_dwi_clamp_fname']).name, str(pick['bedpost_path']/'data.nii.gz'))
+            shutil.copy(pick['dwi_bvecs_ec_rot_fname'], str(pick['bedpost_path']))
+            os.rename(Path(pick['dwi_bvecs_ec_rot_fname']).name, str(pick['bedpost_path']/'bvecs'))
+            shutil.copy(str(pick['dwi_bvals_fname']), str(pick['bedpost_path']))
+            os.rename(Path(pick['dwi_bvals_fname']).name, str(pick['bedpost_path']/'bvals'))
+            shutil.copy(str(pick['b0_brain_mask_fname']), str(pick['bedpost_path']))
+            os.rename(pick['b0_brain_mask_fname'].name, str(pick['bedpost_path']/'nodif_brain_mask.nii.gz'))
             # run bedpost, probtracks, network, UKF, NODDI, and DKI here
             with WorkingContext(pick['dwi_path']):
                 if (pick['dwi_path'] / 'bedpost.bedpostX').is_dir() and opts.overwrite:
