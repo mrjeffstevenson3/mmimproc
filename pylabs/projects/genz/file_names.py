@@ -157,13 +157,16 @@ def get_dwi_names(subjids_picks):
         topdn_ftempl = removesuffix(str(genz_conv['_DWI6_B0_TOPDN_']['fname_template']))
         dwi_ftempl = removesuffix(str(genz_conv['_DWI64_3SH_B0_B800_B2000_TOPUP_']['fname_template']))
         for subjid in subjids_picks.subjids:
+            subjid['project'] = opts.project
             subjid['topup_fname'] = str(topup_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_DWI6_B0_TOPUP_']))
             subjid['topdn_fname'] = str(topdn_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_DWI6_B0_TOPDN_']))
             subjid['dwi_fname'] = str(dwi_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_DWI64_3SH_B0_B800_B2000_TOPUP_']))
-            subjid['anat_dir'] = fs / project / '{subj}/{session}/anat'.format(**subjid)
-            subjid['dwi_dir'] = fs / project / '{subj}/{session}/dwi'.format(**subjid)
-            subjid['vtk_dir'] = fs / project / '{subj}/{session}/dwi'.format(**subjid) / opts.vtk_dir
-            subjid['eddy_dir'] = fs / project / '{subj}/{session}/dwi'.format(**subjid) / opts.eddy_corr_dir
+            subjid['anat_path'] = fs / project / '{subj}/{session}/anat'.format(**subjid)
+            subjid['dwi_path'] = fs / project / '{subj}/{session}/dwi'.format(**subjid)
+            subjid['vtk_path'] = fs / project / '{subj}/{session}/dwi'.format(**subjid) / opts.vtk_dir
+            subjid['eddy_path'] = fs / project / '{subj}/{session}/dwi'.format(**subjid) / opts.eddy_corr_dir
+            subjid['fits_path'] = fs / project / '{subj}/{session}/dwi'.format(**subjid) / opts.dwi_fits_dir
+            subjid['bedpost_path'] = fs / project / '{subj}/{session}/dwi'.format(**subjid) / opts.dwi_bedpost_dir
             dwi_picks.append(subjid)
         return dwi_picks
     except TypeError as e:
@@ -228,11 +231,11 @@ def get_vfa_names(subjids_picks):
                 format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_DWI6_B0_TOPUP_'])) + '_topdn_concat_mf_unwarped_mean_brain'
             subjid['UKF_fname'] = '{subj}_{session}_dwi-topup_64dir-3sh-800-2000_1_topdn_unwarped_ec_mf_clamp1_UKF_whbr.vtk'.format(**subjid)
         # add dirs to dict
-        subjid['anat_dir'] = fs/project/'{subj}/{session}/anat'.format(**subjid)
-        subjid['dwi_dir'] = fs / project / '{subj}/{session}/dwi'.format(**subjid)
-        subjid['vtk_dir'] = fs / project / '{subj}/{session}/dwi'.format(**subjid) / opts.vtk_dir
-        subjid['eddy_dir'] = fs / project / '{subj}/{session}/dwi'.format(**subjid) / opts.eddy_corr_dir
-        subjid['qt1_dir'] = fs / project / '{subj}/{session}/qt1'.format(**subjid)
-        subjid['reg2dwi_dir'] = fs / project / '{subj}/{session}/reg/'.format(**subjid) / opts.qt12dwi_reg_dir
+        subjid['anat_path'] = fs/project/'{subj}/{session}/anat'.format(**subjid)
+        subjid['dwi_path'] = fs / project / '{subj}/{session}/dwi'.format(**subjid)
+        subjid['vtk_path'] = fs / project / '{subj}/{session}/dwi'.format(**subjid) / opts.vtk_dir
+        subjid['eddy_path'] = fs / project / '{subj}/{session}/dwi'.format(**subjid) / opts.eddy_corr_dir
+        subjid['qt1_path'] = fs / project / '{subj}/{session}/qt1'.format(**subjid)
+        subjid['reg2dwi_path'] = fs / project / '{subj}/{session}/reg/'.format(**subjid) / opts.qt12dwi_reg_dir
         qt1_picks.append(subjid)
     return qt1_picks
