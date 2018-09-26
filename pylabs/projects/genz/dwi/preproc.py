@@ -55,7 +55,10 @@ if not dwi_qc:
 subjids_picks = SubjIdPicks()
 # list of subject ids to operate on
 picks = [
-        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz510'},
+        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz311'},
+        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz502'},
+        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz503'},
+        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz509'},
     ]
 
 setattr(subjids_picks, 'subjids', picks)
