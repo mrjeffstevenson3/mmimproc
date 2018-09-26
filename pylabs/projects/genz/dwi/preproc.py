@@ -162,14 +162,14 @@ for i, pick in enumerate(dwi_picks):
     result += ('working on dwi preproc for {project} subject {subj} session {session}'.format(**pick),)
     result += ('starting time for pipeline is {:%Y %m %d %H:%M}'.format(datetime.datetime.now()),)
     dwipath = fs / project / '{subj}/{session}/dwi'.format(**pick)
-    regpath = fs / project / '{subj}/{session}/reg'.format(**pick) / opts.dwi_reg_dir
+    # MNI2dwi_regpath = fs / project / '{subj}/{session}/reg'.format(**pick) / opts.MNI2dwi
     ec_dir = dwipath / opts.eddy_corr_dir
     bedpost_dir = dwipath / opts.dwi_bedpost_dir
     fits_dir = dwipath / opts.dwi_fits_dir
     if not ec_dir.is_dir():
         ec_dir.mkdir(parents=True)
-    if not regpath.is_dir():
-        regpath.mkdir(parents=True)
+    # if not MNI2dwi_regpath.is_dir():
+    #     MNI2dwi_regpath.mkdir(parents=True)
     # define files
     orig_dwif_fname = dwipath / '{dwi_fname}.nii'.format(**pick)
     orig_dwi_bvals_fname = dwipath / '{dwi_fname}.bvals'.format(**pick)
