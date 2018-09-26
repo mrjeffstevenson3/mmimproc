@@ -67,7 +67,6 @@ for pick in qt1_picks:
     except:
         print('injection failed with errors for {subj} and {session} on vtk file {UKF_fname} and injection file {r1_fname} or {mpf_fname}.'.format(**pick))
         errors += ('injection failed with errors for {subj} and {session} on vtk file {UKF_fname} and injection file {r1_fname} or {mpf_fname}.\n'.format(**pick),)
-        print(results)
+        print(' \n'.join(results))
 
-print(errors)
-
+print(' \n'.join(errors))

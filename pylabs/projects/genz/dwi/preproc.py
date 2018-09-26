@@ -55,7 +55,7 @@ if not dwi_qc:
 subjids_picks = SubjIdPicks()
 # list of subject ids to operate on
 picks = [
-        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz311'},
+        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz510'},
     ]
 
 setattr(subjids_picks, 'subjids', picks)
@@ -453,31 +453,28 @@ for i, pick in enumerate(dwi_picks):
         print('ending time for fitting is {:%Y %m %d %H:%M}'.format(datetime.datetime.now()))
 
     if opts.do_ukf:
-        vtk_dir = dwipath/opts.vtk_dir
-        if not vtk_dir.is_dir():
-            vtk_dir.mkdir(parents=True)
+        if not pick['vtk_dir'].is_dir():
+            pick['vtk_dir'].mkdir(parents=True)
         try:
-            with WorkingContext(str(ec_dir)):
+            with WorkingContext(pick['eddy_dir']):
                 print('starting UKF tractography at {:%Y %m %d %H:%M}'.format(datetime.datetime.now()))
                 result += ('starting UKF tractography at {:%Y %m %d %H:%M}'.format(datetime.datetime.now()),)
                 result += run_subprocess([ukfcmds['UKF_whbr'] % pick])
-                with WorkingContext(vtk_dir):
-                    result += run_subprocess(['ln -sf {eddy_corr_dir}/{outfile}Warped.nii.gz {r1_fname}_brain_reg2resampleddwi.nii.gz'.format(**merge_ftempl_dicts(pick, vars(opts)))])
-
-
-                ukf_fname = vtk_dir/Path('%(ec_dwi_fname)s_mf_clamp1_UKF_whbr.vtk' % pick).name
-                ukf_fname.symlink_to('%(ec_dwi_fname)s_mf_clamp1_UKF_whbr.vtk' % pick)
-
+                pick['ukf_fname'] = Path('%(ec_dwi_fname)s_mf_clamp1_UKF_whbr.vtk' % pick).name
+                with WorkingContext(pick['vtk_dir']):
+                    result += run_subprocess(['ln -sf ../{eddy_corr_dir}/{ukf_fname} {ukf_fname}'.format(**merge_ftempl_dicts(pick, vars(opts)))])
                 print('finished UKF tractography at {:%Y %m %d %H:%M} starting NODDI 1 tensor'.format(datetime.datetime.now()))
                 result += ('finished UKF tractography at {:%Y %m %d %H:%M} starting NODDI 1 tensor'.format(datetime.datetime.now()),)
                 result += run_subprocess([ukfcmds['NODDI1'] % pick])
-                noddi1_fname = vtk_dir/Path('%(ec_dwi_fname)s_mf_clamp1_whbr_1tensor_noddi.vtk' % pick).name
-                noddi1_fname.symlink_to('%(ec_dwi_fname)s_mf_clamp1_whbr_1tensor_noddi.vtk' % pick)
+                pick['noddi1_fname'] = Path('%(ec_dwi_fname)s_mf_clamp1_whbr_1tensor_noddi.vtk' % pick).name
+                with WorkingContext(pick['vtk_dir']):
+                    result += run_subprocess(['ln -sf ../{eddy_corr_dir}/{noddi1_fname} {noddi1_fname}'.format(**merge_ftempl_dicts(pick, vars(opts)))])
                 print('finished NODDI 1 tensor tractography at {:%Y %m %d %H:%M} starting NODDI 2 tensor'.format(datetime.datetime.now()))
                 result += ('finished NODDI 1 tensor tractography at {:%Y %m %d %H:%M} starting NODDI 2 tensor'.format(datetime.datetime.now()),)
                 result += run_subprocess([ukfcmds['NODDI2'] % pick])
-                noddi2_fname = vtk_dir/Path('%(ec_dwi_fname)s_mf_clamp1_whbr_2tensor_noddi.vtk' % pick).name
-                noddi2_fname.symlink_to('%(ec_dwi_fname)s_mf_clamp1_whbr_2tensor_noddi.vtk' % pick)
+                pick['noddi2_fname'] = Path('%(ec_dwi_fname)s_mf_clamp1_whbr_2tensor_noddi.vtk' % pick).name
+                with WorkingContext(pick['vtk_dir']):
+                    result += run_subprocess(['ln -sf ../{eddy_corr_dir}/{noddi2_fname} {noddi2_fname}'.format(**merge_ftempl_dicts(pick, vars(opts)))])
                 print('finished NODDI 2 tensor tractography at {:%Y %m %d %H:%M}'.format(datetime.datetime.now()))
                 result += ('finished NODDI 2 tensor tractography at {:%Y %m %d %H:%M}'.format(datetime.datetime.now()),)
         except:
