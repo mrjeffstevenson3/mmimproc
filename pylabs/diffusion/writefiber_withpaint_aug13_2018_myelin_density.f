@@ -26,8 +26,8 @@ c
 	equivalence (cint,icint)
 	equivalence (nmr,inmr2)
 	equivalence (inmr,cnmr)
-	real poly(9),dnmrsav(9500000,10), polysav(9500000,5,4),tensors(9500000,9)
-	real polyfinal(9500000,5)
+	real poly(9),dnmrsav(15000000,10), polysav(15000000,5,4),tensors(15000000,9)
+	real polyfinal(15000000,5)
 	real final(10),rotation(18)
 	common /rot/rotation
 	integer line(110000,900),linesav(110000)
