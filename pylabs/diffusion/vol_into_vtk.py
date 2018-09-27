@@ -9,20 +9,23 @@ from pylabs.utils import *
 popts = PylabsOptions()
 
 def inject_vol_data_into_vtk(working_dir, vol_fname, vtk_infname, vtk_outfname, myelin_density=False):
-    results = ( '',)
+    results = ('',)
     with WorkingContext(working_dir):
+        vol_fname = Path(vol_fname)
         vtk_infname = Path(vtk_infname)
+        if not vol_fname.is_file():
+            raise ValueError('Missing input stats injection volume. please check.')
+        if not vtk_infname.is_file():
+            raise ValueError('Missing vtk file to be injected. please check.')
         vtk_outfname = Path(vtk_outfname)
         shutil.copy(str(vtk_infname), 'f.vtk')
         img = nib.load(str(vol_fname))
-        img_data = img.get_data().astype(np.float32)
-        affine = img.affine
+        nib.save(img, 'stats1.hdr')
         vol_hdr = run_subprocess(['fslhd -x '+str(vol_fname)])
         for line in vol_hdr[0].splitlines():
             if 'qto_ijk_matrix' in line:
                 ijk_off = line.replace('qto_ijk_matrix =', '').split(' ')
                 offsets = {'x': ijk_off[6], 'y': ijk_off[10], 'z': ijk_off[14]}
-        nib.save(nib.AnalyzeImage(img_data, affine),'stats1.hdr')
         with open('usechannel.txt', 'w') as uc:
             uc.write('1\n')
         with open('procmethod.txt', 'w') as pm:

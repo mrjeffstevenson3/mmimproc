@@ -97,7 +97,7 @@ def prependposix(file, prefix):
 
 def insertdir(file, newdir):
     '''
-    inserts dir into last line of path for file. e.g /root/exist_dir1/file.ext to /root/exist_dir1/dir/file.ext
+    inserts dir into last line of path for file. e.g /root/exist_dir1/file.ext to /root/exist_dir1/newdir/file.ext
     '''
 
     file = Path(file)
