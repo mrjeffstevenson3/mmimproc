@@ -47,12 +47,12 @@ for pick in qt1_picks:
         pick['outfile'] = pick['reg2dwi_path'].joinpath(pick['r1_fname'] + '_brain_reg2resampleddwi_')
         results += run_subprocess([antsRegistrationSyN_cmd.format(**pick)])
         with WorkingContext(pick['vtk_path']):
-            results += run_subprocess(['ln -sf ../../reg/{qt12dwi_reg_dir}/{outfile}Warped.nii.gz {r1_fname}_brain_reg2resampleddwi.nii.gz'.format(**merge_ftempl_dicts(pick, vars(opts)))])
+            results += run_subprocess(['ln -sf ../../reg/{qt12dwi_reg_dir}/{outfile}Warped.nii.gz {r1_fname}_brain_reg2resampleddwi.nii.gz'.format(**merge_ftempl_dicts(pick, vars(opts), {'outfile': pick['outfile'].name}))])
         pick['moving'] = pick['qt1_path'] / '{mpf_fname}_brain.nii.gz'.format(**pick)
         pick['outfile'] = pick['reg2dwi_path'].joinpath(pick['mpf_fname'] + '_brain_reg2resampleddwi_')
         results += run_subprocess([antsRegistrationSyN_cmd.format(**pick)])
         with WorkingContext(pick['vtk_path']):
-            results += run_subprocess(['ln -sf ../../reg/{qt12dwi_reg_dir}/{outfile}Warped.nii.gz {mpf_fname}_brain_reg2resampleddwi.nii.gz'.format(**merge_ftempl_dicts(pick, vars(opts)))])
+            results += run_subprocess(['ln -sf ../../reg/{qt12dwi_reg_dir}/{outfile}Warped.nii.gz {mpf_fname}_brain_reg2resampleddwi.nii.gz'.format(**merge_ftempl_dicts(pick, vars(opts), {'outfile': pick['outfile'].name}))])
     try:
         with WorkingContext(pick['vtk_path']):
             print('Injecting {UKF_fname} for {subj} and {session} with {r1_fname}'.format(**pick))
