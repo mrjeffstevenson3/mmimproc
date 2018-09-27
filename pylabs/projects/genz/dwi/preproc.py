@@ -55,9 +55,9 @@ if not dwi_qc:
 subjids_picks = SubjIdPicks()
 # list of subject ids to operate on
 picks = [
-        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz311'},
-        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz502'},
-        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz503'},
+        #{'run': '1', 'session': 'ses-1', 'subj': 'sub-genz311'},
+        # {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz502'},
+        # {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz503'},
         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz509'},
     ]
 
@@ -65,6 +65,7 @@ setattr(subjids_picks, 'subjids', picks)
 
 opts.test = False
 skip_tup_eddy_cmds = False
+skip_mat = False
 
 # commands and options are modified below.
 # topup command for unwarping dti
@@ -425,7 +426,9 @@ for i, pick in enumerate(dwi_picks):
         t1_fname = fs/project/('{subj}/{session}/anat/'+genz_conv[mempkey]['fname_template']).format(**merge_ftempl_dicts(
             dict1=genz_conv[mempkey], dict2=pick, dict3={'scan_info': 'ti1200_rms'}))
         t1_fname = replacesuffix(t1_fname, '_brain.nii.gz')
-        if t1_fname.is_file() or not skip_tup_eddy_cmds:
+        if not t1_fname.is_file() and Path(str(t1_fname).replace('_brain.nii.gz', '.nii')).is_file():
+            t1_fname, t1_fname_mask, t1_fname_cropped = extract_brain(str(t1_fname).replace('_brain.nii.gz', '.nii'), robust=True)
+        if t1_fname.is_file() and not skip_mat:
             fsl_S0_fname = '{subj}_{session}_dwi_unwarped_ec_fslfit_tensor_mf_S0.nii.gz'.format(**pick)
             fsl_dt6_fname = '{subj}_{session}_dwi_unwarped_ec_fslfit_tensor_mf_dt6.mat'.format(**pick)
             mcmd = 'matlab -nodesktop -nodisplay -nosplash -r "{0}"'
