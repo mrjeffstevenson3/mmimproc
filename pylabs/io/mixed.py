@@ -1,6 +1,7 @@
 import pylabs
 pylabs.datadir.target = 'jaba'
 from pathlib import *
+import time
 import pandas as pd
 import numpy as np
 import json, datetime, dateutil.parser
@@ -119,10 +120,27 @@ def conv_df2h5(df, h5_fname, append=True):
             if not list(df.loc[subj].index.get_level_values(0).unique()):
                 raise ValueError('stopping now because df missing level 1 i.e. session for '+subj )
             for ses in df.loc[subj].index.get_level_values(0).unique():
+                interval_count = 0
                 if append:
-                    storeh5.append(subj+'/'+ses+'/convert_info', df.loc[subj,ses].applymap(str), format='t')
+                    while True:
+                        try:
+                            if interval_count > pylabs.max_intervals:
+                                raise ValueError('Waiting over '+str(pylabs.h5wait_interval * pylabs.max_intervals / 60) + ' minutes towrite to H5 file '+str(h5_fname))
+                            storeh5.append(subj+'/'+ses+'/convert_info', df.loc[subj,ses].applymap(str), format='t')
+                            break
+                        except (IOError, OSError):
+                            time.sleep(pylabs.h5wait_interval)
+                            interval_count += 1
                 else:
-                    storeh5.put(subj + '/' + ses + '/convert_info', df.loc[subj,ses].applymap(str), format='t')
+                    while True:
+                        try:
+                            if interval_count > pylabs.max_intervals:
+                                raise ValueError('Waiting over '+str(pylabs.h5wait_interval * pylabs.max_intervals / 60) + ' minutes towrite to H5 file '+str(h5_fname))
+                            storeh5.put(subj + '/' + ses + '/convert_info', df.loc[subj,ses].applymap(str), format='t')
+                            break
+                        except (IOError, OSError):
+                            time.sleep(pylabs.h5wait_interval)
+                            interval_count += 1
     return
 
 def df2h5(df, h5_fname, key, append=False):
@@ -130,10 +148,27 @@ def df2h5(df, h5_fname, key, append=False):
     if not h5_fname.is_file():
         print('new hdf file '+str(h5_fname)+' is being created since no existing file found.')
     with pd.HDFStore(str(h5_fname)) as storeh5:
-            if append:
-                storeh5.append(key, df.applymap(str), format='t')
-            else:
-                storeh5.put(key, df.applymap(str), format='t')
+        interval_count = 0
+        if append:
+            while True:
+                try:
+                    if interval_count > pylabs.max_intervals:
+                        raise ValueError('Waiting over '+str(pylabs.h5wait_interval * pylabs.max_intervals / 60) + ' minutes towrite to H5 file '+str(h5_fname))
+                    storeh5.append(key, df.applymap(str), format='t')
+                    break
+                except (IOError, OSError):
+                    time.sleep(pylabs.h5wait_interval)
+                    interval_count += 1
+        else:
+            while True:
+                try:
+                    if interval_count > pylabs.max_intervals:
+                        raise ValueError('Waiting over '+str(pylabs.h5wait_interval * pylabs.max_intervals / 60) + ' minutes towrite to H5 file '+str(h5_fname))
+                    storeh5.put(key, df.applymap(str), format='t')
+                    break
+                except (IOError, OSError):
+                    time.sleep(pylabs.h5wait_interval)
+                    interval_count += 1
     return
 
 def h52df(h5_fname, key):
@@ -141,8 +176,17 @@ def h52df(h5_fname, key):
     if not h5_fname.is_file():
         raise ValueError(str(h5_fname)+' h5 file not found.')
     with pd.HDFStore(str(h5_fname)) as storeh5:
-        df = storeh5.select(key)
-        df = df.apply(pd.to_numeric, errors='ignore')
+        interval_count = 0
+        while True:
+            try:
+                if interval_count > pylabs.max_intervals:
+                    raise ValueError('Waiting over '+str(pylabs.h5wait_interval * pylabs.max_intervals / 60) + ' minutes towrite to H5 file '+str(h5_fname))
+                df = storeh5.select(key)
+                df = df.apply(pd.to_numeric, errors='ignore')
+                break
+            except (IOError, OSError):
+                time.sleep(pylabs.h5wait_interval)
+                interval_count += 1
     return df
 
 def get_h5_keys(h5_fname, key=None):
@@ -150,7 +194,16 @@ def get_h5_keys(h5_fname, key=None):
     if not h5_fname.is_file():
         raise ValueError(str(h5_fname)+' h5 file not found.')
     with pd.HDFStore(str(h5_fname)) as storeh5:
-        h5keys = storeh5.keys()
+        interval_count = 0
+        while True:
+            try:
+                if interval_count > pylabs.max_intervals:
+                    raise ValueError('Waiting over '+str(pylabs.h5wait_interval * pylabs.max_intervals / 60) + ' minutes towrite to H5 file '+str(h5_fname))
+                h5keys = storeh5.keys()
+                break
+            except (IOError, OSError):
+                time.sleep(pylabs.h5wait_interval)
+                interval_count += 1
     if not key is None:
         match_key = [k for k in h5keys if key in k]
         h5keys = match_key
@@ -161,8 +214,17 @@ def getTRfromh5(h5_fname, subject, session, modality, scan):
     if not h5_fname.is_file():
         raise ValueError(str(h5_fname)+' h5 file not found.')
     with pd.HDFStore(str(h5_fname)) as storeh5:
-        df = storeh5.select('/'+'/'.join([subject, session, 'convert_info']))
-        tr = df.loc[[modality, scan], 'tr']
+        interval_count = 0
+        while True:
+            try:
+                if interval_count > pylabs.max_intervals:
+                    raise ValueError('Waiting over '+str(pylabs.h5wait_interval * pylabs.max_intervals / 60) + ' minutes towrite to H5 file '+str(h5_fname))
+                df = storeh5.select('/'+'/'.join([subject, session, 'convert_info']))
+                tr = df.loc[[modality, scan], 'tr']
+                break
+            except (IOError, OSError):
+                time.sleep(pylabs.h5wait_interval)
+                interval_count += 1
     return np.fromstring(tr.values[0].translate(None, '[]'), sep=' ')
 
 
