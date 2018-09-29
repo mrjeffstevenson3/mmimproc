@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from ._run import run_subprocess, Shell  # noqa
-from ._dirs import InDir, InTempDir, appendposix, replacesuffix, removesuffix, prependposix, insertdir, bumptodefunct  # noqa
+from ._dirs import *  # noqa
 from ._mocks import MockShell  # noqa
 from ._filesys import Filesystem, which  # noqa
 from ._options import PylabsOptions  # noqa
