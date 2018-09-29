@@ -17,6 +17,8 @@ setattr(subjids_picks, 'subjids', picks)
 setattr(subjids_picks, 'getR1_MPF_names', True)
 r1_fname_templ = '{subj}_{session}_vasily_r1_sep26_2018_ras'
 mpf_fname_templ = '{subj}_{session}_vasily_mpf_sep26_2018_ras'
+r1_fname_templ
+
 setattr(subjids_picks, 'r1_fname_templ', r1_fname_templ)
 setattr(subjids_picks, 'mpf_fname_templ', mpf_fname_templ)
 qt1_picks = get_vfa_names(subjids_picks)
