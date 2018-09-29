@@ -103,6 +103,7 @@ def brain_proc_file(opts, scandict):
         pr_hdr = pr_img.header
         affine = pr_hdr.get_affine(origin=opts.origin)
         slope, intercept = pr_hdr.get_data_scaling(scaling)
+        setattr(opts, 'parrec_affine', affine)
         setattr(opts, 'fa', int(np.round(np.unique(pr_hdr.image_defs['image_flip_angle']), 0)))
         setattr(opts, 'ti', int(np.round(np.unique(np.round(pr_hdr.image_defs['Inversion delay'])), 0)))
         setattr(opts, 'tr', np.round(np.unique(pr_hdr.general_info['repetition_time']), 1))
@@ -182,11 +183,12 @@ def brain_proc_file(opts, scandict):
         if opts.rms and len(in_data.shape) == 4:
             in_dataui64 = in_data.astype(np.uint64)
             in_data_rms = np.sqrt(np.mean(np.square(in_dataui64), axis=3))
-            rmsimg = nifti1.Nifti1Image(in_data_rms.astype(np.float64), affine, pr_hdr)
+            rmsimg = nifti1.Nifti1Image(in_data_rms.astype(np.float64), affine)
             rmshdr = rmsimg.header
             rmshdr.set_data_dtype(out_dtype)
             rmshdr.set_slope_inter(slope, intercept)
             rmshdr.set_qform(affine, code=1)
+            rmshdr.set_sform(affine, code=1)
 
         bvals, bvecs = pr_hdr.get_bvals_bvecs()
         if not opts.keep_trace:  # discard Philips DTI trace if present
@@ -261,6 +263,7 @@ def brain_proc_file(opts, scandict):
         nhdr.set_data_dtype(out_dtype)
         nhdr.set_slope_inter(slope, intercept)
         nhdr.set_qform(affine, code=1)
+        nhdr.set_sform(affine, code=1)
 
         if 'parse' in opts.minmax:
             # need to get the scaled data
