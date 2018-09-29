@@ -11,7 +11,7 @@ from pdfminer.layout import LAParams
 from pdfminer.pdfpage import PDFPage
 from cStringIO import StringIO
 from pylabs.conversion.parrec2nii_convert import BrainOpts
-from pylabs.utils import getnetworkdataroot, WorkingContext
+from pylabs.utils import *
 fs = Path(getnetworkdataroot())
 
 """
@@ -229,12 +229,33 @@ def getTRfromh5(h5_fname, subject, session, modality, scan):
                 if interval_count > pylabs.max_intervals:
                     raise ValueError('Waiting over '+str(pylabs.h5wait_interval * pylabs.max_intervals / 60) + ' minutes towrite to H5 file '+str(h5_fname))
                 df = storeh5.select('/'+'/'.join([subject, session, 'convert_info']))
-                tr = df.loc[[modality, scan], 'tr']
+                tr = df.loc[(modality, scan), 'tr']
                 break
             except (IOError, OSError):
                 time.sleep(pylabs.h5wait_interval)
                 interval_count += 1
-    return np.fromstring(tr.values[0].translate(None, '[]'), sep=' ')
+    return np.fromstring(tr.translate(None, '[]'), sep=' ')
+
+
+def get_pr_affine_fromh5(h5_fname, subject, session, modality, scan):
+    h5_fname = Path(h5_fname)
+    if not h5_fname.is_file():
+        raise ValueError(str(h5_fname)+' h5 file not found.')
+    with pd.HDFStore(str(h5_fname)) as storeh5:
+        interval_count = 0
+        while True:
+            try:
+                if interval_count > pylabs.max_intervals:
+                    raise ValueError('Waiting over '+str(pylabs.h5wait_interval * pylabs.max_intervals / 60) + ' minutes towrite to H5 file '+str(h5_fname))
+                df = storeh5.select('/'+'/'.join([subject, session, 'convert_info']))
+                #df = df.apply(pd.to_numeric, errors='ignore')
+                affine = df.loc[(modality, scan), 'parrec_affine']
+                pr_affine = np.fromstring(affine.translate(None, '[]'), sep=' ')
+                break
+            except (IOError, OSError):
+                time.sleep(pylabs.h5wait_interval)
+                interval_count += 1
+    return np.reshape(pr_affine, (4,4))
 
 
 def gen_df_extract(key, var):
