@@ -15,12 +15,17 @@ picks = [
         ]
 setattr(subjids_picks, 'subjids', picks)
 setattr(subjids_picks, 'getR1_MPF_names', True)
+setattr(subjids_picks, 'get_analyse_R1_MPF_names', True)
 r1_fname_templ = '{subj}_{session}_vasily_r1_sep26_2018_ras'
 mpf_fname_templ = '{subj}_{session}_vasily_mpf_sep26_2018_ras'
-r1_fname_templ
+orig_r1_fname_templ = 'R1_{subj}_{session}_'  # get file name to match PAR file
+orig_mpf_fname_templ = 'MPF{subj}_{session}_'
 
 setattr(subjids_picks, 'r1_fname_templ', r1_fname_templ)
 setattr(subjids_picks, 'mpf_fname_templ', mpf_fname_templ)
+setattr(subjids_picks, 'orig_r1_fname_templ', orig_r1_fname_templ)
+setattr(subjids_picks, 'orig_mpf_fname_templ', orig_mpf_fname_templ)
+
 qt1_picks = get_vfa_names(subjids_picks)
 results = ('',)
 errors = ('',)
