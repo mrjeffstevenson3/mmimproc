@@ -22,10 +22,12 @@ And convert a pdf to text.
 
 opts = BrainOpts()
 
+
 def _copy(self, target):
     import shutil
     assert self.is_file()
     shutil.copy(str(self), str(target))  # str() only there for Python < (3, 6)
+
 
 Path.copy = _copy
 
@@ -42,6 +44,7 @@ class JSONEncoder(json.JSONEncoder):
 def listOfDictsToJson(data, fpath):
     with open(fpath, 'w') as fp:
         json.dump(data, fp, cls=JSONEncoder)
+
 
 def listOfDictsFromJson(fpath):
     toplevel = json.load(open(fpath))
@@ -74,6 +77,7 @@ def pdftotxt(fpath):
     retstr.close()
     return text
 
+
 # make get_gaba function that uses pdftotext to return gaba value with test range 0.3 to 2.0
 def getgabavalue(fitpdf):
     gaba_val = None
@@ -97,6 +101,7 @@ def getgabavalue(fitpdf):
     if gaba_val == None:
         raise ValueError('could not find a gaba value in '+str(fitpdf))
     return gaba_val, gabaovercr, fit_err, fit_perc
+
 
 def conv_df2h5(df, h5_fname, append=True):
     """
@@ -143,6 +148,7 @@ def conv_df2h5(df, h5_fname, append=True):
                             interval_count += 1
     return
 
+
 def df2h5(df, h5_fname, key, append=False):
     h5_fname = Path(h5_fname)
     if not h5_fname.is_file():
@@ -171,6 +177,7 @@ def df2h5(df, h5_fname, key, append=False):
                     interval_count += 1
     return
 
+
 def h52df(h5_fname, key):
     h5_fname = Path(h5_fname)
     if not h5_fname.is_file():
@@ -188,6 +195,7 @@ def h52df(h5_fname, key):
                 time.sleep(pylabs.h5wait_interval)
                 interval_count += 1
     return df
+
 
 def get_h5_keys(h5_fname, key=None):
     h5_fname = Path(h5_fname)
@@ -208,6 +216,7 @@ def get_h5_keys(h5_fname, key=None):
         match_key = [k for k in h5keys if key in k]
         h5keys = match_key
     return h5keys
+
 
 def getTRfromh5(h5_fname, subject, session, modality, scan):
     h5_fname = Path(h5_fname)
@@ -242,6 +251,7 @@ def gen_df_extract(key, var):
                 for d in v:
                     for result in gen_df_extract(key, d):
                         yield result
+
 
 def backup_source_dirs(project, subjects):
     from pylabs.conversion.brain_convert import img_conv
