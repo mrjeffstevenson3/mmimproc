@@ -167,6 +167,7 @@ def get_dwi_names(subjids_picks):
             subjid['eddy_path'] = fs / project / '{subj}/{session}/dwi'.format(**subjid) / opts.eddy_corr_dir
             subjid['fits_path'] = fs / project / '{subj}/{session}/dwi'.format(**subjid) / opts.dwi_fits_dir
             subjid['bedpost_path'] = fs / project / '{subj}/{session}/dwi'.format(**subjid) / opts.dwi_bedpost_dir
+            subjid['qt1_path'] = fs / project / '{subj}/{session}/qt1'.format(**subjid)
             dwi_picks.append(subjid)
         return dwi_picks
     except TypeError as e:
@@ -230,6 +231,10 @@ def get_vfa_names(subjids_picks):
             subjid['topup_brain_fname'] = str(removesuffix(str(genz_conv['_DWI6_B0_TOPUP_']['fname_template']))).\
                 format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_DWI6_B0_TOPUP_'])) + '_topdn_concat_mf_unwarped_mean_brain'
             subjid['UKF_fname'] = '{subj}_{session}_dwi-topup_64dir-3sh-800-2000_1_topdn_unwarped_ec_mf_clamp1_UKF_whbr.vtk'.format(**subjid)
+        if subjids_picks.get_analyse_R1_MPF_names:
+            subjid['orig_r1_fname'] = subjids_picks.orig_r1_fname_templ.format(**subjid)
+            subjid['orig_mpf_fname'] = subjids_picks.orig_mpf_fname_templ.format(**subjid)
+
         # add dirs to dict
         subjid['anat_path'] = fs/project/'{subj}/{session}/anat'.format(**subjid)
         subjid['dwi_path'] = fs / project / '{subj}/{session}/dwi'.format(**subjid)
