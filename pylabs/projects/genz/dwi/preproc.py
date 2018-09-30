@@ -55,7 +55,7 @@ if not dwi_qc:
 subjids_picks = SubjIdPicks()
 # list of subject ids to operate on
 picks = [   # ready when 211 and 212 finish
-        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz201'},
+        #{'run': '1', 'session': 'ses-1', 'subj': 'sub-genz201'},
         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz203'},
         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz204'},
         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz205'},
@@ -362,8 +362,8 @@ for i, pick in enumerate(dwi_picks):
             pick['b0_brain_mask_fname_nrrd'] = replacesuffix(pick['b0_brain_mask_fname'], '.nhdr')
             pick['ec_dwi_clamp_fname'] = '{ec_dwi_fname}{mf_str}_clamp1.nii.gz'.format(**mergeddicts(pick, vars(opts)))
             pick['dwi_nrrd_fname'] = replacesuffix(pick['ec_dwi_clamp_fname'], '.nhdr')
-            bvals, ec_bvecs = read_bvals_bvecs(str(pick['dwi_bvals_fname']), pick['dwi_bvecs_ec_rot_fname'])
-            ec_gtab = gradient_table(bvals, ec_bvecs)
+            # bvals, ec_bvecs = read_bvals_bvecs(str(pick['dwi_bvals_fname']), pick['dwi_bvecs_ec_rot_fname'])
+            # ec_gtab = gradient_table(bvals, ec_bvecs)
             # run eddy correction
             result += run_subprocess([eddy_cmd.format(**pick)])
             # clamp, filter, and make nrrd
