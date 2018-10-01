@@ -55,17 +55,19 @@ if not dwi_qc:
 subjids_picks = SubjIdPicks()
 # list of subject ids to operate on
 picks = [   # ready when 211 and 212 finish
-        #{'run': '1', 'session': 'ses-1', 'subj': 'sub-genz201'},
-        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz203'},
-        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz204'},
-        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz205'},
-        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz301'},
-        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz302'},
-        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz306'},
-        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz307'},
-        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz401'},
-        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz402'},
-        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz403'},
+        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz506'},
+        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz508'},
+        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz505'},
+        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz514'},
+        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz518'},
+        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz516'},
+        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz520'},
+        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz513'},
+        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz522'},
+        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz512'},
+        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz501'},
+        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz504'},
+        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz507'},
         ]
 
 setattr(subjids_picks, 'subjids', picks)
@@ -343,7 +345,7 @@ for i, pick in enumerate(dwi_picks):
         with WorkingContext(str(pick['dwi_path'])):
             with open('index.txt', 'w') as f:
                 f.write('1 ' * len(gtab.bvals))
-            if not skip_tup_eddy_cmds or not Path('{topup_out}_unwarped_mean.nii.gz'.format(**pick)).is_file():
+            if not skip_tup_eddy_cmds: # or not Path('{topup_out}_unwarped_mean.nii.gz'.format(**pick)).is_file():
                 result += run_subprocess([topup_cmd.format(**pick)])
                 result += run_subprocess([mean_b0_cmd.format(**pick)])
                 prov.log('{topup_out}_unwarped_mean.nii.gz'.format(**pick), 'median filtered mean of topup-dn S0 vols', [str(topup_fname), str(topdn_fname)])
