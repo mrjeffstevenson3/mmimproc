@@ -55,19 +55,11 @@ if not dwi_qc:
 subjids_picks = SubjIdPicks()
 # list of subject ids to operate on
 picks = [   # ready when 211 and 212 finish
-        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz506'},
-        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz508'},
-        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz505'},
-        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz514'},
-        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz518'},
-        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz516'},
-        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz520'},
-        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz513'},
-        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz522'},
-        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz512'},
-        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz501'},
-        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz504'},
-        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz507'},
+        #{'run': '1', 'session': 'ses-1', 'subj': 'sub-genz201'}, #
+        #{'run': '1', 'session': 'ses-1', 'subj': 'sub-genz307'}, #
+        #{'run': '1', 'session': 'ses-1', 'subj': 'sub-genz401'}, #
+        #{'run': '1', 'session': 'ses-1', 'subj': 'sub-genz402'},
+        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz403'},
         ]
 
 setattr(subjids_picks, 'subjids', picks)
