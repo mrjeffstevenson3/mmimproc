@@ -79,7 +79,7 @@ for i, pick in enumerate(dwi_picks):
     b = 800.0   # dwi qc
     output_pname = dwipath / 'qc' / '{subj}_{session}_b800-qc'.format(**pick)
     b800_dwi_data = orig_dwi_data[:, :, :, gtab.bvals == b]
-    b800_badvols = dwi_qc_1bv(b800_dwi_data, output_pname)
+    b800_badvols = dwi_qc_1bv(b800_dwi_data, output_pname, alpha=opts.dwi_qc_b800_alpha)
     for i in range(b800_badvols.shape[0]):
         b800_badvols.loc[i, 'orig_dwi_idx'] = int(np.where(bvals == b)[0][i])
     b800_badvols['orig_dwi_idx'] = b800_badvols['orig_dwi_idx'].astype('int')
@@ -91,7 +91,7 @@ for i, pick in enumerate(dwi_picks):
     b = 2000.0   # dwi qc
     output_pname = dwipath / 'qc' / '{subj}_{session}_b2000-qc'.format(**pick)
     b2000_dwi_data = orig_dwi_data[:, :, :, gtab.bvals == b]
-    b2000_badvols = dwi_qc_1bv(b2000_dwi_data, output_pname)
+    b2000_badvols = dwi_qc_1bv(b2000_dwi_data, output_pname, alpha=opts.dwi_qc_b2000_alpha)
     for i in range(b2000_badvols.shape[0]):
         b2000_badvols.loc[i, 'orig_dwi_idx'] = int(np.where(bvals == b)[0][i])
     b2000_badvols['orig_dwi_idx'] = b2000_badvols['orig_dwi_idx'].astype('int')
@@ -103,12 +103,12 @@ for i, pick in enumerate(dwi_picks):
     # topup qc
     output_pname = dwipath / 'qc' / '{subj}_{session}_topup8b0-qc'.format(**pick)
     all_topup_data = np.append(orig_dwi_data[:, :, :, 0, None], orig_topup_data, axis=3)
-    topup_badvols = dwi_qc_1bv(all_topup_data, output_pname)
+    topup_badvols = dwi_qc_1bv(all_topup_data, output_pname, alpha=opts.dwi_qc_b0_alpha)
     qc_DF.loc[:(topup_badvols.shape[0] - 1), 'topup_qc'] = topup_badvols[1].values
 
     # topdown qc
     output_pname = dwipath / 'qc' / '{subj}_{session}_topdn7b0-qc'.format(**pick)
-    topdn_badvols = dwi_qc_1bv(orig_topdn_data, output_pname)
+    topdn_badvols = dwi_qc_1bv(orig_topdn_data, output_pname, alpha=opts.dwi_qc_b0_alpha)
     qc_DF.loc[:(topdn_badvols.shape[0] - 1), 'topdn_qc'] = topdn_badvols[1].values
 
     #fill in dwi b0 qc results into df

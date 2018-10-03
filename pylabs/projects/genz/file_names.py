@@ -38,6 +38,9 @@ class Optsd(object):
             fsl_thresh = 0.20,
             info_fname = fs / project / ('all_' + project + '_info.h5'),
             dwi_pass_qc = '_passqc',
+            dwi_qc_b0_alpha = 3.0,
+            dwi_qc_b2000_alpha = 3.0,
+            dwi_qc_b800_alpha = 3.0,
             mf_str = '_mf',    # set to blank string '' to disable median filtering
             run_topup = True,
             dwi_add_blanks = True,
@@ -74,6 +77,9 @@ class Optsd(object):
         self.spm_thresh = spm_thresh
         self.fsl_thresh = fsl_thresh
         self.dwi_pass_qc = dwi_pass_qc
+        self.dwi_qc_b0_alpha = dwi_qc_b0_alpha,
+        self.dwi_qc_b2000_alpha = dwi_qc_b2000_alpha,
+        self.dwi_qc_b800_alpha = dwi_qc_b800_alpha,
         self.mf_str = mf_str
         self.info_fname = info_fname
         self.run_topup = run_topup
@@ -224,12 +230,14 @@ def get_vfa_names(subjids_picks):
             subjid['vfatr'] = 21.0
             subjid['b1maptr'] = np.array([60., 240.0])
         subjid['vfa_fas'] = opts.vfa_fas
+        subjid['topup_brain_fname'] = str(removesuffix(str(genz_conv['_DWI6_B0_TOPUP_']['fname_template']))). \
+                                          format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project][
+            '_DWI6_B0_TOPUP_'])) + '_topdn_concat_mf_unwarped_mean_brain'
         if subjids_picks.getR1_MPF_names:
             subjid['r1_fname'] = subjids_picks.r1_fname_templ.format(**subjid)
             subjid['mpf_fname'] = subjids_picks.mpf_fname_templ.format(**subjid)
             topup_ftempl = removesuffix(str(genz_conv['_DWI6_B0_TOPUP_']['fname_template']))
-            subjid['topup_brain_fname'] = str(removesuffix(str(genz_conv['_DWI6_B0_TOPUP_']['fname_template']))).\
-                format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_DWI6_B0_TOPUP_'])) + '_topdn_concat_mf_unwarped_mean_brain'
+
             subjid['UKF_fname'] = '{subj}_{session}_dwi-topup_64dir-3sh-800-2000_1_topdn_unwarped_ec_mf_clamp1_UKF_whbr.vtk'.format(**subjid)
         if subjids_picks.get_analyse_R1_MPF_names:
             subjid['orig_r1_fname'] = subjids_picks.orig_r1_fname_templ.format(**subjid)

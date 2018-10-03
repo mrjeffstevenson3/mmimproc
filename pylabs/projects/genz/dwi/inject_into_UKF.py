@@ -11,15 +11,19 @@ project = 'genz'
 subjids_picks = SubjIdPicks()
 opts = Optsd()
 picks = [
-        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz510'},
+        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz105'},
         ]
 setattr(subjids_picks, 'subjids', picks)
-setattr(subjids_picks, 'getR1_MPF_names', True)
+setattr(subjids_picks, 'getR1_MPF_names', False)
 setattr(subjids_picks, 'get_analyse_R1_MPF_names', True)
 r1_fname_templ = '{subj}_{session}_vasily_r1_sep26_2018_ras'
 mpf_fname_templ = '{subj}_{session}_vasily_mpf_sep26_2018_ras'
-orig_r1_fname_templ = 'R1_{subj}_{session}_'  # get file name to match PAR file
-orig_mpf_fname_templ = 'MPF{subj}_{session}_'
+orig_r1_fname_templ = 'R1_{subj}_WIP_VFA_FA4-25_QUIET-adolescents_SENSE_{wild}.hdr'  # get file name to match PAR file
+orig_mpf_fname_templ = 'MPF{subj}_WIP_VFA_FA4-25_QUIET-adolescents_SENSE_{wild}.hdr'
+
+'''
+MPFsub-genz105_WIP_VFA_FA4-25_QUIET-adolescents_SENSE_13_1.hdr
+'''
 
 setattr(subjids_picks, 'r1_fname_templ', r1_fname_templ)
 setattr(subjids_picks, 'mpf_fname_templ', mpf_fname_templ)
