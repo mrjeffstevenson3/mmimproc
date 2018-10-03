@@ -168,6 +168,8 @@ def brain_proc_file(opts, scandict):
             in_data = np.array(pr_img.dataobj)
             out_dtype = np.float64
         # Reorient data block to LAS+ if necessary
+        setattr(opts, 'pr_shape', in_data.shape)
+
         ornt = io_orientation(np.diag([-1, 1, 1, 1]).dot(affine))
         if np.all(ornt == [[0, 1],
                            [1, 1],

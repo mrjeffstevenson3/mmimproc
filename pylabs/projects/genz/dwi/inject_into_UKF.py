@@ -1,6 +1,8 @@
 # inject R1 and MPF into UKF
 from pathlib import *
 from pylabs.utils import *
+from pylabs.conversion.analyze import reorient_img_with_pr_affine
+from pylabs.io.mixed import get_pr_affine_fromh5
 from pylabs.diffusion.vol_into_vtk import inject_vol_data_into_vtk
 from pylabs.structural.brain_extraction import extract_brain
 from pylabs.alignment.resample import reslice_niivol
@@ -14,12 +16,12 @@ picks = [
         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz105'},
         ]
 setattr(subjids_picks, 'subjids', picks)
-setattr(subjids_picks, 'getR1_MPF_names', False)
+setattr(subjids_picks, 'getR1_MPF_nii_fnames', False)
 setattr(subjids_picks, 'get_analyse_R1_MPF_names', True)
 r1_fname_templ = '{subj}_{session}_vasily_r1_sep26_2018_ras'
 mpf_fname_templ = '{subj}_{session}_vasily_mpf_sep26_2018_ras'
-orig_r1_fname_templ = 'R1_{subj}_WIP_VFA_FA4-25_QUIET-adolescents_SENSE_{wild}.hdr'  # get file name to match PAR file
-orig_mpf_fname_templ = 'MPF{subj}_WIP_VFA_FA4-25_QUIET-adolescents_SENSE_{wild}.hdr'
+orig_r1_fname_templ = 'R1_{subj}_WIP_VFA_FA4-25_QUIET-adolescents_SENSE_{wild}.img'  # get file name to match PAR file
+orig_mpf_fname_templ = 'MPF{subj}_WIP_VFA_FA4-25_QUIET-adolescents_SENSE_{wild}.img'
 
 '''
 MPFsub-genz105_WIP_VFA_FA4-25_QUIET-adolescents_SENSE_13_1.hdr
@@ -31,13 +33,20 @@ setattr(subjids_picks, 'orig_r1_fname_templ', orig_r1_fname_templ)
 setattr(subjids_picks, 'orig_mpf_fname_templ', orig_mpf_fname_templ)
 
 qt1_picks = get_vfa_names(subjids_picks)
+
 results = ('',)
 errors = ('',)
+
+
 for pick in qt1_picks:
     print('Working on {subj} and {session}'.format(**pick))
     if not pick['qt1_path'].is_dir():
         pick['qt1_path'].mkdir(parents=True)
-        raise ValueError('missing qt1 directory and hense files. please check for {subj} in {session}/qt1')
+        raise ValueError('missing qt1 directory and hence qt1 files. please check for {subj} in {session}/qt1'.format(**pick))
+    # convert R1 and MPF to nifti
+    pr_affine = get_pr_affine_fromh5(opts.info_fname, pick['subj'], pick['session'], 'qt1', pick['vfa_fname'])
+    pr_shape = (384,384,323)
+    reorient_img_with_pr_affine()
     with WorkingContext(pick['qt1_path']):
         pick['vfa_ec-1_fname'] = pick['vfa_fname'].replace('fa-4-25', 'ec-1-fa-4')
         results += run_subprocess([' '.join(['fslroi', pick['vfa_fname'], pick['vfa_ec-1_fname'], '0 1'])])

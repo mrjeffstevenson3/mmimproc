@@ -29,34 +29,29 @@ def analyze2nifti(images, outdir=None, provenance=ProvenanceWrapper()):
     return outimages
 
 
-def reorient_mpf(in_hdr_fname, out_nii_fname=None, image_type='MPF', provenance=ProvenanceWrapper()):
+def reorient_img_with_pr_affine(in_img_fname, pr_affine, pr_shape, out_nii_fname=None, image_type='MPF', provenance=ProvenanceWrapper()):
     """
-    Convert analyse output from vasily's MPF program to RAS+ nifti.
+    Convert analyse .img output from vasily's MPF program to RAS+ nifti.
     Must be executed in qt1 directory or some other same level directory to work
 
     """
-    in_hdr_fname = Path(in_hdr_fname)
-    if not in_hdr_fname.suffix == '.hdr':
-        raise ValueError('input file not analyse header file .hdr. suffix found was '+in_hdr_fname.suffix)
+    in_img_fname = Path(in_img_fname)
+    if in_img_fname.suffix not in ['.img']:  #'.hdr',
+        raise ValueError('input file not analyse image file .img. suffix found was '+in_img_fname.suffix)
     if out_nii_fname:
         out_nii_fname = Path(out_nii_fname)
         ext = ''.join(out_nii_fname.suffixes)
         if ext not in ['.nii.gz', '.nii']:
             raise ValueError('outfile does not have nifti file extension. ext='+ext)
     else:
-        out_nii_fname = replacesuffix(in_hdr_fname, '.nii.gz')
+        out_nii_fname = replacesuffix(in_img_fname, '.nii.gz')
     if not out_nii_fname.parent.is_dir():
         out_nii_fname.parent.mkdir(parents=True)
-    # header is bad, cannot use affine from hdr file get from parrec
-    if image_type not in ['R1', 'R1_', 'r1', 'r1_', 'MPF', 'mpf', 'MPF_', 'mpf_']:
-        raise ValueError('image_type must = MPF or R1_')
-    img = nib.load(str(in_hdr_fname))
-    if str.upper(image_type) in ['MPF', 'MPF_']:
-        parfile = Path('../source_parrec/', replacesuffix(remove_prepend(in_hdr_fname, 'MPF'), '.PAR'))
-        affine = nib.load(str(parfile)).affine
-    if str.upper(image_type) in ['R1', 'R1_']:
-        parfile = Path('../source_parrec/', replacesuffix(remove_prepend(in_hdr_fname, 'R1_'), '.PAR'))
-        affine = nib.load(str(parfile)).affine
+
+    dataobj = np.memmap(in_img_fname, dtype=np.int16, mode='r', shape=pr_shape, order='F')
+
+
+
     # Reorient data block to LAS+ if necessary
     ornt = nib.io_orientation(np.diag([-1, 1, 1, 1]).dot(affine))
     if np.all(ornt == [[0, 1],
@@ -69,5 +64,20 @@ def reorient_mpf(in_hdr_fname, out_nii_fname=None, image_type='MPF', provenance=
         affine = np.dot(affine, t_aff)
         in_data = apply_orientation(img.get_data().astype(np.float32), ornt)
     savenii(in_data, affine, out_nii_fname)
-    provenance.log(str(out_nii_fname), 'reoriented mpf header to RAS+ nifti', str(in_hdr_fname), script=__file__)
+    provenance.log(str(out_nii_fname), 'reoriented mpf header to RAS+ nifti', str(in_img_fname), script=__file__)
     return
+
+
+'''
+    # unuser hdr function
+    # header is bad, cannot use affine from hdr file get from parrec
+    if image_type not in ['R1', 'R1_', 'r1', 'r1_', 'MPF', 'mpf', 'MPF_', 'mpf_']:
+        raise ValueError('image_type must = MPF or R1_')
+    img = nib.load(str(in_hdr_fname))
+    if str.upper(image_type) in ['MPF', 'MPF_']:
+        parfile = Path('../source_parrec/', replacesuffix(remove_prepend(in_hdr_fname, 'MPF'), '.PAR'))
+        affine = nib.load(str(parfile)).affine
+    if str.upper(image_type) in ['R1', 'R1_']:
+        parfile = Path('../source_parrec/', replacesuffix(remove_prepend(in_hdr_fname, 'R1_'), '.PAR'))
+        affine = nib.load(str(parfile)).affine
+'''
