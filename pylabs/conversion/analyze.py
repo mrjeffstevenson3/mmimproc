@@ -49,6 +49,12 @@ def reorient_img_with_pr_affine(in_img_fname, pr_affine, pr_shape, out_nii_fname
         out_nii_fname.parent.mkdir(parents=True)
 
     dataobj = np.memmap(in_img_fname, dtype=np.int16, mode='r', shape=pr_shape, order='F')
+    pr_img = nib.Nifti1Image(dataobj, pr_affine)
+    ornt = nib.io_orientation(np.diag([-1, 1, 1, 1]).dot(pr_affine))
+    t_aff = inv_ornt_aff(ornt, pr_img.shape)
+    affine = np.dot(pr_affine, t_aff)
+    in_data = apply_orientation(pr_img.get_data().astype(np.float32), ornt)
+    savenii(in_data, affine, '/brainstudio/data/genz/sub-genz105/ses-1/qt1/testimg_reorient.nii.gz')
 
 
 
