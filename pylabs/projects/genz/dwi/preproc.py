@@ -54,14 +54,13 @@ if not dwi_qc:
 # instantiate subject id list container
 subjids_picks = SubjIdPicks()
 # list of subject ids to operate on
-picks = [
-        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz303'},
-        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz304'},
-        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz305'},
-        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz410'},
-        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz412'},
-        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz415'},
-    ]
+picks = [   # ready when 211 and 212 finish
+        #{'run': '1', 'session': 'ses-1', 'subj': 'sub-genz201'}, #
+        #{'run': '1', 'session': 'ses-1', 'subj': 'sub-genz307'}, #
+        #{'run': '1', 'session': 'ses-1', 'subj': 'sub-genz401'}, #
+        #{'run': '1', 'session': 'ses-1', 'subj': 'sub-genz402'},
+        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz403'},
+        ]
 
 setattr(subjids_picks, 'subjids', picks)
 
@@ -338,7 +337,7 @@ for i, pick in enumerate(dwi_picks):
         with WorkingContext(str(pick['dwi_path'])):
             with open('index.txt', 'w') as f:
                 f.write('1 ' * len(gtab.bvals))
-            if not skip_tup_eddy_cmds or not Path('{topup_out}_unwarped_mean.nii.gz'.format(**pick)).is_file():
+            if not skip_tup_eddy_cmds: # or not Path('{topup_out}_unwarped_mean.nii.gz'.format(**pick)).is_file():
                 result += run_subprocess([topup_cmd.format(**pick)])
                 result += run_subprocess([mean_b0_cmd.format(**pick)])
                 prov.log('{topup_out}_unwarped_mean.nii.gz'.format(**pick), 'median filtered mean of topup-dn S0 vols', [str(topup_fname), str(topdn_fname)])
@@ -357,24 +356,24 @@ for i, pick in enumerate(dwi_picks):
             pick['b0_brain_mask_fname_nrrd'] = replacesuffix(pick['b0_brain_mask_fname'], '.nhdr')
             pick['ec_dwi_clamp_fname'] = '{ec_dwi_fname}{mf_str}_clamp1.nii.gz'.format(**mergeddicts(pick, vars(opts)))
             pick['dwi_nrrd_fname'] = replacesuffix(pick['ec_dwi_clamp_fname'], '.nhdr')
+            # bvals, ec_bvecs = read_bvals_bvecs(str(pick['dwi_bvals_fname']), pick['dwi_bvecs_ec_rot_fname'])
+            # ec_gtab = gradient_table(bvals, ec_bvecs)
+            # run eddy correction
+            result += run_subprocess([eddy_cmd.format(**pick)])
+            # clamp, filter, and make nrrd
             bvals, ec_bvecs = read_bvals_bvecs(str(pick['dwi_bvals_fname']), pick['dwi_bvecs_ec_rot_fname'])
             ec_gtab = gradient_table(bvals, ec_bvecs)
-            if not skip_tup_eddy_cmds or not replacesuffix(pick['ec_dwi_clamp_fname'], '.nhdr').is_file():
-                # run eddy correction
-                result += run_subprocess([eddy_cmd.format(**pick)])
-                # clamp, filter, and make nrrd
-                ec_data = nib.load('{ec_dwi_fname}.nii.gz'.format(**pick)).get_data().astype(np.float64)
-                ec_data_affine = nib.load('{ec_dwi_fname}.nii.gz'.format(**pick)).affine
-                if opts.mf_str != '':
-                    S0 = ec_data[:, :, :, gtab.b0s_mask]
-                    S0_mf = medianf(S0, size=3)
-                    ec_data[:, :, :, gtab.b0s_mask] = S0_mf
-                ec_data[ec_data <= 0] = 0
-                savenii(ec_data, ec_data_affine, pick['ec_dwi_clamp_fname'])
-                prov.log(pick['ec_dwi_clamp_fname'], 'median filtered mean of topup-dn S0 vols clamped','{ec_dwi_fname}.nii.gz'.format(**pick))
-                nii2nrrd(pick['ec_dwi_clamp_fname'], str(pick['dwi_nrrd_fname']), bvalsf=pick['dwi_bvals_fname'], bvecsf=pick['dwi_bvecs_ec_rot_fname'])
-                prov.log(str(replacesuffix(pick['ec_dwi_clamp_fname'], '.nhdr')), 'nrrd converted median filtered mean of topup-dn S0 vols', pick['ec_dwi_clamp_fname'])
-
+            ec_data = nib.load('{ec_dwi_fname}.nii.gz'.format(**pick)).get_data().astype(np.float64)
+            ec_data_affine = nib.load('{ec_dwi_fname}.nii.gz'.format(**pick)).affine
+            if opts.mf_str != '':
+                S0 = ec_data[:, :, :, gtab.b0s_mask]
+                S0_mf = medianf(S0, size=3)
+                ec_data[:, :, :, gtab.b0s_mask] = S0_mf
+            ec_data[ec_data <= 0] = 0
+            savenii(ec_data, ec_data_affine, pick['ec_dwi_clamp_fname'])
+            prov.log(pick['ec_dwi_clamp_fname'], 'median filtered mean of topup-dn S0 vols clamped','{ec_dwi_fname}.nii.gz'.format(**pick))
+            nii2nrrd(pick['ec_dwi_clamp_fname'], str(pick['dwi_nrrd_fname']), bvalsf=pick['dwi_bvals_fname'], bvecsf=pick['dwi_bvecs_ec_rot_fname'])
+            prov.log(str(replacesuffix(pick['ec_dwi_clamp_fname'], '.nhdr')), 'nrrd converted median filtered mean of topup-dn S0 vols', pick['ec_dwi_clamp_fname'])
             print('ending time for eddy is {:%Y %m %d %H:%M}'.format(datetime.datetime.now()))
 
 

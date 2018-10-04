@@ -84,41 +84,58 @@ def removesuffix(file):
     elif len(file.suffixes) > 3:
         raise ValueError('more than 3 extensions. this function not set up to handle more than 3.')
 
-def prependposix(file, prefix):
-    '''
+
+def prependposix(infile, prefix):
+    """
     Adds prefix to beginning of file basename, then puts path back on.
-    :param file: pathlib path and file name with ext (ext optional)
+    :param infile: pathlib path and file name with ext (ext optional)
     :param prefix:  string to prepend at beginning of file name.
     :return: returns reformed posix path with string added at beginning of file name and extension.
-    '''
-    file = Path(file)
-    new_name = str(prefix) + file.name
-    return Path(file.parent/new_name)
+    """
+    infile = Path(infile)
+    new_name = str(prefix) + infile.name
+    return Path(infile.parent/new_name)
 
-def insertdir(file, newdir):
-    '''
+
+def remove_prepend(infile, prefix):
+    """
+    Removes prefix to beginning of file basename, then puts path back on.
+    :param infile: pathlib path and file name with ext (ext optional)
+    :param prefix:  string to be removed from beginning of file name.
+    :return: returns reformed posix path with string removed from beginning of file name.
+    """
+    infile = Path(infile)
+    if prefix in ['.nii', '.nii.gz', '.hdr', '.img', '.vtk', ]:
+        raise ValueError('prefix to remove conflicts with file extensions.')
+    new_name = infile.name.replace(prefix, '')
+    return Path(infile.parent/new_name)
+
+
+def insertdir(infile, newdir):
+    """
     inserts dir into last line of path for file. e.g /root/exist_dir1/file.ext to /root/exist_dir1/newdir/file.ext
-    '''
+    """
 
-    file = Path(file)
-    return file.parent/newdir/file.name
+    infile = Path(infile)
+    return infile.parent/newdir/infile.name
 
-def bumptodefunct(file):
-    '''
+
+def bumptodefunct(infile):
+    """
     this function moves and renames file down into a defunct directory with a date stamp
     Args:
-        file: the posix file to rename and move
-    '''
-    file = Path(file)
-    if not (file.parent / 'defunct').is_dir():
-        (file.parent / 'defunct').mkdir(parents=True)
-    if file.is_file():
-        new_fname = appendposix(insertdir(file, 'defunct'), '_replaced_on_{:%Y%m%d%H%M}'.format(datetime.datetime.now()))
-        file.rename(new_fname)
-        print(str(file)+' moved to defunct as '+str(new_fname))
-    if file.is_dir():
-        new_dirname = file.parent/'defunct'/(str(file.name)+'_replaced_on_{:%Y%m%d%H%M}'.format(datetime.datetime.now()))
-        file.rename(new_dirname)
-        print(str(file) + ' directory moved to defunct as ' + str(new_dirname))
+        infile: the posix file or directory to rename and move
+    """
+    infile = Path(infile)
+    if not (infile.parent / 'defunct').is_dir():
+        (infile.parent / 'defunct').mkdir(parents=True)
+    if infile.is_file():
+        new_fname = appendposix(insertdir(infile, 'defunct'), '_replaced_on_{:%Y%m%d%H%M}'.format(datetime.datetime.now()))
+        infile.rename(new_fname)
+        print(str(infile)+' moved to defunct as '+str(new_fname))
+    if infile.is_dir():
+        new_dirname = infile.parent/'defunct'/(str(infile.name)+'_replaced_on_{:%Y%m%d%H%M}'.format(datetime.datetime.now()))
+        infile.rename(new_dirname)
+        print(str(infile) + ' directory moved to defunct as ' + str(new_dirname))
     return
 

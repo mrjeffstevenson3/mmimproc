@@ -8,7 +8,7 @@ import nibabel as nib
 from pylabs.utils import *
 popts = PylabsOptions()
 
-def inject_vol_data_into_vtk(working_dir, vol_fname, vtk_infname, vtk_outfname, myelin_density=False):
+def inject_vol_data_into_vtk(working_dir, vol_fname, vtk_infname, vtk_outfname, myelin_density=False, offset_adj=(0,0,0)):
     results = ('',)
     with WorkingContext(working_dir):
         vol_fname = Path(vol_fname)
@@ -25,7 +25,7 @@ def inject_vol_data_into_vtk(working_dir, vol_fname, vtk_infname, vtk_outfname, 
         for line in vol_hdr[0].splitlines():
             if 'qto_ijk_matrix' in line:
                 ijk_off = line.replace('qto_ijk_matrix =', '').split(' ')
-                offsets = {'x': ijk_off[6], 'y': ijk_off[10], 'z': ijk_off[14]}
+                offsets = {'x': float(ijk_off[6]) + offset_adj[0], 'y': float(ijk_off[10]) + offset_adj[1], 'z': float(ijk_off[14]) + offset_adj[2]}
         with open('usechannel.txt', 'w') as uc:
             uc.write('1\n')
         with open('procmethod.txt', 'w') as pm:
