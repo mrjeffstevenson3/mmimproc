@@ -26,11 +26,11 @@ c
 	equivalence (cint,icint)
 	equivalence (nmr,inmr2)
 	equivalence (inmr,cnmr)
-	real poly(9),dnmrsav(15000000,10), polysav(15000000,5,4),tensors(15000000,9)
-	real polyfinal(15000000,5)
+	real poly(9),dnmrsav(25000000,10), polysav(25000000,5,4),tensors(25000000,9)
+	real polyfinal(25000000,5)
 	real final(10),rotation(18)
 	common /rot/rotation
-	integer line(110000,900),linesav(110000)
+	integer line(310000,900),linesav(310000)
 	common /dat1/ dnmr(6000000),dnmr2(1000),dnmr3(1000)
 	common /size/isize,isize2
 	  DOUBLE PRECISION A(3,3)
@@ -40,7 +40,7 @@ c
 	real distancesav(200000),xwall(100),ywall(100),zwall(100)
 	real dti(400,400,400,6)
 	integer iflagindex(7)
-	integer*8 ivtksize
+	integer*8 ivtksize,isize,isizeb,isizec,i,iset,ii,icountbytes,istart,imarktensor
 	open(11,file = 'offsets.txt')
 	read(11,*)xoffset,yoffset,zoffset
 	close(11)
@@ -1163,6 +1163,7 @@ c	write(6,*)(r1*r2*r3),trace**3
 	subroutine average(aver,stdev,stem)
 	common /dat1/ dnmr(6000000),dnmr2(1000),dnmr3(1000)
 	common /size/isize,isize2
+	integer*8 isize
 c
 c
 c
