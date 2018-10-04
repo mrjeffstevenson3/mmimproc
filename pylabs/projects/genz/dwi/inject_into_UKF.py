@@ -13,7 +13,7 @@ project = 'genz'
 subjids_picks = SubjIdPicks()
 opts = Optsd()
 picks = [
-        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz105'},
+        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz205'},
         ]
 setattr(subjids_picks, 'subjids', picks)
 setattr(subjids_picks, 'getR1_MPF_nii_fnames', True)
