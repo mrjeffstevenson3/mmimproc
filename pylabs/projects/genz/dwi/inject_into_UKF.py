@@ -13,7 +13,11 @@ project = 'genz'
 subjids_picks = SubjIdPicks()
 opts = Optsd()
 picks = [
+        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz105'},
         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz205'},
+        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz304'},
+        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz412'},
+        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz510'},
         ]
 setattr(subjids_picks, 'subjids', picks)
 setattr(subjids_picks, 'getR1_MPF_nii_fnames', True)
@@ -74,6 +78,7 @@ for pick in qt1_picks:
         results += run_subprocess([antsRegistrationSyN_cmd.format(**pick)])
         with WorkingContext(pick['vtk_path']):
             results += run_subprocess(['ln -sf ../../reg/{qt12dwi_reg_dir}/{outfile}Warped.nii.gz {mpf_brain_fname}_reg2resampleddwi{ext}'.format(**merge_ftempl_dicts(pick, vars(opts), {'outfile': pick['outfile'].name}))])
+
     try:
         with WorkingContext(pick['vtk_path']):
             print('Injecting {UKF_fname} for {subj} and {session} with {r1_brain_fname}'.format(**pick))
