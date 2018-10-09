@@ -4,12 +4,12 @@ c read DTI fiber track vtk and quantify the FA and several other parameters
 c read vtk binary file
 c
 	character*40 cfn,cfnin,cfnin2
-	character*1 vtk(4075593303),c10(10),cspace(1),chead(348)
+	character*1 vtk(5075593303),c10(10),cspace(1),chead(348)
 	equivalence (chead,ihead)
 	equivalence (chead,rhead)
 	integer*2 ihead(174)
 	real rhead(87)
-	integer*1 ivtk(4075593303)
+	integer*1 ivtk(5075593303)
 	equivalence (vtk,ivtk)
 	character*5 c6,c6ufk
 	character*37 c37
@@ -26,8 +26,8 @@ c
 	equivalence (cint,icint)
 	equivalence (nmr,inmr2)
 	equivalence (inmr,cnmr)
-	real poly(9),dnmrsav(25000000,10), polysav(25000000,5,4),tensors(25000000,9)
-	real polyfinal(25000000,5)
+	real poly(9),dnmrsav(55000000,10), polysav(55000000,5,4),tensors(55000000,9)
+	real polyfinal(55000000,5)
 	real final(10),rotation(18)
 	common /rot/rotation
 	integer line(310000,900),linesav(310000)
