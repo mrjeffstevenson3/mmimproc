@@ -13,11 +13,15 @@ project = 'genz'
 subjids_picks = SubjIdPicks()
 opts = Optsd()
 picks = [
-        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz105', 'vol2vtk_offsets': (1.5,0,0)},  # 1.5 is good
-        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz205', 'vol2vtk_offsets': (-6,0,0)},  # -6 is good
-        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz304', 'vol2vtk_offsets': (1.5,0,0)},  # 1.5 is good
-        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz412', 'vol2vtk_offsets': (24.5,0,0)},  # 24.5 is good
-        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz510', 'vol2vtk_offsets': (5,0,0)},  # 5 is good
+        #{'run': '1', 'session': 'ses-1', 'subj': 'sub-genz105', 'vol2vtk_offsets': (1.5,0,0)},  # 1.5 is good
+        #{'run': '1', 'session': 'ses-1', 'subj': 'sub-genz205', 'vol2vtk_offsets': (-6,0,0)},  # -6 is good
+        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz211', 'vol2vtk_offsets': (7.5,0,0)},   # +ve moves r1 to subj left/image right (halo on lt side of brain)
+        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz212', 'vol2vtk_offsets': (-7,0,0)},  # -ve moves r1 to subj right/image left (halo on rt side of brain)
+        #{'run': '1', 'session': 'ses-1', 'subj': 'sub-genz304', 'vol2vtk_offsets': (1.5,0,0)},  # 1.5 is good
+        #{'run': '1', 'session': 'ses-1', 'subj': 'sub-genz412', 'vol2vtk_offsets': (24.5,0,0)},  # 24.5 is good
+        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz410', 'vol2vtk_offsets': (1, 0, 0)},    # 1 is good
+        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz415', 'vol2vtk_offsets': (1, 0, 0)},    # 1 is good
+        #{'run': '1', 'session': 'ses-1', 'subj': 'sub-genz510', 'vol2vtk_offsets': (5,0,0)},  # 5 is good
         ]
 setattr(subjids_picks, 'subjids', picks)
 setattr(subjids_picks, 'getR1_MPF_nii_fnames', True)
