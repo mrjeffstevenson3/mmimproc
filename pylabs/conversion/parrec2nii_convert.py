@@ -266,6 +266,7 @@ def brain_proc_file(opts, scandict):
         nhdr.set_slope_inter(slope, intercept)
         nhdr.set_qform(affine, code=1)
         nhdr.set_sform(affine, code=1)
+        nhdr.set_xyzt_units(2, 8)
 
         if 'parse' in opts.minmax:
             # need to get the scaled data
