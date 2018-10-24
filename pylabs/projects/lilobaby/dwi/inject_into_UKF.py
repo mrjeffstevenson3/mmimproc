@@ -1,36 +1,19 @@
 # inject R1 and MPF into UKF
 from pathlib import *
-import nibabel as nib
-import numpy as np
 from pylabs.utils import *
-from pylabs.io.images import savenii
 from pylabs.conversion.analyze import reorient_img_with_pr_affine
 from pylabs.io.mixed import get_pr_affine_fromh5
 from pylabs.diffusion.vol_into_vtk import inject_vol_data_into_vtk
 from pylabs.structural.brain_extraction import extract_brain
 from pylabs.alignment.resample import reslice_niivol
-from pylabs.projects.genz.file_names import SubjIdPicks, Optsd, get_vfa_names, merge_ftempl_dicts
+from pylabs.projects.lilobaby.file_names import SubjIdPicks, Optsd, get_vfa_names, merge_ftempl_dicts
 antsRegistrationSyN_cmd = get_antsregsyn_cmd(default_cmd_str=True)
 antsN4bias_cmd = get_antsregsyn_cmd(N4bias=True, default_cmd_str=True)
-project = 'genz'
+project = 'lilobaby'
 subjids_picks = SubjIdPicks()
 opts = Optsd()
 picks = [
-        #{'run': '1', 'session': 'ses-1', 'subj': 'sub-genz105', 'vol2vtk_offsets': (1.5,0,0)},  # 1.5 is good
-        #{'run': '1', 'session': 'ses-1', 'subj': 'sub-genz103', 'vol2vtk_offsets': (1,0,0)},   # 1 is good and done
-        #{'run': '1', 'session': 'ses-1', 'subj': 'sub-genz106', 'vol2vtk_offsets': (-4.5,0,0)},  # -4.5 is good and done
-        #{'run': '1', 'session': 'ses-1', 'subj': 'sub-genz205', 'vol2vtk_offsets': (-6,0,0)},  # -6 is good
-        #{'run': '1', 'session': 'ses-1', 'subj': 'sub-genz211', 'vol2vtk_offsets': (7.5,0,0)},   # +ve moves r1 to subj left/image right (halo on lt side of brain)
-        #{'run': '1', 'session': 'ses-1', 'subj': 'sub-genz212', 'vol2vtk_offsets': (-7,0,0)},  # -ve moves r1 to subj right/image left (halo on rt side of brain)
-        #{'run': '1', 'session': 'ses-1', 'subj': 'sub-genz304', 'vol2vtk_offsets': (1.5,0,0)},  # 1.5 is good
-        #{'run': '1', 'session': 'ses-1', 'subj': 'sub-genz303', 'vol2vtk_offsets': (15,0,0)},   # 15 is good and done
-        #{'run': '1', 'session': 'ses-1', 'subj': 'sub-genz305', 'vol2vtk_offsets': (-4.5,0,0)}, # -4.5 is good and done
-        #{'run': '1', 'session': 'ses-1', 'subj': 'sub-genz412', 'vol2vtk_offsets': (24.5,0,0)},  # 24.5 is good
-        #{'run': '1', 'session': 'ses-1', 'subj': 'sub-genz410', 'vol2vtk_offsets': (1, 0, 0)},    # 1 is good and done
-        #{'run': '1', 'session': 'ses-1', 'subj': 'sub-genz415', 'vol2vtk_offsets': (1, 0, 0)},    # 1 is good and done
-        #{'run': '1', 'session': 'ses-1', 'subj': 'sub-genz510', 'vol2vtk_offsets': (5,0,0)},  # 5 is good
-        #{'run': '1', 'session': 'ses-1', 'subj': 'sub-genz506', 'vol2vtk_offsets': (16.5,0,0)},  # 16.5 is good
-        #{'run': '1', 'session': 'ses-1', 'subj': 'sub-genz508', 'vol2vtk_offsets': (6,0,0)},   # 6 is good
+        {'run': '1', 'session': 'ses-1', 'subj': 'sub-lilobabyS220', 'vol2vtk_offsets': (69,0,0)}, # x=69 is good and done
         ]
 setattr(subjids_picks, 'subjids', picks)
 setattr(subjids_picks, 'getR1_MPF_nii_fnames', True)
@@ -38,8 +21,8 @@ setattr(subjids_picks, 'get_analyse_R1_MPF_names', True)
 
 r1_fname_templ = '{subj}_{session}_vasily_r1_ras'
 mpf_fname_templ = '{subj}_{session}_vasily_mpf_ras'
-orig_r1_fname_templ = 'R1_{subj}_WIP_VFA_FA4-25_QUIET-adolescents_SENSE_{wild}.img'  # get file name to match PAR file
-orig_mpf_fname_templ = 'MPF{subj}_WIP_VFA_FA4-25_QUIET-adolescents_SENSE_{wild}.img'
+orig_r1_fname_templ = 'R1_{subj}_WIP_VFA_FA4-25_QUIET_SENSE_{wild}.img'  # get file name to match PAR file
+orig_mpf_fname_templ = 'MPF{subj}_WIP_VFA_FA4-25_QUIET_SENSE_{wild}.img'
 
 setattr(subjids_picks, 'r1_fname_templ', r1_fname_templ)
 setattr(subjids_picks, 'mpf_fname_templ', mpf_fname_templ)
@@ -102,12 +85,6 @@ for pick in qt1_picks:
             results += run_subprocess([str(vol2myelin_density)])
             mwf_fname = replacesuffix(pick['UKF_fname'], '_resampledB0_injectMyelinWaterFrac.vtk')
             Path('fnew.vtk').rename(mwf_fname)
-            mpf_img = nib.load(pick['mpf_brain_fname'] + '_reg2resampleddwi' + opts.ext)
-            mpf_data = mpf_img.get_data().astype(np.float64)
-            unscaled_data = mpf_data / 100.0
-            perc_myelin = (unscaled_data -3.9) / 0.21
-            scaled_perc_myelin = perc_myelin * 100.0
-            savenii(scaled_perc_myelin, mpf_img.affine, pick['mpf_brain_fname'] + '_reg2resampleddwi_percent_myelin' + opts.ext)
             print('Successful Injection of {UKF_fname} for {subj} and {session} with {r1_brain_fname} and {mpf_brain_fname}'.format(**pick))
     except:
         print('injection failed with errors for {subj} and {session} on vtk file {UKF_fname} and injection file {r1_brain_fname} or {mpf_brain_fname}.'.format(**pick))
