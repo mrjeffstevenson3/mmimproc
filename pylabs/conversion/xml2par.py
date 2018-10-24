@@ -348,7 +348,7 @@ outfile.close()
 '''
 
 '''
-or this option:
+or this option from https://raw.githubusercontent.com/grlee77/nibabel/xmlrec/nibabel/xmlrec.py
 '''
 
 from copy import copy, deepcopy
