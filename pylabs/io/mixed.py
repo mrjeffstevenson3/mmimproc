@@ -1,7 +1,7 @@
 import pylabs
 pylabs.datadir.target = 'jaba'
 from pathlib import *
-import time
+import time, ast
 import pandas as pd
 import numpy as np
 import json, datetime, dateutil.parser
@@ -248,11 +248,12 @@ def get_pr_affine_fromh5(h5_fname, subject, session, modality, scan):
                     df = storeh5.select('/'+'/'.join([subject, session, 'convert_info']))
                     affine = df.loc[(modality, scan), 'parrec_affine']
                     pr_affine = np.fromstring(affine.translate(None, '[]'), sep=' ')
+                    pr_shape = df.loc[(modality, scan), 'pr_shape']
                     break
         except (IOError, OSError):
             time.sleep(pylabs.h5wait_interval)
             interval_count += 1
-    return np.reshape(pr_affine, (4,4))
+    return np.reshape(pr_affine, (4, 4)), ast.literal_eval(pr_shape)
 
 
 def gen_df_extract(key, var):

@@ -62,7 +62,7 @@ class Optsd(object):
             b1maptr = np.array([60., 240.0]),
             vfa_tr = 21.0,
             vfa_fas = [4.0, 25.0],
-            vfa_pr_shape = (384,384,323),
+            vfa_pr_shape = (384, 384, 323),
             mpf_img_dtype = np.int16,
             reg_mni2dwi = '{fs}/{project}/{subj}/{session}/reg/mni2dwi',
             reg_qt12dwi = '{fs}/{project}/{subj}/{session}/reg/qt12dwi',

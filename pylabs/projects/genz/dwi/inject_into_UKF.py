@@ -91,23 +91,25 @@ for pick in qt1_picks:
         results += run_subprocess([antsRegistrationSyN_cmd.format(**pick)])
         with WorkingContext(pick['vtk_path']):
             results += run_subprocess(['ln -sf ../../reg/{qt12dwi_reg_dir}/{outfile}Warped.nii.gz {mpf_brain_fname}_reg2resampleddwi{ext}'.format(**merge_ftempl_dicts(pick, vars(opts), {'outfile': pick['outfile'].name}))])
-
     try:
         with WorkingContext(pick['vtk_path']):
             print('Injecting {UKF_fname} for {subj} and {session} with {r1_brain_fname}'.format(**pick))
             inject_vol_data_into_vtk(Path('.'), '{r1_brain_fname}_reg2resampleddwi{ext}'.format(**pick), pick['UKF_fname'], replacesuffix(pick['UKF_fname'], '_resampledB0_injectR1.vtk'), offset_adj=pick['vol2vtk_offsets'])
             print('Injecting {UKF_fname} for {subj} and {session} with {mpf_brain_fname}'.format(**pick))
             inject_vol_data_into_vtk(Path('.'), '{mpf_brain_fname}_reg2resampleddwi{ext}'.format(**pick), pick['UKF_fname'], replacesuffix(pick['UKF_fname'], '_resampledB0_injectMPF.vtk'), offset_adj=pick['vol2vtk_offsets'])
-            print('Calculating Myelin Water Fraction for {subj} and {session} with {mpf_brain_fname}'.format(**pick))
-            results += run_subprocess([str(vol2myelin_density)])
-            mwf_fname = replacesuffix(pick['UKF_fname'], '_resampledB0_injectMyelinWaterFrac.vtk')
-            Path('fnew.vtk').rename(mwf_fname)
+            print('Calculating percent myelin for {subj} and {session} with {mpf_brain_fname}_reg2resampleddwi_percent_myelin'.format(**pick))
+            #results += run_subprocess([str(vol2myelin_density)])
+            #mwf_fname = replacesuffix(pick['UKF_fname'], '_resampledB0_injectMyelinWaterFrac.vtk')
+            #Path('fnew.vtk').rename(mwf_fname)
             mpf_img = nib.load(pick['mpf_brain_fname'] + '_reg2resampleddwi' + opts.ext)
             mpf_data = mpf_img.get_data().astype(np.float32)
             unscaled_data = mpf_data / 100.0
             perc_myelin = (unscaled_data -3.9) / 0.21
             scaled_perc_myelin = perc_myelin * 100.0
             savenii(scaled_perc_myelin, mpf_img.affine, pick['mpf_brain_fname'] + '_reg2resampleddwi_percent_myelin' + opts.ext)
+            inject_vol_data_into_vtk(Path('.'), pick['mpf_brain_fname'] + '_reg2resampleddwi_percent_myelin' + opts.ext,
+                                     pick['UKF_fname'], replacesuffix(pick['UKF_fname'], '_resampledB0_injectpercentmyelin.vtk'),
+                                     offset_adj=pick['vol2vtk_offsets'])
             print('Successful Injection of {UKF_fname} for {subj} and {session} with {r1_brain_fname} and {mpf_brain_fname}'.format(**pick))
     except:
         print('injection failed with errors for {subj} and {session} on vtk file {UKF_fname} and injection file {r1_brain_fname} or {mpf_brain_fname}.'.format(**pick))

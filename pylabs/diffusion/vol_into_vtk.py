@@ -3,13 +3,12 @@ import pylabs
 pylabs.datadir.target = 'jaba'
 from pathlib import *
 import shutil
-import numpy as np
 import nibabel as nib
 from pylabs.utils import *
-from pylabs.io.images import savenii
 popts = PylabsOptions()
 
-def inject_vol_data_into_vtk(working_dir, vol_fname, vtk_infname, vtk_outfname, myelin_density=False, offset_adj=(0,0,0)):
+
+def inject_vol_data_into_vtk(working_dir, vol_fname, vtk_infname, vtk_outfname, offset_adj=(0, 0, 0)):
     results = ('',)
     with WorkingContext(working_dir):
         vol_fname = Path(vol_fname)
@@ -38,15 +37,7 @@ def inject_vol_data_into_vtk(working_dir, vol_fname, vtk_infname, vtk_outfname, 
         shutil.copy(str(aal_motor), 'aal_motor.vtk')
         shutil.copy(str(aal_base), 'base.vtk')
         shutil.copy(str(aal_channel), 'channel.vtk')
-        if myelin_density:
-            results += run_subprocess([str(vol2myelin_density)])
-            img_data = img.get_data().astype(np.float64)
-            unscaled_data = img_data / 100.0
-            perc_myelin = (unscaled_data -3.9) / 0.21
-            scaled_perc_myelin = perc_myelin * 100.0
-            savenii(scaled_perc_myelin, img.affine, str(appendposix(vol_fname, '_percent_myelin')))
-        else:
-            results += run_subprocess([str(vol2fiber)])
+        results += run_subprocess([str(vol2fiber)])
         Path('fnew.vtk').rename(vtk_outfname)
         if popts.verbose:
             print("({})".format(", ".join(results)))
