@@ -37,6 +37,7 @@ class Optsd(object):
             spm_thresh = 0.80,
             fsl_thresh = 0.20,
             info_fname = fs / project / ('all_' + project + '_info.h5'),
+            dwi_qc = True,
             dwi_pass_qc = '_passqc',
             dwi_qc_b0_alpha = 3.0,
             dwi_qc_b2000_alpha = 3.0,
@@ -78,6 +79,7 @@ class Optsd(object):
         self.convert = convert
         self.spm_thresh = spm_thresh
         self.fsl_thresh = fsl_thresh
+        self.dwi_qc = dwi_qc
         self.dwi_pass_qc = dwi_pass_qc
         self.dwi_qc_b0_alpha = dwi_qc_b0_alpha,
         self.dwi_qc_b2000_alpha = dwi_qc_b2000_alpha,

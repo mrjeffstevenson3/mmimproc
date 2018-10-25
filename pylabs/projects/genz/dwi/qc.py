@@ -24,17 +24,21 @@ opts.test = False
 # instantiate subject id list object
 subjids_picks = SubjIdPicks()
 # list of dicts of subject ids and info to operate on
-picks = [
-     #{'run': '1', 'session': 'ses-1', 'subj': 'sub-genz117'},
-     #{'run': '1', 'session': 'ses-1', 'subj': 'sub-genz118'},
-     {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz119'},
-     {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz123'},
-     {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz124'},
-     {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz322'},
-     {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz418'},
-     {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz422'},
-     {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz426'},
-     {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz525'},
+picks = [{'run': '1', 'session': 'ses-1', 'subj': 'sub-genz120'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz121'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz122'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz125'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz126'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz127'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz221'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz224'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz327'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz329'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz331'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz423'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz428'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz429'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz527'},
          ]
 
 setattr(subjids_picks, 'subjids', picks)
@@ -79,7 +83,7 @@ for i, pick in enumerate(dwi_picks):
     b = 800.0   # dwi qc
     output_pname = dwipath / 'qc' / '{subj}_{session}_b800-qc'.format(**pick)
     b800_dwi_data = orig_dwi_data[:, :, :, gtab.bvals == b]
-    b800_badvols = dwi_qc_1bv(b800_dwi_data, output_pname, alpha=opts.dwi_qc_b800_alpha)
+    b800_badvols = dwi_qc_1bv(b800_dwi_data, output_pname, alpha=opts.dwi_qc_b800_alpha[0])
     for i in range(b800_badvols.shape[0]):
         b800_badvols.loc[i, 'orig_dwi_idx'] = int(np.where(bvals == b)[0][i])
     b800_badvols['orig_dwi_idx'] = b800_badvols['orig_dwi_idx'].astype('int')
@@ -91,7 +95,7 @@ for i, pick in enumerate(dwi_picks):
     b = 2000.0   # dwi qc
     output_pname = dwipath / 'qc' / '{subj}_{session}_b2000-qc'.format(**pick)
     b2000_dwi_data = orig_dwi_data[:, :, :, gtab.bvals == b]
-    b2000_badvols = dwi_qc_1bv(b2000_dwi_data, output_pname, alpha=opts.dwi_qc_b2000_alpha)
+    b2000_badvols = dwi_qc_1bv(b2000_dwi_data, output_pname, alpha=opts.dwi_qc_b2000_alpha[0])
     for i in range(b2000_badvols.shape[0]):
         b2000_badvols.loc[i, 'orig_dwi_idx'] = int(np.where(bvals == b)[0][i])
     b2000_badvols['orig_dwi_idx'] = b2000_badvols['orig_dwi_idx'].astype('int')
@@ -103,12 +107,12 @@ for i, pick in enumerate(dwi_picks):
     # topup qc
     output_pname = dwipath / 'qc' / '{subj}_{session}_topup8b0-qc'.format(**pick)
     all_topup_data = np.append(orig_dwi_data[:, :, :, 0, None], orig_topup_data, axis=3)
-    topup_badvols = dwi_qc_1bv(all_topup_data, output_pname, alpha=opts.dwi_qc_b0_alpha)
+    topup_badvols = dwi_qc_1bv(all_topup_data, output_pname, alpha=opts.dwi_qc_b0_alpha[0])
     qc_DF.loc[:(topup_badvols.shape[0] - 1), 'topup_qc'] = topup_badvols[1].values
 
     # topdown qc
     output_pname = dwipath / 'qc' / '{subj}_{session}_topdn7b0-qc'.format(**pick)
-    topdn_badvols = dwi_qc_1bv(orig_topdn_data, output_pname, alpha=opts.dwi_qc_b0_alpha)
+    topdn_badvols = dwi_qc_1bv(orig_topdn_data, output_pname, alpha=opts.dwi_qc_b0_alpha[0])
     qc_DF.loc[:(topdn_badvols.shape[0] - 1), 'topdn_qc'] = topdn_badvols[1].values
 
     #fill in dwi b0 qc results into df

@@ -47,8 +47,8 @@ fs = Path(getnetworkdataroot())
 antsRegistrationSyN = get_antsregsyn_cmd()
 slicer_path = getslicercmd(ver='stable')
 opts = Optsd()
-dwi_qc = True
-if not dwi_qc:
+
+if not opts.dwi_qc:
     opts.dwi_pass_qc = ''
 
 # instantiate subject id list container
@@ -201,7 +201,7 @@ for i, pick in enumerate(dwi_picks):
         even_sl = False
 
     # select volumes that pass dwi qc
-    if dwi_qc:
+    if opts.dwi_qc:
         vis_qc = h52df(opts.info_fname, '/{subj}/{session}/dwi/vis_qc'.format(**pick))
         vis_qc.replace({'True': True, 'False': False}, inplace=True)
         dwi_good_vols = vis_qc[vis_qc.dwi_visqc]
@@ -236,7 +236,6 @@ for i, pick in enumerate(dwi_picks):
                 topdn_data = orig_topdn_data[:,:,:,np.array(topdn_goodvols.index)]
                 dwi_data = orig_dwi_data[:,:,:,np.array(dwi_good_vols.index)]
         else:
-            even_sl = False
             if opts.dwi_add_blanks:# correct odd number slices with 2 blanks on top and 1 on bottom
                 topup_goodvols_shape = orig_topup_data.shape[:2] + (orig_topup_data.shape[2] + 3,) + (len(topup_goodvols.index),)
                 topdn_goodvols_shape = orig_topdn_data.shape[:2] + (orig_topdn_data.shape[2] + 3,) + (len(topdn_goodvols.index),)
