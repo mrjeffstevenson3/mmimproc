@@ -59,7 +59,7 @@ picks = [   # ready when 211 and 212 finish
         #{'run': '1', 'session': 'ses-1', 'subj': 'sub-genz307'}, #
         #{'run': '1', 'session': 'ses-1', 'subj': 'sub-genz401'}, #
         #{'run': '1', 'session': 'ses-1', 'subj': 'sub-genz402'},
-        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz403'},
+        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz123'},
         ]
 
 setattr(subjids_picks, 'subjids', picks)
