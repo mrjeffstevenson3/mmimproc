@@ -39,9 +39,7 @@ def inject_vol_data_into_vtk(working_dir, vol_fname, vtk_infname, vtk_outfname, 
         shutil.copy(str(aal_channel), 'channel.vtk')
         results += run_subprocess([str(vol2fiber)])
         Path('fnew.vtk').rename(vtk_outfname)
-        if popts.verbose:
-            print("({})".format(", ".join(results)))
-    return
+    return "({})".format(", ".join(results))
 
 '''
 bash script to convert to python:
