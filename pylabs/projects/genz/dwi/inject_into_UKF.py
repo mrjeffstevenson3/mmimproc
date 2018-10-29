@@ -16,21 +16,22 @@ project = 'genz'
 subjids_picks = SubjIdPicks()
 opts = Optsd()
 picks = [
-        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz105', 'vol2vtk_offsets': (1.5,0,0)},  # 1.5 is good
-        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz103', 'vol2vtk_offsets': (1,0,0)},   # 1 is good and done
-        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz106', 'vol2vtk_offsets': (-4.5,0,0)},  # -4.5 is good and done
-        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz205', 'vol2vtk_offsets': (-6,0,0)},  # -6 is good
-        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz211', 'vol2vtk_offsets': (7.5,0,0)},   # +ve moves r1 to subj left/image right (halo on lt side of brain)
-        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz212', 'vol2vtk_offsets': (-7,0,0)},  # -ve moves r1 to subj right/image left (halo on rt side of brain)
-        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz304', 'vol2vtk_offsets': (1.5,0,0)},  # 1.5 is good
-        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz303', 'vol2vtk_offsets': (15,0,0)},   # 15 is good and done
-        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz305', 'vol2vtk_offsets': (-4.5,0,0)}, # -4.5 is good and done
-        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz412', 'vol2vtk_offsets': (24.5,0,0)},  # 24.5 is good
-        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz410', 'vol2vtk_offsets': (1, 0, 0)},    # 1 is good and done
-        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz415', 'vol2vtk_offsets': (1, 0, 0)},    # 1 is good and done
-        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz510', 'vol2vtk_offsets': (5,0,0)},  # 5 is good
-        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz506', 'vol2vtk_offsets': (16.5,0,0)},  # 16.5 is good
-        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz508', 'vol2vtk_offsets': (6,0,0)},   # 6 is good
+        #{'run': '1', 'session': 'ses-1', 'subj': 'sub-genz105', 'vol2vtk_offsets': (1.5,0,0)},  # 1.5 is good
+        #{'run': '1', 'session': 'ses-1', 'subj': 'sub-genz103', 'vol2vtk_offsets': (1,0,0)},   # 1 is good and done
+        #{'run': '1', 'session': 'ses-1', 'subj': 'sub-genz106', 'vol2vtk_offsets': (-4.5,0,0)},  # -4.5 is good and done
+        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz123', 'vol2vtk_offsets': (0,0,0)},
+        #{'run': '1', 'session': 'ses-1', 'subj': 'sub-genz205', 'vol2vtk_offsets': (-6,0,0)},  # -6 is good
+        #{'run': '1', 'session': 'ses-1', 'subj': 'sub-genz211', 'vol2vtk_offsets': (7.5,0,0)},   # +ve moves r1 to subj left/image right (halo on lt side of brain)
+        #{'run': '1', 'session': 'ses-1', 'subj': 'sub-genz212', 'vol2vtk_offsets': (-7,0,0)},  # -ve moves r1 to subj right/image left (halo on rt side of brain)
+        #{'run': '1', 'session': 'ses-1', 'subj': 'sub-genz304', 'vol2vtk_offsets': (1.5,0,0)},  # 1.5 is good
+        #{'run': '1', 'session': 'ses-1', 'subj': 'sub-genz303', 'vol2vtk_offsets': (15,0,0)},   # 15 is good and done
+        #{'run': '1', 'session': 'ses-1', 'subj': 'sub-genz305', 'vol2vtk_offsets': (-4.5,0,0)}, # -4.5 is good and done
+        #{'run': '1', 'session': 'ses-1', 'subj': 'sub-genz412', 'vol2vtk_offsets': (24.5,0,0)},  # 24.5 is good
+        #{'run': '1', 'session': 'ses-1', 'subj': 'sub-genz410', 'vol2vtk_offsets': (1, 0, 0)},    # 1 is good and done
+        #{'run': '1', 'session': 'ses-1', 'subj': 'sub-genz415', 'vol2vtk_offsets': (1, 0, 0)},    # 1 is good and done
+        #{'run': '1', 'session': 'ses-1', 'subj': 'sub-genz510', 'vol2vtk_offsets': (5,0,0)},  # 5 is good
+        #{'run': '1', 'session': 'ses-1', 'subj': 'sub-genz506', 'vol2vtk_offsets': (16.5,0,0)},  # 16.5 is good
+        #{'run': '1', 'session': 'ses-1', 'subj': 'sub-genz508', 'vol2vtk_offsets': (6,0,0)},   # 6 is good
         ]
 setattr(subjids_picks, 'subjids', picks)
 setattr(subjids_picks, 'getR1_MPF_nii_fnames', True)
@@ -58,7 +59,9 @@ for pick in qt1_picks:
         pick['qt1_path'].mkdir(parents=True)
         raise ValueError('missing qt1 directory and hence qt1 files. please check for {subj} in {session}/qt1'.format(**pick))
     # convert R1 and MPF to nifti
-    pr_affine = get_pr_affine_fromh5(opts.info_fname, pick['subj'], pick['session'], 'qt1', pick['vfa_fname'])
+    pr_affine, pr_shape = get_pr_affine_fromh5(opts.info_fname, pick['subj'], pick['session'], 'qt1', pick['vfa_fname'])
+    if pr_shape[:3] != opts.vfa_pr_shape:
+        print('found discrepancy between pr_shape ', pr_shape[:3], ' and opts shape ', opts.vfa_pr_shape)
     reorient_img_with_pr_affine(pick['orig_r1_fname'], pr_affine, pr_shape=opts.vfa_pr_shape, out_nii_fname=pick['qt1_path']/(pick['r1_fname']+opts.ext), mpf_dtype=opts.mpf_img_dtype)
     reorient_img_with_pr_affine(pick['orig_mpf_fname'], pr_affine, pr_shape=opts.vfa_pr_shape, out_nii_fname=pick['qt1_path']/(pick['mpf_fname']+opts.ext), mpf_dtype=opts.mpf_img_dtype)
     with WorkingContext(pick['qt1_path']):
@@ -94,9 +97,9 @@ for pick in qt1_picks:
     try:
         with WorkingContext(pick['vtk_path']):
             print('Injecting {UKF_fname} for {subj} and {session} with {r1_brain_fname}'.format(**pick))
-            inject_vol_data_into_vtk(Path('.'), '{r1_brain_fname}_reg2resampleddwi{ext}'.format(**pick), pick['UKF_fname'], replacesuffix(pick['UKF_fname'], '_resampledB0_injectR1.vtk'), offset_adj=pick['vol2vtk_offsets'])
+            results += inject_vol_data_into_vtk(Path('.'), '{r1_brain_fname}_reg2resampleddwi{ext}'.format(**pick), pick['UKF_fname'], replacesuffix(pick['UKF_fname'], '_resampledB0_injectR1.vtk'), offset_adj=pick['vol2vtk_offsets'])
             print('Injecting {UKF_fname} for {subj} and {session} with {mpf_brain_fname}'.format(**pick))
-            inject_vol_data_into_vtk(Path('.'), '{mpf_brain_fname}_reg2resampleddwi{ext}'.format(**pick), pick['UKF_fname'], replacesuffix(pick['UKF_fname'], '_resampledB0_injectMPF.vtk'), offset_adj=pick['vol2vtk_offsets'])
+            results += inject_vol_data_into_vtk(Path('.'), '{mpf_brain_fname}_reg2resampleddwi{ext}'.format(**pick), pick['UKF_fname'], replacesuffix(pick['UKF_fname'], '_resampledB0_injectMPF.vtk'), offset_adj=pick['vol2vtk_offsets'])
             print('Calculating percent myelin for {subj} and {session} with {mpf_brain_fname}_reg2resampleddwi_percent_myelin'.format(**pick))
             #results += run_subprocess([str(vol2myelin_density)])
             #mwf_fname = replacesuffix(pick['UKF_fname'], '_resampledB0_injectMyelinWaterFrac.vtk')
@@ -107,7 +110,7 @@ for pick in qt1_picks:
             perc_myelin = (unscaled_data -3.9) / 0.21
             scaled_perc_myelin = perc_myelin * 100.0
             savenii(scaled_perc_myelin, mpf_img.affine, pick['mpf_brain_fname'] + '_reg2resampleddwi_percent_myelin' + opts.ext)
-            inject_vol_data_into_vtk(Path('.'), pick['mpf_brain_fname'] + '_reg2resampleddwi_percent_myelin' + opts.ext,
+            results += inject_vol_data_into_vtk(Path('.'), pick['mpf_brain_fname'] + '_reg2resampleddwi_percent_myelin' + opts.ext,
                                      pick['UKF_fname'], replacesuffix(pick['UKF_fname'], '_resampledB0_injectpercentmyelin.vtk'),
                                      offset_adj=pick['vol2vtk_offsets'])
             print('Successful Injection of {UKF_fname} for {subj} and {session} with {r1_brain_fname} and {mpf_brain_fname}'.format(**pick))
