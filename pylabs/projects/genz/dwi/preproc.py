@@ -386,6 +386,7 @@ for i, pick in enumerate(dwi_picks):
         print('starting time for fiting is {:%Y %m %d %H:%M}'.format(datetime.datetime.now()))
         # do fsl dtifit cmds incl median filter etc
         result += tuple([run_subprocess(c % pick) for c in fsl_fit_cmds])
+        nii2nrrd('{fsl_fits_out}_tensor{mf_str}.nii.gz'.format(**pick), '{fsl_fits_out}_tensor{mf_str}.nhdr'.format(**pick), istensor=True)
         # do dipy fits
         tenmodel = dti.TensorModel(ec_gtab, fit_method='WLS')
         data = nib.load(pick['ec_dwi_clamp_fname']).get_data().astype(np.float64)
@@ -400,8 +401,8 @@ for i, pick in enumerate(dwi_picks):
         tensor_ut = fit_quad_form[..., _ut_rows, _ut_cols]
         tensor_ut_mf = fit_quad_form_mf[..., _ut_rows, _ut_cols]
         savenii(tensor_ut, affine, '{dipy_fits_out}_tensor.nii'.format(**pick))
-        savenii(tensor_ut_mf, affine, '{dipy_fits_out}_tensor_mf.nii'.format(**pick))
-        nii2nrrd('{dipy_fits_out}_tensor_mf.nii'.format(**pick), '{dipy_fits_out}_tensor_mf.nhdr'.format(**pick), istensor=True)
+        savenii(tensor_ut_mf, affine, '{dipy_fits_out}_tensor{mf_str}.nii'.format(**pick))
+        nii2nrrd('{dipy_fits_out}_tensor{mf_str}.nii'.format(**pick), '{dipy_fits_out}_tensor{mf_str}.nhdr'.format(**pick), istensor=True)
         savenii(fit.fa, affine, '{dipy_fits_out}_FA.nii'.format(**pick), minmax=(0, 1))
         savenii(fit.md, affine, '{dipy_fits_out}_MD.nii'.format(**pick))
         savenii(fit.rd, affine, '{dipy_fits_out}_RD.nii'.format(**pick))

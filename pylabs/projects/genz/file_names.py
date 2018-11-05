@@ -224,6 +224,7 @@ def get_vfa_names(subjids_picks):
     qt1_picks = []
     b1_ftempl = str(removesuffix(str(genz_conv['_B1MAP-QUIET_FC_']['fname_template'])))
     vfa_ftempl = str(removesuffix(str(genz_conv['_VFA_FA4-25_QUIET']['fname_template'])))
+    mt_ftempl = str(removesuffix(str(genz_conv['_MT_MPF_QUIET']['fname_template'])))
     for subjid in subjids_picks.subjids:
         subjid.update({'scan_name': genz_conv['_VFA_FA4-25_QUIET']['scan_name'], 'tr': '21p0', 'wild': '*'})
         # add bids dirs to dict
@@ -236,13 +237,14 @@ def get_vfa_names(subjids_picks):
         subjid['reg2dwi_path'] = fs / project / '{subj}/{session}/reg/'.format(**subjid) / opts.qt12dwi_reg_dir
         subjid['vfa_fname'] = vfa_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=genz_conv['_VFA_FA4-25_QUIET']))
         subjid['b1map_fname'] = b1_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=genz_conv['_B1MAP-QUIET_FC_']))
+        subjid['mt_fname'] = mt_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=genz_conv['_MT_MPF_QUIET']))
         if opts.info_fname.is_file():
             subjid['vfatr'] = getTRfromh5(opts.info_fname, subjid['subj'], subjid['session'], 'qt1', vfa_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=genz_conv['_VFA_FA4-25_QUIET'])))
             subjid['b1maptr'] = getTRfromh5(opts.info_fname, subjid['subj'], subjid['session'], 'fmap', b1_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=genz_conv['_B1MAP-QUIET_FC_'])))
         else:
             print('cannot find all_genz_info.h5 file. using fixed defaults: vfa TR=21.0 and b1map TR = 60.0 and 240.0')
-            subjid['vfatr'] = 21.0
-            subjid['b1maptr'] = np.array([60., 240.0])
+            subjid['vfatr'] = opts.vfa_tr
+            subjid['b1maptr'] = opts.b1maptr
         subjid['vfa_fas'] = opts.vfa_fas
         subjid['topup_brain_fname'] = str(removesuffix(str(genz_conv['_DWI6_B0_TOPUP_']['fname_template']))). \
                                     format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_DWI6_B0_TOPUP_'])) +\
@@ -259,6 +261,6 @@ def get_vfa_names(subjids_picks):
                 subjid['orig_r1_fname'] = r1_img_files[0]
                 subjid['orig_mpf_fname'] = mpf_img_files[0]
             else:
-                raise ValueError('found more than 1 R1 or MPF .img file. ambiguous choice. Please have only one matching .img file for each.')
+                raise ValueError('for {subj} in {session} found more than 1 R1 or MPF .img file. ambiguous choice. Please have only one matching .img file for each.'.format(**subjid))
         qt1_picks.append(subjid)
     return qt1_picks
