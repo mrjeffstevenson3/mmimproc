@@ -54,13 +54,65 @@ if not opts.dwi_qc and not opts.dwi_pass_qc == '':
 # instantiate subject id list container
 subjids_picks = SubjIdPicks()
 # list of subject ids to operate on
-picks = [   # ready when 211 and 212 finish
-        #{'run': '1', 'session': 'ses-1', 'subj': 'sub-genz201'}, #
-        #{'run': '1', 'session': 'ses-1', 'subj': 'sub-genz307'}, #
-        #{'run': '1', 'session': 'ses-1', 'subj': 'sub-genz401'}, #
-        #{'run': '1', 'session': 'ses-1', 'subj': 'sub-genz402'},
-        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz211'},
-        ]
+picks = [{'run': '1', 'session': 'ses-1', 'subj': 'sub-genz102'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz103'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz104'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz105'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz106'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz107'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz108'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz109'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz110'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz111'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz112'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz113'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz114'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz115'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz116'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz117'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz118'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz119'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz123'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz201'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz202'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz203'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz204'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz205'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz211'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz212'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz301'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz302'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz303'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz304'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz305'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz306'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz307'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz308'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz311'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz401'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz402'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz403'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz410'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz412'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz415'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz501'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz502'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz503'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz504'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz505'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz506'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz507'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz508'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz509'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz510'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz512'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz513'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz514'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz516'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz518'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz520'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz522'}]
+
 
 setattr(subjids_picks, 'subjids', picks)
 
@@ -386,7 +438,7 @@ for i, pick in enumerate(dwi_picks):
     with WorkingContext(pick['fits_path']):
         print('starting time for fiting is {:%Y %m %d %H:%M}'.format(datetime.datetime.now()))
         # do fsl dtifit cmds incl median filter etc
-        result += tuple([run_subprocess(c % pick) for c in fsl_fit_cmds])
+        result += tuple([run_subprocess(c % mergeddicts(pick, vars(opts))) for c in fsl_fit_cmds])
         nii2nrrd('{fsl_fits_out}_tensor{mf_str}.nii.gz'.format(**mergeddicts(pick, vars(opts))), '{fsl_fits_out}_tensor{mf_str}.nhdr'.format(**mergeddicts(pick, vars(opts))), istensor=True)
         # do dipy fits
         tenmodel = dti.TensorModel(ec_gtab, fit_method='WLS')

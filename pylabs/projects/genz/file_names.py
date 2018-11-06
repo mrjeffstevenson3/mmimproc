@@ -20,8 +20,10 @@ fs = Path(getnetworkdataroot())
 project = 'genz'
 dwi_excluded = {project: ['sub-genz403', 'sub-genz906']}
 
+
 class SubjIdPicks(object):
     pass
+
 
 class Optsd(object):
     """
@@ -79,13 +81,13 @@ class Optsd(object):
         self.convert = convert
         self.spm_thresh = spm_thresh
         self.fsl_thresh = fsl_thresh
+        self.info_fname = info_fname
         self.dwi_qc = dwi_qc
         self.dwi_pass_qc = dwi_pass_qc
-        self.dwi_qc_b0_alpha = dwi_qc_b0_alpha,
-        self.dwi_qc_b2000_alpha = dwi_qc_b2000_alpha,
-        self.dwi_qc_b800_alpha = dwi_qc_b800_alpha,
+        self.dwi_qc_b0_alpha = dwi_qc_b0_alpha
+        self.dwi_qc_b2000_alpha = dwi_qc_b2000_alpha
+        self.dwi_qc_b800_alpha = dwi_qc_b800_alpha
         self.mf_str = mf_str
-        self.info_fname = info_fname
         self.run_topup = run_topup
         self.dwi_add_blanks = dwi_add_blanks
         self.eddy_corr = eddy_corr
