@@ -48,7 +48,7 @@ antsRegistrationSyN = get_antsregsyn_cmd()
 slicer_path = getslicercmd(ver='stable')
 opts = Optsd()
 
-if not opts.dwi_qc:
+if not opts.dwi_qc and not opts.dwi_pass_qc == '':
     opts.dwi_pass_qc = ''
 
 # instantiate subject id list container
@@ -59,7 +59,7 @@ picks = [   # ready when 211 and 212 finish
         #{'run': '1', 'session': 'ses-1', 'subj': 'sub-genz307'}, #
         #{'run': '1', 'session': 'ses-1', 'subj': 'sub-genz401'}, #
         #{'run': '1', 'session': 'ses-1', 'subj': 'sub-genz402'},
-        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz123'},
+        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz211'},
         ]
 
 setattr(subjids_picks, 'subjids', picks)
@@ -84,6 +84,7 @@ fsl_fit_cmds = ['dtifit -k %(ec_dwi_clamp_fname)s -o %(fsl_fits_out)s -m %(b0_br
                 'imcp %(fsl_fits_out)s_tensor%(mf_str)s_L1 %(fsl_fits_out)s_tensor%(mf_str)s_AD',
                 'fslmaths %(fsl_fits_out)s_tensor%(mf_str)s_L2 -add %(fsl_fits_out)s_tensor%(mf_str)s_L3 -div 2 %(fsl_fits_out)s_tensor%(mf_str)s_RD -odt float',
                 'imcp %(fsl_fits_out)s_S0 %(fsl_fits_out)s_tensor%(mf_str)s_S0',
+                'fslmaths %(fsl_fits_out)s_tensor -fmedian %(fsl_fits_out)s_tensor%(mf_str)s',     # need to repeat and overwrite because tensor decomp overwrites with FA
                 ]
 
 # slicer UKF commands and default parameters to run
@@ -386,7 +387,7 @@ for i, pick in enumerate(dwi_picks):
         print('starting time for fiting is {:%Y %m %d %H:%M}'.format(datetime.datetime.now()))
         # do fsl dtifit cmds incl median filter etc
         result += tuple([run_subprocess(c % pick) for c in fsl_fit_cmds])
-        nii2nrrd('{fsl_fits_out}_tensor{mf_str}.nii.gz'.format(**pick), '{fsl_fits_out}_tensor{mf_str}.nhdr'.format(**pick), istensor=True)
+        nii2nrrd('{fsl_fits_out}_tensor{mf_str}.nii.gz'.format(**mergeddicts(pick, vars(opts))), '{fsl_fits_out}_tensor{mf_str}.nhdr'.format(**mergeddicts(pick, vars(opts))), istensor=True)
         # do dipy fits
         tenmodel = dti.TensorModel(ec_gtab, fit_method='WLS')
         data = nib.load(pick['ec_dwi_clamp_fname']).get_data().astype(np.float64)
@@ -402,7 +403,7 @@ for i, pick in enumerate(dwi_picks):
         tensor_ut_mf = fit_quad_form_mf[..., _ut_rows, _ut_cols]
         savenii(tensor_ut, affine, '{dipy_fits_out}_tensor.nii'.format(**pick))
         savenii(tensor_ut_mf, affine, '{dipy_fits_out}_tensor{mf_str}.nii'.format(**pick))
-        nii2nrrd('{dipy_fits_out}_tensor{mf_str}.nii'.format(**pick), '{dipy_fits_out}_tensor{mf_str}.nhdr'.format(**pick), istensor=True)
+        nii2nrrd('{dipy_fits_out}_tensor{mf_str}.nii'.format(**mergeddicts(pick, vars(opts))), '{dipy_fits_out}_tensor{mf_str}.nhdr'.format(**mergeddicts(pick, vars(opts))), istensor=True)
         savenii(fit.fa, affine, '{dipy_fits_out}_FA.nii'.format(**pick), minmax=(0, 1))
         savenii(fit.md, affine, '{dipy_fits_out}_MD.nii'.format(**pick))
         savenii(fit.rd, affine, '{dipy_fits_out}_RD.nii'.format(**pick))
