@@ -30,8 +30,10 @@ prov = ProvenanceWrapper()
 fs = Path(getnetworkdataroot())
 import dill #to use as pickle replacement of lambda dict
 
+
 class BrainOpts(object):
     pass
+
 
 def opts2dict(opts):
     d = {}
@@ -40,6 +42,7 @@ def opts2dict(opts):
         if not key.startswith('__'):
             d[key] = value
     return d
+
 
 def mergeddicts(origdict, appenddict):
     if not isinstance(origdict, collections.Mapping) or not isinstance(appenddict, collections.Mapping):
@@ -55,14 +58,17 @@ def mergeddicts(origdict, appenddict):
             origdict = {k: appenddict[k]}
     return origdict
 
+
 #nib functions to do heavy lifting using opts object to drive processing
 def verbose(msg, indent=0):
     if verbose.switch:
         print("%s%s" % (' ' * indent, msg))
 
+
 def error(msg, exit_code):
     sys.stderr.write(msg + '\n')
     sys.exit(exit_code)
+
 
 def brain_proc_file(opts, scandict):
     from pylabs.conversion.brain_convert import is_empty

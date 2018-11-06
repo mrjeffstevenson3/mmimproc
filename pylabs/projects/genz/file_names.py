@@ -13,6 +13,7 @@ pylabs.datadir.target = 'jaba'
 from pathlib import *
 import numpy as np
 from pylabs.utils import *
+from pylabs.conversion.parrec2nii_convert import mergeddicts
 from pylabs.conversion.brain_convert import img_conv, genz_conv, is_empty
 from pylabs.io.mixed import getTRfromh5
 
@@ -161,7 +162,7 @@ def get_freesurf_names(subjids_picks):
     for subjid in subjids_picks.subjids:
         subjid['b1map_fname'] = str(b1_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_B1MAP-QUIET_FC_']))
         subjid['freesurf_fname'] = str(fs_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['MEMP_IFS_0p5mm_2echo_'], dict3={'scan_info': 'ti1200_rms'}))
-        fs_picks.append(subjid)
+        fs_picks.append(mergeddicts(subjid, vars(opts)))
     return fs_picks
 
 def get_dwi_names(subjids_picks):
@@ -182,7 +183,7 @@ def get_dwi_names(subjids_picks):
             subjid['fits_path'] = fs / project / '{subj}/{session}/dwi'.format(**subjid) / opts.dwi_fits_dir
             subjid['bedpost_path'] = fs / project / '{subj}/{session}/dwi'.format(**subjid) / opts.dwi_bedpost_dir
             subjid['qt1_path'] = fs / project / '{subj}/{session}/qt1'.format(**subjid)
-            dwi_picks.append(subjid)
+            dwi_picks.append(mergeddicts(subjid, vars(opts)))
         return dwi_picks
     except TypeError as e:
             print('subjids needs to a dictionary.')
@@ -192,7 +193,7 @@ def get_3dt2_names(subjids_picks):
     t2_ftempl = removesuffix(str(img_conv[project]['_QUIET_3DT2W']['fname_template']))
     for subjid in subjids_picks.subjids:
         subjid['t2_fname'] = str(t2_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_QUIET_3DT2W']))
-        t2_picks.append(subjid)
+        t2_picks.append(mergeddicts(subjid, vars(opts)))
     return t2_picks
 
 def get_gaba_names(subjids_picks):
@@ -264,5 +265,5 @@ def get_vfa_names(subjids_picks):
                 subjid['orig_mpf_fname'] = mpf_img_files[0]
             else:
                 raise ValueError('for {subj} in {session} found more than 1 R1 or MPF .img file. ambiguous choice. Please have only one matching .img file for each.'.format(**subjid))
-        qt1_picks.append(subjid)
+        qt1_picks.append(mergeddicts(subjid, vars(opts)))
     return qt1_picks

@@ -14,3 +14,4 @@ pylabs.datadir.target = 'jaba'   # main brain studio nfs network drive
 pylabs.h5wait_interval = 30  # seconds to wait before retry
 
 pylabs.max_intervals = 10  # or about 5 min else something is wrong
+
