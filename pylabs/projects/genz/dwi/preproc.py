@@ -112,7 +112,7 @@ ukfcmds =  {'UKF_whbr': str(slicer_path) + 'UKFTractography --dwiFile %(dwi_nrrd
                      ' --maxBranchingAngle 0 --minBranchingAngle 0 --minGA 10000',
             }
 
-# to get indices of upper triangle of tensor for fsl compat
+# to get indices of upper triangle of tensor for fsl compatibility
 _ut_rows = np.array([0, 0, 0, 1, 1, 2])
 _ut_cols = np.array([0, 1, 2, 1, 2, 2])
 _all_cols = np.zeros(9, dtype=np.int)
