@@ -24,14 +24,17 @@ opts.test = False
 # instantiate subject id list object
 subjids_picks = SubjIdPicks()
 # list of dicts of subject ids and info to operate on
-picks = [{'run': '1', 'session': 'ses-1', 'subj': 'sub-genz120'},
-         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz121'},
-         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz122'},
-         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz125'},
-         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz126'},
-         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz127'},
+picks = [{'run': '1', 'session': 'ses-1', 'subj': 'sub-genz128'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz129'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz130'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz131'},
          {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz221'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz223'},
          {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz224'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz225'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz226'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz228'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz326'},
          {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz327'},
          {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz329'},
          {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz331'},
@@ -39,6 +42,7 @@ picks = [{'run': '1', 'session': 'ses-1', 'subj': 'sub-genz120'},
          {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz428'},
          {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz429'},
          {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz527'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz531'},
          ]
 
 setattr(subjids_picks, 'subjids', picks)
