@@ -68,7 +68,7 @@ picks = [{'run': '1', 'session': 'ses-1', 'subj': 'sub-genz206'},
 setattr(subjids_picks, 'subjids', picks)
 
 opts.test = False
-skip_tup_eddy_cmds = True
+skip_tup_eddy_cmds = False
 skip_mat = False
 
 # commands and options are modified below.
