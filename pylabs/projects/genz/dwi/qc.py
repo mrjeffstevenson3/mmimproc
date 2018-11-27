@@ -1,3 +1,4 @@
+# ToDo: read report and make mask of all bad slices
 # first set global root data directory
 import pylabs
 pylabs.datadir.target = 'jaba'
@@ -119,3 +120,4 @@ for i, pick in enumerate(dwi_picks):
     qc_DF = qc_DF[cols]
     df2h5(qc_DF.reset_index(level=0), opts.info_fname, '/{subj}/{session}/dwi/auto_qc'.format(**pick), append=False)
 
+    # add mask of bad slices here: read in b800 and b2000 reports and set mask vol/slice to alpha value

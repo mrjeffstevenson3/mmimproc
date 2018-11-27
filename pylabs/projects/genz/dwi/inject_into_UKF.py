@@ -1,4 +1,5 @@
-# inject R1 and MPF into UKF
+# inject R1 and MPF output from vasily into UKF
+# todo: add ants cmds for reg to dwi without preserving resolution. eg downsample qt1.
 from pathlib import *
 import nibabel as nib
 import numpy as np
@@ -82,6 +83,7 @@ for pick in qt1_picks:
     if not pick['vtk_path'].is_dir():
         pick['vtk_path'].mkdir(parents=True)
     with WorkingContext(pick['reg2dwi_path']):
+        # add ants cmd here to reg qt1 directly to orig low res dwi b0.
         pick['moving'] = pick['qt1_path'] / (pick['r1_brain_fname']+opts.ext)
         reslice_niivol(pick['moving'], pick['dwi_path'] / '{topup_brain_fname}.nii.gz'.format(**pick),  pick['dwi_path'] / '{topup_brain_fname}_resampled2qt1.nii.gz'.format(**pick))
         pick['fixed'] = pick['dwi_path'] / '{topup_brain_fname}_resampled2qt1.nii.gz'.format(**pick)
