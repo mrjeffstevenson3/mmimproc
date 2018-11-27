@@ -54,14 +54,8 @@ if not opts.dwi_qc and not opts.dwi_pass_qc == '':
 # instantiate subject id list container
 subjids_picks = SubjIdPicks()
 # list of subject ids to operate on
-picks = [{'run': '1', 'session': 'ses-1', 'subj': 'sub-genz206'},
-         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz207'},
-         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz208'},
-         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz209'},
-         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz210'},
-         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz213'},
-         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz214'},
-         #{'run': '1', 'session': 'ses-1', 'subj': 'sub-genz215'},
+picks = [
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz215'},
         ]
 
 
@@ -381,7 +375,7 @@ for i, pick in enumerate(dwi_picks):
 
     # do fsl fits and dipy fits
     if skip_tup_eddy_cmds:
-        pick['b0_brain_mask_fname'] = '{topup_out}_unwarped_mean_brain_mask.nii.gz'.format(**pick)
+        pick['b0_brain_mask_fname'] = Path('{topup_out}_unwarped_mean_brain_mask.nii.gz'.format(**pick))
         pick['b0_brain_mask_fname_nrrd'] = replacesuffix(pick['b0_brain_mask_fname'], '.nhdr')
         pick['ec_dwi_clamp_fname'] = '{ec_dwi_fname}{mf_str}_clamp1.nii.gz'.format(**pick)
         pick['dwi_nrrd_fname'] = replacesuffix(pick['ec_dwi_clamp_fname'], '.nhdr')
