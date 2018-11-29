@@ -19,7 +19,7 @@ from pylabs.io.mixed import getTRfromh5
 
 fs = Path(getnetworkdataroot())
 project = 'genz'
-dwi_excluded = {project: ['sub-genz403', 'sub-genz906']}
+dwi_excluded = {project: ['sub-genz403', 'sub-genz906', 'sub-genz301', 'sub-genz309',]}
 
 
 class SubjIdPicks(object):
@@ -45,7 +45,7 @@ class Optsd(object):
             dwi_qc_b0_alpha = 3.0,
             dwi_qc_b2000_alpha = 3.0,
             dwi_qc_b800_alpha = 3.0,
-            dwi_subj_excluded = [],
+            dwi_subj_excluded = ['sub-genz301', 'sub-genz309',],
             mf_str = '_mf',    # set to blank string '' to disable median filtering
             run_topup = True,
             dwi_add_blanks = True,
@@ -68,7 +68,7 @@ class Optsd(object):
             vfa_tr = 21.0,
             vfa_fas = [4.0, 25.0],
             vfa_pr_shape = (384, 384, 323),
-            vfa_subj_excluded = [],
+            vfa_subj_excluded = ['sub-genz301', 'sub-genz309',],
             mpf_img_dtype = np.int16,
             reg_mni2dwi = '{fs}/{project}/{subj}/{session}/reg/mni2dwi',
             reg_qt12dwi = '{fs}/{project}/{subj}/{session}/reg/qt12dwi',
@@ -176,6 +176,8 @@ def get_dwi_names(subjids_picks):
         topdn_ftempl = removesuffix(str(genz_conv['_DWI6_B0_TOPDN_']['fname_template']))
         dwi_ftempl = removesuffix(str(genz_conv['_DWI64_3SH_B0_B800_B2000_TOPUP_']['fname_template']))
         for subjid in subjids_picks.subjids:
+            if subjid['subj'] in opts.dwi_subj_excluded:
+                continue
             subjid['project'] = opts.project
             subjid['topup_fname'] = str(topup_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_DWI6_B0_TOPUP_']))
             subjid['topdn_fname'] = str(topdn_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_DWI6_B0_TOPDN_']))
@@ -233,6 +235,8 @@ def get_vfa_names(subjids_picks):
     vfa_ftempl = str(removesuffix(str(genz_conv['_VFA_FA4-25_QUIET']['fname_template'])))
     mt_ftempl = str(removesuffix(str(genz_conv['_MT_MPF_QUIET']['fname_template'])))
     for subjid in subjids_picks.subjids:
+        if subjid['subj'] in opts.vfa_subj_excluded:
+            continue
         subjid.update({'scan_name': genz_conv['_VFA_FA4-25_QUIET']['scan_name'], 'tr': '21p0', 'wild': '*'})
         # add bids dirs to dict
         subjid['anat_path'] = fs/project/'{subj}/{session}/anat'.format(**subjid)
