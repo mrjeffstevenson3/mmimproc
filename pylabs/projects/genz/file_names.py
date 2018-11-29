@@ -45,6 +45,7 @@ class Optsd(object):
             dwi_qc_b0_alpha = 3.0,
             dwi_qc_b2000_alpha = 3.0,
             dwi_qc_b800_alpha = 3.0,
+            dwi_subj_excluded = [],
             mf_str = '_mf',    # set to blank string '' to disable median filtering
             run_topup = True,
             dwi_add_blanks = True,
@@ -67,6 +68,7 @@ class Optsd(object):
             vfa_tr = 21.0,
             vfa_fas = [4.0, 25.0],
             vfa_pr_shape = (384, 384, 323),
+            vfa_subj_excluded = [],
             mpf_img_dtype = np.int16,
             reg_mni2dwi = '{fs}/{project}/{subj}/{session}/reg/mni2dwi',
             reg_qt12dwi = '{fs}/{project}/{subj}/{session}/reg/qt12dwi',
@@ -88,6 +90,7 @@ class Optsd(object):
         self.dwi_qc_b0_alpha = dwi_qc_b0_alpha
         self.dwi_qc_b2000_alpha = dwi_qc_b2000_alpha
         self.dwi_qc_b800_alpha = dwi_qc_b800_alpha
+        self.dwi_subj_excluded = dwi_subj_excluded
         self.mf_str = mf_str
         self.run_topup = run_topup
         self.dwi_add_blanks = dwi_add_blanks
@@ -110,6 +113,7 @@ class Optsd(object):
         self.vfa_tr = vfa_tr
         self.vfa_fas = vfa_fas
         self.vfa_pr_shape = vfa_pr_shape
+        self.vfa_subj_excluded = vfa_subj_excluded
         self.mpf_img_dtype = mpf_img_dtype
         self.reg_mni2dwi = reg_mni2dwi
         self.reg_qt12dwi = reg_qt12dwi
