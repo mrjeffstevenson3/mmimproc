@@ -510,7 +510,7 @@ def get_dwi_picks(project, idthresh=800, leadalphan=False, wild_multipl=1, exclu
     :preproc_picks: are the subjects who have had BOTH the auto_qc AND the visual qc run but have NOT been pre processed\n
     """
     if project == 'genz' and excluded == []:
-        excluded = ['sub-genz403/ses-1', ]   ## has bad or no  dwi
+        excluded = ['sub-genz403/ses-1', 'sub-genz301/ses-1', 'sub-genz309/ses-1',]   ## has bad or no  dwi
     if leadalphan:
         wild = '?' * len(str(idthresh)) + '?' * wild_multipl
     else:
