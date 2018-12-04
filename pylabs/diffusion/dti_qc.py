@@ -81,12 +81,7 @@ def dwi_qc_1bv(dwi_data, output_pname, alpha=3.0):
             bad_qc.write('set title \''+ output_pname.parts[-5] + ' ' + output_pname.parts[-4] +
                          ' DTI QC shows '+str(num_badvols)+' BAD vols for '+str(output_pname.name).split('_')[-1]+'\' font \"Helvetica,24\"\n')
             bad_qc.write(gnuplot_cmds_part2)
-            if num_badvols == 2:
-                bad_qc.write('plot for [n=2:3] \'./plotbad1.txt\' u 1:(column(n)) w lines lw 4\n'
-                             'set terminal png size 1200, 800 font 12\n'
-                             'set output \'gnuplot_for_dtiqc_bad.png\'\n'
-                             'replot\n')
-            elif num_badvols < 2:
+            if num_badvols < 2:
                 bad_qc.write('plot for [n=2:2] \'./plotbad1.txt\' u 1:(column(n)) w lines lw 4\n'
                              'set terminal png size 1200, 800 font 12\n'
                              'set output \'gnuplot_for_dtiqc_bad.png\'\n'
