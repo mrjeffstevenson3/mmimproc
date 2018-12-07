@@ -1,4 +1,4 @@
-# ToDo: read report and make mask of all bad slices
+# assumes 3 shell dwi of 0, 800, 2000 with only 1 B0 as 1st vol
 # first set global root data directory
 import pylabs
 pylabs.datadir.target = 'jaba'
@@ -121,8 +121,8 @@ for i, pick in enumerate(dwi_picks):
     bad_vols_data = np.zeros(nib.load(str(pick['dwi_path']/(pick['dwi_fname']+'.nii'))).shape)
     for line in b2000_badvols.splitlines():
         if 'bad slice volume' in line:
-            bad_vols_data[:, :, int(float(line.split()[4])) - 1, int(float(line.split()[5])) + 1] = float(line.split()[3])
+            bad_vols_data[:, :, int(float(line.split()[4])) - 1, int(float(line.split()[5])) + np.sum(gtab.b0s_mask)] = float(line.split()[3])
     for line in b800_badvols.splitlines():
         if 'bad slice volume' in line:
-            bad_vols_data[:, :, int(float(line.split()[4])) - 1, int(float(line.split()[5])) + 53] = float(line.split()[3])
+            bad_vols_data[:, :, int(float(line.split()[4])) - 1, int(float(line.split()[5])) + np.sum(gtab.bvals == 2000) + np.sum(gtab.b0s_mask)] = float(line.split()[3])
     savenii(bad_vols_data, nib.load(str(pick['dwi_path']/(pick['dwi_fname']+'.nii'))).affine, '{dwi_path}/{dwi_fname}_badvols_mask.nii.gz'.format(**pick))

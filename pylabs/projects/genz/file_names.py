@@ -45,7 +45,7 @@ class Optsd(object):
             dwi_qc_b0_alpha = 3.0,
             dwi_qc_b2000_alpha = 3.0,
             dwi_qc_b800_alpha = 3.0,
-            dwi_subj_excluded = ['sub-genz301', 'sub-genz309',],
+            dwi_subj_excluded = ['sub-genz301', 'sub-genz309', 'sub-genz403', 'sub-genz906',],
             mf_str = '_mf',    # set to blank string '' to disable median filtering
             run_topup = True,
             dwi_add_blanks = True,
