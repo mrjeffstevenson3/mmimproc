@@ -125,4 +125,4 @@ for i, pick in enumerate(dwi_picks):
     for line in b800_badvols.splitlines():
         if 'bad slice volume' in line:
             bad_vols_data[:, :, int(float(line.split()[4])) - 1, int(float(line.split()[5])) + 53] = float(line.split()[3])
-    savenii(bad_vols_data, nib.load(str(pick['dwi_path']/(pick['dwi_fname']+'.nii'))).affine, '{dwi_path}/{dwi_fname}_badvols_mask.nii.gz'.format(**pick))
+    savenii(bad_vols_data, nib.load(str(pick['dwi_path']/(pick['dwi_fname']+'.nii'))).affine, '{dwi_path}/{dwi_fname}_badvols_mask.nii.gz'.format(**pick), minmax=(1,3))
