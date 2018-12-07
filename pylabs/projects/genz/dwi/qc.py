@@ -26,7 +26,8 @@ opts.test = False
 # instantiate subject id list object
 subjids_picks = SubjIdPicks()
 # list of dicts of subject ids and info to operate on
-picks = [{'run': '1', 'session': 'ses-1', 'subj': 'sub-genz521'},
+picks = [
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz337'},
 
          ]
 
