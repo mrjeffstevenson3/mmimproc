@@ -86,6 +86,8 @@ def brain_proc_file(opts, scandict):
             ses = 'ses-'+str(s)
             fpath = subpath / ses / 'source_parrec'
             files = ScanReconSort(fpath, '*'+opts.scan+'*.PAR')
+            files = filter(lambda x: not ('_dADC_' in x or '_faADC_' in x), [str(y) for y in files])
+            files = [Path(x) for x in files]
             if opts.take_lowest_recon:
                 # need to account for repeat scans with multiple recons.
                 if not is_empty(files):

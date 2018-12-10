@@ -27,7 +27,8 @@ opts.test = False
 subjids_picks = SubjIdPicks()
 # list of dicts of subject ids and info to operate on
 picks = [
-         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz337'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz235'},
+         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz328'},
 
          ]
 
