@@ -55,7 +55,7 @@ if not opts.dwi_qc and not opts.dwi_pass_qc == '':
 subjids_picks = SubjIdPicks()
 # list of subject ids to operate on
 picks = [
-         {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz215'},
+        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz501'},
         ]
 
 
@@ -64,6 +64,7 @@ setattr(subjids_picks, 'subjids', picks)
 opts.test = False
 skip_tup_eddy_cmds = False
 skip_mat = False
+new_mask = True
 
 # commands and options are modified below.
 # topup command for unwarping dti
@@ -116,11 +117,13 @@ for i, j in enumerate(list(itertools.product(*(range(3), range(3))))):
     _all_rows[i] = int(j[0])
     _all_cols[i] = int(j[1])
 
+
 # define local functions
 def default_to_regular(d):
     if isinstance(d, defaultdict):
         d = {k: default_to_regular(v) for k, v in d.iteritems()}
     return d
+
 
 def test4file(file):
     file = Path(file)
@@ -148,6 +151,7 @@ pick dict guide:
 'ec_dwi_fname' = eddy current corrected dwi file for fits and bedpost
 'dwi_bvecs_ec_rot_fname' = ec rotated bvecs to be used for fits, bedpost etc
 """
+
 dwi_picks = get_dwi_names(subjids_picks)
 
 if opts.test:

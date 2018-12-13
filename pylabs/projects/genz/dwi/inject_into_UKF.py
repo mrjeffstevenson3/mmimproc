@@ -95,6 +95,14 @@ for pick in qt1_picks:
         results += run_subprocess([antsRegistrationSyN_cmd.format(**pick)])
         with WorkingContext(pick['qt1_path']):
             results += run_subprocess(['ln -sf ../reg/{qt12dwi_reg_dir}/{outfile}Warped.nii.gz {mpf_brain_fname}_reg2dwi{ext}'.format(**merge_ftempl_dicts(pick, vars(opts), {'outfile': pick['outfile'].name}))])
+        mpf_img = nib.load('{outfile}Warped{ext}'.format(**merge_ftempl_dicts(pick, vars(opts), {'outfile': pick['outfile'].name})))
+        mpf_data = mpf_img.get_data().astype(np.float32)
+        unscaled_data = mpf_data / 100.0
+        perc_myelin = (unscaled_data - 3.9) / 0.21
+        scaled_perc_myelin = perc_myelin * 100.0
+        savenii(scaled_perc_myelin, mpf_img.affine, '{mpf_brain_fname}_reg2dwi_percent_myelin{ext}'.format(**pick))
+        with WorkingContext(pick['qt1_path']):
+            results += run_subprocess(['ln -sf ../reg/{qt12dwi_reg_dir}/{mpf_brain_fname}_reg2dwi_percent_myelin{ext} {mpf_brain_fname}_reg2dwi_percent_myelin{ext}'.format(**merge_ftempl_dicts(pick, vars(opts), {'outfile': pick['outfile'].name}))])
         pick['moving'] = pick['qt1_path'] / (pick['r1_brain_fname']+opts.ext)
         reslice_niivol(pick['moving'], pick['dwi_path'] / '{topup_brain_fname}.nii.gz'.format(**pick),  pick['dwi_path'] / '{topup_brain_fname}_resampled2qt1.nii.gz'.format(**pick))
         pick['fixed'] = pick['dwi_path'] / '{topup_brain_fname}_resampled2qt1.nii.gz'.format(**pick)
