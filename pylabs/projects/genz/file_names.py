@@ -249,6 +249,7 @@ def get_vfa_names(subjids_picks):
         subjid['vfa_fname'] = vfa_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=genz_conv['_VFA_FA4-25_QUIET']))
         subjid['b1map_fname'] = b1_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=genz_conv['_B1MAP-QUIET_FC_']))
         subjid['mt_fname'] = mt_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=genz_conv['_MT_MPF_QUIET']))
+        subjid['vasily_mpf_path'] = fs / project / '{subj}/{session}/mpf_vasily'.format(**subjid)
         if opts.info_fname.is_file():
             subjid['vfatr'] = getTRfromh5(opts.info_fname, subjid['subj'], subjid['session'], 'qt1', vfa_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=genz_conv['_VFA_FA4-25_QUIET'])))
             subjid['b1maptr'] = getTRfromh5(opts.info_fname, subjid['subj'], subjid['session'], 'fmap', b1_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=genz_conv['_B1MAP-QUIET_FC_'])))
@@ -266,12 +267,14 @@ def get_vfa_names(subjids_picks):
             subjid['topup_ftempl'] = removesuffix(str(genz_conv['_DWI6_B0_TOPUP_']['fname_template']))
             subjid['UKF_fname'] = '{subj}_{session}_dwi-topup_64dir-3sh-800-2000_1_topdn_unwarped_ec_mf_clamp1_UKF_whbr.vtk'.format(**subjid)
         if subjids_picks.get_analyse_R1_MPF_names:
-            r1_img_files = list(subjid['qt1_path'].glob(subjids_picks.orig_r1_fname_templ.format(**subjid)))
-            mpf_img_files = list(subjid['qt1_path'].glob(subjids_picks.orig_mpf_fname_templ.format(**subjid)))
-            if len(r1_img_files) == len(mpf_img_files) == 1:
-                subjid['orig_r1_fname'] = r1_img_files[0]
-                subjid['orig_mpf_fname'] = mpf_img_files[0]
-            else:
-                raise ValueError('for {subj} in {session} found more than 1 R1 or MPF .img file. ambiguous choice. Please have only one matching .img file for each.'.format(**subjid))
+            #r1_img_files = list(subjid['qt1_path'].glob(subjids_picks.orig_r1_fname_templ.format(**subjid)))
+            #mpf_img_files = list(subjid['qt1_path'].glob(subjids_picks.orig_mpf_fname_templ.format(**subjid)))
+            subjid['orig_r1_fname'] = subjids_picks.orig_r1_fname_templ.format(**subjid)
+            subjid['orig_mpf_fname'] = subjids_picks.orig_mpf_fname_templ.format(**subjid)
+            # if len(r1_img_files) == len(mpf_img_files) == 1:
+            #     subjid['orig_r1_fname'] = r1_img_files[0]
+            #     subjid['orig_mpf_fname'] = mpf_img_files[0]
+            # else:
+            #     raise ValueError('for {subj} in {session} found more than 1 R1 or MPF .img file. ambiguous choice. Please have only one matching .img file for each.'.format(**subjid))
         qt1_picks.append(mergeddicts(subjid, vars(opts)))
     return qt1_picks
