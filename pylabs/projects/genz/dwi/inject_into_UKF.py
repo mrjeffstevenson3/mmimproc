@@ -89,12 +89,12 @@ for pick in qt1_picks:
         pick['outfile'] = pick['reg2dwi_path'].joinpath(pick['r1_brain_fname'] + '_reg2dwi_')
         results += run_subprocess([antsRegistrationSyN_cmd.format(**pick)])
         with WorkingContext(pick['qt1_path']):
-            results += run_subprocess(['ln -sf ../../reg/{qt12dwi_reg_dir}/{outfile}Warped.nii.gz {r1_brain_fname}_reg2dwi{ext}'.format(**merge_ftempl_dicts(pick, vars(opts), {'outfile': pick['outfile'].name}))])
+            results += run_subprocess(['ln -sf ../reg/{qt12dwi_reg_dir}/{outfile}Warped.nii.gz {r1_brain_fname}_reg2dwi{ext}'.format(**merge_ftempl_dicts(pick, vars(opts), {'outfile': pick['outfile'].name}))])
         pick['moving'] = pick['qt1_path'] / '{mpf_brain_fname}{ext}'.format(**pick)
         pick['outfile'] = pick['reg2dwi_path'].joinpath(pick['mpf_brain_fname'] + '_reg2dwi_')
         results += run_subprocess([antsRegistrationSyN_cmd.format(**pick)])
         with WorkingContext(pick['qt1_path']):
-            results += run_subprocess(['ln -sf ../../reg/{qt12dwi_reg_dir}/{outfile}Warped.nii.gz {mpf_brain_fname}_reg2dwi{ext}'.format(**merge_ftempl_dicts(pick, vars(opts), {'outfile': pick['outfile'].name}))])
+            results += run_subprocess(['ln -sf ../reg/{qt12dwi_reg_dir}/{outfile}Warped.nii.gz {mpf_brain_fname}_reg2dwi{ext}'.format(**merge_ftempl_dicts(pick, vars(opts), {'outfile': pick['outfile'].name}))])
         pick['moving'] = pick['qt1_path'] / (pick['r1_brain_fname']+opts.ext)
         reslice_niivol(pick['moving'], pick['dwi_path'] / '{topup_brain_fname}.nii.gz'.format(**pick),  pick['dwi_path'] / '{topup_brain_fname}_resampled2qt1.nii.gz'.format(**pick))
         pick['fixed'] = pick['dwi_path'] / '{topup_brain_fname}_resampled2qt1.nii.gz'.format(**pick)
