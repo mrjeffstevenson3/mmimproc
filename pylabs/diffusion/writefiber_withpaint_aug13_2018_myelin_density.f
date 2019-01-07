@@ -26,11 +26,11 @@ c
 	equivalence (cint,icint)
 	equivalence (nmr,inmr2)
 	equivalence (inmr,cnmr)
-	real poly(9),dnmrsav(15000000,10), polysav(15000000,5,4),tensors(15000000,9)
-	real polyfinal(15000000,5)
+	real poly(9),dnmrsav(55000000,10), polysav(55000000,5,4),tensors(55000000,9)
+	real polyfinal(55000000,5)
 	real final(10),rotation(18)
 	common /rot/rotation
-	integer line(110000,900),linesav(110000)
+	integer line(310000,900),linesav(310000)
 	common /dat1/ dnmr(6000000),dnmr2(1000),dnmr3(1000)
 	common /size/isize,isize2
 	  DOUBLE PRECISION A(3,3)
@@ -40,7 +40,7 @@ c
 	real distancesav(200000),xwall(100),ywall(100),zwall(100)
 	real dti(400,400,400,6)
 	integer iflagindex(7)
-	integer*8 ivtksize
+	integer*8 ivtksize,isize,isizeb,isizec,i,iset,ii,icountbytes,istart,imarktensor
 	open(11,file = 'offsets.txt')
 	read(11,*)xoffset,yoffset,zoffset
 	close(11)
@@ -216,7 +216,7 @@ c	if(ifil.eq.3.and.iprocmethod.ne.1)call fgetc(22,cnmr(ii),istate)
 c	do ii=1,9
 c	write(6,*)'inmr ',inmr(ii),ii
 c	enddo
-c	pause
+
 
 	do ii=1,3
 	poly(ii) = nmr(ii)
@@ -227,7 +227,7 @@ c	pause
 	polysav(inc,4,ifil) = inc
 c	if(i.eq.1)then
 c	write(6,*)'poly1 ',poly(1),poly(2),poly(3),inc,polysav(inc,1,ifil)
-c	pause
+
 c	endif
 	inc = inc+1
 	enddo
@@ -253,6 +253,7 @@ c	write(6,*)'after numpoints1',inmr(ii),cnmr(ii),ii
 	endif
 	enddo
  199	continue
+
 
 c find end of line part for ukf
 c
@@ -339,7 +340,7 @@ c
 	enddo
 c	write(6,*)'line ',line(i,1),(line(i,ii),ii=2,line(i,1)+1)
 c	write(6,*)'points that go with line ',(polysav(line(i,ii)+1,1,1),line(i,ii)+1,ii,ii=2,line(i,1)+1)
-c	pause
+
 	if(i.eq.112)then
 c	write(6,*)'line ',line(i,1),(line(i,ii),ii=2,line(i,1)+1)
 
@@ -348,7 +349,6 @@ c	write(6,*)'line ',line(i,1),line(i,2),i
 c	if(i.eq.1)then
 c	write(6,*)'first line ',line(i,1),(line(i,ii),ii=2,line(i,1)+1)
 c	endif
-c	pause
 
 
 	enddo  !lines main
@@ -419,7 +419,7 @@ c	write(6,*)'line ',line(i,1)+1,numpoints/3
 	if(ifil.eq.4)write(26,*)icountone
 	do ii=2,line(i,1)+1
 c	write(6,*)'inside line ',line(i,ii),ii,polysav(line(i,ii)+1,1,1)
-c	pause
+
 
 c	write(6,*)'polysav(ip,4) ',polysav(ip,4),ip
 	dx = polysav(line(i,ii+4)+1,1,1)- polysav(line(i,ii)+1,1,1)
@@ -741,19 +741,25 @@ c	write(6,*)'distance ',dnmr(i),i,ipsize
 	write(6,*)'the number of fibers is ', ilines
 	close(11)
 	isize = ivtksize
+	write(6,*)'isize before tensor1 ',isize
 	ivtkcounter=0
-	open(11,file = 'f.vtk')
-
+	close(11)
+	open(11,file = 'f.vtk',form='unformatted')
+	write(6,*)'mark2 '
+	isizetmp = isize/2
 	do i=1,isize
 	call fgetc(11,vtk(i),istate)
-
+c	write(6,*)'vtk ',vtk(i),i
 	enddo
+c
+	
 	do i=1,isize
 	if(vtk(i).eq.'s'.and.vtk(i+1).eq.'o'.and.vtk(i+2).eq.'r'.and.vtk(i+3).eq.'1')then
 	iset = i
 	write(6,*)'find sors',iset,i,(vtk(ii),ii=i-15,i+5)
 	endif
 	enddo
+
 	do i=iset,iset+100
 c	write(6,*)'vtk ivtk ',vtk(i),ivtk(i),i,i-iset
 	enddo
@@ -1168,6 +1174,7 @@ c	write(6,*)(r1*r2*r3),trace**3
 	subroutine average(aver,stdev,stem)
 	common /dat1/ dnmr(6000000),dnmr2(1000),dnmr3(1000)
 	common /size/isize,isize2
+	integer*8 isize
 c
 c
 c

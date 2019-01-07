@@ -40,7 +40,19 @@ def copyqform2sform(file):
     cmd = 'fslorient -copyqform2sform ' + file
     run_subprocess(cmd)
 
-def savenii(data, affine, outfile, header=None, minmax=('parse', 'parse'), qform_code=1):
+def savenii(data, affine, outfile, header=None, minmax=('parse', 'parse'), qform_code=1, xyz_units=2, t_units=8):
+    """
+    see https://github.com/nipy/nibabel/blob/master/nibabel/nifti1.py for code explanations
+    :param data: numpy array to be made into nifti image
+    :param affine: affine of image
+    :param outfile: output file name
+    :param header: if header pre-constructed and you wish to pass this as nifti header
+    :param minmax: to force default image range. eg for FA image minmax=(0,1)
+    :param qform_code: see url above. usually 1=scanner, 2=registered and moved to new non-scanner space
+    :param xyz_units: usually mm=2. see url above
+    :param t_units: usually sec=8.
+    :return:
+    """
     if header is None:
         img = nibabel.nifti1.Nifti1Image(data, affine)
     else:
@@ -55,6 +67,7 @@ def savenii(data, affine, outfile, header=None, minmax=('parse', 'parse'), qform
         img.header['cal_max'] = float(minmax[1])
     img.set_qform(affine, code=qform_code)
     img.set_sform(affine, code=qform_code)
+    img.header.set_xyzt_units(xyz_units, t_units)
     numpy.testing.assert_almost_equal(affine, img.affine, 4,
                                    err_msg='output qform in header does not match input qform')
     nibabel.save(img, str(outfile))

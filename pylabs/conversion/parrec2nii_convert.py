@@ -1,4 +1,4 @@
-#todo: select lowest recon = true needs to account for repeat scans
+#todo: add opts dict option to excliude converting par files with scans matching various strings
 from __future__ import division, print_function, absolute_import
 from pathlib import *
 from optparse import OptionParser, Option
@@ -30,8 +30,10 @@ prov = ProvenanceWrapper()
 fs = Path(getnetworkdataroot())
 import dill #to use as pickle replacement of lambda dict
 
+
 class BrainOpts(object):
     pass
+
 
 def opts2dict(opts):
     d = {}
@@ -40,6 +42,7 @@ def opts2dict(opts):
         if not key.startswith('__'):
             d[key] = value
     return d
+
 
 def mergeddicts(origdict, appenddict):
     if not isinstance(origdict, collections.Mapping) or not isinstance(appenddict, collections.Mapping):
@@ -55,14 +58,17 @@ def mergeddicts(origdict, appenddict):
             origdict = {k: appenddict[k]}
     return origdict
 
+
 #nib functions to do heavy lifting using opts object to drive processing
 def verbose(msg, indent=0):
     if verbose.switch:
         print("%s%s" % (' ' * indent, msg))
 
+
 def error(msg, exit_code):
     sys.stderr.write(msg + '\n')
     sys.exit(exit_code)
+
 
 def brain_proc_file(opts, scandict):
     from pylabs.conversion.brain_convert import is_empty
@@ -80,6 +86,8 @@ def brain_proc_file(opts, scandict):
             ses = 'ses-'+str(s)
             fpath = subpath / ses / 'source_parrec'
             files = ScanReconSort(fpath, '*'+opts.scan+'*.PAR')
+            files = filter(lambda x: not ('_dADC_' in x or '_faADC_' in x), [str(y) for y in files])
+            files = [Path(x) for x in files]
             if opts.take_lowest_recon:
                 # need to account for repeat scans with multiple recons.
                 if not is_empty(files):
@@ -168,6 +176,8 @@ def brain_proc_file(opts, scandict):
             in_data = np.array(pr_img.dataobj)
             out_dtype = np.float64
         # Reorient data block to LAS+ if necessary
+        setattr(opts, 'pr_shape', in_data.shape)
+
         ornt = io_orientation(np.diag([-1, 1, 1, 1]).dot(affine))
         if np.all(ornt == [[0, 1],
                            [1, 1],
@@ -264,6 +274,7 @@ def brain_proc_file(opts, scandict):
         nhdr.set_slope_inter(slope, intercept)
         nhdr.set_qform(affine, code=1)
         nhdr.set_sform(affine, code=1)
+        nhdr.set_xyzt_units(2, 8)
 
         if 'parse' in opts.minmax:
             # need to get the scaled data

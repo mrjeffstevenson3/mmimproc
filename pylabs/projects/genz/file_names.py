@@ -1,4 +1,4 @@
-# todo: make roll_brain_to_com function with affine transform outfile to place brain at center of image fro ANTS.
+# todo: make roll_brain_to_com function with affine transform outfile to place brain at center of image for ANTS.
 # orig_dwi are the original dwi source files output from conversion -> inputs to topup
 # set as a triple tuple (topup_dwi_6S0 6 vol S0 1st, topdn_dwi_6S0 6 vol S0 2nd, dwi-topup_64dir-3sh-800-2000 multishell 64 dir dwi 3rd)
 # topup_dwi_6S0 and topdn_dwi_6S0 are inputs to topup along with dwell time
@@ -13,15 +13,18 @@ pylabs.datadir.target = 'jaba'
 from pathlib import *
 import numpy as np
 from pylabs.utils import *
+from pylabs.conversion.parrec2nii_convert import mergeddicts
 from pylabs.conversion.brain_convert import img_conv, genz_conv, is_empty
 from pylabs.io.mixed import getTRfromh5
 
 fs = Path(getnetworkdataroot())
 project = 'genz'
-dwi_excluded = {project: ['sub-genz403', 'sub-genz906']}
+dwi_excluded = {project: ['sub-genz403', 'sub-genz906', 'sub-genz301', 'sub-genz309',]}
+
 
 class SubjIdPicks(object):
     pass
+
 
 class Optsd(object):
     """
@@ -37,7 +40,12 @@ class Optsd(object):
             spm_thresh = 0.80,
             fsl_thresh = 0.20,
             info_fname = fs / project / ('all_' + project + '_info.h5'),
+            dwi_qc = True,
             dwi_pass_qc = '_passqc',
+            dwi_qc_b0_alpha = 3.0,
+            dwi_qc_b2000_alpha = 3.0,
+            dwi_qc_b800_alpha = 3.0,
+            dwi_subj_excluded = ['sub-genz301', 'sub-genz309', 'sub-genz403', 'sub-genz906',],
             mf_str = '_mf',    # set to blank string '' to disable median filtering
             run_topup = True,
             dwi_add_blanks = True,
@@ -59,6 +67,9 @@ class Optsd(object):
             b1maptr = np.array([60., 240.0]),
             vfa_tr = 21.0,
             vfa_fas = [4.0, 25.0],
+            vfa_pr_shape = (384, 384, 323),
+            vfa_subj_excluded = ['sub-genz301', 'sub-genz309',],
+            mpf_img_dtype = np.int16,
             reg_mni2dwi = '{fs}/{project}/{subj}/{session}/reg/mni2dwi',
             reg_qt12dwi = '{fs}/{project}/{subj}/{session}/reg/qt12dwi',
             JHU_thr = 5,
@@ -73,9 +84,14 @@ class Optsd(object):
         self.convert = convert
         self.spm_thresh = spm_thresh
         self.fsl_thresh = fsl_thresh
-        self.dwi_pass_qc = dwi_pass_qc
-        self.mf_str = mf_str
         self.info_fname = info_fname
+        self.dwi_qc = dwi_qc
+        self.dwi_pass_qc = dwi_pass_qc
+        self.dwi_qc_b0_alpha = dwi_qc_b0_alpha
+        self.dwi_qc_b2000_alpha = dwi_qc_b2000_alpha
+        self.dwi_qc_b800_alpha = dwi_qc_b800_alpha
+        self.dwi_subj_excluded = dwi_subj_excluded
+        self.mf_str = mf_str
         self.run_topup = run_topup
         self.dwi_add_blanks = dwi_add_blanks
         self.eddy_corr = eddy_corr
@@ -96,6 +112,9 @@ class Optsd(object):
         self.b1maptr = b1maptr
         self.vfa_tr = vfa_tr
         self.vfa_fas = vfa_fas
+        self.vfa_pr_shape = vfa_pr_shape
+        self.vfa_subj_excluded = vfa_subj_excluded
+        self.mpf_img_dtype = mpf_img_dtype
         self.reg_mni2dwi = reg_mni2dwi
         self.reg_qt12dwi = reg_qt12dwi
         self.JHU_thr = JHU_thr
@@ -147,7 +166,7 @@ def get_freesurf_names(subjids_picks):
     for subjid in subjids_picks.subjids:
         subjid['b1map_fname'] = str(b1_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_B1MAP-QUIET_FC_']))
         subjid['freesurf_fname'] = str(fs_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['MEMP_IFS_0p5mm_2echo_'], dict3={'scan_info': 'ti1200_rms'}))
-        fs_picks.append(subjid)
+        fs_picks.append(mergeddicts(subjid, vars(opts)))
     return fs_picks
 
 def get_dwi_names(subjids_picks):
@@ -157,6 +176,8 @@ def get_dwi_names(subjids_picks):
         topdn_ftempl = removesuffix(str(genz_conv['_DWI6_B0_TOPDN_']['fname_template']))
         dwi_ftempl = removesuffix(str(genz_conv['_DWI64_3SH_B0_B800_B2000_TOPUP_']['fname_template']))
         for subjid in subjids_picks.subjids:
+            if subjid['subj'] in opts.dwi_subj_excluded:
+                continue
             subjid['project'] = opts.project
             subjid['topup_fname'] = str(topup_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_DWI6_B0_TOPUP_']))
             subjid['topdn_fname'] = str(topdn_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_DWI6_B0_TOPDN_']))
@@ -168,7 +189,7 @@ def get_dwi_names(subjids_picks):
             subjid['fits_path'] = fs / project / '{subj}/{session}/dwi'.format(**subjid) / opts.dwi_fits_dir
             subjid['bedpost_path'] = fs / project / '{subj}/{session}/dwi'.format(**subjid) / opts.dwi_bedpost_dir
             subjid['qt1_path'] = fs / project / '{subj}/{session}/qt1'.format(**subjid)
-            dwi_picks.append(subjid)
+            dwi_picks.append(mergeddicts(subjid, vars(opts)))
         return dwi_picks
     except TypeError as e:
             print('subjids needs to a dictionary.')
@@ -178,7 +199,7 @@ def get_3dt2_names(subjids_picks):
     t2_ftempl = removesuffix(str(img_conv[project]['_QUIET_3DT2W']['fname_template']))
     for subjid in subjids_picks.subjids:
         subjid['t2_fname'] = str(t2_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_QUIET_3DT2W']))
-        t2_picks.append(subjid)
+        t2_picks.append(mergeddicts(subjid, vars(opts)))
     return t2_picks
 
 def get_gaba_names(subjids_picks):
@@ -212,35 +233,48 @@ def get_vfa_names(subjids_picks):
     qt1_picks = []
     b1_ftempl = str(removesuffix(str(genz_conv['_B1MAP-QUIET_FC_']['fname_template'])))
     vfa_ftempl = str(removesuffix(str(genz_conv['_VFA_FA4-25_QUIET']['fname_template'])))
+    mt_ftempl = str(removesuffix(str(genz_conv['_MT_MPF_QUIET']['fname_template'])))
     for subjid in subjids_picks.subjids:
-        subjid.update({'scan_name': genz_conv['_VFA_FA4-25_QUIET']['scan_name'], 'tr': '21p0'})
+        if subjid['subj'] in opts.vfa_subj_excluded:
+            continue
+        subjid.update({'scan_name': genz_conv['_VFA_FA4-25_QUIET']['scan_name'], 'tr': '21p0', 'wild': '*'})
+        # add bids dirs to dict
+        subjid['anat_path'] = fs/project/'{subj}/{session}/anat'.format(**subjid)
+        subjid['dwi_path'] = fs / project / '{subj}/{session}/dwi'.format(**subjid)
+        subjid['vtk_path'] = fs / project / '{subj}/{session}/dwi'.format(**subjid) / opts.vtk_dir
+        subjid['eddy_path'] = fs / project / '{subj}/{session}/dwi'.format(**subjid) / opts.eddy_corr_dir
+        subjid['fits_path'] = fs / project / '{subj}/{session}/dwi'.format(**subjid) / opts.dwi_fits_dir
+        subjid['qt1_path'] = fs / project / '{subj}/{session}/qt1'.format(**subjid)
+        subjid['reg2dwi_path'] = fs / project / '{subj}/{session}/reg/'.format(**subjid) / opts.qt12dwi_reg_dir
         subjid['vfa_fname'] = vfa_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=genz_conv['_VFA_FA4-25_QUIET']))
         subjid['b1map_fname'] = b1_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=genz_conv['_B1MAP-QUIET_FC_']))
+        subjid['mt_fname'] = mt_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=genz_conv['_MT_MPF_QUIET']))
+        subjid['vasily_mpf_path'] = fs / project / '{subj}/{session}/mpf_vasily'.format(**subjid)
         if opts.info_fname.is_file():
             subjid['vfatr'] = getTRfromh5(opts.info_fname, subjid['subj'], subjid['session'], 'qt1', vfa_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=genz_conv['_VFA_FA4-25_QUIET'])))
             subjid['b1maptr'] = getTRfromh5(opts.info_fname, subjid['subj'], subjid['session'], 'fmap', b1_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=genz_conv['_B1MAP-QUIET_FC_'])))
         else:
             print('cannot find all_genz_info.h5 file. using fixed defaults: vfa TR=21.0 and b1map TR = 60.0 and 240.0')
-            subjid['vfatr'] = 21.0
-            subjid['b1maptr'] = np.array([60., 240.0])
+            subjid['vfatr'] = opts.vfa_tr
+            subjid['b1maptr'] = opts.b1maptr
         subjid['vfa_fas'] = opts.vfa_fas
-        if subjids_picks.getR1_MPF_names:
+        subjid['topup_brain_fname'] = str(removesuffix(str(genz_conv['_DWI6_B0_TOPUP_']['fname_template']))). \
+                                    format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_DWI6_B0_TOPUP_'])) +\
+                                    '_topdn_concat_mf_unwarped_mean_brain'
+        if subjids_picks.getR1_MPF_nii_fnames:
             subjid['r1_fname'] = subjids_picks.r1_fname_templ.format(**subjid)
             subjid['mpf_fname'] = subjids_picks.mpf_fname_templ.format(**subjid)
-            topup_ftempl = removesuffix(str(genz_conv['_DWI6_B0_TOPUP_']['fname_template']))
-            subjid['topup_brain_fname'] = str(removesuffix(str(genz_conv['_DWI6_B0_TOPUP_']['fname_template']))).\
-                format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_DWI6_B0_TOPUP_'])) + '_topdn_concat_mf_unwarped_mean_brain'
+            subjid['topup_ftempl'] = removesuffix(str(genz_conv['_DWI6_B0_TOPUP_']['fname_template']))
             subjid['UKF_fname'] = '{subj}_{session}_dwi-topup_64dir-3sh-800-2000_1_topdn_unwarped_ec_mf_clamp1_UKF_whbr.vtk'.format(**subjid)
         if subjids_picks.get_analyse_R1_MPF_names:
+            #r1_img_files = list(subjid['qt1_path'].glob(subjids_picks.orig_r1_fname_templ.format(**subjid)))
+            #mpf_img_files = list(subjid['qt1_path'].glob(subjids_picks.orig_mpf_fname_templ.format(**subjid)))
             subjid['orig_r1_fname'] = subjids_picks.orig_r1_fname_templ.format(**subjid)
             subjid['orig_mpf_fname'] = subjids_picks.orig_mpf_fname_templ.format(**subjid)
-
-        # add dirs to dict
-        subjid['anat_path'] = fs/project/'{subj}/{session}/anat'.format(**subjid)
-        subjid['dwi_path'] = fs / project / '{subj}/{session}/dwi'.format(**subjid)
-        subjid['vtk_path'] = fs / project / '{subj}/{session}/dwi'.format(**subjid) / opts.vtk_dir
-        subjid['eddy_path'] = fs / project / '{subj}/{session}/dwi'.format(**subjid) / opts.eddy_corr_dir
-        subjid['qt1_path'] = fs / project / '{subj}/{session}/qt1'.format(**subjid)
-        subjid['reg2dwi_path'] = fs / project / '{subj}/{session}/reg/'.format(**subjid) / opts.qt12dwi_reg_dir
-        qt1_picks.append(subjid)
+            # if len(r1_img_files) == len(mpf_img_files) == 1:
+            #     subjid['orig_r1_fname'] = r1_img_files[0]
+            #     subjid['orig_mpf_fname'] = mpf_img_files[0]
+            # else:
+            #     raise ValueError('for {subj} in {session} found more than 1 R1 or MPF .img file. ambiguous choice. Please have only one matching .img file for each.'.format(**subjid))
+        qt1_picks.append(mergeddicts(subjid, vars(opts)))
     return qt1_picks
