@@ -211,7 +211,7 @@ def get_h5_keys(h5_fname, key=None):
     if not key is None:
         match_key = [k for k in h5keys if key in k]
         h5keys = match_key
-    return h5keys
+    return sorted(h5keys)
 
 
 def getTRfromh5(h5_fname, subject, session, modality, scan):
