@@ -55,7 +55,7 @@ if not opts.dwi_qc and not opts.dwi_pass_qc == '':
 subjids_picks = SubjIdPicks()
 # list of subject ids to operate on
 picks = [
-        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz501'},
+        {'run': '1', 'session': 'ses-1', 'subj': 'sub-genz334'},
         ]
 
 
@@ -64,7 +64,7 @@ setattr(subjids_picks, 'subjids', picks)
 opts.test = False
 skip_tup_eddy_cmds = False
 skip_mat = False
-new_mask = True
+new_mask = False
 
 # commands and options are modified below.
 # topup command for unwarping dti
