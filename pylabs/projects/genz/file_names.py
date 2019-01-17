@@ -69,6 +69,7 @@ class Optsd(object):
             vfa_fas = [4.0, 25.0],
             vfa_pr_shape = (384, 384, 323),
             vfa_subj_excluded = ['sub-genz301', 'sub-genz309', 'sub-genz207', ],
+            vfa_run2 = ['sub-genz125', 'sub-genz126', 'sub-genz518', 'sub-genz132', 'sub-genz319', 'sub-genz516', 'sub-genz223', 'sub-genz423', ],
             mpf_img_dtype = np.int16,
             reg_mni2dwi = '{fs}/{project}/{subj}/{session}/reg/mni2dwi',
             reg_qt12dwi = '{fs}/{project}/{subj}/{session}/reg/qt12dwi',
@@ -114,6 +115,7 @@ class Optsd(object):
         self.vfa_fas = vfa_fas
         self.vfa_pr_shape = vfa_pr_shape
         self.vfa_subj_excluded = vfa_subj_excluded
+        self.vfa_run2 = vfa_run2
         self.mpf_img_dtype = mpf_img_dtype
         self.reg_mni2dwi = reg_mni2dwi
         self.reg_qt12dwi = reg_qt12dwi
@@ -237,7 +239,7 @@ def get_vfa_names(subjids_picks):
     for subjid in subjids_picks.subjids:
         if subjid['subj'] in opts.vfa_subj_excluded:
             continue
-        subjid.update({'scan_name': genz_conv['_VFA_FA4-25_QUIET']['scan_name'], 'tr': '21p0', 'wild': '*'})
+        subjid.update({'scan_name': genz_conv['_VFA_FA4-25_QUIET']['scan_name'], 'tr': str(opts.vfa_tr).replace('.', 'p'), 'wild': '*'})
         # add bids dirs to dict
         subjid['anat_path'] = fs/project/'{subj}/{session}/anat'.format(**subjid)
         subjid['dwi_path'] = fs / project / '{subj}/{session}/dwi'.format(**subjid)
@@ -251,8 +253,13 @@ def get_vfa_names(subjids_picks):
         subjid['mt_fname'] = mt_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=genz_conv['_MT_MPF_QUIET']))
         subjid['vasily_mpf_path'] = fs / project / '{subj}/{session}/mpf_vasily'.format(**subjid)
         if opts.info_fname.is_file():
-            subjid['vfatr'] = getTRfromh5(opts.info_fname, subjid['subj'], subjid['session'], 'qt1', vfa_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=genz_conv['_VFA_FA4-25_QUIET'])))
-            subjid['b1maptr'] = getTRfromh5(opts.info_fname, subjid['subj'], subjid['session'], 'fmap', b1_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=genz_conv['_B1MAP-QUIET_FC_'])))
+            try:
+                subjid['vfatr'] = getTRfromh5(opts.info_fname, subjid['subj'], subjid['session'], 'qt1', vfa_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=genz_conv['_VFA_FA4-25_QUIET'])))
+                subjid['b1maptr'] = getTRfromh5(opts.info_fname, subjid['subj'], subjid['session'], 'fmap', b1_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=genz_conv['_B1MAP-QUIET_FC_'])))
+            except KeyError as ke:
+                if int(subjid['run']) == 2:
+                    subjid['b1maptr'] = getTRfromh5(opts.info_fname, subjid['subj'], subjid['session'], 'fmap', b1_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=genz_conv['_B1MAP-QUIET_FC_'], dict3={'run': '1'})))
+                    print('for {subj} session {session} with vfa run of {run} a missing key for b1map forced using run 1 b1map tr info of {b1maptr}.'.format(**subjid))
         else:
             print('cannot find all_genz_info.h5 file. using fixed defaults: vfa TR=21.0 and b1map TR = 60.0 and 240.0')
             subjid['vfatr'] = opts.vfa_tr
@@ -267,14 +274,7 @@ def get_vfa_names(subjids_picks):
             subjid['topup_ftempl'] = removesuffix(str(genz_conv['_DWI6_B0_TOPUP_']['fname_template']))
             subjid['UKF_fname'] = '{subj}_{session}_dwi-topup_64dir-3sh-800-2000_1_topdn_unwarped_ec_mf_clamp1_UKF_whbr.vtk'.format(**subjid)
         if subjids_picks.get_analyse_R1_MPF_names:
-            #r1_img_files = list(subjid['qt1_path'].glob(subjids_picks.orig_r1_fname_templ.format(**subjid)))
-            #mpf_img_files = list(subjid['qt1_path'].glob(subjids_picks.orig_mpf_fname_templ.format(**subjid)))
             subjid['orig_r1_fname'] = subjids_picks.orig_r1_fname_templ.format(**subjid)
             subjid['orig_mpf_fname'] = subjids_picks.orig_mpf_fname_templ.format(**subjid)
-            # if len(r1_img_files) == len(mpf_img_files) == 1:
-            #     subjid['orig_r1_fname'] = r1_img_files[0]
-            #     subjid['orig_mpf_fname'] = mpf_img_files[0]
-            # else:
-            #     raise ValueError('for {subj} in {session} found more than 1 R1 or MPF .img file. ambiguous choice. Please have only one matching .img file for each.'.format(**subjid))
         qt1_picks.append(mergeddicts(subjid, vars(opts)))
     return qt1_picks
