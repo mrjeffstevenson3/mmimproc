@@ -233,6 +233,26 @@ def getTRfromh5(h5_fname, subject, session, modality, scan):
             interval_count += 1
     return np.fromstring(tr.translate(None, '[]'), sep=' ')
 
+def get_acq_nr_fmh5(h5_fname, subject, session, modality, scan):
+    h5_fname = Path(h5_fname)
+    if not h5_fname.is_file():
+        raise ValueError(str(h5_fname)+' h5 file not found.')
+    interval_count = 0
+    while True:
+        try:
+            if interval_count > pylabs.max_intervals:
+                raise ValueError('Waiting over '+str(pylabs.h5wait_interval * pylabs.max_intervals / 60) + ' minutes towrite to H5 file '+str(h5_fname))
+            else:
+                with pd.HDFStore(str(h5_fname)) as storeh5:
+                    df = storeh5.select('/'+'/'.join([subject, session, 'convert_info']))
+                    acq_num = df.loc[(modality, scan), 'acq_nr']
+                    break
+        except (IOError, OSError):
+            time.sleep(pylabs.h5wait_interval)
+            interval_count += 1
+    return acq_num
+
+
 
 def get_pr_affine_fromh5(h5_fname, subject, session, modality, scan):
     h5_fname = Path(h5_fname)
