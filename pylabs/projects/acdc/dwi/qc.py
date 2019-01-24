@@ -1,4 +1,4 @@
-# use all_topup_idx, topdn_idx, auto_dwi_vol_idx for mapping qc index to image vol index
+# assumes 3 shell dwi of 0, 800, 2000 with only 1 B0 as 1st vol
 # first set global root data directory
 import pylabs
 pylabs.datadir.target = 'jaba'
@@ -9,6 +9,7 @@ import pandas as pd
 from dipy.io import read_bvals_bvecs
 from dipy.core.gradients import gradient_table
 from pylabs.io.mixed import df2h5
+from pylabs.io.images import savenii
 from pylabs.utils import *
 from pylabs.diffusion.dti_qc import dwi_qc_1bv
 # project and subjects and files to run on
@@ -26,7 +27,7 @@ opts.test = False
 subjids_picks = SubjIdPicks()
 # list of dicts of subject ids and info to operate on
 picks = [
-         {'subj': 'sub-acdc117', 'session': 'ses-2', 'run': '1',},
+         {'subj': 'sub-acdctest_jan17', 'session': 'ses-1', 'run': '1',},
          ]
 
 setattr(subjids_picks, 'subjids', picks)
@@ -39,18 +40,11 @@ if opts.test:
     dwi_picks = [dwi_picks[i]]
 
 for i, pick in enumerate(dwi_picks):
-    # read in data and prep results df
-    subject = pick['subj']
-    session = pick['session']
-    dwif = pick['dwi_fname']
-    topup = pick['topup_fname']
-    topdn = pick['topdn_fname']
-    dwipath = fs / project / subject / session / 'dwi'
-    orig_dwi_fname = dwipath / '{dwi_fname}.nii'.format(**pick)
-    orig_dwi_bvals_fname = dwipath / '{dwi_fname}.bvals'.format(**pick)
-    orig_dwi_bvecs_fname = dwipath / '{dwi_fname}.bvecs'.format(**pick)
-    topup_fname = dwipath / '{topup_fname}.nii'.format(**pick)
-    topdn_fname = dwipath / '{topdn_fname}.nii'.format(**pick)
+    orig_dwi_fname = pick['dwi_path'] / '{dwi_fname}.nii'.format(**pick)
+    orig_dwi_bvals_fname = pick['dwi_path'] / '{dwi_fname}.bvals'.format(**pick)
+    orig_dwi_bvecs_fname = pick['dwi_path'] / '{dwi_fname}.bvecs'.format(**pick)
+    topup_fname = pick['dwi_path'] / '{topup_fname}.nii'.format(**pick)
+    topdn_fname = pick['dwi_path'] / '{topdn_fname}.nii'.format(**pick)
     bvals, bvecs = read_bvals_bvecs(str(orig_dwi_bvals_fname), str(orig_dwi_bvecs_fname))
     gtab = gradient_table(bvals, bvecs)
     orig_dwi_data = nib.load(str(orig_dwi_fname)).get_data()
@@ -69,9 +63,9 @@ for i, pick in enumerate(dwi_picks):
 
     # start 3 shell dwi hardi
     b = 800.0   # dwi qc
-    output_pname = dwipath / 'qc' / '{subj}_{session}_b800-qc'.format(**pick)
+    output_pname = pick['dwi_path'] / 'qc/{subj}_{session}_b800-qc'.format(**pick)
     b800_dwi_data = orig_dwi_data[:, :, :, gtab.bvals == b]
-    b800_badvols = dwi_qc_1bv(b800_dwi_data, output_pname)
+    b800_badvols = dwi_qc_1bv(b800_dwi_data, output_pname, alpha=opts.dwi_qc_b800_alpha)
     for i in range(b800_badvols.shape[0]):
         b800_badvols.loc[i, 'orig_dwi_idx'] = int(np.where(bvals == b)[0][i])
     b800_badvols['orig_dwi_idx'] = b800_badvols['orig_dwi_idx'].astype('int')
@@ -81,9 +75,9 @@ for i, pick in enumerate(dwi_picks):
         qc_DF.loc[v_ser[0], 'auto_dwi_vol_idx'] = v_idx
 
     b = 2000.0   # dwi qc
-    output_pname = dwipath / 'qc' / '{subj}_{session}_b2000-qc'.format(**pick)
+    output_pname = pick['dwi_path'] / 'qc/{subj}_{session}_b2000-qc'.format(**pick)
     b2000_dwi_data = orig_dwi_data[:, :, :, gtab.bvals == b]
-    b2000_badvols = dwi_qc_1bv(b2000_dwi_data, output_pname)
+    b2000_badvols = dwi_qc_1bv(b2000_dwi_data, output_pname, alpha=opts.dwi_qc_b2000_alpha)
     for i in range(b2000_badvols.shape[0]):
         b2000_badvols.loc[i, 'orig_dwi_idx'] = int(np.where(bvals == b)[0][i])
     b2000_badvols['orig_dwi_idx'] = b2000_badvols['orig_dwi_idx'].astype('int')
@@ -93,14 +87,14 @@ for i, pick in enumerate(dwi_picks):
         qc_DF.loc[v_ser[0], 'auto_dwi_vol_idx'] = v_idx
 
     # topup qc
-    output_pname = dwipath / 'qc' / '{subj}_{session}_topup8b0-qc'.format(**pick)
+    output_pname = pick['dwi_path'] / 'qc/{subj}_{session}_topup8b0-qc'.format(**pick)
     all_topup_data = np.append(orig_dwi_data[:, :, :, 0, None], orig_topup_data, axis=3)
-    topup_badvols = dwi_qc_1bv(all_topup_data, output_pname)
+    topup_badvols = dwi_qc_1bv(all_topup_data, output_pname, alpha=opts.dwi_qc_b0_alpha)
     qc_DF.loc[:(topup_badvols.shape[0] - 1), 'topup_qc'] = topup_badvols[1].values
 
     # topdown qc
-    output_pname = dwipath / 'qc' / '{subj}_{session}_topdn7b0-qc'.format(**pick)
-    topdn_badvols = dwi_qc_1bv(orig_topdn_data, output_pname)
+    output_pname = pick['dwi_path'] / 'qc/{subj}_{session}_topdn7b0-qc'.format(**pick)
+    topdn_badvols = dwi_qc_1bv(orig_topdn_data, output_pname, alpha=opts.dwi_qc_b0_alpha)
     qc_DF.loc[:(topdn_badvols.shape[0] - 1), 'topdn_qc'] = topdn_badvols[1].values
 
     #fill in dwi b0 qc results into df
@@ -115,5 +109,19 @@ for i, pick in enumerate(dwi_picks):
     qc_DF.replace({-9999: 'NaN'})
     cols = [u'x_bvec', u'y_bvec', u'z_bvec'] + intcols + ['dwi_fname', 'topup_fname', 'topdn_fname']
     qc_DF = qc_DF[cols]
+
     df2h5(qc_DF.reset_index(level=0), opts.info_fname, '/{subj}/{session}/dwi/auto_qc'.format(**pick), append=False)
 
+    # add mask of bad slices here: read in b800 and b2000 reports and set mask vol/slice to alpha value
+    with open(str(fs / '{project}/{subj}/{session}/dwi/qc/{subj}_{session}_b2000-qc_report.txt'.format(**pick)), 'r') as qc_report:
+        b2000_badvols = qc_report.read()
+    with open(str(fs / '{project}/{subj}/{session}/dwi/qc/{subj}_{session}_b800-qc_report.txt'.format(**pick)), 'r') as qc_report:
+        b800_badvols = qc_report.read()
+    bad_vols_data = np.zeros(nib.load(str(pick['dwi_path']/(pick['dwi_fname']+'.nii'))).shape)
+    for line in b2000_badvols.splitlines():
+        if 'bad slice volume' in line:
+            bad_vols_data[:, :, int(float(line.split()[4])) - 1, int(float(line.split()[5])) + np.sum(gtab.b0s_mask)] = float(line.split()[3])
+    for line in b800_badvols.splitlines():
+        if 'bad slice volume' in line:
+            bad_vols_data[:, :, int(float(line.split()[4])) - 1, int(float(line.split()[5])) + np.sum(gtab.bvals == 2000) + np.sum(gtab.b0s_mask)] = float(line.split()[3])
+    savenii(bad_vols_data, nib.load(str(pick['dwi_path']/(pick['dwi_fname']+'.nii'))).affine, '{dwi_path}/{dwi_fname}_badvols_mask.nii.gz'.format(**pick), minmax=(1,3))

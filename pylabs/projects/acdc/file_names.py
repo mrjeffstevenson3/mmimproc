@@ -8,6 +8,7 @@ from pathlib import *
 import numpy as np
 from pylabs.io.mixed import getTRfromh5
 from pylabs.utils import *
+from pylabs.conversion.parrec2nii_convert import mergeddicts
 from pylabs.conversion.brain_convert import acdc_conv, img_conv, is_empty
 
 fs = Path(getnetworkdataroot())
@@ -148,8 +149,8 @@ def merge_ftempl_dicts(dict1={}, dict2={}, dict3={}, base_dd=fname_templ_dd):
 
 def get_freesurf_names(subjids_picks):
     fs_picks = []
-    b1_ftempl = removesuffix(str(genz_conv['_B1MAP-QUIET_FC_']['fname_template']))
-    fs_ftempl = removesuffix(str(genz_conv['MEMP_IFS_0p5mm_2echo_']['fname_template']))
+    b1_ftempl = removesuffix(str(acdc_conv['_B1MAP-QUIET_FC_']['fname_template']))
+    fs_ftempl = removesuffix(str(acdc_conv['MEMP_IFS_0p5mm_2echo_']['fname_template']))
     for subjid in subjids_picks.subjids:
         subjid['b1map_fname'] = str(b1_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_B1MAP-QUIET_FC_']))
         subjid['freesurf_fname'] = str(fs_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['MEMP_IFS_0p5mm_2echo_'], dict3={'scan_info': 'ti1200_rms'}))
@@ -201,3 +202,51 @@ def get_3dt2_names(subjids_picks):
         subjid['t2_fname'] = str(t2_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_QUIET_3DT2W']))
         t2_picks.append(mergeddicts(subjid, vars(opts)))
     return t2_picks
+
+def get_vfa_names(subjids_picks):
+    qt1_picks = []
+    b1_ftempl = str(removesuffix(str(acdc_conv['_B1MAP-QUIET_']['fname_template'])))
+    vfa_ftempl = str(removesuffix(str(acdc_conv['_VFA_FA4-25_']['fname_template'])))
+    mt_ftempl = str(removesuffix(str(acdc_conv['_MT_MPF_']['fname_template'])))
+    for subjid in subjids_picks.subjids:
+        if subjid['subj'] in opts.vfa_subj_excluded:
+            continue
+        subjid.update({'scan_name': acdc_conv['_VFA_FA4-25_']['scan_name'], 'tr': str(opts.vfa_tr).replace('.', 'p'), 'wild': '*'})
+        # add bids dirs to dict
+        subjid['anat_path'] = fs/project/'{subj}/{session}/anat'.format(**subjid)
+        subjid['dwi_path'] = fs / project / '{subj}/{session}/dwi'.format(**subjid)
+        subjid['vtk_path'] = fs / project / '{subj}/{session}/dwi'.format(**subjid) / opts.vtk_dir
+        subjid['eddy_path'] = fs / project / '{subj}/{session}/dwi'.format(**subjid) / opts.eddy_corr_dir
+        subjid['fits_path'] = fs / project / '{subj}/{session}/dwi'.format(**subjid) / opts.dwi_fits_dir
+        subjid['qt1_path'] = fs / project / '{subj}/{session}/qt1'.format(**subjid)
+        subjid['reg2dwi_path'] = fs / project / '{subj}/{session}/reg/'.format(**subjid) / opts.qt12dwi_reg_dir
+        subjid['vfa_fname'] = vfa_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=acdc_conv['_VFA_FA4-25_']))
+        subjid['b1map_fname'] = b1_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=acdc_conv['_B1MAP-QUIET_']))
+        subjid['mt_fname'] = mt_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=acdc_conv['_MT_MPF_']))
+        subjid['vasily_mpf_path'] = fs / project / '{subj}/{session}/mpf_vasily'.format(**subjid)
+        if opts.info_fname.is_file():
+            try:
+                subjid['vfatr'] = getTRfromh5(opts.info_fname, subjid['subj'], subjid['session'], 'qt1', vfa_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=acdc_conv['_VFA_FA4-25_'])))
+                subjid['b1maptr'] = getTRfromh5(opts.info_fname, subjid['subj'], subjid['session'], 'fmap', b1_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=acdc_conv['_B1MAP-QUIET_'])))
+            except KeyError as ke:
+                if int(subjid['run']) == 2:
+                    subjid['b1maptr'] = getTRfromh5(opts.info_fname, subjid['subj'], subjid['session'], 'fmap', b1_ftempl.format(**merge_ftempl_dicts(dict1=subjid, dict2=acdc_conv['_B1MAP-QUIET_'], dict3={'run': '1'})))
+                    print('for {subj} session {session} with vfa run of {run} a missing key for b1map forced using run 1 b1map tr info of {b1maptr}.'.format(**subjid))
+        else:
+            print('cannot find all_genz_info.h5 file. using fixed defaults: vfa TR=21.0 and b1map TR = 60.0 and 240.0')
+            subjid['vfatr'] = opts.vfa_tr
+            subjid['b1maptr'] = opts.b1maptr
+        subjid['vfa_fas'] = opts.vfa_fas
+        subjid['topup_brain_fname'] = str(removesuffix(str(acdc_conv['_DWI6_B0_TOPUP_']['fname_template']))). \
+                                    format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_DWI6_B0_TOPUP_'])) +\
+                                    '_topdn_concat_mf_unwarped_mean_brain'
+        if subjids_picks.getR1_MPF_nii_fnames:
+            subjid['r1_fname'] = subjids_picks.r1_fname_templ.format(**subjid)
+            subjid['mpf_fname'] = subjids_picks.mpf_fname_templ.format(**subjid)
+            subjid['topup_ftempl'] = removesuffix(str(acdc_conv['_DWI6_B0_TOPUP_']['fname_template']))
+            subjid['UKF_fname'] = '{subj}_{session}_dwi-topup_64dir-3sh-800-2000_1_topdn_unwarped_ec_mf_clamp1_UKF_whbr.vtk'.format(**subjid)
+        if subjids_picks.get_analyse_R1_MPF_names:
+            subjid['orig_r1_fname'] = subjids_picks.orig_r1_fname_templ.format(**subjid)
+            subjid['orig_mpf_fname'] = subjids_picks.orig_mpf_fname_templ.format(**subjid)
+        qt1_picks.append(mergeddicts(subjid, vars(opts)))
+    return qt1_picks
