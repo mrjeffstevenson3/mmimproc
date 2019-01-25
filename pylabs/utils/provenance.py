@@ -13,7 +13,7 @@ try:
 except:
     niprov = None
 
-useNiprov = True  ## Change this to False to turn off niprov usage
+useNiprov = False  ## Change this to False to turn off niprov usage
 
 
 class ProvenanceWrapper(object):

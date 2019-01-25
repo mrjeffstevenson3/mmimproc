@@ -1,0 +1,27 @@
+
+
+list2=`python -c "from pylabs.projects.bbc.pairing import dwipairing; \
+    print(' '.join(['sub-bbc{sid}'.format(sid=str(s)) for s, ses, m, r in dwipairing]))"`
+
+
+ for i in `seq 1 69`;
+        do
+                echo line in network file $i
+
+rm networkvalue${i}.txt
+echo connectivity,subject >> networkvalue${i}.txt
+
+for asubject in ${list2}
+do
+
+
+ls -l ${asubject}
+echo ${asubject} > name.txt
+asubjectsubgr=`echo ${asubject} | awk ' { keep=index($0,"subgr") ; print substr($0, 1, 10) } ' ` ;
+echo asubjectsubgr ${asubjectsubgr}
+sed -n "$i, $i p" ${asubject}*measures.txt > file2.txt
+value=`cut -f2 -d"," file2.txt`
+echo value ${value}
+echo ${value},${asubjectgroup},${asubjectsubgr},${asubject} >> networkvalue${i}.txt
+done
+done

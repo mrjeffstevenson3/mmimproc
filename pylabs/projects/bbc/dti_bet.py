@@ -16,7 +16,7 @@ from nipype.interfaces.fsl import Eddy
 eddy = Eddy(num_threads=24, output_type='NIFTI')
 from nipype.interfaces import fsl
 flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo', output_type='NIFTI')
-applyxfm = fsl.ApplyXfm(interp='nearestneighbour', output_type='NIFTI')
+applyxfm = fsl.ApplyXFM(interp='nearestneighbour', output_type='NIFTI')
 bet = fsl.BET(output_type='NIFTI')
 prov = niprov.ProvenanceContext()
 
@@ -51,6 +51,7 @@ S0 = data[:, :, :, gtab.b0s_mask]
 nS0_img = nib.Nifti1Image(S0, img.affine)
 nS0_img.set_qform(img.affine, code=1)
 nib.save(nS0_img, S0_fname)
+
 #make mat file to apply mask and com
 flt.inputs.in_file = join(pylabs_basepath, 'data', 'atlases', 'MNI152_T1_1mm_bet_zcut.nii.gz')
 flt.inputs.reference = S0_fname

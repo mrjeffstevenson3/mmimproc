@@ -1,0 +1,1 @@
+# this is placeholder for B0 map correction function for fmri

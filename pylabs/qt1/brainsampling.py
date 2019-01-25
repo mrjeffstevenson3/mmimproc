@@ -15,7 +15,7 @@ from scipy.optimize import OptimizeWarning
 warnings.simplefilter("ignore", OptimizeWarning)
 
 fs = getlocaldataroot()
-projectdir = join(fs, 'scsmethods')
+projectdir = join(fs, 'scs')
 subject = 'sub-scs376'
 subjectdir = join(projectdir, subject)
 

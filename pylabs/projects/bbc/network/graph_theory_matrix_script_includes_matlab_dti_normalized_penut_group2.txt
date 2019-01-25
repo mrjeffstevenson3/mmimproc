@@ -1,0 +1,19 @@
+cd /mnt/neuroimaging2/todd/penut
+list=`ls -d */group2*/*/*matrix2`
+#list='prepare_for_dtiscript/group2_subgr2_inter4_umn_504_02/probtrackoutput/fdt_network_matrix2'
+atask='dti'
+for asubject in ${list}
+do
+cd /mnt/neuroimaging2/todd/penut
+threshold='10percent'
+
+echo subject ${asubject}
+cp ${asubject} /mnt/neuroimaging2/todd/penut/connectome/TestMatrix_GraphAnalysis.csv
+cd /mnt/neuroimaging2/todd/penut/connectome
+matlab -nodisplay -r "network_analysis_todd_for_dti_network" 
+cp test_subject_network_measures.txt /mnt/neuroimaging2/todd/penut/${asubject}_network_measures
+cp test_subject_thresholded_connectivity_matrix.txt /mnt/neuroimaging2/todd/penut/${asubject}_thresholded_connectivity_matrix.txt
+cp test_subject_thresholded_connectivity_matrix.edge.txt /mnt/neuroimaging2/todd/penut/${asubject}_thresholded_connectivity_matrix_edge.txt
+done
+
+

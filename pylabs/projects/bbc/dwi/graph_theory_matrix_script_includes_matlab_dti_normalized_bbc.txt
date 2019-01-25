@@ -1,0 +1,24 @@
+cd ${DATADIR}
+cd bbc
+list=`ls -d */*/*/probtrackoutput`
+atask='dti'
+for asubject in ${list}
+do
+cd ${DATADIR}
+cd bbc
+
+threshold='10percent'
+asubjectsub=`echo ${asubject} | awk ' { keep=index($0,"ses") ; print substr($0, keep-11, keep-2) } ' ` ;
+echo subject ${asubject} ${asubjectsub}
+cp ${asubject}/*matrix ${PYLABS}/pylabs/projects/bbc/dwi
+cp ${asubject}/waytotal ${PYLABS}/pylabs/projects/bbc/dwi
+cd ${PYLABS}/pylabs/projects/bbc/dwi
+./network_normalize
+cp *matrix2 TestMatrix_GraphAnalysis.csv
+matlab -nodisplay -r "network_analysis_todd_for_dti_network68" 
+cp test_subject_network_measures.txt ${asubjectsub}_network_measures.txt
+cp *matrix ${asubjectsub}_thresholded_connectivity_matrix.txt
+cp test_subject_thresholded_connectivity_matrix.edge.txt ${asubjectsub}_thresholded_connectivity_matrix_edge.txt
+done
+
+

@@ -1,8 +1,11 @@
+#todo: need to trap empty scans dict otherwise concat fails line 23
+import pylabs
 import pandas as pd
 import os
 from os.path import join
-from pylabs.utils.paths import getlocaldataroot
-fs = getlocaldataroot()
+from pylabs.utils.paths import getnetworkdataroot
+fs = getnetworkdataroot()
+print (fs)
 
 
 def make_sessions_fm_dict(niidict, project, subject):
@@ -18,13 +21,15 @@ def make_sessions_fm_dict(niidict, project, subject):
         sessions.append(session)
         scans.append(pd.DataFrame.from_dict(s, orient='index'))
 
-    sessionsDF = pd.concat(scans, keys=sessions)
+    sessionsDF = pd.concat(scans, keys=sessions, sort=True)
+    sessionsDF.index.rename('modality', level=0, inplace=True)
+    sessionsDF.index.rename('scan_name', level=1, inplace=True)
     remain_cols = [x for x in sessionsDF.columns.values if x not in col_order]
     subsessionsDF = sessionsDF[col_order+remain_cols].reset_index(drop=True)
 
     if all(subsessionsDF['multisession'] > 0) == True and os.path.isfile(join(fs, project, subject, str(subject) +'_sessions.tsv')):
-        orig_subsessionsDF = pd.DataFrame.from_csv(open(join(fs, project, subject, str(subject) +'_sessions.tsv')), sep='\t', header=1)
-        subsessionsDF = subsessionsDF.append(orig_subsessionsDF)
+        orig_subsessionsDF = pd.read_csv(open(join(fs, project, subject, str(subject) +'_sessions.tsv')), sep='\t', header=1)
+        subsessionsDF = subsessionsDF.append(orig_subsessionsDF, sort=True)
 
     subsessionsDF.to_csv(join(fs, project, subject, str(subject) +'_sessions.tsv'), columns=col_order+remain_cols,
                              index=False, sep='\t', encoding='utf-8')

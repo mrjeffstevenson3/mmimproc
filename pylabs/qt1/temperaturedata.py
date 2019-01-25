@@ -25,8 +25,9 @@ class TemperatureRecord(object):
 
 
 def getSessionRecords(scanner):
-    fpath = 'data/T1_phantom_temperature_readings_inventory_{0}.csv'.format(scanner)
-    with open(fpath) as tempfile:
+    from pylabs.utils import pylabs_datadir
+    fpath = pylabs_datadir/'T1_phantom_temperature_readings_inventory_{0}.csv'.format(scanner)
+    with open(str(fpath)) as tempfile:
         lines = tempfile.readlines()
     sessions = {}
     for line in lines[1:]:

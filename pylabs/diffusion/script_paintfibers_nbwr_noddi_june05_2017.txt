@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+cd /mnt/users/js/nbwr/sub-nbwr999b/ses-1/june12_data/toddtest
+echo "1" > usechannel.txt
+echo "1" > procmethod.txt
+FILESIZE=$(stat -c%s "f.vtk")
+echo $FILESIZE > filesize.txt
+cp sub-nbwr999b_ses-1_qT1_b1corr_clamped_reg2dwi_Warped.nii.gz stats.nii.gz
+fslhd -x stats > S0_hdr.txt
+
+grep sto_ijk S0_hdr.txt > z.txt
+xoffset=`cat z.txt | awk '{ print $7 }'`
+yoffset=`cat z.txt | awk '{ print $11 }'`
+zoffset=`cat z.txt | awk '{ print $15 }'`
+echo $xoffset $yoffset $zoffset > offsets.txt
+rm stats1*
+cp stats.nii.gz stats1.nii.gz
+fslchfiletype ANALYZE stats1
+
+cp /mnt/users/js/bbc/holdaal/base.vtk .
+cp /mnt/users/js/bbc/holdaal/aal_motor.vtk .
+cp /mnt/users/js/bbc/holdaal/channel.vtk .
+rm fnew.vtk
+${PYLABS}/pylabs/diffusion/writefiber_withpaint_june05_2017_noddi_qti
+
+

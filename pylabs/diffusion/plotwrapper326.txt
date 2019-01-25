@@ -1,0 +1,15 @@
+name=`ls roi326_FA_CTOPPrnCS_mm_stats.csv`
+echo $name > name.txt
+cp $name roi.csv
+cat roi.csv | cut -d',' -f10 > column10.txt
+cat roi.csv | cut -d',' -f11 > column11.txt
+echo `cat name.txt` | tr '_' '-' > name1.txt
+ sed '2q;d' column10.txt | sed -e 's/ /-/g' > brain10.txt
+ sed '2q;d' column11.txt | sed -e 's/ /-/g' > brain11.txt
+octave plot1.m
+
+
+
+
+
+

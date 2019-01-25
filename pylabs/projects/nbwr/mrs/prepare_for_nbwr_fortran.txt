@@ -1,0 +1,27 @@
+cd /brainstudio/data/nbwr/stats/mrs
+numcol1=`head -n1 all_nbwr_mrs_results_csfcorr_fits.csv | grep -o "," | wc -l`
+numrow1=`wc -l all_nbwr_mrs_results_csfcorr_fits.csv`
+numcol2=`head -n1 fsiq4.csv | grep -o "," | wc -l`
+numrow2=`wc -l fsiq4.csv`
+numcol3=`head -n1 all_nbwr_mrs_uncorr_fits.csv | grep -o "," | wc -l`
+numrow3=`wc -l all_nbwr_mrs_uncorr_fits.csv`
+
+echo $numcol1 > numcol1.txt    #This is the number of columns in Todd's corrected metabolite file make by nbwr_spreadsheet_sep19_2017 
+echo $numrow1 > numrow1.txt    #This is the number of rows in Todd's corrected metabolite file make by nbwr_spreadsheet_sep19_2017
+echo $numcol2 > numcol2.txt     #This is the number of columns in the behavior csv which should be 2 to be looped over to get all
+echo $numrow2 > numrow2.txt     #This is the number of rows in the behavior csv
+echo $numcol3 > numcol3.txt        #This is the number of columns from the Jeff's uncorrected metabolite file
+echo $numrow3 > numrow3.txt          #This is the number of rows from the Jeff's uncorrected metabolite file
+echo 13 > chosen_metabolite.txt      #This is the chosen metabolite column number which is right glutamate from the corrected csv output
+
+echo all_nbwr_mrs_results_csfcorr_fits.csv > all_nbwr.txt  #This file name gets created by my fortran using input from uncorrected below
+echo fsiq4.csv > gaba_scores.txt                         #This is the file name of 1 column is subject iD 2 column behavioral data with only one behavior
+echo all_nbwr_mrs_uncorr_fits.csv > all_nbwr_uncorr.txt  #this is the file name of your uncorrected metabolite input for fortran
+${PYLABS}/pylabs/projects/nbwr/mrs/nbwr_spreadsheet_sep19_2017  # run only once because it handles all of the metabolites
+${PYLABS}/pylabs/projects/nbwr/mrs/nbwr_spreadsheet_sep27_correlations_13_3  # loop over for every different behavior and metabolite combination
+${PYLABS}/pylabs/projects/nbwr/mrs/makeplots_nbwr.txt  #loop over for every combination but rename the output GenSpec.m and mrsbehav.jpg so that don't get overwritten mrsbehav.jpg
+octave GenSpec.m
+
+
+
+

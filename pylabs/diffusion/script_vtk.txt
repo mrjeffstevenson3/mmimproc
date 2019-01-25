@@ -1,0 +1,23 @@
+cd ${DATADIR}/bbc
+list=`ls -d sub-bbc*`
+rm ${DATADIR}/bbc/allvtk_run3.txt
+for afolder in ${list}
+do
+echo working on ${afolder}
+cd ${DATADIR}/bbc
+cd ${afolder}/*/*/vtk_tensor_comp_run2
+rm aal_motor.vtk
+cp *aal_motor.vtk aal_motor.vtk
+rm base.vtk
+cp *base*.vtk base.vtk
+list2=`ls *tensor*.vtk`
+for afile in ${list2}
+do
+echo working on ${afile}
+cp ${afile} f.vtk
+${PYLABS}/pylabs/diffusion/readfiber_binary_bbcb
+echo ${afile}
+echo ${afile} >> ${DATADIR}/bbc/allvtk_run3.txt
+cat dti_results.txt >> ${DATADIR}/bbc/allvtk_run3.txt
+done
+done

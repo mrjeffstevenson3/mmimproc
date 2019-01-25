@@ -1,0 +1,61 @@
+rm gnuplot_for_dtiqc_bad.txt
+rm gnuplot_for_dtiqc_good.txt
+#echo "#!/usr/bin/gnuplot" >> gnuplot_for_dtiqc_bad.txt
+#echo "#!/usr/bin/gnuplot" >> gnuplot_for_dtiqc_good.txt
+#echo "reset" >> gnuplot_for_dtiqc_bad.txt
+#echo "reset" >> gnuplot_for_dtiqc_good.txt
+#echo "set title 'DTI QC plot key shows bad volume number' font \"Helvetica,24\" " >> gnuplot_for_dtiqc_bad.txt
+#echo "set title 'DTI QC plot key shows good volume number' font \"Helvetica,24\" " >> gnuplot_for_dtiqc_good.txt
+#
+
+#echo "set xlabel 'Slice number' font \"Helvetica,24\" " >> gnuplot_for_dtiqc_bad.txt
+#echo "set xlabel 'Slice number' font \"Helvetica,24\" " >> gnuplot_for_dtiqc_good.txt
+#echo "set xtics font \"Helvetica,18\" " >> gnuplot_for_dtiqc_bad.txt
+#echo "set xtics font \"Helvetica,18\" " >> gnuplot_for_dtiqc_good.txt
+echo "set ytics font \"Helvetica,18\" " >> gnuplot_for_dtiqc_bad.txt
+echo "set ytics font \"Helvetica,18\" " >> gnuplot_for_dtiqc_good.txt
+echo "set border lw 4" >> gnuplot_for_dtiqc_bad.txt
+echo "set border lw 4" >> gnuplot_for_dtiqc_good.txt
+echo "set ylabel 'DTI intensity' font \"Helvetica,16\"" >> gnuplot_for_dtiqc_bad.txt
+echo "set ylabel 'DTI intensity' font \"Helvetica,16\"" >> gnuplot_for_dtiqc_good.txt
+echo "set xrange [0:90]" >> gnuplot_for_dtiqc_bad.txt
+echo "set xrange [0:90]" >> gnuplot_for_dtiqc_good.txt
+echo "set pointsize 3.0" >> gnuplot_for_dtiqc_bad.txt
+echo "set pointsize 3.0" >> gnuplot_for_dtiqc_good.txt
+echo "set key top right" >> gnuplot_for_dtiqc_bad.txt
+echo "set key top right" >> gnuplot_for_dtiqc_good.txt
+echo "set key autotitle columnheader" >> gnuplot_for_dtiqc_bad.txt
+echo "set key autotitle columnheader" >> gnuplot_for_dtiqc_good.txt
+echo "set timestamp" >> gnuplot_for_dtiqc_bad.txt
+echo "set timestamp" >> gnuplot_for_dtiqc_good.txt
+numbad=`cat dimensionsbad1.txt | awk '{ print $4 }'`
+numgood=`cat dimensionsgood1.txt | awk '{ print $4 }'`
+echo $numbad $numgood
+numb=${numbad}+2
+numg=${numgood}+1
+
+echo "plot for [n=2:${numb}] './plotbad1.txt' u 1:(column(n)) w lines lw 4" >> gnuplot_for_dtiqc_bad.txt
+echo "plot for [n=2:${numg}] './plotgood1.txt' u 1:(column(n)) w lines lw 4" >> gnuplot_for_dtiqc_good.txt
+echo "set terminal png size 1200, 800 font 12" >> gnuplot_for_dtiqc_bad.txt
+echo "set terminal png size 1200, 800 font 12" >> gnuplot_for_dtiqc_good.txt
+echo "set output 'gnuplot_for_dtiqc_bad.png'" >> gnuplot_for_dtiqc_bad.txt
+echo "set output 'gnuplot_for_dtiqc_good.png'" >> gnuplot_for_dtiqc_good.txt
+echo "replot" >> gnuplot_for_dtiqc_bad.txt
+echo "replot" >> gnuplot_for_dtiqc_good.txt
+gnuplot gnuplot_for_dtiqc_bad.txt
+gnuplot gnuplot_for_dtiqc_good.txt
+#firefox gnuplot_for_dtiqc_bad.png &
+#firefox gnuplot_for_dtiqc_good.png
+
+
+
+
+
+
+
+
+
+
+
+
+

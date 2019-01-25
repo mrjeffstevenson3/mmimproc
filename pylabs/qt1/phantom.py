@@ -1,3 +1,4 @@
+# under development. not finished.
 
 atlasfname = 'phantom_slu_mask_20160113.nii.gz'
 atlasfpath = join(projectdir,atlasfname)

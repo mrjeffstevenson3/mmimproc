@@ -1,0 +1,10 @@
+ttest_tvalue,csfcorrected_left-GABA             ,csfcorrected_left-NAAplusNAAG      ,csfcorrected_left-GPCplusPCh       ,csfcorrected_left-CrplusPCr        ,csfcorrected_left-mIns             ,csfcorrected_left-Glu-80ms         ,csfcorrected_glu_gaba_ratio_left   ,csfcorrected_right-GABA            ,csfcorrected_right-NAAplusNAAG     ,csfcorrected_right-GPCplusPCh      ,csfcorrected_right-CrplusPCr       ,csfcorrected_right-mIns            ,csfcorrected_right-Glu-80ms        ,csfcorrected_glu_gaba_ratio_right  
+ttest_values_,  -0.59123,  -0.79616,   0.45322,   0.13604,  -0.40324,  -0.37049,   0.37396,  -1.02726,  -0.61451,  -0.43949,  -1.68520,  -0.54942,   2.65885,   2.26895
+proba_values_,   0.56386,   0.43985,   0.66632,   0.89441,   0.69618,   0.72244,   0.71719,   0.32105,   0.54879,   0.67079,   0.12562,   0.59808,   0.02092,   0.04015
+     mean_ASD,   1.02833,   7.59569,   1.53368,   5.82642,   3.39251,   8.03544,   7.97238,   0.87352,   7.34150,   1.70419,   6.43249,   3.98732,   8.35763,  10.02322
+    stdev_ASD,   0.14904,   0.57019,   0.13584,   0.31157,   0.52245,   0.53542,   1.29506,   0.19155,   0.53780,   0.18003,   0.26329,   0.45371,   0.78617,   2.47112
+ mean_control,   1.06092,   7.76795,   1.49237,   5.80790,   3.49219,   8.15254,   7.74161,   0.93666,   7.46361,   1.74192,   6.64011,   4.11737,   7.74104,   8.29463
+stdev_control,   0.07705,   0.31402,   0.18398,   0.22850,   0.43795,   0.61651,   1.09778,   0.06002,   0.27735,   0.15283,   0.21683,   0.44087,   0.10660,   0.59806
+    degreesof,  13.90487,  13.36618,   5.91256,  10.34120,   8.99944,   6.66956,   8.89631,  14.57034,  13.92366,   8.88287,   9.16675,   7.75980,  11.92838,  13.57249
+ Notes_There_were           12 subjects_from_ASD_group
+ Notes_There_were            5 subjects_from_Control_group

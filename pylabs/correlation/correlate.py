@@ -12,6 +12,7 @@ TODO
 * spearman's ranked correlation
 * One-sided or two sided arg
 * divide niterations by number of variables
+* 2 group cross correlation with slope diff (see below)
 """
 
 
@@ -108,8 +109,50 @@ def corr(X, Y):
     t = r * sqrt( (n - 2) / (1 - square(r)) )       #19ms
     return (r, t)
 
+# convert to python with data ready to plot with instruction
+''''
+
+FosterCare=xlsread('ad_foster_control.xls')
+
+groups=FosterCare(:,1);
+vocabulary=FosterCare(:,2);
+AD=FosterCare(:,3);
+
+ctrl=groups==1;
+exp=groups==0;
 
 
+%% Making a scatter plot  %%
+
+figure,scatter(vocabulary(ctrl),AD(ctrl),150,'b')
+[p,s]=polyfit(vocabulary(ctrl),AD(ctrl),1);
+hold on;
+X_axis=[min(vocabulary(ctrl)) max(vocabulary(ctrl))];
+f=polyval(p,X_axis);
+plot(X_axis,f,'-b','LineWidth',2);
+[r,p]=corrcoef(vocabulary(ctrl),AD(ctrl))
+text(95,0.001,['r=' num2str(r(1,2)) ' p< ' num2str(p(1,2))],'Color','b','fontsize',30)
+
+scatter(vocabulary(exp),AD(exp),150,'k')
+[p,s]=polyfit(vocabulary(exp),AD(exp),1);
+hold on;
+X_axis=[min(vocabulary(exp)) max(vocabulary(exp))];
+f=polyval(p,X_axis);
+plot(X_axis,f,'-k','LineWidth',2);
+[r,p]=corrcoef(vocabulary(exp),AD(exp))
+text(0.51420,0.5,['r=' num2str(r(1,2)) ' p< ' num2str(p(1,2))],'Color','k','fontsize',30)
+xlabel('vocabulary','fontsize',26)
+ylabel('Axial Diffusivity()','fontsize',26)
+
+
+%% calculating the slope difference using the multiple regression analysis
+
+learning=dataset(groups,vocabulary,AD);
+learning.groups=nominal(learning.groups);
+fit=LinearModel.fit(learning,'AD~vocabulary*groups')
+model=anova(fit)
+
+'''
 
 
 

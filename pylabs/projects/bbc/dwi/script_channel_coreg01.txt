@@ -1,0 +1,32 @@
+#this script takes output from bbc/dwi/reg_dwichannel2templ.py and extracts 10 regions from each tract named
+run=7
+subjs=`python -c "from pylabs.projects.bbc.pairing import dwipairing; \
+    print(' '.join(['sub-bbc{sid}'.format(sid=str(s)) for s, ses, m, r in dwipairing]))"`
+for asub in ${subjs}
+do
+cd ${DATADIR}/bbc/${asub}/*/*/vtk_tensor_comp_run${run}
+tracts="LeftPost RightPost Left_SLF Right_SLF Forceps"
+for t in $tracts; do
+     list=`ls *wls_fsl_tensor_medfilt*${t}*_channel.nii.gz *ols_fsl_tensor_medfilt*${t}*_channel.nii.gz *ols_dipy_tensor_medfilt*${t}*_channel.nii.gz \
+          *ols_dipy_tensor_medfilt*${t}*_channel.nii.gz`
+    for afile in $list
+    do
+    echo working on $afile
+    rm afile.*
+    cp $afile afile.nii.gz
+    fslchfiletype ANALYZE afile
+    if [[ $t == "LeftPost" || $t == "RightPost" ]]; then
+        ${PYLABS}/pylabs/diffusion/channel_coreg_PostInt
+    elif [[ $t == "Left_SLF" || $t == "Right_SLF" ]]; then
+        ${PYLABS}/pylabs/diffusion/channel_coreg_SLF
+    elif [[ $t == "Forceps" ]]; then
+        ${PYLABS}/pylabs/diffusion/channel_coreg_forceps
+    fi
+
+    for m in fa ad rd md; do
+        data=`cat ${m}.txt | tr -s " "`
+        echo "${afile},${m}${data// /,}" >> ${DATADIR}/bbc/${t}_$(date +%Y%m%d).csv
+    done
+done
+done
+done

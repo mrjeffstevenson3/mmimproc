@@ -1,0 +1,27 @@
+# Color table file /home/toddr/Software/pylabs/data/atlaslabels/JHU-ICBM-tracts-maxprob-thr0-1mm_newATR1_newCC21_LR_cerebellum_SlicerLUT.txt
+# 24 values
+0 Background 0 0 0 0
+1 antthalradL 240 248 255 255
+2 antthalradR 250 235 215 255
+3 cortspinalL 0 255 255 255
+4 cortspinalR 127 255 212 255
+5 cingulumL 240 255 255 255
+6 cingulumR 245 245 220 255
+7 cinghippoL 255 228 196 255
+8 cinghippoR 0 0 0 255
+9 forcepsmajor 255 235 205 255
+10 forcepsminor 0 0 255 255
+11 IFOFL 138 43 226 255
+12 IFOFR 165 42 42 255
+13 ILFL 222 184 135 255
+14 ILFR 95 158 160 255
+15 SLFL 127 255 0 255
+16 SLFR 210 105 30 255
+17 uncinateL 255 127 80 255
+18 uncinateR 100 149 237 255
+19 SLFtempL 255 248 220 255
+20 SLFtempR 220 20 60 255
+21 mid_corpus_callosum 0 255 255 255
+22 CerebellumL 0 0 139 255
+23 CerebellumR 0 139 139 255
+

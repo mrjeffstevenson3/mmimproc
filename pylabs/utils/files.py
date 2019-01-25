@@ -1,3 +1,4 @@
+from pathlib import *
 import os, glob
 
 
@@ -52,3 +53,14 @@ def deconstructFullRandparFiles(corrPfiles, matdir=None, imgdir=None):
 
 def sortedParGlob (filefilter):
     return sorted(glob.glob(filefilter), key=lambda f: int(f.split('_')[-2]))
+
+def ScanReconSort (globpath, pattern):
+    """
+    sorts posix pathlib list of PAR files by scan and recon. same session and scan means increase run number.
+    higher recons with same session and scan are treated as additional runs.
+    :param globpath: posix path to glob over
+    :param pattern: pattern including wildcards to match in globpath
+    :return: a sorted list by scan and recon.
+    """
+    globpath = Path(globpath)
+    return sorted(globpath.glob(pattern), key=lambda f: (int(str(f.stem).split('_')[-2]), int(str(f.stem).split('_')[-1])))

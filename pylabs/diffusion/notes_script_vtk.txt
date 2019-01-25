@@ -1,0 +1,32 @@
+These are notes that describe the software script_vtk.txt
+
+This script loops throught the various bbc subjects in order to process their vtk files
+In order to call my fortran the script sets up three files 
+1) f.vtk which is the main fiber bundle that Jeff gave me
+2) base.vtk is the floor model that is used to define the lower floor
+3) aal_motor.vtk is the ceiling model used in readfiber_binaryb.f
+
+So once the script prepares these three files for each subject and for each type of fiber bundle,
+then the software takes the files and quantifies the number of fibers that survive the inclusion which means that need 
+to reach the floor and reach the ceiling.
+
+There is also a script called script_vtk_corpus_callosum.sh which is used to process vtk files that
+have a seed point in the corpus callosum.  In this case the floor and ceiling at the same file which is
+the aal_motor.vtk file because the fibers in the corpus callosum go from the one side of the cortex to the other left/right side
+of the cortex after passing through the corpus callosum.  These fibers form a rib-cage type of appearance as they go from one side of the cortex
+to the other side.  These files could be useful in detecting subtle changes in the corpus callosum fiber tracts
+ due to white matter connectivity abnormalities.  
+
+fortran program called makeone.f is used to take the output from one of the script_vtk scripts 
+and convert it into a file with one row per test so that the identifying ID text is on the same line
+with the other numerical output quantifications.  When the script first outputs a file there is one
+row for the identifier and one row for the quantification numbers.  This new output file can then
+be converted to an excel file for viewing.
+
+script script_vtk_withchannels_dec21_2016.sh is a script to test dti fiber vtk files to see if
+they pass through the entrance door and pass through the exit door and also pass through the channel which doors and channels are all slicer
+compatible models.   This script calls fortran readfiber_withchannels.f to process the vtk file.
+The fortran program test to see how close the fiber vtk files comes to each of the doors and channel and there is a threshold
+set which can be easily changed for how close the fiber needs to come in mm to the door or channel in to called it a pass through.
+
+

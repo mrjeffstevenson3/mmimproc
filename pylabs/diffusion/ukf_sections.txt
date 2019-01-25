@@ -1,0 +1,11 @@
+POINTS 126659 float
+SCALARS NormalizedSignalEstimationError float
+TENSORS tensor2 float
+tensor1 9 126659 float
+EstimatedUncertainty 1 126659 float
+FA1 1 126659 float
+FA2 1 126659 float
+trace1 1 126659 float
+trace2 1 126659 float
+FreeWater 1 126659 float
+

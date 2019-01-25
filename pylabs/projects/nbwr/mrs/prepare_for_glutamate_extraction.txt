@@ -1,0 +1,13 @@
+cd ${DATADIR}/nbwr
+list=`ls -d sub*`
+for afolder in ${list}
+do
+echo working on ${afolder}
+cd ${DATADIR}/nbwr
+cd ${afolder}/ses-1/source_sparsdat
+bash ${PYLABS}/pylabs/projects/nbwr/mrs/gengaba_nbwr_extract_glutamate.txt
+cp te80.lcmo ${DATADIR}/nbwr/extracted_glutamate/${afolder}_te80.lcmo
+bash ${PYLABS}/pylabs/projects/nbwr/mrs/gengaba_nbwr_water.txt
+cp water.lcmo ${DATADIR}/nbwr/extracted_glutamate/${afolder}_water.lcmo
+done
+
