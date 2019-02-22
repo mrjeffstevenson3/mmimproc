@@ -1,7 +1,7 @@
 # assumes 3 shell dwi of 0, 800, 2000 with only 1 B0 as 1st vol
 # first set global root data directory
-import pylabs
-pylabs.datadir.target = 'jaba'
+import mmimproc
+mmimproc.datadir.target = 'jaba'
 from pathlib import *
 import nibabel as nib
 import numpy as np
