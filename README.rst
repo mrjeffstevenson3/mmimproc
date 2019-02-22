@@ -6,7 +6,7 @@
 .. image:: https://coveralls.io/repos/ilabsbrainteam/pylabs/badge.png
   :target: https://coveralls.io/r/ilabsbrainteam/pylabs
 
-`pylabs`_
+`mmimproc`_
 =========
 
 This package is designed for processing multi-modal neuroimaging
