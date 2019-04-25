@@ -1,7 +1,6 @@
 #! /usr/bin/env python
 #
-# Copyright (C) 2014 Eric Larson <larson.eric.d@gmail.com>
-#    Re-used based on mne-python code.
+
 
 import os
 

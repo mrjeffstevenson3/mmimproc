@@ -69,11 +69,11 @@ def getnetworkdataroot(verbose=True):
     if mmimproc.datadir.target == 'kl4' and any(x in hostname for x in ['Jeffs-MacBook-Pro-3.local', 'Jeffs-MBP-3',
                                        'Jeffs-MacBook-Pro.local' , '.dhcp4.washington.edu']):
         print('found mrjeffs laptop. using jump drive datadir. datadir=/Volumes/KUHL_LAB4')
-        return '/Volumes/KUHL_LAB4'
+        return Path('/Volumes/KUHL_LAB4')
     if mmimproc.datadir.target == 'js5' and any(x in hostname for x in ['Jeffs-MacBook-Pro-3.local', 'Jeffs-MBP-3',
                                        'Jeffs-MacBook-Pro.local' , '.dhcp4.washington.edu']):
         print('found mrjeffs laptop. using jump drive datadir=/Volumes/JSDRIVE05')
-        return '/Volumes/JSDRIVE05'
+        return Path('/Volumes/JSDRIVE05')
 
 def tempfile(extension='.tmp'):
     return join('/var/tmp',petname.Generate(3,'-')+extension)

@@ -26,7 +26,7 @@ def deconstructFullRandparFiles(corrPfiles, matdir=None, imgdir=None):
     """
     combs = {}
     for corrPfile in corrPfiles:
-    	fields = os.path.basename(corrPfile).split('.')[0]
+        fields = os.path.basename(corrPfile).split('.')[0]
         fields = fields.split('_')
         behavdescr = fields[-4]
         behavcol = fields[-5]
