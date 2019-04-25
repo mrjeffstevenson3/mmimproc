@@ -5,14 +5,14 @@
 
 
 # first set global root data directory
-import pylabs
-pylabs.datadir.target = 'jaba'
+import mmimproc
+mmimproc.datadir.target = 'jaba'
 from pathlib import *
 import pandas as pd
 import numpy as np
-from pylabs.io.mixed import df2h5, h52df, get_h5_keys
-from pylabs.utils import *
-from pylabs.projects.genz.file_names import project, Optsd
+from mmimproc.io.mixed import df2h5, h52df, get_h5_keys
+from mmimproc.utils import *
+from mmimproc.projects.genz.file_names import project, Optsd
 import qgrid
 qgrid.enable
 import ipywidgets as widgets

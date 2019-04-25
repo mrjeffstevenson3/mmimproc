@@ -7,8 +7,8 @@ from os import path as op
 import glob
 import niprov
 
-from pylabs.utils import InTempDir
-from pylabs.conversion import par_to_nii, dump_header
+from mmimproc.utils import InTempDir
+from mmimproc.conversion import par_to_nii, dump_header
 
 work_dir = os.getcwd()  # must have e.g. scs385 subdirectory here
 niprov.discover(work_dir)

@@ -6,8 +6,8 @@
 
 get_ipython().magic(u'matplotlib inline')
 # to be run on jeff's laptop
-import pylabs
-pylabs.datadir.target = 'jaba'
+import mmimproc
+mmimproc.datadir.target = 'jaba'
 from pathlib import *
 import os
 import numpy as np
@@ -17,7 +17,7 @@ from scipy import stats, integrate
 import matplotlib.pyplot as plt
 import seaborn as sns
 sns.set(color_codes=True)
-from pylabs.utils import getnetworkdataroot
+from mmimproc.utils import getnetworkdataroot
 fs = Path(getnetworkdataroot())
 
 

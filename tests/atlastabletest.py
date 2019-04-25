@@ -1,6 +1,6 @@
 from os.path import join
-from pylabs.utils.paths import getlocaldataroot, getnetworkdataroot
-from pylabs.atlassing import atlasWiseSignificantVoxelsFrame
+from mmimproc.utils.paths import getlocaldataroot, getnetworkdataroot
+from mmimproc.atlassing import atlasWiseSignificantVoxelsFrame
 fs = getlocaldataroot()
 statsdir = join(fs, 'roots_of_empathy', 'correlations_qt1')
 # atkas + stats > frame > table

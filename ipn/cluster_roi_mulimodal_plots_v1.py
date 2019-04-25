@@ -21,12 +21,12 @@ pd.set_option('display.max_colwidth', 300)
 import nibabel as nib
 import matplotlib.pyplot as plt
 #plt.interactive(False)
-from pylabs.correlation.atlas import mori_region_labels, JHUtracts_region_labels
-from pylabs.projects.bbc.pairing import foster_behav_data, control_behav_data, behav_list
-from pylabs.projects.bbc.correl.atlases import atlases
-from pylabs.alignment.resample import reslice_roi
-from pylabs.utils import run_subprocess, WorkingContext
-from pylabs.utils.paths import getnetworkdataroot
+from mmimproc.correlation.atlas import mori_region_labels, JHUtracts_region_labels
+from mmimproc.projects.bbc.pairing import foster_behav_data, control_behav_data, behav_list
+from mmimproc.projects.bbc.correl.atlases import atlases
+from mmimproc.alignment.resample import reslice_roi
+from mmimproc.utils import run_subprocess, WorkingContext
+from mmimproc.utils.paths import getnetworkdataroot
 fs = Path(getnetworkdataroot())
 output2file = False
 project = 'bbc'
@@ -318,9 +318,9 @@ pd.concat([foster_behav_data, control_behav_data])
 
 os.chdir(str(statsdir))
 for i, (idx, row) in enumerate(clusters.iterrows()):
-    print i, idx
-    print row['clu_idx_fname']
-    print row['idx_data'].get_data().shape
+    print(i, idx)
+    print(row['clu_idx_fname'])
+    print(row['idx_data'].get_data().shape)
     if i > 10-1:
         break
 
@@ -328,10 +328,10 @@ for i, (idx, row) in enumerate(clusters.iterrows()):
 # In[25]:
 
 for i, (idx, row) in enumerate(clusters.iterrows()):
-    print i, type(i), idx, type(idx)
-    print row
+    print(i, type(i), idx, type(idx))
+    print(row)
     if i > 1 -1:
-        print 'gt 1'
+        print('gt 1')
         break
 
 
@@ -382,8 +382,8 @@ import pandas as pd
 import numpy as np
 import nibabel as nib
 import scipy.ndimage.measurements as measurements
-from pylabs.correlation.atlas import mori_region_labels, JHUtracts_region_labels
-from pylabs.utils.paths import getnetworkdataroot
+from mmimproc.correlation.atlas import mori_region_labels, JHUtracts_region_labels
+from mmimproc.utils.paths import getnetworkdataroot
 fs = Path(getnetworkdataroot())
 """
 makes atlas objects.

@@ -9,16 +9,16 @@ import os
 import setuptools  # noqa, analysis:ignore
 from numpy.distutils.core import setup
 
-descr = """Kuhl lab pipeline functions."""
+descr = """Multimodal neuroscience analysis pipeline functions."""
 
-DISTNAME = 'pylabs'
+DISTNAME = 'mmimproc'
 DESCRIPTION = descr
-MAINTAINER = 'Justin Reichel'
-MAINTAINER_EMAIL = 'reichel@uw.edu'
-URL = 'http://github.com/ilabsbrainteam/pylabs'
+MAINTAINER = 'Jeff Stevenson'
+MAINTAINER_EMAIL = 'mrjeffstevenson3@gmail.com'
+URL = 'http://github.com/mrjeffstevenson3/mmimproc'
 LICENSE = 'BSD (3-clause)'
-DOWNLOAD_URL = 'http://github.com/ilabsbrainteam/pylabs'
-with open(os.path.join('pylabs', '__init__.py'), 'r') as fid:
+DOWNLOAD_URL = 'http://github.com/mrjeffstevenson3/mmimproc'
+with open(os.path.join('mmimproc', '__init__.py'), 'r') as fid:
     for line in fid:
         if '__version__' in line:
             VERSION = line.strip().split(' = ')[1]
@@ -50,8 +50,8 @@ if __name__ == "__main__":
                        'Operating System :: Unix',
                        'Operating System :: MacOS'],
           platforms='any',
-          packages=['pylabs', 'pylabs.tests',
-                    'pylabs.utils', 'pylabs.utils.tests',
+          packages=['mmimproc', 'mmimproc.tests',
+                    'mmimproc.utils', 'mmimproc.utils.tests',
                     ],
           install_requires=['niprov >= 0.1.post10'],
           package_data={},

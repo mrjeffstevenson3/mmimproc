@@ -3,7 +3,7 @@ import numpy
 import nibabel
 from scipy.optimize import curve_fit
 from numpy import exp, cos, sin
-from pylabs.utils import progress
+from mmimproc.utils import progress
 from datetime import datetime
 
 def irformula(x, a, b, c):

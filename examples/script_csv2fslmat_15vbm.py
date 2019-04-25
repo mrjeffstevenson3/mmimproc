@@ -1,5 +1,5 @@
 #!/usr/bin/python 
-from pylabs.correlation.behavior import csv2fslmat
+from mmimproc.correlation.behavior import csv2fslmat
 csvfile = '/media/DiskArray/shared_data/js/self_control/behavioral_data/behav_from_andy_march27_2015/EF_and_Brain_july08_2015_Meq0_delta.csv'
 subjects= [
 317,

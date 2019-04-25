@@ -11,7 +11,7 @@ pd.set_option('display.width', 999999)
 import nibabel as nib
 import matplotlib.pyplot as plt
 from scipy import stats as ss
-from pylabs.utils.paths import getnetworkdataroot
+from mmimproc.utils.paths import getnetworkdataroot
 fs = Path(getnetworkdataroot())
 
 

@@ -19,8 +19,8 @@ class RegionalTests(TestCase):
         self.atlasimg.get_data.return_value = self.array3d([])
 
     def statsByRegion(self, *args, **kwargs):
-        from pylabs.regional import statsByRegion
-        with patch('pylabs.regional.nibabel') as self.nibabel:
+        from mmimproc.regional import statsByRegion
+        with patch('mmimproc.regional.nibabel') as self.nibabel:
             self.nibabel.load.side_effect = (lambda f: 
                 self.atlasimg if 'atlas' in f else self.img)
             return statsByRegion(*args, **kwargs)

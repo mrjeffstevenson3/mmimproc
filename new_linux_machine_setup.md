@@ -43,9 +43,9 @@ edit VM memory options to increase memory support for large files:
 -Xmx10000m
 
 12. install pycharm plugins bashsupport and markdown, restart pycharm then in pycharm settings Project interpreter press cogwheel button add local and select the anaconda python interpreter at ${HOME}/Software/anaconda2/bin/python
-13. clone your master branch of pylabs from your github repo into ~/Software: `cd ~/Software && git clone https://github.com/mrjeffs/pylabs.git` (Replace mrjeffs with your github account id.)
-14. Add the main pylabs repo as upstream:
-    `cd ~/Software/pylabs && git remote add upstream https://github.com/ilabsbrainteam/pylabs.git`
+13. clone your master branch of mmimproc from your github repo into ~/Software: `cd ~/Software && git clone https://github.com/mrjeffstevenson3/mmimproc.git` (Replace mrjeffs with your github account id.)
+14. Add the main mmimproc repo as upstream:
+    `cd ~/Software/mmimproc && git remote add upstream https://github.com/ilabsbrainteam/mmimproc.git`
 15. in `cd ~/Software` dir for each of the following github packages clone, cd into and `python setup.py develop:
 ```bash
 cd ${HOME}/Software && git clone https://github.com/nipy/nibabel.git && cd nibabel && python setup.py develop && \
@@ -145,8 +145,8 @@ cd ${HOME}/Software && git clone https://github.com/stnava/ANTs.git && mkdir ant
     here are some pylabs env vars to put at the end to make sure bash scripts find their way:
     ```
     #set up pylabs env variables
-    PYLABSD=`python -c "from pylabs.utils import pylabs_datadir; print str(pylabs_datadir)"`
-    PYLABS=`python -c "from pylabs.utils import pylabs_dir; print str(pylabs_dir)"`
+    PYLABSD=`python -c "from pylabs.utils import mmimproc_datadir; print str(mmimproc_datadir)"`
+    PYLABS=`python -c "from pylabs.utils import mmimproc_dir; print str(mmimproc_dir)"`
     DATADIR=`python -c "import pylabs; pylabs.datadir.target = 'jaba'; from pylabs.utils.paths import getnetworkdataroot; fs = getnetworkdataroot(verbose=False); print fs"`
     PATH="$PYLABS:$PYLABSD:$PYLABS/pylabs:$PYLABS/bin:$PATH"
     MORIMNI=`python -c "from pylabs.utils import moriMNIatlas; print str(moriMNIatlas)"`

@@ -28,13 +28,13 @@ class SparTests(unittest.TestCase):
         pass
 
     def test_Can_load_all_SPAR_files(self):
-        from pylabs.io.spar import load
+        from mmimproc.io.spar import load
         for fname in files:
             fpath = join('data/testdata/spar',fname)
             img = load(fpath)
 
     def test_Loaded_SPAR_file_exposes_header_info(self):
-        from pylabs.io.spar import load
+        from mmimproc.io.spar import load
         fpath = join('data/testdata/spar',files[5])
         hdrDict = load(fpath)
         self.assertEqual(hdrDict['scan_id'], 'PRESS_TE30_GLU')

@@ -1,5 +1,5 @@
 #!/usr/bin/python 
-from pylabs.correlation.behavior import csv2fslmat
+from mmimproc.correlation.behavior import csv2fslmat
 csvfile = 'EF_and_Brain_july08_2015_Meq0_delta.csv'
 vbm17= [
 317,

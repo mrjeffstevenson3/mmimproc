@@ -21,8 +21,8 @@ HTML('<style>{}</style>'.format(css))
 pd.set_option('display.width', 999999)
 pd.options.display.max_colwidth = 250
 pd.options.display.max_rows = 999
-from pylabs.projects.bbc.pairing import dwipairing
-from pylabs.utils.paths import getnetworkdataroot
+from mmimproc.projects.bbc.pairing import dwipairing
+from mmimproc.utils.paths import getnetworkdataroot
 fs = Path(getnetworkdataroot())
 
 

@@ -15,7 +15,7 @@ This example shows how to use f2py to compile and Fortran code from Python.
 #    http://docs.scipy.org/doc/numpy/user/c-info.python-as-glue.html
 
 import os
-from pylabs.utils import run_subprocess
+from mmimproc.utils import run_subprocess
 import tempfile
 
 os.chdir(os.path.dirname(__file__))

@@ -8,16 +8,16 @@
 # first set global root data directory
 get_ipython().magic(u'matplotlib inline')
 import seaborn as sb
-import pylabs
-pylabs.datadir.target = 'scotty'
+import mmimproc
+mmimproc.datadir.target = 'js5'
 from pathlib import *
 import datetime
 import numpy as np
 import pandas as pd
 import json
 import scipy.stats as ss
-from pylabs.utils import ProvenanceWrapper, getnetworkdataroot, appendposix, replacesuffix, WorkingContext, run_subprocess, pylabs_dir
-from pylabs.projects.nbwr.file_names import project
+from mmimproc.utils import ProvenanceWrapper, getnetworkdataroot, appendposix, replacesuffix, WorkingContext, run_subprocess, mmimproc
+from mmimproc.projects.nbwr.file_names import project
 prov = ProvenanceWrapper()
 
 fs = Path(getnetworkdataroot())

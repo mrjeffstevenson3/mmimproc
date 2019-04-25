@@ -22,7 +22,7 @@ clean: clean-build clean-pyc clean-so
 flake:
 	@if command -v flake8 > /dev/null; then \
            echo "Running flake8"; \
-		flake8 --count pylabs examples; \
+		flake8 --count mmimproc examples; \
            echo "Done."; \
 	else \
            echo "flake8 not found, please install it!"; \
@@ -35,7 +35,7 @@ inplace:
 
 nosetests:
 	rm -f .coverage
-	@$(NOSETESTS) pylabs
+	@$(NOSETESTS) mmimproc
 
 test: clean nosetests flake
 

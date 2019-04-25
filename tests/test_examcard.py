@@ -17,19 +17,19 @@ class ExamCardTests(unittest.TestCase):
         pass
 
     def test_Can_load_all_SPAR_files(self):
-        from pylabs.io.examcard import loaddict
+        from mmimproc.io.examcard import loaddict
         for fname in files:
             fpath = abspath(join('data/testdata/examcard',fname))
             img = loaddict(fpath)
 
     def test_Loaded_examcard_file_exposes_exam_basic_properties(self):
-        from pylabs.io.examcard import loaddict
+        from mmimproc.io.examcard import loaddict
         fpath = abspath(join('data/testdata/examcard',files[0]))
         examDict = loaddict(fpath)
         self.assertEqual(examDict['name'], 'PHANTOM_QT1_SLU_20151230')
 
     def test_Loaded_examcard_file_exposes_exam_names(self):
-        from pylabs.io.examcard import loaddict
+        from mmimproc.io.examcard import loaddict
         fpath = abspath(join('data/testdata/examcard',files[0]))
         examDict = loaddict(fpath)
         scans = examDict['scans']
@@ -38,7 +38,7 @@ class ExamCardTests(unittest.TestCase):
 
     def test_Finds_scanProcedures_with_different_prefixes(self):
         # a10:scanProcedure vs a12:scanProcedure
-        from pylabs.io.examcard import loaddict
+        from mmimproc.io.examcard import loaddict
         fpath = abspath(join('data/testdata/examcard',files[0]))
         examDict = loaddict(fpath)
         self.assertEqual(len(examDict['scans']), 19)
@@ -47,7 +47,7 @@ class ExamCardTests(unittest.TestCase):
         self.assertEqual(len(examDict['scans']), 21)
 
     def test_Gets_number_of_parameter_values_right(self):
-        from pylabs.io.examcard import loaddict
+        from mmimproc.io.examcard import loaddict
         fpath = abspath(join('data/testdata/examcard',files[1]))
         examDict = loaddict(fpath)
         targetScan = 'DTI6_b1_PA_TOPDN'
@@ -58,7 +58,7 @@ class ExamCardTests(unittest.TestCase):
             self.assertEqual(len(scanDict['parameters'][testParam]), pLength)
 
     def test_Gets_datatype_of_parameter_values_right(self):
-        from pylabs.io.examcard import loaddict
+        from mmimproc.io.examcard import loaddict
         fpath = abspath(join('data/testdata/examcard',files[1]))
         examDict = loaddict(fpath)
         targetScan = 'DTI6_b1_PA_TOPDN'
@@ -70,7 +70,7 @@ class ExamCardTests(unittest.TestCase):
         self.assertIsInstance(params['EX_PROC_image_types'][0], int) #"ENUM"
 
     def test_Gets_float_parameter_value_right(self):
-        from pylabs.io.examcard import loaddict
+        from mmimproc.io.examcard import loaddict
         fpath = abspath(join('data/testdata/examcard',files[1]))
         examDict = loaddict(fpath)
         targetScan = 'DTI6_b1_PA_TOPDN'
@@ -79,7 +79,7 @@ class ExamCardTests(unittest.TestCase):
         self.assertEquals(params['EX_GEO_fov'], 256.0)
 
     def test_Gets_int_parameter_value_right(self):
-        from pylabs.io.examcard import loaddict
+        from mmimproc.io.examcard import loaddict
         fpath = abspath(join('data/testdata/examcard',files[1]))
         examDict = loaddict(fpath)
         targetScan = 'DTI6_b1_PA_TOPDN'
@@ -88,7 +88,7 @@ class ExamCardTests(unittest.TestCase):
         self.assertEquals(params['IF_epi_factor'], 67)
 
     def test_Comparison(self):
-        from pylabs.io.examcard import PylabsExamCardFile
+        from mmimproc.io.examcard import PylabsExamCardFile
         from niprov.parrec import ParrecFile
         fpath = abspath(join('data/testdata/examcard',files[1]))
         exam = PylabsExamCardFile(fpath)

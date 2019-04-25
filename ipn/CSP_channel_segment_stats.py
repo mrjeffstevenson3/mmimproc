@@ -17,8 +17,8 @@ HTML('<style>{}</style>'.format(css))
 pd.set_option('display.width', 999999)
 pd.options.display.max_colwidth = 250
 pd.options.display.max_rows = 999
-from pylabs.projects.bbc.pairing import dwipairing
-from pylabs.utils.paths import getnetworkdataroot
+from mmimproc.projects.bbc.pairing import dwipairing
+from mmimproc.utils.paths import getnetworkdataroot
 fs = Path(getnetworkdataroot())
 #get data from test file
 LCSP_fname = fs / 'bbc' / 'reg' / 'dwi_warps_in_template_space' / 'comb_FA_AD_RD_MD_4vol' / 'LeftPostIntCap.csv'

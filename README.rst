@@ -9,8 +9,7 @@
 `mmimproc`_
 =========
 
-This package is designed for processing multi-modal neuroimaging
-data collected by the Kuhl lab.
+This package is designed for processing multi-modal neuroimaging data.
 
 Requirements for the Python environment:
 
