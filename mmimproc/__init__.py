@@ -4,7 +4,7 @@ __version__ = '0.3.6'
 
 import mmimproc
 from mmimproc.utils import *
-import socket, inspect, platform
+import socket, platform
 
 datadir = RootDataDir()
 
