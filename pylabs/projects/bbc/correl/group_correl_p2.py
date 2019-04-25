@@ -1,6 +1,5 @@
 from __future__ import division
 from os.path import join
-from cloud.serialization.cloudpickle import dumps
 import numpy, nibabel, scipy.stats, math, datetime
 from numpy import square, sqrt
 from pylabs.utils import progress
@@ -148,5 +147,6 @@ for pool in ['foster', 'control']:
         _4D_img = nibabel.Nifti1Image(data4d, affine)
         nibabel.save(_4D_img, str(results_dir / str(pool+'_'+mod+'.nii')))
         statfiles, clutables, clumaps = clusterminsize(outfnames, pcorr, minsize=cluster_minsize)
-        with open(str(out_pickle_fname), "ab") as f:
-            f.write(dumps([statfiles, clutables, clumaps, outfnames, pcorr, tcorr]))
+        # todo: write data to h5 file
+        # with open(str(out_pickle_fname), "ab") as f:
+        #     f.write(dumps([statfiles, clutables, clumaps, outfnames, pcorr, tcorr]))

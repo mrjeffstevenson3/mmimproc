@@ -5,12 +5,11 @@ mako
 nose-timer 
 numpy
 scipy
-nibabel>=2.1.0dev
+nibabel>=2.4.0
 six
 flake8
 nipype
 petname
-cloud
 pathlib
 pynrrd
 pandas
@@ -26,9 +25,12 @@ python-dateutil
 IPython
 statsmodels
 pytables
-pdfminer
+pdfminer.six
 qgrid
 ipywidgets
+argparse
+msgpack
+
 
 
 

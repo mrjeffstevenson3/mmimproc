@@ -4,7 +4,6 @@ from collections import defaultdict
 from nipype.interfaces import fsl
 import subprocess
 from datetime import datetime
-from cloud.serialization.cloudpickle import dumps
 from pylabs.structural.brain_extraction import struc_bet
 from pylabs.conversion.brain_convert import conv_subjs
 from pylabs.utils.paths import getnetworkdataroot, getlocaldataroot
@@ -43,8 +42,9 @@ else:
 if dti_qc:
     print ('dti qc runs here.')
 
+todo: make h5 file write to save data
 niftidict = default_to_regular(niftiDict)
-with open(join(fs, project, "bbc_niftiDict_all_subj_{:%Y%m%d%H%M}.pickle".format(datetime.now())), "wb") as f:
-    f.write(dumps(niftiDict))
-with open(join(fs, project, "bbc_niftidict_all_subj_{:%Y%m%d%H%M}.pickle".format(datetime.now())), "wb") as f:
-    f.write(dumps(niftidict))
+# with open(join(fs, project, "bbc_niftiDict_all_subj_{:%Y%m%d%H%M}.pickle".format(datetime.now())), "wb") as f:
+#     f.write(dumps(niftiDict))
+# with open(join(fs, project, "bbc_niftidict_all_subj_{:%Y%m%d%H%M}.pickle".format(datetime.now())), "wb") as f:
+#     f.write(dumps(niftidict))

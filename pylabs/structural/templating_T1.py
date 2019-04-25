@@ -4,7 +4,6 @@ from collections import defaultdict
 from nipype.interfaces import fsl
 import subprocess
 from datetime import datetime
-from cloud.serialization.cloudpickle import dumps
 from pylabs.structural.brain_extraction import struc_bet
 from pylabs.conversion.brain_convert import conv_subjs
 from pylabs.utils.paths import getnetworkdataroot, getlocaldataroot

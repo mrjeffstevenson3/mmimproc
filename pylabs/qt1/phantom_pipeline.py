@@ -2,7 +2,6 @@ import os, sys
 from glob import glob
 from os.path import join as pathjoin
 from collections import defaultdict
-from cloud.serialization.cloudpickle import dumps
 from pylabs.utils.paths import getlocaldataroot
 from pylabs.conversion.phantom_conv import phantom_B1_midslice_par2mni
 from pylabs.conversion.phantom_conv import phantom_midslice_par2mni
@@ -98,7 +97,7 @@ for dir in phantdirs:
         for k, v in zip(key, val):
             phantom_ddata[k].append(v)
 
-
-with open(phantom_dict_fname, "wb") as f:
-    f.write(dumps(phantom_ddata))
+todo: make h5 file write to save data
+# with open(phantom_dict_fname, "wb") as f:
+#     f.write(dumps(phantom_ddata))
 

@@ -12,7 +12,6 @@ from dipy.io import read_bvals_bvecs
 from dipy.core.gradients import gradient_table
 import shutil
 import datetime
-from cloud.serialization.cloudpickle import dumps
 from scipy.ndimage.filters import median_filter as medianf
 from pylabs.structural.brain_extraction import extract_brain
 from pylabs.conversion.brain_convert import conv_subjs

@@ -25,16 +25,17 @@ sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.8 40 --slave 
 `gcc -v`
 5. download to ~/Software the py2.7 64bit anaconda installer from https://www.continuum.io/downloads#linux
    in terminal `cd ~/Software && bash Anaconda2-5.1.0-Linux-x86_64.sh` **#nb version numbers will change.**
-   review and accept license and enter install location as /home/toddr/Software/anaconda2  and say yes to prepend to .bashrc
+   review and accept license and enter install location as ${HOME}/Software/anaconda2  and say yes to prepend to .bashrc
 8. either open a new terminal to continue or `source ~/.bashrc`
 9. update and configure conda and then add basic python dependencies/requirements:
     ```
     conda update conda && conda config --set channel_priority false && conda config --append channels conda-forge && conda config --append channels dfroger &&
-    conda install pip sh pathlib pathlib2 pygpgme pydicom qgrid pytest-xdist pytest-env nose-timer flake8 -y &&
-    conda install -c conda-forge jupyterlab nodejs ipywidgets &&
+    conda install pip sh setuptools pathlib pydicom qgrid pytest-xdist pytest-env nose-timer flake8 dill cloudpickle -y &&
+    conda install -c conda-forge jupyterlab nodejs ipywidgets -y &&
     conda upgrade --all -y &&
-    pip install pynrrd petname latex shell argparse msgpack cloud -y &&
+    pip install niprov pynrrd petname latex shell argparse msgpack pdfminer.six &&
     jupyter labextension install @jupyter-widgets/jupyterlab-manager 
+    conda install dcmstack  # only for python=2.7x env
     ```
 11. install pycharm into ~/Software and register
 edit VM memory options to increase memory support for large files:

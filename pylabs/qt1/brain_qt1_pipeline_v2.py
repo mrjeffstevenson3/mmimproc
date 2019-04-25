@@ -4,8 +4,7 @@ from glob import glob
 from os.path import join as pathjoin
 import collections
 from collections import defaultdict
-import cPickle, cloud
-from cloud.serialization.cloudpickle import dumps
+import cPickle
 import nibabel.parrec as pr
 from nibabel.volumeutils import fname_ext_ul_case
 from pylabs.utils.paths import getlocaldataroot
@@ -18,7 +17,7 @@ import sys, os, datetime
 import itertools
 import subprocess
 from os.path import join as pathjoin
-import fnmatch, collections, datetime, cPickle, cloud
+import fnmatch, collections, datetime, cPickle
 import numpy as np
 import scipy.ndimage
 from dipy.segment.mask import median_otsu
