@@ -21,9 +21,14 @@ hostname = socket.gethostname()
 if mmimproc.datadir.target == 'js5' and platform.system() == 'Darwin' and \
         any(x in hostname for x in ['Jeffs-MacBook-Pro-3.local', 'Jeffs-MBP-3', 'Jeffs-MacBook-Pro.local']):
     mmimproc.fs = Path('/Volumes/JSDRIVE05')
+    mmimproc.fs_local = Path('/Users/mrjeffs/data')
     if mmimproc.fs.is_dir():
         print('found mrjeffs laptop mounted drive datadir=/Volumes/JSDRIVE05')
     else:
-        print('JSDRIVE05 drive not mounted. please check. fs variable exists but will not work.')
+        print('mmimproc.fs variable exists but will not work until drive JSDRIVE05 mounted.')
+        if mmimproc.fs_local.is_dir():
+            print('Or set file system to local with fs = mmimproc.fs_local')
+        else:
+            print('No local data directory option found. Please check.')
 
 

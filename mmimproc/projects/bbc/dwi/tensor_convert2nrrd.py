@@ -9,7 +9,7 @@ from mmimproc.projects.bbc.dwi.passed_qc import dwi_passed_qc, dwi_passed_101
 from mmimproc.utils.paths import getnetworkdataroot
 from mmimproc.utils import run_subprocess, WorkingContext
 from mmimproc.conversion.nifti2nrrd import nii2nrrd
-fs = Path(getnetworkdataroot())
+fs = mmimproc.fs
 pylabs_basepath = Path(*Path(inspect.getabsfile(mmimproc)).parts[:-1])
 project = 'bbc'
 fname_templ = 'sub-bbc{sid}_ses-{snum}_{meth}_{runnum}'

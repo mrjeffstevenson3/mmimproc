@@ -16,7 +16,7 @@ from mmimproc.correlation.atlas import make_mask_fm_stats, make_mask_fm_atlas_pa
 from mmimproc.alignment.ants_reg import subj2templ_applywarp
 from mmimproc.utils import *
 provenance = ProvenanceWrapper()
-fs = Path(getnetworkdataroot())
+fs = mmimproc.fs
 pylabs_basepath = Path(*Path(inspect.getabsfile(mmimproc)).parts[:-1])
 
 if platform.system() == 'Darwin':
@@ -150,7 +150,7 @@ for dwif in dwi_fnames:
                         print('\n--> Error during JHU UKF fitting or channel making: ', dwif, result, ex)
 
         if 'stats_' in atlas:
-            for k, roi in UKF_atlases[atlas]['ROIs'].iteritems():
+            for k, roi in UKF_atlases[atlas]['ROIs'].items():
                 stats_templ_fname = UKF_atlases[atlas]['ROIs'][k]['atlas_fname']
                 stats_fname = fs / project / dwif.split('_')[0] / dwif.split('_')[1] / 'dwi' / str('_'.join(dwif.split('_')[:6])+ k +'.nii')
                 stats_mask_nrrd = execwdir / stats_fname.name.replace('.nii', '_thr'+str(stats_thr).replace('0.','')+'_mask.nhdr')

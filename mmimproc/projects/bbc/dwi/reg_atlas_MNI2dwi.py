@@ -11,7 +11,7 @@ from mmimproc.conversion.nifti2nrrd import nii2nrrd
 from mmimproc.utils.provenance import ProvenanceWrapper
 provenance = ProvenanceWrapper()
 #setup paths and file names to process
-fs = Path(getnetworkdataroot())
+fs = mmimproc.fs
 slicer_path = getslicercmd(ver='stable')
 #setup masks and templates:
 anat_atlas = mmimproc_atlasdir / 'JHU_MNI_SS_WMPM_Type_I_matched.nii.gz'
@@ -83,7 +83,7 @@ output = tuple()  # to catch and log errors
 
 #apply the warps
 for dwif, vbmf in zip(dwi_fnames, vbm_fnames):
-    for k, a in MNI_atlases.iteritems():
+    for k, a in MNI_atlases.items():
         # extract rois from atlases and make masks
         if 'mori' in k and not a['roi_list'] == None:
             make_mask_fm_atlas_parts(atlas=str(anat_atlas), roi_list=a['roi_list'], mask_fname=str(mmimproc_atlasdir / a['atlas_fname']))
@@ -145,7 +145,7 @@ for dwif, vbmf in zip(dwi_fnames, vbm_fnames):
                     elif 'JHU_' in k:
                         provenance.log(str(vtkdir / str(dwif + '_' + (a['atlas_fname'] % JHU_thr).split('.')[0]) + '.vtk'), 'generate model vtk', str(outf), script=__file__, provenance=params)
                 elif 'stats' not in k:
-                    for m, ts in tensors.iteritems():
+                    for m, ts in tensors.items():
                         tenpath = execwdir / ec_meth / m
                         for t in ts:
                             cmd = ''

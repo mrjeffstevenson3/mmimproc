@@ -9,10 +9,10 @@ from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
 from pdfminer.converter import TextConverter
 from pdfminer.layout import LAParams
 from pdfminer.pdfpage import PDFPage
-from cStringIO import StringIO
+from io import StringIO
 from mmimproc.conversion.parrec2nii_convert import BrainOpts
 from mmimproc.utils import *
-fs = Path(getnetworkdataroot())
+fs = mmimproc.fs
 
 """
 Tools to save a list of dictionaries with pandas Dataframes in them to a 
@@ -86,15 +86,15 @@ def getgabavalue(fitpdf):
     pdf_text = pdftotxt(str(fitpdf))
     for line in pdf_text.splitlines():
         if 'inst. units.' in line:
-            for k,v in {'GABA+/H2O  : ': '', ' inst. units.': '', 'GABA+/H 2 O  : ': '', }.iteritems():
+            for k,v in {'GABA+/H2O  : ': '', ' inst. units.': '', 'GABA+/H 2 O  : ': '', }.items():
                 line = line.replace(k,v)
             gaba_val = float(line)
         if 'GABA+/Cr i.r.' in line:
-            for k,v in {'GABA+/Cr i.r.: ': '',}.iteritems():
+            for k,v in {'GABA+/Cr i.r.: ': '',}.items():
                 line = line.replace(k,v)
             gabaovercr = float(line)
         if 'FitErr (H/Cr)   : ' in line:
-            for k, v in {'FitErr (H/Cr)   : ': '', '%': '', }.iteritems():
+            for k, v in {'FitErr (H/Cr)   : ': '', '%': '', }.items():
                 line = line.replace(k, v)
             fit_err = float(line.split(',')[0])
             fit_perc = float(line.split(',')[1])
@@ -277,8 +277,8 @@ def get_pr_affine_fromh5(h5_fname, subject, session, modality, scan):
 
 
 def gen_df_extract(key, var):
-    if hasattr(var,'iteritems'):
-        for k, v in var.iteritems():
+    if hasattr(var,'items'):
+        for k, v in var.items():
             #print(k, v, isinstance(v, dict))
             if k == key:
                 yield v

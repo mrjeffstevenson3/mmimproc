@@ -20,7 +20,7 @@ from mmimproc.utils import run_subprocess, WorkingContext
 from mmimproc.utils.paths import getnetworkdataroot
 #set up instances
 provenance = ProvenanceWrapper()
-fs = Path(getnetworkdataroot())
+fs = mmimproc.fs
 flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo', output_type='NIFTI')
 applyxfm = fsl.ApplyXFM(interp='nearestneighbour', output_type='NIFTI')
 bet = fsl.BET(output_type='NIFTI')

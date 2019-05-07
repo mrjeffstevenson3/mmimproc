@@ -21,7 +21,7 @@ convert = True
 
 def default_to_regular(d):
     if isinstance(d, defaultdict):
-        d = {k: default_to_regular(v) for k, v in d.iteritems()}
+        d = {k: default_to_regular(v) for k, v in d.items()}
     return d
 
 #run conversion if needed

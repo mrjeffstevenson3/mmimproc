@@ -11,10 +11,9 @@
 # In[1]:
 
 from pathlib import *
+import mmimproc
 import numpy as np
 import pandas as pd
-import mne
-import six, os
 np.set_printoptions(linewidth=999999, precision=6, suppress=True, threshold=99999)
 pd.set_option('display.width', 999999)
 pd.set_option('display.max_colwidth', 300)
@@ -25,9 +24,9 @@ from mmimproc.correlation.atlas import mori_region_labels, JHUtracts_region_labe
 from mmimproc.projects.bbc.pairing import foster_behav_data, control_behav_data, behav_list
 from mmimproc.projects.bbc.correl.atlases import atlases
 from mmimproc.alignment.resample import reslice_roi
-from mmimproc.utils import run_subprocess, WorkingContext
-from mmimproc.utils.paths import getnetworkdataroot
-fs = Path(getnetworkdataroot())
+from mmimproc.utils import *
+provenance = ProvenanceWrapper()
+fs = mmimproc.fs
 output2file = False
 project = 'bbc'
 statsdir = fs/project/'stats'/'py_correl_5thpass_cthr15_n5000' #'py_correl_2ndpass'   #'py_correl_5thpass_cthr15_n5000'    #'py_correl_3rdpass'   #'py_correl_5thpass'
@@ -157,7 +156,9 @@ with WorkingContext(str(statsdir)):
             one_result.name = 'roi'+str(index_num)+'_'+prime_mod+'_'+prime_behav_tup[1]
             col_order = ['gp', 'sids', prime_behav_tup[1], prime_mod] + modalities + ['mori', 'JHUtract']
             one_result.to_csv(str(outfile), columns=col_order, index=False)
-            provenance.log(str(outfile), 'make multimodal csv from stats index file', str(index_fname), script=__file__,                    provenance={'index': index_num, 'behavior': prime_behav_tup[1], 'modalities': [prime_mod] + modalities, 'cols': col_order})
+            provenance.log(str(outfile), 'make multimodal csv from stats index file', str(index_fname), script=__file__,
+                           provenance={'index': index_num, 'behavior': prime_behav_tup[1],
+                                       'modalities': [prime_mod] + modalities, 'cols': col_order})
         
 
 
@@ -384,7 +385,7 @@ import nibabel as nib
 import scipy.ndimage.measurements as measurements
 from mmimproc.correlation.atlas import mori_region_labels, JHUtracts_region_labels
 from mmimproc.utils.paths import getnetworkdataroot
-fs = Path(getnetworkdataroot())
+fs = mmimproc.fs
 """
 makes atlas objects.
 """

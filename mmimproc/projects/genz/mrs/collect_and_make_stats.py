@@ -14,7 +14,7 @@ from mmimproc.utils import ProvenanceWrapper, getnetworkdataroot, appendposix, b
 from mmimproc.projects.nbwr.file_names import project
 prov = ProvenanceWrapper()
 
-fs = Path(getnetworkdataroot())
+fs = mmimproc.fs
 
 #define fortran programs
 stats_fpgm = mmimproc_dir / 'mmimproc/projects/nbwr/mrs/nbwr_spreadsheet_sep19_2017'

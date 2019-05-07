@@ -5,7 +5,7 @@ import nibabel as nib
 import scipy.ndimage.measurements as measurements
 from mmimproc.correlation.atlas import mori_region_labels, JHUtracts_region_labels
 from mmimproc.utils.paths import getnetworkdataroot
-fs = Path(getnetworkdataroot())
+fs = mmimproc.fs
 """
 makes atlas objects.
 """

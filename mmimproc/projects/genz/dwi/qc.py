@@ -19,7 +19,7 @@ from mmimproc.projects.genz.file_names import SubjIdPicks, get_dwi_names, Optsd
 prov = ProvenanceWrapper()
 # setup paths and file names to process
 # set up root data directory
-fs = Path(getnetworkdataroot())
+fs = mmimproc.fs
 # instantiate project level nomenclature options object
 opts = Optsd()
 opts.test = False

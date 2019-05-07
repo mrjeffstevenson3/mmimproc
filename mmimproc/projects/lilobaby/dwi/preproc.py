@@ -42,7 +42,7 @@ from mmimproc.projects.lilobaby.file_names import project, SubjIdPicks, get_dwi_
 from mmimproc.conversion.brain_convert import lilobaby_conv
 
 #setup paths and file names to process
-fs = Path(getnetworkdataroot())
+fs = mmimproc.fs
 
 antsRegistrationSyN = get_antsregsyn_cmd()
 slicer_path = getslicercmd(ver='stable')
@@ -114,7 +114,7 @@ for i, j in enumerate(list(itertools.product(*(range(3), range(3))))):
 # define local functions
 def default_to_regular(d):
     if isinstance(d, defaultdict):
-        d = {k: default_to_regular(v) for k, v in d.iteritems()}
+        d = {k: default_to_regular(v) for k, v in d.items()}
     return d
 
 def test4file(file):

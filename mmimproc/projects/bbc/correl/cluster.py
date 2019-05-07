@@ -12,7 +12,7 @@ from mmimproc.projects.bbc.pairing import foster_behav_data, control_behav_data,
 
 #set up roi
 provenance = ProvenanceWrapper()
-fs = Path(getnetworkdataroot())
+fs = mmimproc.fs
 project = 'bbc'
 statsdir = fs/project/'stats'/'py_correl_3rdpass'
 cluster_results_file = 'cluster_results_v5.txt'

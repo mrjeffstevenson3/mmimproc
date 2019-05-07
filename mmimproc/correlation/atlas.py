@@ -10,7 +10,7 @@ from mmimproc.conversion.nifti2nrrd import nii2nrrd
 from mmimproc.utils.tables import TablePublisher
 from mmimproc.utils import *
 provenance = ProvenanceWrapper()
-fs = Path(getnetworkdataroot())
+fs = mmimproc.fs
 
 
 def report(images, atlas, regionnames=None, threshold = .95,

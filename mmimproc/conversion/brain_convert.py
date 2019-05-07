@@ -21,7 +21,7 @@ from collections import defaultdict
 from mmimproc.conversion.parrec2nii_convert import mergeddicts
 from mmimproc.utils import getnetworkdataroot, ProvenanceWrapper
 provenance = ProvenanceWrapper()
-fs = Path(getnetworkdataroot())
+fs = mmimproc.fs
 
 print(fs)
 flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo', output_type='NIFTI')
@@ -429,7 +429,7 @@ img_conv = {'phantom_qT1_slu': slu_phant_conv,
 opts = BrainOpts()
 
 def set_opts(opt_series): #function to extract params from dataframe
-    for index, row in opt_series.iteritems():
+    for index, row in opt_series.items():
         setattr(opts, index, row)
 
 def is_empty(any_structure):
@@ -441,7 +441,7 @@ def is_empty(any_structure):
 
 def default_to_regular(d):
     if isinstance(d, defaultdict):
-        d = {k: default_to_regular(v) for k, v in d.iteritems()}
+        d = {k: default_to_regular(v) for k, v in d.items()}
     return d
 
 def find_subjs2conv(project, idthresh=800, leadalphan=False, wild_multipl=1):

@@ -24,7 +24,7 @@ from mmimproc.utils import ProvenanceWrapper, run_subprocess, WorkingContext, ap
 prov = ProvenanceWrapper()
 
 
-fs = Path(getnetworkdataroot())
+fs = mmimproc.fs
 
 #  define hostnames with working gpus for processing
 flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo', output_type='NIFTI_GZ')
@@ -84,7 +84,7 @@ ukfcmds =  {'UKF_whbr': str(slicer_path) + 'UKFTractography --dwiFile %(fdwinrrd
 
 def default_to_regular(d):
     if isinstance(d, defaultdict):
-        d = {k: default_to_regular(v) for k, v in d.iteritems()}
+        d = {k: default_to_regular(v) for k, v in d.items()}
     return d
 
 def test4file(file):

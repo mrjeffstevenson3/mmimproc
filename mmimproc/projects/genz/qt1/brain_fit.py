@@ -24,7 +24,7 @@ from mmimproc.projects.genz.file_names import project, SubjIdPicks, get_5spgr_na
 from mmimproc.utils.provenance import ProvenanceWrapper
 prov = ProvenanceWrapper()
 
-fs = Path(getnetworkdataroot())
+fs = mmimproc.fs
 
 if os.environ['FSLOUTPUTTYPE'] != 'NIFTI_GZ':
     os.environ['FSLOUTPUTTYPE'] = 'NIFTI_GZ'

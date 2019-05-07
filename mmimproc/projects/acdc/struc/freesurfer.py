@@ -16,7 +16,7 @@ from mmimproc.utils.provenance import ProvenanceWrapper
 prov = ProvenanceWrapper()
 #setup paths and file names to process
 
-fs = Path(getnetworkdataroot())
+fs = mmimproc.fs
 
 antsRegistrationSyN = get_antsregsyn_cmd()
 

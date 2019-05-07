@@ -5,7 +5,7 @@ prov = niprov.ProvenanceContext()
 from mmimproc.projects.bbc.pairing import dwipairing
 from mmimproc.utils.paths import getnetworkdataroot
 from mmimproc.conversion.nifti2nrrd import nii2nrrd
-fs = Path(getnetworkdataroot())
+fs = mmimproc.fs
 pylabs_basepath = Path(*Path(inspect.getabsfile(mmimproc)).parts[:-1])
 project = 'bbc'
 ec_meth = 'cuda_repol_std2_v2'

@@ -16,7 +16,7 @@ def make_sessions_fm_dict(niidict, project, subject):
     sessions = []
     scans = []
 
-    for session, s in niidict.iteritems():
+    for session, s in niidict.items():
         #assert sessions.append(session[0]) == subject
         sessions.append(session)
         scans.append(pd.DataFrame.from_dict(s, orient='index'))

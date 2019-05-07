@@ -7,7 +7,7 @@ from mmimproc.utils.provenance import ProvenanceWrapper
 from mmimproc.correlation.correlate import wholeBrain
 
 provenance = ProvenanceWrapper()
-fs = Path(getnetworkdataroot())
+fs = mmimproc.fs
 
 groupcol=True
 behav_csv_name = 'bbc_behav_7-12-2017.csv'
@@ -30,7 +30,7 @@ if not mat_outdir.is_dir:
 if not results_dirname.is_dir():
     results_dirname.mkdir(parents=True)
 #make subtracted mat files with behavior correlation
-for behav in sub_data.iteritems():
+for behav in sub_data.items():
     content = ''
     (w, p) = (2, len(behav[1]))
     content += '/NumWaves\t{0}\n/NumPoints\t{1}\n'.format(w, p)
@@ -46,7 +46,7 @@ for behav in sub_data.iteritems():
     with open(str(matfname), mode='w') as matfile:
         matfile.write(content)
 # make unsubtracted mat files
-for behav in unsub_data.iteritems():
+for behav in unsub_data.items():
     if len(behav[1]) % 2 != 0:
         raise ValueError('paired behavior list is not even. aborting.')
     unsub_content = ''

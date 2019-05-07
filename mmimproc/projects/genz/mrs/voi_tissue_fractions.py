@@ -22,7 +22,7 @@ prov = ProvenanceWrapper()
 os.environ['FSLOUTPUTTYPE'] = mmimproc.popts.nii_ftype
 os.environ["FSLMULTIFILEQUIT"] = mmimproc.popts.fslmultifilequit
 
-fs = Path(getnetworkdataroot())
+fs = mmimproc.fs
 opts = Opts()
 mmimproc.popts.overwrite = True
 do_mask = True

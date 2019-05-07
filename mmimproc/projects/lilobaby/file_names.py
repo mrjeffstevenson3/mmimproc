@@ -14,10 +14,10 @@ mmimproc.datadir.target = 'jaba'
 from pathlib import *
 import numpy as np
 from mmimproc.utils import *
-from mmimproc.conversion.brain_convert import img_conv, lilobaby_conv, is_empty
+from mmimproc.conversion.brain_convert import img_conv, lilobaby_conv, mergeddicts
 from mmimproc.io.mixed import getTRfromh5
 
-fs = Path(getnetworkdataroot())
+fs = mmimproc.fs
 project = 'lilobaby'
 dwi_excluded = {project: []}
 
@@ -157,7 +157,7 @@ def get_freesurf_names(subjids_picks):
     for subjid in subjids_picks.subjids:
         subjid['b1map_fname'] = str(b1_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_B1MAP-QUIET_']))
         subjid['freesurf_fname'] = str(fs_ftempl).format(**merge_ftempl_dicts(dict1=subjid, dict2=img_conv[project]['_MEMP_'], dict3={'scan_info': 'ti1200_rms'}))
-        fs_picks.append(subjid)
+        fs_picks.append(mergeddicts(subjid, vars(opts)))
     return fs_picks
 
 def get_dwi_names(subjids_picks):
@@ -178,7 +178,7 @@ def get_dwi_names(subjids_picks):
             subjid['fits_path'] = fs / project / '{subj}/{session}/dwi'.format(**subjid) / opts.dwi_fits_dir
             subjid['bedpost_path'] = fs / project / '{subj}/{session}/dwi'.format(**subjid) / opts.dwi_bedpost_dir
             subjid['qt1_path'] = fs / project / '{subj}/{session}/qt1'.format(**subjid)
-            dwi_picks.append(subjid)
+            dwi_picks.append(mergeddicts(subjid, vars(opts)))
         return dwi_picks
     except TypeError as e:
             print('subjids needs to a dictionary.')
@@ -231,5 +231,5 @@ def get_vfa_names(subjids_picks):
                 subjid['orig_mpf_fname'] = mpf_img_files[0]
             else:
                 raise ValueError('found more than 1 R1 ({lenr1}) or MPF ({lenmpf}).img file. ambiguous choice. Please have only one matching .img file for each in qt1 dir.'.format({'lenr1': len(r1_img_files), 'lenmpf': len(mpf_img_files)}))
-        qt1_picks.append(subjid)
+        qt1_picks.append(mergeddicts(subjid, vars(opts)))
     return qt1_picks

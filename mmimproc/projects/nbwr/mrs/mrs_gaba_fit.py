@@ -11,7 +11,7 @@ from mmimproc.projects.nbwr.file_names import project, SubjIdPicks, get_gaba_nam
 from mmimproc.io.mixed import getgabavalue, df2h5
 prov = ProvenanceWrapper()
 
-fs = Path(getnetworkdataroot())
+fs = mmimproc.fs
 gannettpath = getgannettpath()
 all_info_fname = fs/project/'all_{project}_info.h5'.format(**{'project': project})
 pdf_only = True

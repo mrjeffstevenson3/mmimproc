@@ -27,7 +27,7 @@ from mmimproc.structural.brain_extraction import extract_brain
 from mmimproc.io.images import savenii
 from mmimproc.utils import *
 prov = ProvenanceWrapper()
-fs = Path(getnetworkdataroot())
+fs = mmimproc.fs
 import dill #to use as pickle replacement of lambda dict
 
 
@@ -47,7 +47,7 @@ def opts2dict(opts):
 def mergeddicts(origdict, appenddict):
     if not isinstance(origdict, collections.Mapping) or not isinstance(appenddict, collections.Mapping):
         raise TypeError('One dictionary not a nested 3 level collections.defaultdict(list), please fix.')
-    for k, v in appenddict.iteritems():
+    for k, v in appenddict.items():
         if isinstance(origdict, collections.Mapping):
             if isinstance(v, collections.Mapping):
                 r = mergeddicts(origdict.get(k, {}), v)

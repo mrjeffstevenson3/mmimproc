@@ -24,7 +24,7 @@ latex
 python-dateutil
 IPython
 statsmodels
-pytables
+# pytables
 pdfminer.six
 qgrid
 ipywidgets

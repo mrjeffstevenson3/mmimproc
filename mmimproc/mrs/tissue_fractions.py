@@ -8,7 +8,7 @@ from mmimproc.io.spar import load as readspar
 from mmimproc.io.images import savenii
 from mmimproc.utils import ProvenanceWrapper, run_subprocess, WorkingContext, getnetworkdataroot, appendposix, replacesuffix
 prov = ProvenanceWrapper()
-fs = Path(getnetworkdataroot())
+fs = mmimproc.fs
 
 def make_voi_mask(spar_fname, matching_image_fname, out_voi_mask_fname):
     spar = readspar(str(spar_fname))

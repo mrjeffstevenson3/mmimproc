@@ -8,7 +8,7 @@ from mmimproc.utils.provenance import ProvenanceWrapper
 prov = ProvenanceWrapper()
 
 mmimproc.datadir.target = 'jaba'
-fs = Path(getnetworkdataroot())
+fs = mmimproc.fs
 
 project = 'nbwr'
 subject = 'sub-nbwr404'

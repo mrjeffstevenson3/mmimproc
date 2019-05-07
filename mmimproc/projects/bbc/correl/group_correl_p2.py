@@ -17,7 +17,7 @@ from mmimproc.projects.bbc.pairing import FA_foster_pnames, FA_control_pnames, \
     AD_foster_pnames, AD_control_pnames, GMVBM_foster_pnames, GMVBM_control_pnames, WMVBM_foster_pnames, \
     WMVBM_control_pnames, foster_behav_data, control_behav_data
 provenance = ProvenanceWrapper()
-fs = Path(getnetworkdataroot())
+fs = mmimproc.fs
 
 # function to estimate correlation
 def corr(X, Y):

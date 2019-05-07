@@ -15,7 +15,7 @@ from mmimproc.utils import *
 from mmimproc.projects.nbwr.file_names import project
 prov = ProvenanceWrapper()
 
-fs = Path(getnetworkdataroot())
+fs = mmimproc.fs
 include_jonah = False  # broken
 
 # define fortran programs

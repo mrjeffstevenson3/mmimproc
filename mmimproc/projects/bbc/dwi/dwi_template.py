@@ -13,7 +13,7 @@ from mmimproc.utils import run_subprocess, WorkingContext
 from mmimproc.io.images import savenii
 from mmimproc.utils.provenance import ProvenanceWrapper
 provenance = ProvenanceWrapper()
-fs = Path(getnetworkdataroot())
+fs = mmimproc.fs
 pylabs_basepath = Path(*Path(inspect.getabsfile(mmimproc)).parts[:-1])
 project = 'bbc'
 #eddy corrected method directory. should get from eddy.

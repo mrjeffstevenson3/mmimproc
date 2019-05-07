@@ -4,7 +4,7 @@ import pandas, numpy, nibabel
 import scipy.ndimage.measurements as measurements
 from mmimproc.correlation.atlas import mori_region_labels, JHUtracts_region_labels
 from mmimproc.utils.paths import getnetworkdataroot
-fs = Path(getnetworkdataroot())
+fs = mmimproc.fs
 """
 Reports on and masks clusters of voxels over a certain size.
 """

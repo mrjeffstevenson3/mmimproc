@@ -10,7 +10,7 @@ import csv
 from scipy import stats as ss
 from mmimproc.utils import run_subprocess, WorkingContext
 from mmimproc.utils.paths import getnetworkdataroot
-fs = Path(getnetworkdataroot())
+fs = mmimproc.fs
 project = 'bbc'
 # first set up the 3 cortical thickness dataframes as input
 contrl_sid = ['sub-bbc209', 'sub-bbc211', 'sub-bbc208', 'sub-bbc202', 'sub-bbc249', 'sub-bbc241', 'sub-bbc243', 'sub-bbc231', 'sub-bbc253']
@@ -111,7 +111,7 @@ with open(str(lh_ct_fname), 'rb') as lh_ct , open(str(lh_contrl_mean_ct_fname), 
         # get vertex
         vert = int(row[0])
         # get region
-        region = [k for k, v in all_labels.iteritems() if vert in v][0]
+        region = [k for k, v in all_labels.items() if vert in v][0]
         if region == '':
             cntrl_thickn = [2.785]
             foster_thickn = [2.7127]

@@ -1,10 +1,7 @@
 # todo: recode to exctract tracts from UKF whole brain.
 import mmimproc
-
-import os, inspect
 from pathlib import *
 import datetime
-
 from mmimproc.correlation.atlas import make_mask_fm_atlas_parts, make_mask_fm_tracts
 from mmimproc.alignment.ants_reg import subj2templ_applywarp, subj2T1
 from mmimproc.projects.genz.file_names import get_dwi_names, Optsd, project, SubjIdPicks, get_vfa_names, merge_ftempl_dicts
@@ -14,7 +11,7 @@ from mmimproc.diffusion.vol_into_vtk import inject_vol_data_into_vtk
 #set up provenance
 provenance = ProvenanceWrapper()
 #setup paths and file names to process
-fs = Path(getnetworkdataroot())
+fs = mmimproc.fs
 slicer_path = getslicercmd(ver='stable')
 
 mori_atlasd = {
@@ -85,8 +82,21 @@ picks = [
         {'patch': True, 'project': project, 'subj': 'sub-genz311', 'session': 'ses-1', 'run': '1', 'fas': [4.0, 25.0],},
          ]
 setattr(subjids_picks, 'subjids', picks)
+setattr(subjids_picks, 'getR1_MPF_nii_fnames', True)
+setattr(subjids_picks, 'get_analyse_R1_MPF_names', True)
 
-dwi_picks, qt1_picks  =  get_dwi_names(subjids_picks), get_vfa_names(subjids_picks)
+r1_fname_templ = '{subj}_{session}_vasily_r1_ras'
+mpf_fname_templ = '{subj}_{session}_vasily_mpf_ras'
+orig_r1_fname_templ = 'R1_{subj}.img'  # not matching PAR file
+orig_mpf_fname_templ = 'MPF_{subj}.img'
+
+setattr(subjids_picks, 'r1_fname_templ', r1_fname_templ)
+setattr(subjids_picks, 'mpf_fname_templ', mpf_fname_templ)
+setattr(subjids_picks, 'orig_r1_fname_templ', orig_r1_fname_templ)
+setattr(subjids_picks, 'orig_mpf_fname_templ', orig_mpf_fname_templ)
+
+dwi_picks, qt1_picks = get_dwi_names(subjids_picks), get_vfa_names(subjids_picks)
+
 if dwi_picks == qt1_picks:
     picks = qt1_picks
 else:
@@ -118,18 +128,16 @@ if opts.test:
 #apply the warps
 for pick in picks:
     output = tuple()
-    print('Woking on subject {subj} session {session}'.format(**pick))
+    print('Working on subject {subj} session {session}'.format(**pick))
     # first warp MNI atlases to dwi space
-    reg_dir = Path(fs/project/'{subj}/{session}/reg/MNI2dwi'.format(**pick))
-    dwi_dir = Path(fs/project/'{subj}/{session}/dwi/{dwi_fits_dir}'.format(**merge_ftempl_dicts(dict1=pick, dict2=vars(opts))))
-    vtk_dir = Path(fs/project/'{subj}/{session}/dwi/{vtk_dir}'.format(**merge_ftempl_dicts(dict1=pick, dict2=vars(opts))))
-    if not vtk_dir.is_dir():
-        vtk_dir.mkdir(parents=True)
+    reg_dir = Path(pick['reg_mni2dwi'].format(**pick))
+    if not pick['vtk_path'].is_dir():
+        pick['vtk_path'].mkdir(parents=True)
         # ukf_fname = Path(fs/project/'{subj}/{session}/dwi/{dwi_fits_dir}/vtk/'.format(**merge_ftempl_dicts(dict1=pick, dict2=vars(opts))))
     if not reg_dir.is_dir():
         reg_dir.mkdir(parents=True)
-    mori_in_vtk_dir = vtk_dir / appendposix(moriMNIatlas.name, '_reg2dwi')
-    ref = dwi_dir / '{subj}_{session}_dwi_unwarped_ec_fslfit_tensor_mf_S0.nii.gz'.format(**pick)
+    mori_in_vtk_dir = pick['vtk_path'] / appendposix(moriMNIatlas.name, '_reg2dwi')
+    ref = pick['fits_path'] / '{subj}_{session}_dwi_unwarped_ec_fslfit_tensor_mf_S0.nii.gz'.format(**pick)
     if not (replacesuffix(mori_in_vtk_dir, '.nrrd')).is_file():
         with WorkingContext(reg_dir):
             moving = MNI1mm_T2_brain_dwi
@@ -137,11 +145,11 @@ for pick in picks:
             subj2T1(moving, ref, out_fname, inargs=opts.ants_args)
             warpfiles = [str(reg_dir/replacesuffix(MNI1mm_T2_brain_dwi.name, '_reg2dwi_1Warp.nii.gz'))]
             affine_xfm = [str(reg_dir/replacesuffix(MNI1mm_T2_brain_dwi.name, '_reg2dwi_0GenericAffine.mat'))]
-            output += subj2templ_applywarp(moriMNIatlas, ref, dwi_dir/appendposix(moriMNIatlas.name, '_reg2dwi'), warpfiles, dwi_dir, affine_xform=affine_xfm)
-            mori_in_vtk_dir.symlink_to(dwi_dir/appendposix(moriMNIatlas.name, '_reg2dwi'))
+            output += subj2templ_applywarp(moriMNIatlas, ref, pick['fits_path']/appendposix(moriMNIatlas.name, '_reg2dwi'), warpfiles, pick['fits_path'], affine_xform=affine_xfm)
+            mori_in_vtk_dir.symlink_to(pick['fits_path']/appendposix(moriMNIatlas.name, '_reg2dwi'))
             nii2nrrd(mori_in_vtk_dir, replacesuffix(mori_in_vtk_dir, '.nrrd'), ismask=True)
 
-    with WorkingContext(vtk_dir):
+    with WorkingContext(pick['vtk_path']):
         if opts.inject_qt1:
             qt1_fname = fs/project/'{subj}/{session}/qt1/{subj}_{session}_vfa_qt1_b1corrmf_vlinregr-fit_clamped.nii'.format(**pick)
             vol_in = '{subj}_{session}_vfa_qt1_b1corrmf_vlinregr-fit_clamped_reg2dwi_Warped.nii.gz'
@@ -149,112 +157,104 @@ for pick in picks:
                 raise ValueError('cannot find qt1 file '+str(qt1_fname))
             if not Path(vol_in).is_file():
                 print('moving qt1 to dwi space.')
-                qt1_fnamevtk = vtk_dir/'{subj}_{session}_vfa_qt1_b1corrmf_vlinregr-fit_clamped.nii'.format(**pick)
+                qt1_fnamevtk = pick['vtk_path']/'{subj}_{session}_vfa_qt1_b1corrmf_vlinregr-fit_clamped.nii'.format(**pick)
                 qt1_fnamevtk.symlinc_to(qt1_fname)
                 subj2T1(qt1_fnamevtk, ref, replacesuffix(qt1_fname.name, '_reg2dwi_'), inargs=opts.ants_args)
             vtk_in = '{subj}_{session}_dwi-topup_64dir-3sh-800-2000_1_topdn_unwarped_ec_mf_clamp1_UKF_whbr.vtk'
             vtk_out = appendposix(vtk_in, '_qt1-inj')
             inject_vol_data_into_vtk(Path('.'), vol_in, vtk_in, vtk_out)
-        for k, a in mori_atlasd.iteritems():
+        for k, a in mori_atlasd.items():
             cmd = str(slicer_path)+a['Sl_cmd']+'-p '+','.join([str(x) for x in a['roi_list']])+' '+str(replacesuffix(mori_in_vtk_dir, '.nrrd'))
             cmd += ' '+'{subj}_{session}_dwi-topup_64dir-3sh-800-2000_1_topdn_unwarped_ec_mf_clamp1_UKF_whbr.vtk'.format(**pick)
             cmd += ' '+'{subj}_{session}_dwi-topup_64dir-3sh-800-2000_1_topdn_unwarped_ec_mf_clamp1_UKF_whbr_'.format(**pick)+k+'.vtk'
 
-
-
-
-
             # extract rois from atlases and make masks
             if 'mori_' in k:
                 make_mask_fm_atlas_parts(atlas=str(mori_in_vtk_dir), roi_list=a['roi_list'], mask_fname=str(a['atlas_fname']), makenrrd=True)
+                make_mask_fm_atlas_parts(atlas=str(moriMNIatlas), roi_list=a['roi_list'], mask_fname=str(mmimproc_atlasdir / a['atlas_fname']))
+            elif 'JHU_' in k:
+                make_mask_fm_tracts(atlas=str(JHUtracts_prob_atlas), volidx=a['roi_list'], thresh=pick['JHU_thr'], mask_fname=str(mmimproc_atlasdir / (a['atlas_fname'] % pick['JHU_thr'])))
+            elif 'aal_motor' in k:
+                make_mask_fm_atlas_parts(atlas=str(mmimproc_atlasdir / 'aal_1mm_reg2MNI_masked.nii.gz'), roi_list=a['roi_list'], mask_fname=str(mmimproc_atlasdir / a['atlas_fname']))
+            elif 'stats' in k:
+                make_mask_fm_tracts(atlas=str(vbm_statsdir / a['atlas_fname']), volidx=a['roi_list'], thresh=pick['stat_thr'], mask_fname=str(mmimproc_atlasdir / (a['atlas_fname'].split('.')[0]+'_thr%(fn_thr)s_bin.nii.gz' % pick['stat_thr'])))
+            execwdir = fs / project / dwif.split('_')[0] / dwif.split('_')[1] / 'dwi'
 
+            if 'mori' in k or 'aal_motor' in k:
+                mov = mmimproc_atlasdir / a['atlas_fname']
+                outf = execwdir / str(dwif+'_'+k+'.nii')
+            if 'JHU_' in k:
+                mov = mmimproc_atlasdir / (a['atlas_fname'] % pick['JHU_thr'])
+                outf = execwdir / str(dwif+'_'+ (a['atlas_fname'] % pick['JHU_thr']))
+            if 'stats' in k:
+                mov = vbm_statsdir / (a['atlas_fname'].split('.')[0]+'_thr%(fn_thr)s_bin.nii.gz' % pick['stat_thr'])
+                outf = execwdir / str(dwif+'_'+ (a['atlas_fname'].split('.')[0]+'_thr%(fn_thr)s_bin.nii.gz' % pick['stat_thr']))
+            iwarp_templ2vbmsubj = templdir / str(vbmf+'InverseWarp.nii.gz')
+            iwarp_vbmsub2dwi = dwi2vbmsubjdir / str(dwif+ dwi_reg_append +'1InverseWarp.nii.gz')
+            aff_templ2vbmsubj = templdir / str(vbmf+'Affine.txt')
+            aff_vbmsub2dwi = dwi2vbmsubjdir / str(dwif + dwi_reg_append + '0GenericAffine.mat')
+            warpfiles = [str(MNI2templ_invwarp), str(iwarp_templ2vbmsubj), str(iwarp_vbmsub2dwi)]
+            affine_xform = [str(MNI2templ_aff), str(aff_templ2vbmsubj), str(aff_vbmsub2dwi)]
+            if 'stats' in k:  # this is because stats are already in template space so no MNI warps needed.
+                warpfiles = warpfiles[1:]
+                affine_xform = affine_xform[1:]
+            subj2templ_applywarp(str(mov), str(ref), str(outf), warpfiles, str(execwdir), affine_xform=affine_xform, inv=True)
+            nii2nrrd(str(outf), str(outf).replace('.nii','.nhdr'), ismask=True)
+            vtkdir = execwdir / 'vtk_tensor_comp_run7'
+            if not vtkdir.is_dir():
+                vtkdir.mkdir()
+            #recoded till here
+            try:
+                if not a['Sl_cmd'] == None and 'stats_vbm' not in k:
+                    if a['Sl_cmd'] == 'ModelMaker -l 1 -n ':
+                        cmd = ''
+                        cmd += str(slicer_path) + a['Sl_cmd']
+                        if 'mori' in k or 'aal_motor' in k:
+                            cmd += str(vtkdir / str(dwif + '_' + k))
+                        if 'JHU_' in k:
+                            cmd += str(vtkdir / str(dwif + '_' + (a['atlas_fname'] % pick['JHU_thr']).split('.')[0]))
+                        cmd += ' '+ str(outf)
+                        output = ()
+                        dt = datetime.datetime.now()
+                        output += (str(dt),)
+                        cmdt = (cmd,)
+                        output += cmdt
+                        with WorkingContext(str(execwdir)):
+                            print(cmd)
+                            output += run_subprocess(cmd)
+                        params = {}
+                        params['cmd'] = cmd
+                        params['output'] = output
+                        if 'mori' in k or 'aal_motor' in k:
+                            provenance.log(str(vtkdir / str(dwif+'_'+k+'.vtk')), 'generate model vtk', str(outf), script=__file__, provenance=params)
+                        elif 'JHU_' in k:
+                            provenance.log(str(vtkdir / str(dwif + '_' + (a['atlas_fname'] % pick['JHU_thr']).split('.')[0]) + '.vtk'), 'generate model vtk', str(outf), script=__file__, provenance=params)
+                    elif 'stats' not in k:
+                        for m, ts in tensors.items():
+                            tenpath = execwdir / opts.eddy_corr_dir
+                            for t in ts:
+                                cmd = ''
+                                cmd += str(slicer_path) + a['Sl_cmd']
+                                cmd += str(outf)+' '+str(tenpath / str(dwif+t))+' '+str(vtkdir / str(dwif+t.split('.')[0]+'_'+k))+'.vtk'
+                                output = ()
+                                dt = datetime.datetime.now()
+                                output += (str(dt),)
+                                cmdt = (cmd,)
+                                output += cmdt
+                                with WorkingContext(str(execwdir)):
+                                    print(cmd)
+                                    output += run_subprocess(cmd)
+                                params = {}
+                                params['cmd'] = cmd
+                                params['output'] = output
+                                provenance.log(str(vtkdir / str(dwif+t.split('.')[0]+'_'+k))+'.vtk', 'generate fiberbundle vtk from tensors', [str(outf), str(tenpath / str(dwif+t))] , script=__file__, provenance=params)
+                    elif 'stats' in k:
+                        # sets up variables to combine with MNI_atlases dict
+                        cmdvars = {'mask_fname': str(mask_fname), 'm': m.lower(), 'dwif': dwif,
+                                   'fdwinrrd': str(outf).replace('.nii','.nhdr'),
+                                   'seed_fnamenrrd': str(outf).replace('.nii', '.nhdr')}
 
-            make_mask_fm_atlas_parts(atlas=str(moriMNIatlas), roi_list=a['roi_list'], mask_fname=str(mmimproc_atlasdir / a['atlas_fname']))
-        elif 'JHU_' in k:
-            make_mask_fm_tracts(atlas=str(JHUtracts_prob_atlas), volidx=a['roi_list'], thresh=JHU_thr, mask_fname=str(mmimproc_atlasdir / (a['atlas_fname'] % JHU_thr)))
-        elif 'aal_motor' in k:
-            make_mask_fm_atlas_parts(atlas=str(mmimproc_atlasdir / 'aal_1mm_reg2MNI_masked.nii.gz'), roi_list=a['roi_list'], mask_fname=str(mmimproc_atlasdir / a['atlas_fname']))
-        elif 'stats' in k:
-            make_mask_fm_tracts(atlas=str(vbm_statsdir / a['atlas_fname']), volidx=a['roi_list'], thresh=stat_thr, mask_fname=str(mmimproc_atlasdir / (a['atlas_fname'].split('.')[0]+'_thr%(fn_thr)s_bin.nii.gz' % stat_thr)))
-        execwdir = fs / project / dwif.split('_')[0] / dwif.split('_')[1] / 'dwi'
-
-        if 'mori' in k or 'aal_motor' in k:
-            mov = mmimproc_atlasdir / a['atlas_fname']
-            outf = execwdir / str(dwif+'_'+k+'.nii')
-        if 'JHU_' in k:
-            mov = mmimproc_atlasdir / (a['atlas_fname'] % JHU_thr)
-            outf = execwdir / str(dwif+'_'+ (a['atlas_fname'] % JHU_thr))
-        if 'stats' in k:
-            mov = vbm_statsdir / (a['atlas_fname'].split('.')[0]+'_thr%(fn_thr)s_bin.nii.gz' % stat_thr)
-            outf = execwdir / str(dwif+'_'+ (a['atlas_fname'].split('.')[0]+'_thr%(fn_thr)s_bin.nii.gz' % stat_thr))
-        iwarp_templ2vbmsubj = templdir / str(vbmf+'InverseWarp.nii.gz')
-        iwarp_vbmsub2dwi = dwi2vbmsubjdir / str(dwif+ dwi_reg_append +'1InverseWarp.nii.gz')
-        aff_templ2vbmsubj = templdir / str(vbmf+'Affine.txt')
-        aff_vbmsub2dwi = dwi2vbmsubjdir / str(dwif + dwi_reg_append + '0GenericAffine.mat')
-        warpfiles = [str(MNI2templ_invwarp), str(iwarp_templ2vbmsubj), str(iwarp_vbmsub2dwi)]
-        affine_xform = [str(MNI2templ_aff), str(aff_templ2vbmsubj), str(aff_vbmsub2dwi)]
-        if 'stats' in k:  # this is because stats are already in template space so no MNI warps needed.
-            warpfiles = warpfiles[1:]
-            affine_xform = affine_xform[1:]
-        subj2templ_applywarp(str(mov), str(ref), str(outf), warpfiles, str(execwdir), affine_xform=affine_xform, inv=True)
-        nii2nrrd(str(outf), str(outf).replace('.nii','.nhdr'), ismask=True)
-        vtkdir = execwdir / 'vtk_tensor_comp_run7'
-        if not vtkdir.is_dir():
-            vtkdir.mkdir()
-        #recoded till here
-        try:
-            if not a['Sl_cmd'] == None and 'stats_vbm' not in k:
-                if a['Sl_cmd'] == 'ModelMaker -l 1 -n ':
-                    cmd = ''
-                    cmd += str(slicer_path) + a['Sl_cmd']
-                    if 'mori' in k or 'aal_motor' in k:
-                        cmd += str(vtkdir / str(dwif + '_' + k))
-                    if 'JHU_' in k:
-                        cmd += str(vtkdir / str(dwif + '_' + (a['atlas_fname'] % JHU_thr).split('.')[0]))
-                    cmd += ' '+ str(outf)
-                    output = ()
-                    dt = datetime.datetime.now()
-                    output += (str(dt),)
-                    cmdt = (cmd,)
-                    output += cmdt
-                    with WorkingContext(str(execwdir)):
-                        print(cmd)
-                        output += run_subprocess(cmd)
-                    params = {}
-                    params['cmd'] = cmd
-                    params['output'] = output
-                    if 'mori' in k or 'aal_motor' in k:
-                        provenance.log(str(vtkdir / str(dwif+'_'+k+'.vtk')), 'generate model vtk', str(outf), script=__file__, provenance=params)
-                    elif 'JHU_' in k:
-                        provenance.log(str(vtkdir / str(dwif + '_' + (a['atlas_fname'] % JHU_thr).split('.')[0]) + '.vtk'), 'generate model vtk', str(outf), script=__file__, provenance=params)
-                elif 'stats' not in k:
-                    for m, ts in tensors.iteritems():
-                        tenpath = execwdir / opts.eddy_corr_dir
-                        for t in ts:
-                            cmd = ''
-                            cmd += str(slicer_path) + a['Sl_cmd']
-                            cmd += str(outf)+' '+str(tenpath / str(dwif+t))+' '+str(vtkdir / str(dwif+t.split('.')[0]+'_'+k))+'.vtk'
-                            output = ()
-                            dt = datetime.datetime.now()
-                            output += (str(dt),)
-                            cmdt = (cmd,)
-                            output += cmdt
-                            with WorkingContext(str(execwdir)):
-                                print(cmd)
-                                output += run_subprocess(cmd)
-                            params = {}
-                            params['cmd'] = cmd
-                            params['output'] = output
-                            provenance.log(str(vtkdir / str(dwif+t.split('.')[0]+'_'+k))+'.vtk', 'generate fiberbundle vtk from tensors', [str(outf), str(tenpath / str(dwif+t))] , script=__file__, provenance=params)
-                elif 'stats' in k:
-                    # sets up variables to combine with MNI_atlases dict
-                    cmdvars = {'mask_fname': str(mask_fname), 'm': m.lower(), 'dwif': dwif,
-                               'fdwinrrd': str(outf).replace('.nii','.nhdr'),
-                               'seed_fnamenrrd': str(outf).replace('.nii', '.nhdr')}
-
-                    with WorkingContext(m):
-                        output += tuple(run_subprocess(MNI_atlases[a]['Sl_cmd'] % cmdvars))
-
-
-        except:
-            print("exception caught for "+dwif+". Missing "+k+" for "+' '.join(list(a))+" or "+m)
+                        with WorkingContext(m):
+                            output += tuple(run_subprocess(MNI_atlases[a]['Sl_cmd'] % cmdvars))
+            except:
+                print("exception caught for "+dwif+". Missing "+k+" for "+' '.join(list(a))+" or "+m)

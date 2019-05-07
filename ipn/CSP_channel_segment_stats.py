@@ -19,7 +19,7 @@ pd.options.display.max_colwidth = 250
 pd.options.display.max_rows = 999
 from mmimproc.projects.bbc.pairing import dwipairing
 from mmimproc.utils.paths import getnetworkdataroot
-fs = Path(getnetworkdataroot())
+fs = mmimproc.fs
 #get data from test file
 LCSP_fname = fs / 'bbc' / 'reg' / 'dwi_warps_in_template_space' / 'comb_FA_AD_RD_MD_4vol' / 'LeftPostIntCap.csv'
 lcsp_data = pd.read_csv(LCSP_fname, header=None)

@@ -16,7 +16,7 @@ from mmimproc.projects.genz.file_names import project, Optsd
 import qgrid
 qgrid.enable
 import ipywidgets as widgets
-fs = Path(getnetworkdataroot())
+fs = mmimproc.fs
 opts = Optsd()
 input_selkey = widgets.Dropdown(options=get_h5_keys(opts.info_fname, key='auto_qc'), disabled=False,
     description='Subject DWI to qc:',)

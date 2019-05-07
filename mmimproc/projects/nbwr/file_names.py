@@ -17,7 +17,7 @@ from mmimproc.conversion.brain_convert import nbwr_conv, img_conv
 class SubjIdPicks(object):
     pass
 
-fs = Path(getnetworkdataroot())
+fs = mmimproc.fs
 
 project = 'nbwr'
 

@@ -18,7 +18,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 sns.set(color_codes=True)
 from mmimproc.utils import getnetworkdataroot
-fs = Path(getnetworkdataroot())
+fs = mmimproc.fs
 
 
 # In[3]:

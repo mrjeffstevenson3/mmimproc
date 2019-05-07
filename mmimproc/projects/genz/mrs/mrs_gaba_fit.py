@@ -12,7 +12,7 @@ from mmimproc.structural.brain_extraction import extract_brain
 from mmimproc.io.mixed import getgabavalue, df2h5
 prov = ProvenanceWrapper()
 
-fs = Path(getnetworkdataroot())
+fs = mmimproc.fs
 gannettpath = getgannettpath()
 spmpath, tpm_path = getspmpath()
 

@@ -7,7 +7,7 @@ from mmimproc.utils.paths import getnetworkdataroot
 from mmimproc.utils.provenance import ProvenanceWrapper
 provenance = ProvenanceWrapper()
 #setup paths and file names to process
-fs = Path(getnetworkdataroot())
+fs = mmimproc.fs
 
 # winners of fit death match
 #fitmethsd = {'OLS': ['ols_dipy_tensor_medfilt', 'ols_fsl_tensor_medfilt'],
@@ -38,9 +38,9 @@ vbm_fnames = [vbm_templ.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r))
 outf_fmat = '{dwif}_eddy_corrected_repol_std2_{f}_{a}_channel_reg2vbmtempl_FA_AD_RD_MD.nii.gz'
 
 for dwif, vbmf in zip(dwi_fnames, vbm_fnames):
-    for k, fm in fitmethsd.iteritems():
+    for k, fm in fitmethsd.items():
         for f in fm:
-            for a, c in channel_atlases.iteritems():
+            for a, c in channel_atlases.items():
                 mov = (fs / project / dwif.split('_')[0] / dwif.split('_')[1] / 'dwi' / 'vtk_tensor_comp_run7' / '_'.join([dwif, 'eddy_corrected_repol_std2', f, c['atlas_fname']]))
                 outf = (fs / project / 'reg' / 'ants_dwiS0_in_template_space' / 'combs_4vol_in_template_space' / outf_fmat.format(dwif=dwif, f=f, a=a))
                 warp1 = (fs / project / 'reg' / 'ants_dwiS0_in_template_space' / str(dwif+regext+'1Warp.nii.gz'))

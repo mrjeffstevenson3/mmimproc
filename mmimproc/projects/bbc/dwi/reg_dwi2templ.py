@@ -7,7 +7,7 @@ from mmimproc.utils.paths import getnetworkdataroot
 from mmimproc.utils.provenance import ProvenanceWrapper
 provenance = ProvenanceWrapper()
 #setup paths and file names to process
-fs = Path(getnetworkdataroot())
+fs = mmimproc.fs
 
 mods = ['FA', 'MD', 'AD', 'RD']
 # winners of fit death match
@@ -31,7 +31,7 @@ vbm_fnames = [vbm_templ.format(sid=str(s), snum=str(ses), meth=m, runnum=str(r))
 outf_fmat = '{dwif}_{f}_{m}_reg2vbmtempl.nii'
 
 for dwif, vbmf in zip(dwi_fnames, vbm_fnames):
-    for k, fm in fitmethsd.iteritems():
+    for k, fm in fitmethsd.items():
         for f in fm:
             for m in mods:
                 mov = (fs / project / dwif.split('_')[0] / dwif.split('_')[1] / 'dwi' / ecdir / k / '_'.join([dwif, f, m+fext[f]]))
@@ -57,7 +57,7 @@ for dwif, vbmf in zip(dwi_fnames, vbm_fnames):
 # merge all modalities and fit methods - no subtraction yet.
 results = ()
 for m in mods:
-    for k, fm in fitmethsd.iteritems():
+    for k, fm in fitmethsd.items():
         for f in fm:
             regdir = fs / project / 'reg' / 'dwi_warps_in_template_space' / m / f
             with WorkingContext(str(regdir)):
@@ -82,7 +82,7 @@ for dwituppair in dwituppairing:
     fost, cont, subtxt = dwituppair
     sublist.append(subtxt)
     for m in mods:
-        for k, fm in fitmethsd.iteritems():
+        for k, fm in fitmethsd.items():
             for f in fm:
                 regdir = fs / project / 'reg' / 'dwi_warps_in_template_space' / m / f
                 kwargs = {'fsid':fost[0], 'fsnum':fost[1], 'fmeth':fost[2], 'frunnum':fost[3],
@@ -97,7 +97,7 @@ for dwituppair in dwituppairing:
                     pass
 # merge subtractions into 1 all subs file
 for m in mods:
-    for k, fm in fitmethsd.iteritems():
+    for k, fm in fitmethsd.items():
         for f in fm:
             regdir = fs / project / 'reg' / 'dwi_warps_in_template_space' / m / f
             with WorkingContext(str(regdir)):

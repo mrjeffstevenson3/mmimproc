@@ -14,7 +14,7 @@ from mne.utils import run_subprocess as mne_subprocess
 prov = ProvenanceWrapper()
 #setup paths and file names to process
 Path.copy = _copy
-fs = Path(getnetworkdataroot())
+fs = mmimproc.fs
 
 antsRegistrationSyN = get_antsregsyn_cmd()
 

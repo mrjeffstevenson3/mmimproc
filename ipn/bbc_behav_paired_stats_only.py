@@ -12,7 +12,7 @@ import nibabel as nib
 import matplotlib.pyplot as plt
 from scipy import stats as ss
 from mmimproc.utils.paths import getnetworkdataroot
-fs = Path(getnetworkdataroot())
+fs = mmimproc.fs
 
 
 # In[2]:
