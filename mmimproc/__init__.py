@@ -4,11 +4,11 @@ __version__ = '0.3.6'
 
 import mmimproc
 from mmimproc.utils import *
-import socket, platform
+import socket, platform, inspect
 
-datadir = RootDataDir()
+datadir = RootDataDir()   # old way
 
-popts = PylabsOptions()
+mopts = MmimprocOptions()   # global options, should be
 
 mmimproc.datadir.target = 'js5'   # global variable used in utils.paths for data root directory
 
@@ -22,9 +22,9 @@ if mmimproc.datadir.target == 'js5' and platform.system() == 'Darwin' and \
         any(x in hostname for x in ['Jeffs-MacBook-Pro-3.local', 'Jeffs-MBP-3', 'Jeffs-MacBook-Pro.local']):
     mmimproc.fs = Path('/Volumes/JSDRIVE05')
     mmimproc.fs_local = Path('/Users/mrjeffs/data')
-    if mmimproc.fs.is_dir():
+    if mmimproc.fs.is_dir() and mopts.init_verbose:
         print('found mrjeffs laptop mounted drive datadir=/Volumes/JSDRIVE05')
-    else:
+    elif mopts.init_verbose:
         print('mmimproc.fs variable exists but will not work until drive JSDRIVE05 mounted.')
         if mmimproc.fs_local.is_dir():
             print('Or set file system to local with fs = mmimproc.fs_local')

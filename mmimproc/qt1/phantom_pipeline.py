@@ -6,8 +6,8 @@ from mmimproc.utils.paths import getlocaldataroot
 from mmimproc.conversion.phantom_conv import phantom_B1_midslice_par2mni
 from mmimproc.conversion.phantom_conv import phantom_midslice_par2mni
 from mmimproc.utils.provenance import ProvenanceWrapper
-from mmimproc.utils._options import PylabsOptions
-opts = PylabsOptions()
+from mmimproc.utils._options import MmimprocOptions
+opts = MmimprocOptions()
 prov = ProvenanceWrapper()
 prov.config.dryrun = False
 prov.config.verbosity = True

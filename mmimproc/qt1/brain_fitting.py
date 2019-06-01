@@ -14,7 +14,7 @@ rootdir = join(getlocaldataroot(),'tadpole')
 for subjectdir in glob.glob(join(rootdir, 'TADPOLE901')):
     subject = os.path.basename(subjectdir)
     files = glob.glob(join(subjectdir,'fitted_qT1_spgr','*brain.nii.gz'))
-    files = sorted(files)
+22    files = sorted(files)
     assert len(files) == 5
     X = [7,10,15,20,30]
     maskfile = files[0].replace('brain.nii.gz','brain_mask.nii.gz')

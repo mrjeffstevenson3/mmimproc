@@ -18,10 +18,10 @@ from nipype.interfaces import fsl
 from mmimproc.utils.paths import getnetworkdataroot
 from mmimproc.utils.provenance import ProvenanceWrapper
 from mmimproc.utils.provenance import ProvenanceWrapper as ProvenanceContext
-from mmimproc.utils._options import PylabsOptions
+from mmimproc.utils._options import MmimprocOptions
 from decimal import *
 getcontext().prec = 8
-opts = PylabsOptions()
+opts = MmimprocOptions()
 prov = ProvenanceContext()
 prov.dryrun = False
 prov.verbosity = 'info'

@@ -11,8 +11,8 @@ from mmimproc.utils.selection import select, withVoxelsOverThresholdOf
 from mmimproc.utils.files import deconstructRandparFiles
 from mmimproc.vbm.upsample import upsample1mm
 from mmimproc.utils.provenance import ProvenanceWrapper
-from mmimproc.utils._options import PylabsOptions
-opts = PylabsOptions()
+from mmimproc.utils._options import MmimprocOptions
+opts = MmimprocOptions()
 prov = ProvenanceWrapper()
 prov.dryrun = False
 prov.config.dryrun = False

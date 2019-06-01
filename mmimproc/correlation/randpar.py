@@ -38,7 +38,7 @@ def multirandpar(imageMatCombinations, designfile, masks=None, niterations=50,
         shell (mmimproc.utils.Shell): Override to inject a mock for shell calls.
         binaries (mmimproc.utils.Binaries): Provides paths to binaries
         context (mmimproc.utils.WorkingContext): Helps switching to working dir
-        opts (mmimproc.utils.PylabsOptions): General settings.
+        opts (mmimproc.utils.MmimprocOptions): General settings.
 
         randomise -i GM_mod_merg_s3 -m GM_mask -o fslvbm -d design.mat -t design.con -c 2.3 -n 5000
     """

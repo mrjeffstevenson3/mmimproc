@@ -2,7 +2,7 @@ import os, nibabel
 from os.path import join
 from mmimproc.utils.provenance import ProvenanceWrapper
 from dipy.align.reslice import reslice
-from mmimproc.utils import PylabsOptions
+from mmimproc.utils import MmimprocOptions
 
 
 def upsample1mm(images, outdir=None, provenance=ProvenanceWrapper()):

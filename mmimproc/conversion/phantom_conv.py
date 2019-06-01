@@ -16,8 +16,8 @@ from nibabel.orientations import apply_orientation
 from nibabel.orientations import inv_ornt_aff
 from nibabel.orientations import io_orientation
 from mmimproc.utils.provenance import ProvenanceWrapper
-from mmimproc.utils._options import PylabsOptions
-opts = PylabsOptions()
+from mmimproc.utils._options import MmimprocOptions
+opts = MmimprocOptions()
 prov = ProvenanceWrapper()
 
 identity_matrix = np.eye(4)

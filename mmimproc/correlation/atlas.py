@@ -26,7 +26,7 @@ def report(images, atlas, regionnames=None, threshold = .95,
         relevantImageFilenameSegment', (int): 'If the input', stats image filename is
             broken up along underscores, which part', of it', to use as a column 
             header. Defaults to 0. (first', element)
-        opts (PylabsOptions): 'General settings
+        opts (MmimprocOptions): 'General settings
         table (TablePublisher): 'Table interface
 
     Returns:
