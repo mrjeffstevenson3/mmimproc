@@ -58,6 +58,11 @@ def listOfDictsFromJson(fpath):
 
 
 def pdftotxt(fpath):
+    """
+    Takes a PDF file and converts to readable text.
+    :param fpath: The path and file names in unix form.
+    :return: object containing text from PDF.
+    """
     rsrcmgr = PDFResourceManager()
     retstr = StringIO()
     codec = 'utf-8'
@@ -80,6 +85,12 @@ def pdftotxt(fpath):
 
 # make get_gaba function that uses pdftotext to return gaba value with test range 0.3 to 2.0
 def getgabavalue(fitpdf):
+    """
+    Reads PDF output from GABA spectroscopy and collects results for GABA concentration,
+    ratio of GABA to Creatine, and fit error ratio water to Creatine.
+    :param fitpdf: Path and Name of PDF results file in Unix format.
+    :return: Four Values: GABA concentration, GABA/Creatine ratio, Fit Error, percent Fit Error
+    """
     gaba_val = None
     if not fitpdf.is_file():
         raise ValueError('file not found.')
