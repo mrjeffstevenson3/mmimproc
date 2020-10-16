@@ -60,7 +60,8 @@ def getlocaldataroot():
     elif hostname in ['redshirt.ilabs.uw.edu', 'redshirt']:
         return '/redshirt_array/data/'
     elif hostname == 'Jeffs-MBP-3' or hostname == 'Jeffs-MacBook-Pro-3.local' or hostname == 'Jeffs-MacBook-Pro.local':
-        return '/Volumes/JSDRIVE05'
+        return Path('/Users/mrjeffs/data')
+        #'/Volumes/JSDRIVE05'
     else:
         raise ValueError('Don''t know where data root is on this computer.')
 
