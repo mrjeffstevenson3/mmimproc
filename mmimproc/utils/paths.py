@@ -12,6 +12,7 @@ class RootDataDir(object):
     target = 'js5'
     pass
 
+hostname = socket.gethostname()
 # hostnames with functioning gpus
 working_gpus = ['redshirt.ilabs.uw.edu', 'redshirt', 'scotty', 'scotty.ilabs.uw.edu', 'mccoy', 'mccoy.ilabs.uw.edu',
                 'uhora', 'uhora.ilabs.uw.edu', 'spock', 'spock.ilabs.uw.edu', ]
@@ -59,9 +60,6 @@ def getlocaldataroot():
         return '/media/DiskArray/shared_data/js/'
     elif hostname in ['redshirt.ilabs.uw.edu', 'redshirt']:
         return '/redshirt_array/data/'
-    elif hostname == 'Jeffs-MBP-3' or hostname == 'Jeffs-MacBook-Pro-3.local' or hostname == 'Jeffs-MacBook-Pro.local':
-        return Path('/Users/mrjeffs/data')
-        #'/Volumes/JSDRIVE05'
     else:
         raise ValueError('Don''t know where data root is on this computer.')
 
@@ -71,10 +69,6 @@ def getnetworkdataroot(verbose=True):
                                        'Jeffs-MacBook-Pro.local' , '.dhcp4.washington.edu']):
         print('found mrjeffs laptop. using jump drive datadir. datadir=/Volumes/KUHL_LAB4')
         return Path('/Volumes/KUHL_LAB4')
-    if mmimproc.datadir.target == 'js5' and any(x in hostname for x in ['Jeffs-MacBook-Pro-3.local', 'Jeffs-MBP-3',
-                                       'Jeffs-MacBook-Pro.local' , '.dhcp4.washington.edu']):
-        print('found mrjeffs laptop. using jump drive datadir=/Volumes/JSDRIVE05')
-        return Path('/Volumes/JSDRIVE05')
 
 def tempfile(extension='.tmp'):
     return join('/var/tmp',petname.Generate(3,'-')+extension)
@@ -200,3 +194,13 @@ def getqccmd():
 #    if not 'dti_qc_correlation_single_feb2018' in which('dti_qc_correlation_single_feb2018'):
 #        raise ValueError('Error finding todds fortran qc program in mmimproc/diffusion.')
     return dwi_qc, plot_vols
+
+def getoctavecmd():
+    if not 'gnuplot' in which('gnuplot'):
+        raise ValueError('Dependency error. Cannot find working copy of gnuplot in PATH.')
+    if platform.system() == 'Linux':
+        raise ValueError('not implemented for Mac os yet.')
+    if platform.system() == 'Darwin' and any(x in hostname for x in ['Jeffs-MacBook-Pro-3.local', 'Jeffs-MBP-3',
+                                       'Jeffs-MacBook-Pro.local']):
+        octave = '/Applications/Octave-5.2.0.app/Contents/Resources/usr/bin/octave-octave-app@5.2.0 --no-gui'
+        return octave
