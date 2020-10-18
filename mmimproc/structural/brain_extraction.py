@@ -10,7 +10,7 @@ import nipype
 import numpy as np
 import nibabel as nib
 from scipy.ndimage.measurements import center_of_mass as com
-from dipy.segment.mask import applymask
+#from dipy.segment.mask import applymask
 from mmimproc.io.images import savenii, gz2nii
 from mmimproc.utils import *
 from mmimproc.utils.paths import mnicom, mnimask, mniT2com
@@ -25,6 +25,31 @@ bet = fsl.BET(output_type=mmimproc.popts.nii_ftype)
 prov = ProvenanceWrapper()
 fs = getnetworkdataroot()  # should pick up datadir.target
 ext = mmimproc.popts.nii_fext
+
+def applymask(vol, mask):
+    """ Mask vol with mask.
+
+    Parameters
+    ----------
+    vol : ndarray
+        Array with $V$ dimensions
+    mask : ndarray
+        Binary mask.  Has $M$ dimensions where $M <= V$. When $M < V$, we
+        append $V - M$ dimensions with axis length 1 to `mask` so that `mask`
+        will broadcast against `vol`.  In the typical case `vol` can be 4D,
+        `mask` can be 3D, and we append a 1 to the mask shape which (via numpy
+        broadcasting) has the effect of appling the 3D mask to each 3D slice in
+        `vol` (``vol[..., 0]`` to ``vol[..., -1``).
+
+    Returns
+    -------
+    masked_vol : ndarray
+        `vol` multiplied by `mask` where `mask` may have been extended to match
+        extra dimensions in `vol`
+    """
+    mask = mask.reshape(mask.shape + (vol.ndim - mask.ndim) * (1,))
+    return vol * mask
+
 
 # new universal (hopefully) brain extraction method
 def extract_brain(file, f_factor=0.3, mmzshift=0.0, mode='T1', nii=False, dwi=False, robust=False, cleanup=True):

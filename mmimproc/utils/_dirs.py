@@ -105,7 +105,7 @@ def remove_prepend(infile, prefix):
     :return: returns reformed posix path with string removed from beginning of file name.
     """
     infile = Path(infile)
-    if prefix in ['.nii', '.nii.gz', '.hdr', '.img', '.vtk', ]:
+    if prefix in ['.nii', '.nii.gz', '.hdr', '.img', '.vtk', '.h5']:
         raise ValueError('prefix to remove conflicts with file extensions.')
     new_name = infile.name.replace(prefix, '')
     return Path(infile.parent/new_name)

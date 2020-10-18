@@ -1,4 +1,5 @@
-import mmimproc, os
+import mmimproc as ip
+import os
 os.environ["FSLMULTIFILEQUIT"] = 'FALSE'
 import socket, inspect, platform
 import petname
@@ -11,7 +12,7 @@ hostname = socket.gethostname()
 working_gpus = ['redshirt.ilabs.uw.edu', 'redshirt', 'scotty', 'scotty.ilabs.uw.edu', 'mccoy', 'mccoy.ilabs.uw.edu',
                 'uhora', 'uhora.ilabs.uw.edu', 'spock', 'spock.ilabs.uw.edu', ]
 
-mmimproc_dir = Path(*Path(inspect.getabsfile(mmimproc)).parts[:-2])
+mmimproc_dir = Path(*Path(inspect.getabsfile(ip)).parts[:-2])
 mmimproc_datadir = mmimproc_dir / 'data'
 mmimproc_atlasdir = mmimproc_datadir / 'atlases'
 mmimproc_atlaslabelsdir = mmimproc_datadir / 'atlaslabels'
@@ -59,7 +60,7 @@ def getlocaldataroot():
 
 def getnetworkdataroot(verbose=True):
     hostname = socket.gethostname()
-    if mmimproc.datadir.target == 'kl4' and any(x in hostname for x in ['Jeffs-MacBook-Pro-3.local', 'Jeffs-MBP-3',
+    if ip.datadir.target == 'kl4' and any(x in hostname for x in ['Jeffs-MacBook-Pro-3.local', 'Jeffs-MBP-3',
                                        'Jeffs-MacBook-Pro.local' , '.dhcp4.washington.edu']):
         print('found mrjeffs laptop. using jump drive datadir. datadir=/Volumes/KUHL_LAB4')
         return Path('/Volumes/KUHL_LAB4')
@@ -67,8 +68,8 @@ def getnetworkdataroot(verbose=True):
 def tempfile(extension='.tmp'):
     return join('/var/tmp',petname.Generate(3,'-')+extension)
 
-def getmmimprocpath():
-    return os.path.split(os.path.split(inspect.getabsfile(mmimproc))[0])[0]
+def getippath():
+    return os.path.split(os.path.split(inspect.getabsfile(ip))[0])[0]
 
 def getgannettpath():
     hostlist = ['redshirt.ilabs.uw.edu', 'scotty.ilabs.uw.edu', 'sulu.ilabs.uw.edu', 'redshirt', 'uhora']
@@ -155,9 +156,9 @@ def getslicercmd(ver='stable', stable_linux_ver='Slicer-4.8.1-linux-amd64', dev_
     elif platform.system() == 'Darwin' and ver == 'stable':
         slicer_path = Path('/Applications', stable_mac_ver, 'Contents/MacOS/Slicer --launch ')
     elif platform.system() == 'Linux' and ver == 'dev':
-        slicer_path = Path(*Path(inspect.getabsfile(mmimproc)).parts[:-3]) / dev_linux_ver / 'Slicer --launch '
+        slicer_path = Path(*Path(inspect.getabsfile(ip)).parts[:-3]) / dev_linux_ver / 'Slicer --launch '
     elif platform.system() == 'Linux' and ver == 'stable':
-        slicer_path = Path(*Path(inspect.getabsfile(mmimproc)).parts[:-3]) / stable_linux_ver / 'Slicer --launch '
+        slicer_path = Path(*Path(inspect.getabsfile(ip)).parts[:-3]) / stable_linux_ver / 'Slicer --launch '
     if not slicer_path.parent.is_dir():
         raise ValueError('Slicer path not found for {slicer_path}'.format(**{'slicer_path': slicer_path}))
     return slicer_path
