@@ -1,5 +1,5 @@
 import os, numpy
-from mmimproc.utils import Filesystem, MmimprocOptions
+from mmimproc.utils import Filesystem
 
 class FslMatFile(object):
     """Fsl Matrix (.mat) file.

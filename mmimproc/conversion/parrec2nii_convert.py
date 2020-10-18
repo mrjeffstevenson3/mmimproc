@@ -1,6 +1,7 @@
 #todo: add opts dict option to excliude converting par files with scans matching various strings
 from __future__ import division, print_function, absolute_import
 from pathlib import *
+import mmimproc
 from optparse import OptionParser, Option
 import numpy as np
 import numpy.linalg as npl

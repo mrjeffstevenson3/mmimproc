@@ -1,5 +1,5 @@
 import os, numpy
-from mmimproc.utils import Filesystem, MmimprocOptions
+from mmimproc.utils import Filesystem
 from mmimproc.correlation.fslmatfile import FslMatFile
 from mmimproc.utils.provenance import ProvenanceWrapper
 

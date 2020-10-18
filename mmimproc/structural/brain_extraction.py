@@ -10,7 +10,7 @@ import nipype
 import numpy as np
 import nibabel as nib
 from scipy.ndimage.measurements import center_of_mass as com
-from dipy.segment.mask import applymask
+# from dipy.segment.mask import applymask  # temp remove dipy from dependency for applymask
 from mmimproc.io.images import savenii, gz2nii
 from mmimproc.utils import *
 from mmimproc.utils.paths import mnicom, mnimask, mniT2com
