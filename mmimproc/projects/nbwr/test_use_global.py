@@ -1,18 +1,11 @@
-import os, socket, inspect, mmimproc, platform
-import petname
-from os.path import expanduser, join
+import socket
+import mmimproc as ip
 
 class SubjIdPicks(object):
     subjids = None
     pass
 
-class RootDataDir(object):
-    target = 'jaba'
-    pass
-
-datadir = RootDataDir()
-
-def testgetnetworkdataroot(datadir=RootDataDir()):
+def testgetnetworkdataroot(datadir=ip.fs_local):
     hostname = socket.gethostname()
     if datadir.target == 'scotty':
         if hostname == 'scotty.ilabs.uw.edu':

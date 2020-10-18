@@ -4,9 +4,7 @@ __version__ = '0.3.6'
 
 import mmimproc
 from mmimproc.utils import *
-import socket, platform, inspect
-
-datadir = RootDataDir()   # old way
+import socket, platform
 
 mopts = MmimprocOptions()   # global options, should be
 

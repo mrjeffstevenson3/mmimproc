@@ -13,15 +13,13 @@ from mmimproc.alignment.ants_reg import subj2templ_applywarp
 from mmimproc.structural.brain_extraction import extract_brain
 from mmimproc.qt1.fitting import t1fit
 from mmimproc.io.images import savenii
-from mmimproc.utils.paths import RootDataDir
+import mmimproc as ip
 from mmimproc.projects.nbwr.file_names import project, SubjIdPicks, get_5spgr_names
 # from mmimproc.projects.nbwr.file_names import spgr5_fa5_fnames,spgr5_fa10_fnames, spgr5_fa15_fnames, spgr5_fa20_fnames, spgr5_fa30_fnames, b1map5_fnames
 from mmimproc.utils.provenance import ProvenanceWrapper
 prov = ProvenanceWrapper()
 
-#needs to be updated to new mmimproc object: mmimproc.datadir.target = 'jaba'
-from mmimproc.utils.paths import RootDataDir
-datadir = RootDataDir()
+datadir = ip.fs_local
 setattr(datadir, 'target', 'jaba')
 
 fs = Path(getnetworkdataroot(datadir))

@@ -6,12 +6,6 @@ from mmimproc.utils import which
 from os.path import expanduser, join
 from pathlib import *
 
-class RootDataDir(object):
-
-
-    target = 'js5'
-    pass
-
 hostname = socket.gethostname()
 # hostnames with functioning gpus
 working_gpus = ['redshirt.ilabs.uw.edu', 'redshirt', 'scotty', 'scotty.ilabs.uw.edu', 'mccoy', 'mccoy.ilabs.uw.edu',

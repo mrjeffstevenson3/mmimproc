@@ -19,7 +19,6 @@ from mmimproc.alignment.ants_reg import subj2templ_applywarp
 from mmimproc.structural.brain_extraction import extract_brain
 from mmimproc.qt1.fitting import t1fit
 from mmimproc.io.images import savenii
-from mmimproc.utils.paths import RootDataDir
 from mmimproc.projects.genz.file_names import project, SubjIdPicks, get_5spgr_names
 from mmimproc.utils.provenance import ProvenanceWrapper
 prov = ProvenanceWrapper()

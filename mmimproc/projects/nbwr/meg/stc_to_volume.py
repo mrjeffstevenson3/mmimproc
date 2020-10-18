@@ -5,10 +5,10 @@ from pathlib import *
 import numpy as np
 import nibabel as nib
 import mne
+import mmimproc as ip
 from mmimproc.utils import getnetworkdataroot
 from mmimproc.projects.nbwr.file_names import project
-from mmimproc.utils.paths import RootDataDir
-datadir = RootDataDir()
+datadir = ip.fs_local
 setattr(datadir, 'target', 'jaba')
 
 fs = Path(getnetworkdataroot(datadir))
