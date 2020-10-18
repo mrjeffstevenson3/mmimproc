@@ -1,10 +1,10 @@
 import mmimproc
 mmimproc.datadir.target = 'jaba'
-mmimproc.popts.nii_ftype = 'NIFTI_GZ'
-mmimproc.popts.nii_fext = '.nii.gz'
-mmimproc.popts.fslmultifilequit = 'FALSE'
-mmimproc.popts.overwrite = True
-thresh = mmimproc.popts.spm_seg_thr
+mmimproc.mopts.nii_ftype = 'NIFTI_GZ'
+mmimproc.mopts.nii_fext = '.nii.gz'
+mmimproc.mopts.fslmultifilequit = 'FALSE'
+mmimproc.mopts.overwrite = True
+thresh = mmimproc.mopts.spm_seg_thr
 from pathlib import *
 from multiprocessing import Pool
 import numpy as np
@@ -30,7 +30,7 @@ if os.environ['FSLOUTPUTTYPE'] != 'NIFTI_GZ':
 
 antsRegistrationSyNQuick = get_antsregsyn_cmd(quick=True)
 antsWarpMultitransform = get_antsregsyn_cmd(warps=True)
-ext = mmimproc.popts.nii_fext
+ext = mmimproc.mopts.nii_fext
 
 async = False
 pool = Pool(20)

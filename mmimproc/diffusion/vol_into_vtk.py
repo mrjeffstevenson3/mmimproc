@@ -5,7 +5,7 @@ from pathlib import *
 import shutil
 import nibabel as nib
 from mmimproc.utils import *
-popts = MmimprocOptions()
+mopts = MmimprocOptions()
 
 
 def inject_vol_data_into_vtk(working_dir, vol_fname, vtk_infname, vtk_outfname, offset_adj=(0, 0, 0)):

@@ -1,5 +1,5 @@
 # todo: make ants version that works with dti cropped topup_dn_mean_brain images.
-# extract brain and mask function. now uses mmimproc.popts to set file ext
+# extract brain and mask function. now uses mmimproc.mopts to set file ext
 import mmimproc
 mmimproc.datadir.target = 'jaba'
 from pathlib import *
@@ -10,21 +10,21 @@ import nipype
 import numpy as np
 import nibabel as nib
 from scipy.ndimage.measurements import center_of_mass as com
-#from dipy.segment.mask import applymask
+from dipy.segment.mask import applymask
 from mmimproc.io.images import savenii, gz2nii
 from mmimproc.utils import *
 from mmimproc.utils.paths import mnicom, mnimask, mniT2com
 from nipype.interfaces import fsl
-flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo', output_type=mmimproc.popts.nii_ftype)
+flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo', output_type=mmimproc.mopts.nii_ftype)
 if nipype.__version__ == '0.12.0':
-    applyxfm = fsl.ApplyXfm(interp='nearestneighbour', output_type=mmimproc.popts.nii_ftype)
+    applyxfm = fsl.ApplyXfm(interp='nearestneighbour', output_type=mmimproc.mopts.nii_ftype)
 else:
-    applyxfm = fsl.ApplyXFM(interp='nearestneighbour', output_type=mmimproc.popts.nii_ftype)
+    applyxfm = fsl.ApplyXFM(interp='nearestneighbour', output_type=mmimproc.mopts.nii_ftype)
 
-bet = fsl.BET(output_type=mmimproc.popts.nii_ftype)
+bet = fsl.BET(output_type=mmimproc.mopts.nii_ftype)
 prov = ProvenanceWrapper()
 fs = getnetworkdataroot()  # should pick up datadir.target
-ext = mmimproc.popts.nii_fext
+ext = mmimproc.mopts.nii_fext
 
 def applymask(vol, mask):
     """ Mask vol with mask.
@@ -65,7 +65,7 @@ def extract_brain(file, f_factor=0.3, mmzshift=0.0, mode='T1', nii=False, dwi=Fa
     :return: 
     '''
     # remove ext if .nii or .nii.gz output_type='NIFTI_GZ'
-    ext = mmimproc.popts.nii_fext
+    ext = mmimproc.mopts.nii_fext
     file = Path(file)
     if not file.is_file():
         raise ValueError(str(file)+' file is not found. please check')

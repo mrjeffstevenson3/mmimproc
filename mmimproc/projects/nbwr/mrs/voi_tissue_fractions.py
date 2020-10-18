@@ -2,10 +2,10 @@
 # first set global root data directory and defaults
 import mmimproc
 mmimproc.datadir.target = 'jaba'
-mmimproc.popts.nii_ftype = 'NIFTI'
-mmimproc.popts.nii_fext = '.nii'
-mmimproc.popts.fslmultifilequit = 'FALSE'
-thresh = mmimproc.popts.spm_seg_thr
+mmimproc.mopts.nii_ftype = 'NIFTI'
+mmimproc.mopts.nii_fext = '.nii'
+mmimproc.mopts.fslmultifilequit = 'FALSE'
+thresh = mmimproc.mopts.spm_seg_thr
 import os, json
 from pathlib import *
 import pandas as pd
@@ -19,12 +19,12 @@ from mmimproc.utils import ProvenanceWrapper, run_subprocess, WorkingContext, ge
 from mmimproc.projects.nbwr.file_names import project, SubjIdPicks, get_matching_voi_names, get_gaba_names, Opts
 prov = ProvenanceWrapper()
 
-os.environ['FSLOUTPUTTYPE'] = mmimproc.popts.nii_ftype
-os.environ["FSLMULTIFILEQUIT"] = mmimproc.popts.fslmultifilequit
+os.environ['FSLOUTPUTTYPE'] = mmimproc.mopts.nii_ftype
+os.environ["FSLMULTIFILEQUIT"] = mmimproc.mopts.fslmultifilequit
 
 fs = mmimproc.fs
 opts = Opts()
-mmimproc.popts.overwrite = False
+mmimproc.mopts.overwrite = False
 do_mask = False
 do_spm = False
 if do_spm:
@@ -35,7 +35,7 @@ if do_spm:
 
 do_fast = False
 fast = fsl.FAST(
-                output_type=mmimproc.popts.nii_ftype,
+                output_type=mmimproc.mopts.nii_ftype,
                 number_classes=3,
                 segments=True,
                 img_type=1,
@@ -46,8 +46,8 @@ fast = fsl.FAST(
                 output_biasfield=True,
                 probability_maps=True,
             )
-fast.inputs.environ['FSLMULTIFILEQUIT'] = mmimproc.popts.fslmultifilequit
-ext = mmimproc.popts.nii_fext
+fast.inputs.environ['FSLMULTIFILEQUIT'] = mmimproc.mopts.fslmultifilequit
+ext = mmimproc.mopts.nii_fext
 # results of segmentation
 only_spm = False
 # instantiate subject id list container
@@ -97,56 +97,56 @@ for rt_matchfname, lt_matchfname, rt_actfname, lt_actfname in zip(rt_matchfnames
             print('Working on '+subject)
             # start with right side
             rt_match_pfname = mrs_dir / appendposix(rt_matchfname, ext)
-            if mmimproc.popts.overwrite: # and not only_spm:   ## or not Path(replacesuffix(rt_match_pfname, '_brain'+ext)).is_file():
+            if mmimproc.mopts.overwrite: # and not only_spm:   ## or not Path(replacesuffix(rt_match_pfname, '_brain'+ext)).is_file():
                 print('running brain extraction on '+str(rt_match_pfname))
                 rt_match_brain, rt_match_mask, rt_match_cropped = extract_brain(str(rt_match_pfname))
             else:
                 rt_match_brain, rt_match_mask = replacesuffix(rt_match_pfname, '_brain'+ext), replacesuffix(rt_match_pfname, '_brain_mask'+ext)
-            if mmimproc.popts.overwrite: #  and not only_spm:  ## or not Path(replacesuffix(rt_match_pfname, '_brain_susanf'+ext)).is_file():
+            if mmimproc.mopts.overwrite: #  and not only_spm:  ## or not Path(replacesuffix(rt_match_pfname, '_brain_susanf'+ext)).is_file():
                 print('running susan filter on ' + str(rt_match_brain))
                 results += run_subprocess(['susan ' + str(rt_match_brain) + ' -1 1 3 1 0 ' + str(replacesuffix(rt_match_brain, '_susanf'+ext))])
                 rt_match_brain = replacesuffix(rt_match_brain, '_susanf' + ext)
             else:
                 rt_match_brain = replacesuffix(rt_match_brain, '_susanf'+ext)
-            if mmimproc.popts.overwrite and do_mask: # and not only_spm:   ## or not Path(replacesuffix(rt_match_pfname, '_mrs_roi_mask'+ext)).is_file():
+            if mmimproc.mopts.overwrite and do_mask: # and not only_spm:   ## or not Path(replacesuffix(rt_match_pfname, '_mrs_roi_mask'+ext)).is_file():
                 print('running make mask voi on ' +str(replacesuffix(rt_actfname, '.SPAR'))+' and '+ str(rt_match_brain))
                 rt_mask_img = make_voi_mask(replacesuffix(rt_actfname, '.SPAR'), rt_match_brain, replacesuffix(rt_match_pfname, '_mrs_roi_mask'+ext))
             # run SPM segmentation on right matching
-            if mmimproc.popts.overwrite and do_spm: #  and only_spm:   ## or not (Path(prependposix(rt_match_brain, 'c1')).is_file() & Path(prependposix(rt_match_brain, 'c2')).is_file() & Path(prependposix(rt_match_brain, 'c3')).is_file()):
+            if mmimproc.mopts.overwrite and do_spm: #  and only_spm:   ## or not (Path(prependposix(rt_match_brain, 'c1')).is_file() & Path(prependposix(rt_match_brain, 'c2')).is_file() & Path(prependposix(rt_match_brain, 'c3')).is_file()):
                 print('running SPM Segmentation on ' + str(rt_match_brain)+' and '+str(rt_match_mask))
                 eng.spm_seg(str(rt_match_brain), str(tpm_path), nargout=0)
             # run FSL segmentation on right matching
-            if mmimproc.popts.overwrite and do_fast: # and not only_spm:   ## or not (Path(replacesuffix(rt_match_brain, '_fslfast_seg_1'+ext)).is_file() & Path(replacesuffix(rt_match_brain, '_fslfast_seg_2'+ext)).is_file() & Path(replacesuffix(rt_match_brain, '_fslfast_seg_0'+ext)).is_file()):
+            if mmimproc.mopts.overwrite and do_fast: # and not only_spm:   ## or not (Path(replacesuffix(rt_match_brain, '_fslfast_seg_1'+ext)).is_file() & Path(replacesuffix(rt_match_brain, '_fslfast_seg_2'+ext)).is_file() & Path(replacesuffix(rt_match_brain, '_fslfast_seg_0'+ext)).is_file()):
                 print('running FSL Segmentation on ' + str(rt_match_brain))
                 fast.inputs.in_files = str(rt_match_brain)
                 fast.inputs.out_basename = str(replacesuffix(rt_match_brain, '_fslfast'))
                 fast.run()
 
             # now do left side
-            print('overwrite=' + str(mmimproc.popts.overwrite))
+            print('overwrite=' + str(mmimproc.mopts.overwrite))
             lt_match_pfname = mrs_dir / appendposix(lt_matchfname, ext)
-            if mmimproc.popts.overwrite: # and not only_spm:   ## or not Path(replacesuffix(lt_match_pfname, '_brain'+ext)).is_file():
+            if mmimproc.mopts.overwrite: # and not only_spm:   ## or not Path(replacesuffix(lt_match_pfname, '_brain'+ext)).is_file():
                 print('running brain extraction on ' + str(lt_match_pfname))
                 lt_match_brain, lt_match_mask, lt_match_cropped = extract_brain(str(lt_match_pfname))
             else:
                 lt_match_brain, lt_match_mask = replacesuffix(lt_match_pfname, '_brain'+ext), replacesuffix(lt_match_pfname, '_brain_mask'+ext)
-            if mmimproc.popts.overwrite: # and not only_spm:   ##  or not Path(replacesuffix(lt_match_pfname, '_brain_susanf'+ext)).is_file():
+            if mmimproc.mopts.overwrite: # and not only_spm:   ##  or not Path(replacesuffix(lt_match_pfname, '_brain_susanf'+ext)).is_file():
                 print('running susan filter on ' + str(lt_match_brain))
                 results += run_subprocess(['susan ' + str(lt_match_brain) + ' -1 1 3 1 0 ' + str(replacesuffix(lt_match_brain, '_susanf'+ext))])
                 lt_match_brain = replacesuffix(lt_match_brain, '_susanf' + ext)
             else:
                 lt_match_brain = replacesuffix(lt_match_brain, '_susanf'+ext)
 
-            if mmimproc.popts.overwrite and do_mask: # and not only_spm:   ## or not Path(replacesuffix(lt_match_pfname, '_mrs_roi_mask'+ext)).is_file():
+            if mmimproc.mopts.overwrite and do_mask: # and not only_spm:   ## or not Path(replacesuffix(lt_match_pfname, '_mrs_roi_mask'+ext)).is_file():
                 print('running make mask voi on ' + str(replacesuffix(lt_actfname, '.SPAR')) + ' and ' + str(lt_match_brain))
                 lt_mask_img = make_voi_mask(replacesuffix(lt_actfname, '.SPAR'), lt_match_brain, replacesuffix(lt_match_pfname, '_mrs_roi_mask'+ext))
 
             # run SPM segmentation on left matching
-            if mmimproc.popts.overwrite and do_spm: # and only_spm:   ## or not (Path(prependposix(lt_match_brain, 'c1')).is_file() & Path(prependposix(lt_match_brain, 'c2')).is_file() & Path(prependposix(lt_match_brain, 'c3')).is_file()):
+            if mmimproc.mopts.overwrite and do_spm: # and only_spm:   ## or not (Path(prependposix(lt_match_brain, 'c1')).is_file() & Path(prependposix(lt_match_brain, 'c2')).is_file() & Path(prependposix(lt_match_brain, 'c3')).is_file()):
                 print('running SPM Segmentation on ' + str(lt_match_brain) + ' and ' + str(lt_match_mask))
                 eng.spm_seg(str(lt_match_brain), str(tpm_path), nargout=0)
             # run FSL segmentation on left matching
-            if mmimproc.popts.overwrite and do_fast: # and not only_spm:   ## or not (Path(replacesuffix(lt_match_brain, '_fslfast_seg_1'+ext)).is_file() & Path(replacesuffix(lt_match_brain, '_fslfast_seg_2'+ext)).is_file() & Path(replacesuffix(lt_match_brain, '_fslfast_seg_0'+ext)).is_file()):
+            if mmimproc.mopts.overwrite and do_fast: # and not only_spm:   ## or not (Path(replacesuffix(lt_match_brain, '_fslfast_seg_1'+ext)).is_file() & Path(replacesuffix(lt_match_brain, '_fslfast_seg_2'+ext)).is_file() & Path(replacesuffix(lt_match_brain, '_fslfast_seg_0'+ext)).is_file()):
                 print('running FSL Segmentation on ' + str(lt_match_brain))
                 fast.inputs.in_files = str(lt_match_brain)
                 fast.inputs.out_basename = str(replacesuffix(lt_match_brain, '_fslfast'))
@@ -193,7 +193,7 @@ for rt_matchfname, lt_matchfname, rt_actfname, lt_actfname in zip(rt_matchfnames
                      provenance={'thresh': thresh, 'side': 'left', 'method': 'SPM', 'tissue': 'GM'}, script=__file__)
             print('results for tissue fractions for subject '+str(subject))
             print(fractions)
-            if mmimproc.popts.overwrite:
+            if mmimproc.mopts.overwrite:
                 prov.log(str(prependposix(lt_match_brain, 'c1')), 'grey matter SPM segmentation of matching left mrs voi', str(lt_match_brain), provenance={'thresh': thresh, 'side': 'left', 'method': 'SPM', 'tissue': 'GM'}, script=__file__)
                 prov.log(str(prependposix(lt_match_brain, 'c2')), 'white matter SPM segmentation of matching left mrs voi', str(lt_match_brain), provenance={'thresh': thresh, 'side': 'left', 'method': 'SPM', 'tissue': 'WM'}, script=__file__)
                 prov.log(str(prependposix(lt_match_brain, 'c3')), 'CSF SPM segmentation of matching left mrs voi', str(lt_match_brain), provenance={'thresh': thresh, 'side': 'left', 'method': 'SPM', 'tissue': 'CSF'}, script=__file__)
