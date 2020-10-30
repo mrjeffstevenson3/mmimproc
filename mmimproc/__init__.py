@@ -3,6 +3,7 @@ __version__ = '0.3.6'
 
 import mmimproc as ip
 from mmimproc.utils import *
+from mmimproc.utils._run import run_subprocess
 import socket, platform
 
 class RootDataDir(object):

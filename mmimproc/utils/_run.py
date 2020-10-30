@@ -35,7 +35,7 @@ def run_subprocess(command):
         print(stdout_)
         print(stderr)    ## sys.stderr.write(stderr)
         err_fun = subprocess.CalledProcessError.__init__
-        if 'output' in inspect.getargspec(err_fun).args:
+        if 'output' in inspect.getfullargspec(err_fun).args:
             raise subprocess.CalledProcessError(p.returncode, command, output)
         else:
             raise subprocess.CalledProcessError(p.returncode, command)
