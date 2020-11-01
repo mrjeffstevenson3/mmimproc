@@ -73,7 +73,7 @@ cluster_df.loc[cluster_df.loc[:, 'MAX X (vox)'] < cluster_df.loc[cluster_df.loc[
 cluster_df.loc[cluster_df.loc[:, 'MAX X (vox)'] > cluster_df.loc[cluster_df.loc[:, 'location'] == 'central']
                 ['MAX X (vox)'][0], 'location'] = 'right'
 cluster_df.set_index('location', inplace=True)
-cluster_df.loc['central', ['dist2central', 'num_y_breaks', 'num_z_breaks', 'y_break_coords', 'z_break_coords']] = 0
+cluster_df.loc['central', ['dist2central', 'num_y_breaks', 'num_z_breaks']] = 0
 
 # calculate distances from central DN to left and right parietal DN in voxels
 cluster_df.loc['right', 'dist2central'] = np.linalg.norm(cluster_df.loc['right', coordcols].values -
@@ -100,6 +100,7 @@ tempdf = pd.DataFrame(
     index=['left', 'right'])
 
 cluster_df = pd.concat([cluster_df, tempdf], axis=1)
+cluster_df.loc['central', ['y_break_coords', 'z_break_coords']] = 0
 
 for i, j in enumerate(list(itertools.product(*(['left', 'right'], [['num_y_breaks', 'y_break_coords'], ['num_z_breaks', 'z_break_coords']])))):
 
