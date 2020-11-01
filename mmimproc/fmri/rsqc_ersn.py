@@ -102,6 +102,25 @@ tempdf = pd.DataFrame(
 cluster_df = pd.concat([cluster_df, tempdf], axis=1)
 cluster_df.loc['central', ['y_break_coords', 'z_break_coords']] = 0
 
+# set up for drawing line
+"""
+left side line has 14 points (dist2central) and 1 break upward because positive at 1/2 way point or 28 - 7 = 21
+because we are heading left so decreasing x so subtract. if x counter = 21 = in y_break_coords or z_break_coords
+then we must add/subtract from y and z here. left is both lower and more posterior so subtract 1 from both,
+update starting coord and continue till end x coord
+"""
+start_coord = cluster_df.loc['central', coordcols].values.astype(np.int64)
+left_end_coord = cluster_df.loc['left', coordcols].values.astype(np.int64)
+right_end_coord = cluster_df.loc['right', coordcols].values.astype(np.int64)
+curr_pos = start_coord
+left_xrange = range(cluster_df.loc['left', 'dist2central'], -1, -1)
+right_xrange = range(cluster_df.loc['right', 'dist2central'])
+
+
+# make mask to hold line and cylinder
+zstat_img = nib.load('{datadir}/{proj}/{subj}/{sess}/stats/{statsfile}'.format(**namedict))
+cyl_mask_data = np.zeros(zstat_img.shape, dtype=np.int64)
+
 for i, j in enumerate(list(itertools.product(*(['left', 'right'], [['num_y_breaks', 'y_break_coords'], ['num_z_breaks', 'z_break_coords']])))):
 
     if cluster_df.loc[j[0], j[1][0]] > 4:
