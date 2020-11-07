@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
-__version__ = '0.3.6'
+__version__ = '0.4.0'
 
 import mmimproc as ip
 from mmimproc.utils import *
 from mmimproc.utils._run import run_subprocess
+#from mmimproc.utils._options import MmimprocOptions
 import socket, platform
 
 class RootDataDir(object):
