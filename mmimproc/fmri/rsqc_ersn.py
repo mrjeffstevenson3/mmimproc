@@ -27,7 +27,7 @@ cluster_df_dtypes = {'Cluster Index': 'Int64', 'Voxels': 'Int64', 'MAX': float, 
 def append2fn(fn, newstr):
     """Appends new string to end of file name and before file extentions.
     """
-    return Path(fn).stem + newstr + ''.join(Path(fn).suffixes)
+    return Path(Path(fn).stem).stem + newstr + ''.join(Path(fn).suffixes)
 
 
 def fslcluster2list(cluster_output):
@@ -322,12 +322,15 @@ if radius > 1:
 cluster_df.loc['right', 'roi_min'] = cluster_df.T.loc[right_roirange,'right'].min()
 cluster_df = pd.concat([cluster_df, pd.DataFrame({'line_coords': [left_line, right_line],}, index=['left', 'right'])],
                        axis=1)
+# save cylinder mask as nifi file
 nib.save(nib.Nifti1Image(cyl_mask_data, zstat_img.affine, zstat_img.header),
          '{datadir}/{proj}/{subj}/{sess}/stats/masktestfile_radius{radius}.nii.gz'.format(**namedict))
 
+# save cluster_df into h5 file
+df2h5(cluster_df, '{datadir}/{proj}/{resultsname}'.format(**namedict),
+      '/{subj}/{sess}/{modality}/DMN_qc_stats'.format(**namedict), append=False)
 
-
-
+#.reset_index(level=0)
 
 
 
