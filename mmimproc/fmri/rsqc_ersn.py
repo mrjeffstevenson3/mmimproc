@@ -25,9 +25,12 @@ cluster_df_dtypes = {'Cluster Index': 'Int64', 'Voxels': 'Int64', 'MAX': float, 
                      'COG Z (vox)': float}
 
 def append2fn(fn, newstr):
-    """Appends new string to end of file name and before file extentions.
+    """Appends new string to end of file name and before file .nii or .nii.gz extensions.
     """
-    return Path(Path(fn).stem).stem + newstr + ''.join(Path(fn).suffixes)
+    if str(Path(fn).parent) == '.':
+        return Path(Path(fn).stem).stem + newstr + ''.join(Path(fn).suffixes)
+    else:
+        return Path(Path(fn).parent, Path(Path(fn).stem).stem + newstr + ''.join(Path(fn).suffixes))
 
 
 def fslcluster2list(cluster_output):
