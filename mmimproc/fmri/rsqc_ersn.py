@@ -23,17 +23,6 @@ coordcols = ['MAX X (vox)', 'MAX Y (vox)', 'MAX Z (vox)']
 cluster_df_dtypes = {'Cluster Index': 'Int64', 'Voxels': 'Int64', 'MAX': float, 'MAX X (vox)': 'Int64',
                      'MAX Y (vox)': 'Int64', 'MAX Z (vox)': 'Int64', 'COG X (vox)': float, 'COG Y (vox)': float,
                      'COG Z (vox)': float}
-'''
-def append2fn(fn, newstr):
-    """
-    Appends new string to end of file name and before file .nii or .nii.gz extensions.
-    Preserves file path if file path exists.
-    """
-    if str(Path(fn).parent) == '.':
-        return Path(Path(fn).stem).stem + newstr + ''.join(Path(fn).suffixes)
-    else:
-        return Path(Path(fn).parent, Path(Path(fn).stem).stem + newstr + ''.join(Path(fn).suffixes))
-'''
 
 def fslcluster2list(cluster_output):
     return [line.split('\t') for line in StringIO(cluster_output.decode('UTF-8')).read().split('\n')]
@@ -54,6 +43,8 @@ def fslcluster2DF(fname, thresh, *argv):
 ssvolnum = 10  # integer volume number where steady state is acheived
 thresh = 9.5  # zstat file fsl cluster threshold
 radius = 4  # radius of cylinder mask for zstat median calculation
+if radius > 4 or radius < 1:
+    raise ValueError("Only radius values between 1 and 4 are allowed for now.")
 # set up file naming
 datadir = ip.fs_local  # enter pathlib or string for BIDS root data directory
 proj = 'toddandclark'  # enter BIDS project name
@@ -285,10 +276,7 @@ for x, i in zip(left_xrange, left_roirange):
     if radius == 4:
         cyl_mask_data[tuple(zip(*(curr_pos + fillthreeid)))] = i
     cyl_mask_data[tuple(curr_pos)] = i
-    if radius > 4 or radius < 1:
-        raise ValueError("Only radius values between 1 and 4 are permitted")
 
-# cluster_df.loc['left', pd.Series(left_line).idxmin()] = pd.Series(left_line).min()
 if radius > 1:
     for lt_roi in left_roirange:
         cluster_df.loc['left', lt_roi] = np.median(zstat_data[cyl_mask_data == lt_roi])
@@ -318,10 +306,8 @@ for x, i in zip(right_xrange, right_roirange):
     if radius == 4:
         cyl_mask_data[tuple(zip(*(curr_pos + fillthreeid)))] = i
     cyl_mask_data[tuple(curr_pos)] = i
-    if radius > 4 or radius < 1:
-        raise ValueError("Only radius values between 1 and 4 are permitted")
 
-# cluster_df.loc['right', pd.Series(right_line).idxmin()] = pd.Series(right_line).min()
+
 if radius > 1:
     for rt_roi in right_roirange:
         cluster_df.loc['right', rt_roi] = np.median(zstat_data[cyl_mask_data == rt_roi])
@@ -339,88 +325,3 @@ nib.save(nib.Nifti1Image(cyl_mask_data, zstat_img.affine, zstat_img.header),
 df2h5(cluster_df, '{datadir}/{proj}/{resultsname}'.format(**namedict),
       '/{subj}/{sess}/{modality}/DMN_qc_stats_rad{radius}'.format(**namedict), append=False)
 
-
-
-
-
-
-
-#.reset_index(level=0)
-
-
-
-
-
-'''
-
-####################################################################################################################
-tempdf = pd.DataFrame(
-    {'y_break_coords': [lt_y_break_coord, rt_y_break_coord], 'z_break_coords': [lt_z_break_coord, rt_z_break_coord]},
-    index=['left', 'right'])
-
-cluster_df = pd.concat([cluster_df, tempdf], axis=1)
-cluster_df.loc['central', ['y_break_coords', 'z_break_coords']] = 0
-
-"""
-left side line has 14 points (dist2central) and 1 break upward because positive at 1/2 way point or 28 - 7 = 21
-because we are heading left so decreasing x so subtract.
-counters needed: x coord start central and stop (left x) and range count (dist)
-y break coords: 
-start_coord[0] - (cluster_df.loc['left', 'dist2central'] // (cluster_df.loc['left', 'num_y_breaks'] + 1))
-if x counter = 21 = in y_break_coords or z_break_coords
-then we must add/subtract from y and z here. left is both lower and more posterior so subtract 1 from both,
-update starting coord and continue till end x coord
-"""
-
-
-# make mask to hold line and cylinder
-zstat_img = nib.load('{datadir}/{proj}/{subj}/{sess}/stats/{statsfile}'.format(**namedict))
-cyl_mask_data = np.zeros(zstat_img.shape, dtype=np.int64)
-
-
-cyl_mask_data[tuple(zip(*((curr_pos + (-1,0,0)) + filloneid)))] = 2
-
-
-
-
-
-
-unfinished below
-for i, j in enumerate(list(itertools.product(*(['left', 'right'], [['num_y_breaks', 'y_break_coords'], ['num_z_breaks', 'z_break_coords']])))):
-
-    if cluster_df.loc[j[0], j[1][0]] > 4:
-        raise ValueError("Woops! too far away in the y direction on the left side from center max, shifting no more than 4 voxels for now.")
-
-    for pixmove in range(4, -1, -1):
-        if cluster_df.loc[j[0], j[1][0]] == pixmove:
-            xshift = cluster_df.loc[j[0], 'dist2central'].round().astype(int) // (pixmove + 1)
-            cluster_df.loc[j[0], j[1][1]] = cluster_df.loc[j[0], 'dist2central'] // (pixmove + 1)
-
-
-
-
-
-        if cluster_df.loc[j[0], j[1][0]] == 4:
-            """set up array of x values dividing distance vox by 4 """
-        elif cluster_df.loc[j[0], j[1][0]] == 3:
-            """set up array of x values dividing distance vox by 3 """
-        elif cluster_df.loc[j[0], j[1][0]] == 2:
-            """set up array of x values dividing distance vox by 2 """
-        elif cluster_df.loc[j[0], j[1][0]] == 1:
-            """set up array of x values dividing distance vox by 1 """
-        elif cluster_df.loc[j[0], j[1][0]] == 0:
-            """set y break coord to x dist2central as int round down """
-
-
-
-
-
-# for i in range(np.abs(cluster_df.loc['left', 'num_y_breaks']).astype('Int64')):
-# if cluster_df.loc['left', 'num_y_breaks'] < 2:
-#     cluster_df.at['left', 'y_break_coords'] = np.append([np.array([cluster_df.loc['left', 'y_break_coords']])],
-#                                                     np.array([- ((cluster_df.T.loc[coordcols[0], 'central']
-#                                                                   - cluster_df.T.loc[coordcols[0], 'left']) //
-#                                                                  (cluster_df.loc['left', 'num_y_breaks'] + 1)) +
-#                                                         cluster_df.T.loc[coordcols[0], 'central']]).astype('Int64'))
-
-'''
