@@ -42,10 +42,11 @@ class InTempDir(InDir):
 
 def appendposix(file, suff):
     '''
-    Adds suffix to end of file basename, then puts extention(s) back on.
+    Same as append2fn below. older code. Adds suffix to end of file basename, then puts extention(s) back on.
     :param file: pathlib path and file name with ext (ext optional)
     :param suff:  string to append at end of file name such as '_brain' or '_brain_mask
     :return: returns reformed posix path with string added at end of file name and extension.
+    todo: refactor and replace with append2fn
     '''
     file = Path(file)
     file_exts = ''.join(file.suffixes)
@@ -53,6 +54,17 @@ def appendposix(file, suff):
         return Path(str(file)+suff)
     else:
         return Path(str(file).replace(file_exts, suff+file_exts))
+
+def append2fn(fn, newstr):
+    """
+    Appends new string to end of file name and before file .nii or .nii.gz extensions.
+    Preserves file path if file path exists.
+    """
+    if str(Path(fn).parent) == '.':
+        return Path(Path(fn).stem).stem + newstr + ''.join(Path(fn).suffixes)
+    else:
+        return Path(Path(fn).parent, Path(Path(fn).stem).stem + newstr + ''.join(Path(fn).suffixes))
+
 
 def replacesuffix(file, suff):
     '''

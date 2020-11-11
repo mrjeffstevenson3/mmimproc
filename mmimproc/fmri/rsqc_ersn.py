@@ -25,7 +25,9 @@ cluster_df_dtypes = {'Cluster Index': 'Int64', 'Voxels': 'Int64', 'MAX': float, 
                      'COG Z (vox)': float}
 
 def append2fn(fn, newstr):
-    """Appends new string to end of file name and before file .nii or .nii.gz extensions.
+    """
+    Appends new string to end of file name and before file .nii or .nii.gz extensions.
+    Preserves file path if file path exists.
     """
     if str(Path(fn).parent) == '.':
         return Path(Path(fn).stem).stem + newstr + ''.join(Path(fn).suffixes)
@@ -51,7 +53,7 @@ def fslcluster2DF(fname, thresh, *argv):
 
 ssvolnum = 10  # integer volume number where steady state is acheived
 thresh = 9.5  # zstat file fsl cluster threshold
-radius = 2  # radius of cylinder mask for zstat median calculation
+radius = 1  # radius of cylinder mask for zstat median calculation
 # set up file naming
 datadir = ip.fs_local  # enter pathlib or string for BIDS root data directory
 proj = 'toddandclark'  # enter BIDS project name
@@ -290,7 +292,7 @@ cluster_df.loc['left', pd.Series(left_line).idxmin()] = pd.Series(left_line).min
 if radius > 1:
     for lt_roi in left_roirange:
         cluster_df.loc['left', lt_roi] = np.median(zstat_data[cyl_mask_data == lt_roi])
-cluster_df.loc['left', 'roi_min'] = cluster_df.T.loc[left_roirange,'left'].min()
+cluster_df.loc['left', 'roi_min'] = cluster_df.T.loc[left_roirange, 'left'].min()
 # now do right side
 curr_pos = cluster_df.loc['central', coordcols].values.astype(np.int64)
 for x, i in zip(right_xrange, right_roirange):
@@ -331,7 +333,7 @@ nib.save(nib.Nifti1Image(cyl_mask_data, zstat_img.affine, zstat_img.header),
 
 # save cluster_df into h5 file
 df2h5(cluster_df, '{datadir}/{proj}/{resultsname}'.format(**namedict),
-      '/{subj}/{sess}/{modality}/DMN_qc_stats'.format(**namedict), append=False)
+      '/{subj}/{sess}/{modality}/DMN_qc_stats_rad{radius}'.format(**namedict), append=False)
 
 #.reset_index(level=0)
 
@@ -339,7 +341,7 @@ df2h5(cluster_df, '{datadir}/{proj}/{resultsname}'.format(**namedict),
 
 
 
-
+'''
 
 ####################################################################################################################
 tempdf = pd.DataFrame(
@@ -373,7 +375,7 @@ cyl_mask_data[tuple(zip(*((curr_pos + (-1,0,0)) + filloneid)))] = 2
 
 
 
-
+unfinished below
 for i, j in enumerate(list(itertools.product(*(['left', 'right'], [['num_y_breaks', 'y_break_coords'], ['num_z_breaks', 'z_break_coords']])))):
 
     if cluster_df.loc[j[0], j[1][0]] > 4:
@@ -410,3 +412,5 @@ for i, j in enumerate(list(itertools.product(*(['left', 'right'], [['num_y_break
 #                                                                   - cluster_df.T.loc[coordcols[0], 'left']) //
 #                                                                  (cluster_df.loc['left', 'num_y_breaks'] + 1)) +
 #                                                         cluster_df.T.loc[coordcols[0], 'central']]).astype('Int64'))
+
+'''
