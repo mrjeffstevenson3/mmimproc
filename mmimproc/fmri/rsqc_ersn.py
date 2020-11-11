@@ -9,7 +9,7 @@ import pandas as pd
 import nibabel as nib
 import mmimproc as ip
 from mmimproc.io.mixed import df2h5
-from mmimproc.utils import run_subprocess
+from mmimproc.utils import *
 import matplotlib.pyplot as plt
 import seaborn as sns
 
@@ -23,7 +23,7 @@ coordcols = ['MAX X (vox)', 'MAX Y (vox)', 'MAX Z (vox)']
 cluster_df_dtypes = {'Cluster Index': 'Int64', 'Voxels': 'Int64', 'MAX': float, 'MAX X (vox)': 'Int64',
                      'MAX Y (vox)': 'Int64', 'MAX Z (vox)': 'Int64', 'COG X (vox)': float, 'COG Y (vox)': float,
                      'COG Z (vox)': float}
-
+'''
 def append2fn(fn, newstr):
     """
     Appends new string to end of file name and before file .nii or .nii.gz extensions.
@@ -33,7 +33,7 @@ def append2fn(fn, newstr):
         return Path(Path(fn).stem).stem + newstr + ''.join(Path(fn).suffixes)
     else:
         return Path(Path(fn).parent, Path(Path(fn).stem).stem + newstr + ''.join(Path(fn).suffixes))
-
+'''
 
 def fslcluster2list(cluster_output):
     return [line.split('\t') for line in StringIO(cluster_output.decode('UTF-8')).read().split('\n')]
@@ -53,7 +53,7 @@ def fslcluster2DF(fname, thresh, *argv):
 
 ssvolnum = 10  # integer volume number where steady state is acheived
 thresh = 9.5  # zstat file fsl cluster threshold
-radius = 1  # radius of cylinder mask for zstat median calculation
+radius = 4  # radius of cylinder mask for zstat median calculation
 # set up file naming
 datadir = ip.fs_local  # enter pathlib or string for BIDS root data directory
 proj = 'toddandclark'  # enter BIDS project name
@@ -288,11 +288,12 @@ for x, i in zip(left_xrange, left_roirange):
     if radius > 4 or radius < 1:
         raise ValueError("Only radius values between 1 and 4 are permitted")
 
-cluster_df.loc['left', pd.Series(left_line).idxmin()] = pd.Series(left_line).min()
+# cluster_df.loc['left', pd.Series(left_line).idxmin()] = pd.Series(left_line).min()
 if radius > 1:
     for lt_roi in left_roirange:
         cluster_df.loc['left', lt_roi] = np.median(zstat_data[cyl_mask_data == lt_roi])
-cluster_df.loc['left', 'roi_min'] = cluster_df.T.loc[left_roirange, 'left'].min()
+    cluster_df.loc['left', 'roi_min'] = cluster_df.T.loc[left_roirange, 'left'].min()
+
 # now do right side
 curr_pos = cluster_df.loc['central', coordcols].values.astype(np.int64)
 for x, i in zip(right_xrange, right_roirange):
@@ -320,13 +321,16 @@ for x, i in zip(right_xrange, right_roirange):
     if radius > 4 or radius < 1:
         raise ValueError("Only radius values between 1 and 4 are permitted")
 
-cluster_df.loc['right', pd.Series(right_line).idxmin()] = pd.Series(right_line).min()
+# cluster_df.loc['right', pd.Series(right_line).idxmin()] = pd.Series(right_line).min()
 if radius > 1:
     for rt_roi in right_roirange:
         cluster_df.loc['right', rt_roi] = np.median(zstat_data[cyl_mask_data == rt_roi])
-cluster_df.loc['right', 'roi_min'] = cluster_df.T.loc[right_roirange,'right'].min()
-cluster_df = pd.concat([cluster_df, pd.DataFrame({'line_coords': [left_line, right_line],}, index=['left', 'right'])],
-                       axis=1)
+    cluster_df.loc['right', 'roi_min'] = cluster_df.T.loc[right_roirange,'right'].min()
+
+cluster_df = pd.concat([cluster_df, pd.DataFrame({'line_zcoords': [left_line, right_line],
+                        'line_zmin': [pd.Series(left_line).min(), pd.Series(right_line).min()],
+                        'line_zmin_coord': [pd.Series(left_line).idxmin(), pd.Series(right_line).idxmin()]},
+                                                 index=['left', 'right'])], axis=1)
 # save cylinder mask as nifi file
 nib.save(nib.Nifti1Image(cyl_mask_data, zstat_img.affine, zstat_img.header),
          '{datadir}/{proj}/{subj}/{sess}/stats/masktestfile_radius{radius}.nii.gz'.format(**namedict))
@@ -334,6 +338,12 @@ nib.save(nib.Nifti1Image(cyl_mask_data, zstat_img.affine, zstat_img.header),
 # save cluster_df into h5 file
 df2h5(cluster_df, '{datadir}/{proj}/{resultsname}'.format(**namedict),
       '/{subj}/{sess}/{modality}/DMN_qc_stats_rad{radius}'.format(**namedict), append=False)
+
+
+
+
+
+
 
 #.reset_index(level=0)
 
