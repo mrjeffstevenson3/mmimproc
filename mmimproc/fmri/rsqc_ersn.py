@@ -41,19 +41,19 @@ def fslcluster2DF(fname, thresh, *argv):
 
 
 ssvolnum = 10  # integer volume number where steady state is acheived
-thresh = 9.5  # zstat file fsl cluster threshold
+thresh = 0.7  # zstat file fsl cluster threshold
 radius = 4  # radius of cylinder mask for zstat median calculation
 if radius > 4 or radius < 1:
     raise ValueError("Only radius values between 1 and 4 are allowed for now.")
 # set up file naming
 datadir = ip.fs_local  # enter pathlib or string for BIDS root data directory
 proj = 'toddandclark'  # enter BIDS project name
-subj = '50320_connect_dn'
+subj = 'all_dpmean'
 sess = 1  # BIDS session number
 mod = 'rest_1'  # BIDS modality of interest (here session number appended manually)
 stats_dir = 'stats'  # stats folder with stats output
 niiname = 'Step0Orig.nii.gz'  # name of raw resting nifti file to process
-statsfile = 'zstat1.nii.gz'  # name of z-stat file in stats folder
+statsfile = 'dpmean.nii.gz'  # name of z-stat file in stats folder
 seedfile = 'shadowreg_centralsignal.nii.gz'  # optional mask file with DN seed ROI
 resultsh5 = 'tcj_results1.h5'  # name of results .h5 file to keep all our hard work safe
 # dictionary with all stored file and path nomenclature
@@ -153,12 +153,12 @@ fillthreeid = np.array([
        [0, -2, -3]])
 
 # get cluster info from zstats file into dataframe
-cluster_df = fslcluster2DF('{datadir}/{proj}/{subj}/{sess}/stats/{statsfile}'.format(**namedict), thresh)
+cluster_df = fslcluster2DF('{datadir}/{proj}/{subj}/{sess}/{modality}/stats/{statsfile}'.format(**namedict), thresh)
 cluster_df.loc[cluster_df['MAX'].idxmax(axis=1), 'location'] = 'central'
 cluster_df.loc[cluster_df.loc[:, 'MAX X (vox)'] < cluster_df.loc[cluster_df.loc[:, 'location'] == 'central']
-                ['MAX X (vox)'][0], 'location'] = 'left'
-cluster_df.loc[cluster_df.loc[:, 'MAX X (vox)'] > cluster_df.loc[cluster_df.loc[:, 'location'] == 'central']
                 ['MAX X (vox)'][0], 'location'] = 'right'
+cluster_df.loc[cluster_df.loc[:, 'MAX X (vox)'] > cluster_df.loc[cluster_df.loc[:, 'location'] == 'central']
+                ['MAX X (vox)'][0], 'location'] = 'left'
 cluster_df.set_index('location', inplace=True)
 cluster_df.loc['central', ['dist2central', 'num_y_breaks', 'num_z_breaks']] = 0
 
@@ -188,22 +188,22 @@ elif cluster_df.loc['central', coordcols[2]] > cluster_df.loc['left', coordcols[
 else:
     cluster_df.loc['left', 'num_z_breaks'] = 0
 
-# now right side
+# now right side lower y = posterior, lower z = inferior
 if cluster_df.loc['central', coordcols[1]] < cluster_df.loc['right', coordcols[1]]:
-    cluster_df.loc['right', 'num_y_breaks'] = np.round(cluster_df.T.loc[coordcols[1], 'right'] - cluster_df.T.loc[
-                                                                        coordcols[1], 'central']).astype(np.int64)
+    cluster_df.loc['right', 'num_y_breaks'] = np.round(cluster_df.T.loc[coordcols[1], 'central'] -
+                                                       cluster_df.T.loc[coordcols[1], 'right']).astype(np.int64)
 elif cluster_df.loc['central', coordcols[1]] > cluster_df.loc['right', coordcols[1]]:
-    cluster_df.loc['right', 'num_y_breaks'] = np.round(cluster_df.T.loc[coordcols[1], 'central'] - cluster_df.T.loc[
-        coordcols[1], 'right']).astype(np.int64)
+    cluster_df.loc['right', 'num_y_breaks'] = np.round(cluster_df.T.loc[coordcols[1], 'right'] -
+                                                       cluster_df.T.loc[coordcols[1], 'central']).astype(np.int64)
 else:
     cluster_df.loc['right', 'num_y_breaks'] = 0
 
 if cluster_df.loc['central', coordcols[2]] < cluster_df.loc['right', coordcols[2]]:
-    cluster_df.loc['right', 'num_z_breaks'] = np.round(cluster_df.T.loc[coordcols[2], 'right'] - cluster_df.T.loc[
-                                                                        coordcols[2], 'central']).astype(np.int64)
+    cluster_df.loc['right', 'num_z_breaks'] = np.round(cluster_df.T.loc[coordcols[2], 'central'] -
+                                                       cluster_df.T.loc[coordcols[2], 'right']).astype(np.int64)
 elif cluster_df.loc['central', coordcols[2]] > cluster_df.loc['right', coordcols[2]]:
-    cluster_df.loc['right', 'num_z_breaks'] = np.round(cluster_df.T.loc[coordcols[2], 'central'] - cluster_df.T.loc[
-        coordcols[2], 'right']).astype(np.int64)
+    cluster_df.loc['right', 'num_z_breaks'] = np.round(cluster_df.T.loc[coordcols[2], 'right'] -
+                                                       cluster_df.T.loc[coordcols[2], 'central']).astype(np.int64)
 else:
     cluster_df.loc['right', 'num_z_breaks'] = 0
 
@@ -221,33 +221,33 @@ right_end_coord = cluster_df.loc['right', coordcols].values.astype(np.int64)
 cluster_df['y_break_offset'] = cluster_df['dist2central'] // (np.abs(cluster_df['num_y_breaks']) + 1)
 cluster_df['z_break_offset'] = cluster_df['dist2central'] // (np.abs(cluster_df['num_z_breaks']) + 1)
 lt_y_break_coord, lt_z_break_coord, rt_y_break_coord, rt_z_break_coord = [], [], [], []
-# left side we subtract from x
+# left side we add to x
 if np.abs(cluster_df.loc['left', 'num_y_breaks']) > 0:
     for y in range(1, np.abs(cluster_df.loc['left', 'num_y_breaks'])+1, 1):
-        lt_y_break_coord.append(start_coord[0] - cluster_df.loc['left', 'y_break_offset'])
+        lt_y_break_coord.append(start_coord[0] + (y * cluster_df.loc['left', 'y_break_offset']))
 if np.abs(cluster_df.loc['left', 'num_z_breaks']) > 0:
-    for y in range(1, np.abs(cluster_df.loc['left', 'num_z_breaks'])+1, 1):
-        lt_z_break_coord.append(start_coord[0] - cluster_df.loc['left', 'z_break_offset'])
-# right side we add to x
+    for z in range(1, np.abs(cluster_df.loc['left', 'num_z_breaks'])+1, 1):
+        lt_z_break_coord.append(start_coord[0] - (z * cluster_df.loc['left', 'z_break_offset']))
+# right side we subtract from x
 if np.abs(cluster_df.loc['right', 'num_y_breaks']) > 0:
     for y in range(1, np.abs(cluster_df.loc['right', 'num_y_breaks'])+1, 1):
-        rt_y_break_coord.append(start_coord[0] + cluster_df.loc['right', 'y_break_offset'])
+        rt_y_break_coord.append(start_coord[0] - (y * cluster_df.loc['right', 'y_break_offset']))
 if np.abs(cluster_df.loc['right', 'num_z_breaks']) > 0:
-    for y in range(1, np.abs(cluster_df.loc['right', 'num_z_breaks'])+1, 1):
-        rt_z_break_coord.append(start_coord[0] + cluster_df.loc['right', 'z_break_offset'])
+    for z in range(1, np.abs(cluster_df.loc['right', 'num_z_breaks'])+1, 1):
+        rt_z_break_coord.append(start_coord[0] + (z * cluster_df.loc['right', 'z_break_offset']))
 
 # distance in x direction counters. left descends so negative
-left_xrange = range(cluster_df.loc['central', coordcols[0]], cluster_df.loc['left', coordcols[0]] - 1, -1)
-right_xrange = range(cluster_df.loc['central', coordcols[0]], cluster_df.loc['right', coordcols[0]] + 1, 1)
-left_roirange = range(2, len(left_xrange) + 2)
-right_roirange = range(102, len(right_xrange) + 102)
+left_xrange = range(cluster_df.loc['central', coordcols[0]], cluster_df.loc['left', coordcols[0]] + 1, 1)
+right_xrange = range(cluster_df.loc['central', coordcols[0]], cluster_df.loc['right', coordcols[0]] - 1, -1)
+right_roirange = range(2, len(right_xrange) + 2)
+left_roirange = range(102, len(left_xrange) + 102)
 left_coord2roi, right_coord2roi = {}, {}
 for k, v in zip(left_xrange, left_roirange):
     left_coord2roi[k] = [v]
 for k, v in zip(right_xrange, right_roirange):
     right_coord2roi[k] = [v]
 
-zstat_img = nib.load('{datadir}/{proj}/{subj}/{sess}/stats/{statsfile}'.format(**namedict))
+zstat_img = nib.load('{datadir}/{proj}/{subj}/{sess}/{modality}/stats/{statsfile}'.format(**namedict))
 zstat_data = np.asanyarray(zstat_img.dataobj).astype(np.float64)
 cyl_mask_data = np.zeros(zstat_img.shape, dtype=np.int64)
 left_line, right_line = {}, {}
@@ -319,7 +319,7 @@ cluster_df = pd.concat([cluster_df, pd.DataFrame({'line_zcoords': [left_line, ri
                                                  index=['left', 'right'])], axis=1)
 # save cylinder mask as nifi file
 nib.save(nib.Nifti1Image(cyl_mask_data, zstat_img.affine, zstat_img.header),
-         '{datadir}/{proj}/{subj}/{sess}/stats/masktestfile_radius{radius}.nii.gz'.format(**namedict))
+         '{datadir}/{proj}/{subj}/{sess}/{modality}/stats/masktestfile_radius{radius}.nii.gz'.format(**namedict))
 
 # save cluster_df into h5 file
 df2h5(cluster_df, '{datadir}/{proj}/{resultsname}'.format(**namedict),
