@@ -227,14 +227,14 @@ if np.abs(cluster_df.loc['left', 'num_y_breaks']) > 0:
         lt_y_break_coord.append(start_coord[0] + (y * cluster_df.loc['left', 'y_break_offset']))
 if np.abs(cluster_df.loc['left', 'num_z_breaks']) > 0:
     for z in range(1, np.abs(cluster_df.loc['left', 'num_z_breaks'])+1, 1):
-        lt_z_break_coord.append(start_coord[0] - (z * cluster_df.loc['left', 'z_break_offset']))
+        lt_z_break_coord.append(start_coord[0] + (z * cluster_df.loc['left', 'z_break_offset']))
 # right side we subtract from x
 if np.abs(cluster_df.loc['right', 'num_y_breaks']) > 0:
     for y in range(1, np.abs(cluster_df.loc['right', 'num_y_breaks'])+1, 1):
         rt_y_break_coord.append(start_coord[0] - (y * cluster_df.loc['right', 'y_break_offset']))
 if np.abs(cluster_df.loc['right', 'num_z_breaks']) > 0:
     for z in range(1, np.abs(cluster_df.loc['right', 'num_z_breaks'])+1, 1):
-        rt_z_break_coord.append(start_coord[0] + (z * cluster_df.loc['right', 'z_break_offset']))
+        rt_z_break_coord.append(start_coord[0] - (z * cluster_df.loc['right', 'z_break_offset']))
 
 # distance in x direction counters. left descends so negative
 left_xrange = range(cluster_df.loc['central', coordcols[0]], cluster_df.loc['left', coordcols[0]] + 1, 1)
