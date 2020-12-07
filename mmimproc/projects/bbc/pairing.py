@@ -4,7 +4,7 @@ import pandas as pd
 from mmimproc.projects.bbc.fmri.fmr_runs import picks
 from mmimproc.utils.paths import getnetworkdataroot
 #setup data paths and file names to process
-fs = mmimproc.fs
+fs = mmimproc.fs_local
 project = 'bbc'
 ecdir = 'cuda_repol_std2_S0mf3_v5'
 filterS0_string = '_withmf3S0'

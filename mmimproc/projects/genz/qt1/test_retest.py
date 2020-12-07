@@ -35,7 +35,7 @@ from mmimproc.projects.genz.file_names import project, get_5spgr_names, SubjIdPi
 from mmimproc.utils.provenance import ProvenanceWrapper
 prov = ProvenanceWrapper()
 
-fs = mmimproc.fs
+fs = mmimproc.fs_local
 spm_dir, tpm_path = getspmpath()
 
 eng = matlab.engine.start_matlab()

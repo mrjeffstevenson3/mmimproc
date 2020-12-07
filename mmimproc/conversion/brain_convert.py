@@ -21,7 +21,7 @@ from collections import defaultdict
 from mmimproc.conversion.parrec2nii_convert import mergeddicts
 from mmimproc.utils import getnetworkdataroot, ProvenanceWrapper
 provenance = ProvenanceWrapper()
-fs = mmimproc.fs
+fs = mmimproc.fs_local
 
 print(fs)
 flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo', output_type='NIFTI')

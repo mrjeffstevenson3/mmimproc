@@ -10,7 +10,7 @@ from mmimproc.conversion.nifti2nrrd import nii2nrrd
 from mmimproc.utils.tables import TablePublisher
 from mmimproc.utils import *
 provenance = ProvenanceWrapper()
-fs = mmimproc.fs
+fs = mmimproc.fs_local
 
 
 def report(images, atlas, regionnames=None, threshold = .95,

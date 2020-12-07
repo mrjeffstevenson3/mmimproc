@@ -23,7 +23,7 @@ pd.options.display.max_colwidth = 250
 pd.options.display.max_rows = 999
 from mmimproc.projects.bbc.pairing import dwipairing
 from mmimproc.utils.paths import getnetworkdataroot
-fs = mmimproc.fs
+fs = mmimproc.fs_local
 
 
 # In[2]:

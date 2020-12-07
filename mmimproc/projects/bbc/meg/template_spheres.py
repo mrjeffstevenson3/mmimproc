@@ -6,7 +6,7 @@ from mmimproc.utils.provenance import ProvenanceWrapper
 from mmimproc.utils.paths import getnetworkdataroot
 provenance = ProvenanceWrapper()
 #setup paths and files
-fs = mmimproc.fs
+fs = mmimproc.fs_local
 project = 'bbc'
 tf = fs / project / 'reg' / 'meg_spheres_in_template_space' / 'bbc_pairedLH_template_reg2pol.nii.gz'
 #load pre-rotated brain only template file (tf)

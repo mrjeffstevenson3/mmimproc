@@ -8,7 +8,7 @@ from mmimproc.utils.paths import getnetworkdataroot
 from mmimproc.utils.provenance import ProvenanceWrapper
 from mmimproc.projects.bbc.pairing import foster_behav_data, control_behav_data, behav_list
 provenance = ProvenanceWrapper()
-fs = mmimproc.fs
+fs = mmimproc.fs_local
 #set up roi
 ''' MEG auditory regions
 11133  ctx_lh_G_temp_sup-G_T_transv

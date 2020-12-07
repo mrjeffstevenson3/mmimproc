@@ -8,7 +8,7 @@ from mmimproc.utils import run_subprocess, WorkingContext, appendposix
 from mmimproc.utils.provenance import ProvenanceWrapper
 provenance = ProvenanceWrapper()
 #setup paths and file names to process
-fs = mmimproc.fs
+fs = mmimproc.fs_local
 
 project = 'bbc'
 source_data = 'self_control'

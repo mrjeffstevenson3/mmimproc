@@ -42,7 +42,7 @@ from mmimproc.projects.acdc.file_names import project, SubjIdPicks, get_dwi_name
 from mmimproc.conversion.brain_convert import acdc_conv
 
 #setup paths and file names to process
-fs = mmimproc.fs
+fs = mmimproc.fs_local
 
 antsRegistrationSyN = get_antsregsyn_cmd()
 slicer_path = getslicercmd(ver='stable')

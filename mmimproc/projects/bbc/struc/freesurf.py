@@ -10,7 +10,7 @@ from mmimproc.utils import run_subprocess, WorkingContext, appendposix
 from mmimproc.utils.provenance import ProvenanceWrapper
 provenance = ProvenanceWrapper()
 #setup paths and file names to process
-fs = mmimproc.fs
+fs = mmimproc.fs_local
 # number of cores to use
 mp = 20
 

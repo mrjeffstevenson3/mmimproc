@@ -17,7 +17,7 @@ from mmimproc.projects.lilobaby.file_names import project, SubjIdPicks, get_dwi_
 prov = ProvenanceWrapper()
 #setup paths and file names to process
 # set up root data directory
-fs = mmimproc.fs
+fs = mmimproc.fs_local
 # instantiate project level nomenclature options object
 opts = Optsd()
 opts.test = False

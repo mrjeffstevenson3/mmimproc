@@ -10,7 +10,7 @@ from mmimproc.utils.paths import getnetworkdataroot
 from mmimproc.utils.provenance import ProvenanceWrapper
 provenance = ProvenanceWrapper()
 #setup paths and file names to process
-fs = mmimproc.fs
+fs = mmimproc.fs_local
 
 mods = ['FA', 'MD', 'AD', 'RD']
 # winners of fit death match

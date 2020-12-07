@@ -7,7 +7,7 @@ from mmimproc.utils.provenance import ProvenanceWrapper
 from mmimproc.correlation.correlate import wholeBrain
 
 provenance = ProvenanceWrapper()
-fs = mmimproc.fs
+fs = mmimproc.fs_local
 
 groupcol=True
 behav_csv_name = 'bbc_behav_7-12-2017.csv'

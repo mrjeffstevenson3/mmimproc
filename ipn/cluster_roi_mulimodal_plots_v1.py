@@ -26,7 +26,7 @@ from mmimproc.projects.bbc.correl.atlases import atlases
 from mmimproc.alignment.resample import reslice_roi
 from mmimproc.utils import *
 provenance = ProvenanceWrapper()
-fs = mmimproc.fs
+fs = mmimproc.fs_local
 output2file = False
 project = 'bbc'
 statsdir = fs/project/'stats'/'py_correl_5thpass_cthr15_n5000' #'py_correl_2ndpass'   #'py_correl_5thpass_cthr15_n5000'    #'py_correl_3rdpass'   #'py_correl_5thpass'
@@ -385,7 +385,7 @@ import nibabel as nib
 import scipy.ndimage.measurements as measurements
 from mmimproc.correlation.atlas import mori_region_labels, JHUtracts_region_labels
 from mmimproc.utils.paths import getnetworkdataroot
-fs = mmimproc.fs
+fs = mmimproc.fs_local
 """
 makes atlas objects.
 """

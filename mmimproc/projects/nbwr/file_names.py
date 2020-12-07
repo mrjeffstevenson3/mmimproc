@@ -17,7 +17,7 @@ from mmimproc.conversion.brain_convert import nbwr_conv, img_conv
 class SubjIdPicks(object):
     pass
 
-fs = mmimproc.fs
+fs = mmimproc.fs_local
 
 project = 'nbwr'
 

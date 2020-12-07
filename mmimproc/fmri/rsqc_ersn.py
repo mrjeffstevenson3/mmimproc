@@ -41,7 +41,7 @@ def fslcluster2DF(fname, thresh, *argv):
 
 
 ssvolnum = 10  # integer volume number where steady state is acheived
-thresh = 0.7  # zstat file fsl cluster threshold
+thresh = 0.71  # zstat file fsl cluster threshold
 radius = 4  # radius of cylinder mask for zstat median calculation
 if radius > 4 or radius < 1:
     raise ValueError("Only radius values between 1 and 4 are allowed for now.")

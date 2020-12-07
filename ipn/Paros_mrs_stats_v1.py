@@ -20,7 +20,7 @@ from mmimproc.utils import ProvenanceWrapper, getnetworkdataroot, appendposix, r
 from mmimproc.projects.nbwr.file_names import project
 prov = ProvenanceWrapper()
 
-fs = mmimproc.fs
+fs = mmimproc.fs_local
 stats_dir = fs / project / 'stats' / 'mrs'
 corr_metab = pd.read_hdf(str(stats_dir / 'all_nbwr_mrs_results_csfcorr_fits_forkam.h5'))
 asd_grp = corr_metab.index.str.replace('sub-nbwr','').astype('int') < 400

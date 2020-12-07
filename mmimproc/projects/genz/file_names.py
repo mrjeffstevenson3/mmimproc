@@ -17,7 +17,7 @@ from mmimproc.conversion.parrec2nii_convert import mergeddicts
 from mmimproc.conversion.brain_convert import img_conv, genz_conv, is_empty
 from mmimproc.io.mixed import getTRfromh5
 
-fs = mmimproc.fs
+fs = mmimproc.fs_local
 project = 'genz'
 dwi_excluded = {project: ['sub-genz403', 'sub-genz906', 'sub-genz301', 'sub-genz309',]}
 

@@ -11,7 +11,7 @@ from mmimproc.utils import *
 from mmimproc.conversion.parrec2nii_convert import mergeddicts
 from mmimproc.conversion.brain_convert import acdc_conv, img_conv, is_empty
 
-fs = mmimproc.fs
+fs = mmimproc.fs_local
 project = 'acdc'
 dwi_excluded = {project: []}
 

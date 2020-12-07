@@ -7,7 +7,7 @@ from mmimproc.utils.paths import getnetworkdataroot
 from mmimproc.utils.provenance import ProvenanceWrapper
 provenance = ProvenanceWrapper()
 #setup paths and file names to process
-fs = mmimproc.fs
+fs = mmimproc.fs_local
 
 # winners of fit death match
 #fitmethsd = {'OLS': ['ols_dipy_tensor_medfilt', 'ols_fsl_tensor_medfilt'],

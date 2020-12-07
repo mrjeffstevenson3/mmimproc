@@ -14,7 +14,7 @@ from mmimproc.projects.genz.file_names import project, SubjIdPicks, get_vfa_name
 # set up provenance
 prov = ProvenanceWrapper()
 # setup paths and file names to process
-fs = mmimproc.fs
+fs = mmimproc.fs_local
 # instantiate opts and subject id list container
 subjids_picks = SubjIdPicks()
 opts = Optsd()

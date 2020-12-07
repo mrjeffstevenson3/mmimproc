@@ -10,7 +10,7 @@ import csv
 from scipy import stats as ss
 from mmimproc.utils import run_subprocess, WorkingContext
 from mmimproc.utils.paths import getnetworkdataroot
-fs = mmimproc.fs
+fs = mmimproc.fs_local
 project = 'bbc'
 # first set up the 3 cortical thickness dataframes as input
 contrl_sid = ['sub-bbc209', 'sub-bbc211', 'sub-bbc208', 'sub-bbc202', 'sub-bbc249', 'sub-bbc241', 'sub-bbc243', 'sub-bbc231', 'sub-bbc253']

@@ -28,7 +28,7 @@ from mmimproc.structural.brain_extraction import extract_brain
 from mmimproc.io.images import savenii
 from mmimproc.utils import *
 prov = ProvenanceWrapper()
-fs = mmimproc.fs
+fs = mmimproc.fs_local
 import dill #to use as pickle replacement of lambda dict
 
 

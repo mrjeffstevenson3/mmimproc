@@ -12,7 +12,7 @@ from pdfminer.pdfpage import PDFPage
 from io import StringIO
 from mmimproc.conversion.parrec2nii_convert import BrainOpts
 from mmimproc.utils import *
-fs = mmimproc.fs
+fs = mmimproc.fs_local
 
 """
 Tools to save a list of dictionaries with pandas Dataframes in them to a 

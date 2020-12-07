@@ -10,7 +10,7 @@ from mmimproc.utils.paths import getnetworkdataroot
 from mmimproc.utils.provenance import ProvenanceWrapper
 provenance = ProvenanceWrapper()
 #setup paths and file names to process
-fs = mmimproc.fs
+fs = mmimproc.fs_local
 
 mean_tensor_fname = 'mean_fsl_wls_tensor_mf.nii'
 ec_dir = 'cuda_repol_std2_S0mf3_v5'

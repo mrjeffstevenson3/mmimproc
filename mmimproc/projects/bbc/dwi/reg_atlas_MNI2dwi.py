@@ -11,7 +11,7 @@ from mmimproc.conversion.nifti2nrrd import nii2nrrd
 from mmimproc.utils.provenance import ProvenanceWrapper
 provenance = ProvenanceWrapper()
 #setup paths and file names to process
-fs = mmimproc.fs
+fs = mmimproc.fs_local
 slicer_path = getslicercmd(ver='stable')
 #setup masks and templates:
 anat_atlas = mmimproc_atlasdir / 'JHU_MNI_SS_WMPM_Type_I_matched.nii.gz'

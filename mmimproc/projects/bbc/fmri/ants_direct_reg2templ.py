@@ -8,7 +8,7 @@ from mmimproc.utils import run_subprocess, WorkingContext
 from mmimproc.utils.provenance import ProvenanceWrapper
 provenance = ProvenanceWrapper()
 #setup paths and file names to process
-fs = mmimproc.fs
+fs = mmimproc.fs_local
 
 project = 'bbc'
 regdir = fs/project/'reg'/'ants_fmri_in_template_space'

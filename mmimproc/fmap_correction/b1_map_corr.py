@@ -11,7 +11,7 @@ from mmimproc.utils import *
 # set up provenance
 prov = ProvenanceWrapper()
 # setup paths and file names to process
-fs = mmimproc.fs
+fs = mmimproc.fs_local
 
 if not os.environ['FSLOUTPUTTYPE'] == 'NIFTI_GZ':
     os.environ['FSLOUTPUTTYPE'] = 'NIFTI_GZ'

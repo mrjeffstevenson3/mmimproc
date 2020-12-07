@@ -12,7 +12,7 @@ from mmimproc.projects.bbc.pairing import vbmpairing, dwipairing
 from mmimproc.utils.paths import getnetworkdataroot
 from mmimproc.utils import run_subprocess, WorkingContext
 #setup paths and file names to process
-fs = mmimproc.fs
+fs = mmimproc.fs_local
 mmimproc_atlasdir = Path(*Path(inspect.getabsfile(mmimproc)).parts[:-2]) / 'data' / 'atlases'
 antsregscript = Path(*Path(os.environ.get('ANTSPATH')).parts[:-2]) / 'ANTs' / 'Scripts' / 'antsRegistrationSyN.sh'
 if not antsregscript.is_file():

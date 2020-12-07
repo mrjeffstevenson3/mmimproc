@@ -14,7 +14,7 @@ from mmimproc.diffusion.vol_into_vtk import inject_vol_data_into_vtk
 #set up provenance
 provenance = ProvenanceWrapper()
 #setup paths and file names to process
-fs = mmimproc.fs
+fs = mmimproc.fs_local
 slicer_path = getslicercmd(ver='stable')
 
 mori_atlasd = {

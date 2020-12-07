@@ -17,7 +17,7 @@ from mmimproc.io.images import savenii
 from mmimproc.conversion.nifti2nrrd import nii2nrrd
 from mmimproc.utils.provenance import ProvenanceWrapper
 provenance = ProvenanceWrapper()
-fs = mmimproc.fs
+fs = mmimproc.fs_local
 pylabs_basepath = Path(*Path(inspect.getabsfile(mmimproc)).parts[:-1])
 if platform.system() == 'Darwin':
     slicer_path = Path('/Applications/Slicer_dev4p7_2-21-2017.app/Contents/MacOS/Slicer --launch ')

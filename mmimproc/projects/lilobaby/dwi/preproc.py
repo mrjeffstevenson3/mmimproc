@@ -42,7 +42,7 @@ from mmimproc.projects.lilobaby.file_names import project, SubjIdPicks, get_dwi_
 from mmimproc.conversion.brain_convert import lilobaby_conv
 
 #setup paths and file names to process
-fs = mmimproc.fs
+fs = mmimproc.fs_local
 
 antsRegistrationSyN = get_antsregsyn_cmd()
 slicer_path = getslicercmd(ver='stable')

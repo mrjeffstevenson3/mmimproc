@@ -17,7 +17,7 @@ from mmimproc.utils import *
 from mmimproc.conversion.brain_convert import img_conv, lilobaby_conv, mergeddicts
 from mmimproc.io.mixed import getTRfromh5
 
-fs = mmimproc.fs
+fs = mmimproc.fs_local
 project = 'lilobaby'
 dwi_excluded = {project: []}
 

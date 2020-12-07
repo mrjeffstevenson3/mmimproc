@@ -15,7 +15,7 @@ from mmimproc.utils import *
 from mmimproc.projects.nbwr.file_names import project
 prov = ProvenanceWrapper()
 
-fs = mmimproc.fs
+fs = mmimproc.fs_local
 include_jonah = False  # broken
 
 # define fortran programs

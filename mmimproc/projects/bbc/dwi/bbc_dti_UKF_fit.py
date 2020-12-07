@@ -16,7 +16,7 @@ from mmimproc.correlation.atlas import make_mask_fm_stats, make_mask_fm_atlas_pa
 from mmimproc.alignment.ants_reg import subj2templ_applywarp
 from mmimproc.utils import *
 provenance = ProvenanceWrapper()
-fs = mmimproc.fs
+fs = mmimproc.fs_local
 pylabs_basepath = Path(*Path(inspect.getabsfile(mmimproc)).parts[:-1])
 
 if platform.system() == 'Darwin':

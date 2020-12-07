@@ -24,7 +24,7 @@ from mmimproc.utils import ProvenanceWrapper, run_subprocess, WorkingContext, ap
 prov = ProvenanceWrapper()
 
 
-fs = mmimproc.fs
+fs = mmimproc.fs_local
 
 #  define hostnames with working gpus for processing
 flt = fsl.FLIRT(bins=640, interp='nearestneighbour', cost_func='mutualinfo', output_type='NIFTI_GZ')

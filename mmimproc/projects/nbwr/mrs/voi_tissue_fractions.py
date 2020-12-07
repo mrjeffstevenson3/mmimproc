@@ -22,7 +22,7 @@ prov = ProvenanceWrapper()
 os.environ['FSLOUTPUTTYPE'] = mmimproc.mopts.nii_ftype
 os.environ["FSLMULTIFILEQUIT"] = mmimproc.mopts.fslmultifilequit
 
-fs = mmimproc.fs
+fs = mmimproc.fs_local
 opts = Opts()
 mmimproc.mopts.overwrite = False
 do_mask = False
