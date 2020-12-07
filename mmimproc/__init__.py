@@ -11,7 +11,7 @@ class RootDataDir(object):
 
 datadir = RootDataDir()
 
-mopts = MmimprocOptions()   # global options, should be
+mopts = MmimprocOptions()   # global options set in utils._options
 
 hostname = socket.gethostname()
 
