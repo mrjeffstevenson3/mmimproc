@@ -27,3 +27,7 @@ class MmimprocOptions(object):
     orientation = 'LAS+'
     overwrite = False
     fsldir = str(os.environ.get('FSLDIR'))
+    # seconds to wait before retry access to h5 file
+    h5wait_interval = 30
+    # total h5 access wait time about 5 min else something is wrong
+    max_intervals = 10

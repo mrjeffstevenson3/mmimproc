@@ -13,10 +13,6 @@ datadir = RootDataDir()
 
 mopts = MmimprocOptions()   # global options, should be
 
-ip.h5wait_interval = 30  # seconds to wait before retry
-
-ip.max_intervals = 10  # or about 5 min else something is wrong
-
 hostname = socket.gethostname()
 
 if ip.datadir.target == 'js' and platform.system() == 'Darwin' and \

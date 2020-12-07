@@ -77,6 +77,7 @@ def fsllutfromslicer(slicerlut_fname, fsl_lut_fname):
     fsl_cols = ['index', 'red_perc', 'green_perc', 'blue_perc', 'label name']
     lutdf.reset_index(inplace=True)
     lutdf['index'] = lutdf['index'].astype(str)
+    # need to right pad index or left pad red_perc for 1-9 two spaces and 10-99 one space
     lutdf.to_csv(fsl_lut_fname, header=False, index=False, columns=fsl_cols, sep=' ', float_format='%.5f')
     return
 

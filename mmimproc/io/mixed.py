@@ -140,22 +140,22 @@ def conv_df2h5(df, h5_fname, append=True):
                 if append:
                     while True:
                         try:
-                            if interval_count > mmimproc.max_intervals:
-                                raise ValueError('Waiting over ' + str(mmimproc.h5wait_interval * mmimproc.max_intervals / 60) + ' minutes towrite to H5 file ' + str(h5_fname))
+                            if interval_count > mmimproc.mopts.max_intervals:
+                                raise ValueError('Waiting over ' + str(mmimproc.mopts.h5wait_interval * mmimproc.mopts.max_intervals / 60) + ' minutes towrite to H5 file ' + str(h5_fname))
                             storeh5.append(subj+'/'+ses+'/convert_info', df.loc[subj,ses].applymap(str), format='t')
                             break
                         except (IOError, OSError):
-                            time.sleep(mmimproc.h5wait_interval)
+                            time.sleep(mmimproc.mopts.h5wait_interval)
                             interval_count += 1
                 else:
                     while True:
                         try:
-                            if interval_count > mmimproc.max_intervals:
-                                raise ValueError('Waiting over ' + str(mmimproc.h5wait_interval * mmimproc.max_intervals / 60) + ' minutes towrite to H5 file ' + str(h5_fname))
+                            if interval_count > mmimproc.mopts.max_intervals:
+                                raise ValueError('Waiting over ' + str(mmimproc.mopts.h5wait_interval * mmimproc.mopts.max_intervals / 60) + ' minutes towrite to H5 file ' + str(h5_fname))
                             storeh5.put(subj + '/' + ses + '/convert_info', df.loc[subj,ses].applymap(str), format='t')
                             break
                         except (IOError, OSError):
-                            time.sleep(mmimproc.h5wait_interval)
+                            time.sleep(mmimproc.mopts.h5wait_interval)
                             interval_count += 1
     return
 
@@ -167,8 +167,8 @@ def df2h5(df, h5_fname, key, append=False):
     interval_count = 0
     while True:
         try:
-            if interval_count > mmimproc.max_intervals:
-                raise ValueError('Waiting over ' + str(mmimproc.h5wait_interval * mmimproc.max_intervals / 60) + ' minutes towrite to H5 file ' + str(h5_fname))
+            if interval_count > mmimproc.mopts.max_intervals:
+                raise ValueError('Waiting over ' + str(mmimproc.mopts.h5wait_interval * mmimproc.mopts.max_intervals / 60) + ' minutes towrite to H5 file ' + str(h5_fname))
             else:
                 with pd.HDFStore(str(h5_fname)) as storeh5:
                     if append:
@@ -178,7 +178,7 @@ def df2h5(df, h5_fname, key, append=False):
                         storeh5.put(key, df.applymap(str), format='t')
                         break
         except (IOError, OSError):
-            time.sleep(mmimproc.h5wait_interval)
+            time.sleep(mmimproc.mopts.h5wait_interval)
             interval_count += 1
     return
 
@@ -190,15 +190,15 @@ def h52df(h5_fname, key):
     interval_count = 0
     while True:
         try:
-            if interval_count > mmimproc.max_intervals:
-                raise ValueError('Waiting over ' + str(mmimproc.h5wait_interval * mmimproc.max_intervals / 60) + ' minutes towrite to H5 file ' + str(h5_fname))
+            if interval_count > mmimproc.mopts.max_intervals:
+                raise ValueError('Waiting over ' + str(mmimproc.mopts.h5wait_interval * mmimproc.mopts.max_intervals / 60) + ' minutes towrite to H5 file ' + str(h5_fname))
             else:
                 with pd.HDFStore(str(h5_fname)) as storeh5:
                     df = storeh5.select(key)
                     df = df.apply(pd.to_numeric, errors='ignore')
                     break
         except (IOError, OSError):
-            time.sleep(mmimproc.h5wait_interval)
+            time.sleep(mmimproc.mopts.h5wait_interval)
             interval_count += 1
     return df
 
@@ -210,14 +210,14 @@ def get_h5_keys(h5_fname, key=None):
     interval_count = 0
     while True:
         try:
-            if interval_count > mmimproc.max_intervals:
-                raise ValueError('Waiting over ' + str(mmimproc.h5wait_interval * mmimproc.max_intervals / 60) + ' minutes towrite to H5 file ' + str(h5_fname))
+            if interval_count > mmimproc.mopts.max_intervals:
+                raise ValueError('Waiting over ' + str(mmimproc.mopts.h5wait_interval * mmimproc.mopts.max_intervals / 60) + ' minutes towrite to H5 file ' + str(h5_fname))
             else:
                 with pd.HDFStore(str(h5_fname)) as storeh5:
                     h5keys = storeh5.keys()
                     break
         except (IOError, OSError):
-            time.sleep(mmimproc.h5wait_interval)
+            time.sleep(mmimproc.mopts.h5wait_interval)
             interval_count += 1
     if not key is None:
         match_key = [k for k in h5keys if key in k]
@@ -232,15 +232,15 @@ def getTRfromh5(h5_fname, subject, session, modality, scan):
     interval_count = 0
     while True:
         try:
-            if interval_count > mmimproc.max_intervals:
-                raise ValueError('Waiting over ' + str(mmimproc.h5wait_interval * mmimproc.max_intervals / 60) + ' minutes towrite to H5 file ' + str(h5_fname))
+            if interval_count > mmimproc.mopts.max_intervals:
+                raise ValueError('Waiting over ' + str(mmimproc.mopts.h5wait_interval * mmimproc.mopts.max_intervals / 60) + ' minutes towrite to H5 file ' + str(h5_fname))
             else:
                 with pd.HDFStore(str(h5_fname)) as storeh5:
                     df = storeh5.select('/'+'/'.join([subject, session, 'convert_info']))
                     tr = df.loc[(modality, scan), 'tr']
                     break
         except (IOError, OSError):
-            time.sleep(mmimproc.h5wait_interval)
+            time.sleep(mmimproc.mopts.h5wait_interval)
             interval_count += 1
     return np.fromstring(tr.translate(None, '[]'), sep=' ')
 
@@ -251,15 +251,15 @@ def get_acq_nr_fmh5(h5_fname, subject, session, modality, scan):
     interval_count = 0
     while True:
         try:
-            if interval_count > mmimproc.max_intervals:
-                raise ValueError('Waiting over ' + str(mmimproc.h5wait_interval * mmimproc.max_intervals / 60) + ' minutes towrite to H5 file ' + str(h5_fname))
+            if interval_count > mmimproc.mopts.max_intervals:
+                raise ValueError('Waiting over ' + str(mmimproc.mopts.h5wait_interval * mmimproc.mopts.max_intervals / 60) + ' minutes towrite to H5 file ' + str(h5_fname))
             else:
                 with pd.HDFStore(str(h5_fname)) as storeh5:
                     df = storeh5.select('/'+'/'.join([subject, session, 'convert_info']))
                     acq_num = df.loc[(modality, scan), 'acq_nr']
                     break
         except (IOError, OSError):
-            time.sleep(mmimproc.h5wait_interval)
+            time.sleep(mmimproc.mopts.h5wait_interval)
             interval_count += 1
     return acq_num
 
@@ -272,8 +272,8 @@ def get_pr_affine_fromh5(h5_fname, subject, session, modality, scan):
     interval_count = 0
     while True:
         try:
-            if interval_count > mmimproc.max_intervals:
-                raise ValueError('Waiting over ' + str(mmimproc.h5wait_interval * mmimproc.max_intervals / 60) + ' minutes towrite to H5 file ' + str(h5_fname))
+            if interval_count > mmimproc.mopts.max_intervals:
+                raise ValueError('Waiting over ' + str(mmimproc.mopts.h5wait_interval * mmimproc.mopts.max_intervals / 60) + ' minutes towrite to H5 file ' + str(h5_fname))
             else:
                 with pd.HDFStore(str(h5_fname)) as storeh5:
                     df = storeh5.select('/'+'/'.join([subject, session, 'convert_info']))
@@ -282,7 +282,7 @@ def get_pr_affine_fromh5(h5_fname, subject, session, modality, scan):
                     pr_shape = df.loc[(modality, scan), 'pr_shape']
                     break
         except (IOError, OSError):
-            time.sleep(mmimproc.h5wait_interval)
+            time.sleep(mmimproc.mopts.h5wait_interval)
             interval_count += 1
     return np.reshape(pr_affine, (4, 4)), ast.literal_eval(pr_shape)
 
