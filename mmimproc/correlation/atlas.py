@@ -1,130 +1,19 @@
 # todo: add making of lookup table to isolate_atlas_regions.
 
 import mmimproc
-import os, inspect
-from pathlib import *
 import nibabel as nib
 import numpy as np
-from mmimproc.io.images import savenii
+import pandas as pd
+from dipy.align.reslice import reslice
+from scipy import stats
+from scipy.stats.stats import DescribeResult
 from mmimproc.conversion.nifti2nrrd import nii2nrrd
-from mmimproc.utils.tables import TablePublisher
+from mmimproc.io.images import savenii
 from mmimproc.utils import *
+from mmimproc.utils.tables import TablePublisher
+
 provenance = ProvenanceWrapper()
 fs = mmimproc.fs_local
-
-
-def report(images, atlas, regionnames=None, threshold = .95,
-    relevantImageFilenameSegment=0, table=TablePublisher()):
-    """Report', on statistics based on atlas regions
-
-    Args:
-        image (list): 'List', of paths to images with statistic.
-        atlas (str): 'Path to atlas
-        regionnames (list): 'List', of labels for the atlas regions. Must', be in the 
-            order of the atlas indices. Should include a label for 0.
-        threshold (float): 'Voxel threshold to use when counting. Defaults to 0.95
-        relevantImageFilenameSegment', (int): 'If the input', stats image filename is
-            broken up along underscores, which part', of it', to use as a column 
-            header. Defaults to 0. (first', element)
-        opts (MmimprocOptions): 'General settings
-        table (TablePublisher): 'Table interface
-
-    Returns:
-        list: 'path to .csv file created.
-    """
-    # Gather data
-    cols = [image.split('_')[relevantImageFilenameSegment] for image in images]
-    print('Loading atlas..')
-    atlasimg = nib.load(atlas)
-    atlasImgData = atlasimg.get_data()
-    regionIndices = np.unique(atlasImgData)
-    regionMasks = []
-    for index in regionIndices:
-        regionMasks.append(atlasImgData == index)
-
-    tabledata = np.full([len(regionIndices), len(images)],np.nan)
-    for i, image in enumerate(images):
-        print('Loading image {0} of {1}..'.format(i+1, len(images)))
-        statsimg = nib.load(image)
-        if not statsimg.shape == atlasimg.shape:
-            raise ValueError("Input image and atlas must', have same dimensions")
-        statsImgData = statsimg.get_data()
-
-        for r, regionMask in enumerate(regionMasks):
-            regionData = statsImgData[regionMask]
-            kSignificant = (regionData > threshold).sum()
-            tabledata[r, i] = kSignificant
-    # Create table
-    table.setData(tabledata)
-    if regionnames:
-        table.setRowHeaders(regionnames)
-    table.setColumnHeaders(cols)
-    table.publish()
-
-def atlaslabels(atlasfilename):
-    return str(mmimproc_atlaslabelsdir/'{0}.txt'.format(atlasfilename))
-
-def make_mask_fm_atlas_parts(atlas, roi_list, mask_fname, makenrrd=False):
-    if not Path(mmimproc_atlasdir/atlas).is_file():
-        raise IOError(atlas + " atlas file File Does not Exist. Please check.")
-    img = nib.load(str(atlas))
-    img_data = img.get_data()
-    mask = np.zeros(img_data.shape).astype('int16')
-    for roi in roi_list:
-        mask[img_data == roi] = 1
-    savenii(mask, img.affine, mask_fname, minmax=(0, 1))
-    if makenrrd:
-        nii2nrrd(mask_fname, replacesuffix(mask_fname, '.nrrd'), ismask=True)
-    roi_list_dict = {'roi_list': roi_list}
-    provenance.log(str(mask_fname), 'extract roi_list regions from atlas into mask', str(atlas), script=__file__, provenance=roi_list_dict)
-    return
-
-def isolate_atlas_regions(atlas, roi_list, newatlas_fname, makenrrd=False):   #  lut_fname=None,
-    if not Path(mmimproc_atlasdir/atlas).is_file():
-        raise IOError(atlas + " atlas file File Does not Exist. Please check.")
-    img = nib.load(str(atlas))
-    img_data = img.get_data()
-    newatlas = np.zeros(img_data.shape).astype('int16')
-    for roi in roi_list:
-        newatlas[img_data == roi] = roi
-    savenii(newatlas, img.affine, newatlas_fname, minmax=(0, int(np.max(roi_list))))
-    if makenrrd:
-        nii2nrrd(newatlas_fname, replacesuffix(newatlas_fname, '.nrrd'), ismask=True)
-    roi_list_dict = {'roi_list': roi_list}
-    provenance.log(str(newatlas_fname), 'extract roi_list regions from atlas into mask', str(atlas), script=__file__, provenance=roi_list_dict)
-    return
-
-
-def make_mask_fm_tracts(atlas, volidx, thresh, mask_fname):
-    if not Path(mmimproc_atlasdir/atlas).is_file():
-        raise IOError(atlas + " atlas file File Doesn't', Exist. Please check.")
-    img = nib.load(atlas)
-    img_data = img.get_data()
-    if len(img_data.shape) != 4:
-        raise IOError(atlas + " atlas file File Doesn't', have 4: 'Dims. must', be a 4D tract', probability Vol.")
-    mask = np.zeros(img_data.shape[:3]).astype('int16')
-    mask[img_data[..., volidx - 1] > thresh['thr']] = 1
-    mask_img = nib.Nifti1Image(mask, img.affine)
-    mask_img.set_qform(img.affine, code=1)
-    mask_img.header['cal_max'] = 1
-    nib.save(mask_img, mask_fname)
-    provenance.log(mask_fname, 'extract roi_list regions from atlas into mask', atlas, script=__file__,
-                   provenance={'vol indx': volidx, 'thresh': thresh['thr']})
-    return
-
-def make_mask_fm_stats(stats, thresh, mask_fname):
-    if not stats.is_file():
-        raise IOError(str(stats) + " stats File not', found. Please check.")
-    img = nib.load(str(stats))
-    img_data = img.get_data()
-    mask = np.zeros(img_data.shape).astype('int16')
-    mask[img_data > thresh] = 1
-    mask_img = nib.Nifti1Image(mask, img.affine)
-    mask_img.set_qform(img.affine, code=1)
-    mask_img.header['cal_max'] = 1
-    nib.save(mask_img, str(mask_fname))
-    provenance.log(str(mask_fname), 'make stats above threshold into mask', str(stats), script=__file__, provenance={'thresh': thresh})
-    return
 
 # from JHU_MNI_SS_WMPM_Type-I_SlicerLUT.txt
 mori_region_labels = {
@@ -307,6 +196,152 @@ mori_region_labels = {
         176: 'CEREBELLUM_WM_right',
         }
 
+def report(images, atlas, regionnames=None, threshold = .95,
+    relevantImageFilenameSegment=0, table=TablePublisher()):
+    """Report', on statistics based on atlas regions
+
+    Args:
+        image (list): 'List', of paths to images with statistic.
+        atlas (str): 'Path to atlas
+        regionnames (list): 'List', of labels for the atlas regions. Must', be in the 
+            order of the atlas indices. Should include a label for 0.
+        threshold (float): 'Voxel threshold to use when counting. Defaults to 0.95
+        relevantImageFilenameSegment', (int): 'If the input', stats image filename is
+            broken up along underscores, which part', of it', to use as a column 
+            header. Defaults to 0. (first', element)
+        opts (MmimprocOptions): 'General settings
+        table (TablePublisher): 'Table interface
+
+    Returns:
+        list: 'path to .csv file created.
+    """
+    # Gather data
+    cols = [image.split('_')[relevantImageFilenameSegment] for image in images]
+    print('Loading atlas..')
+    atlasimg = nib.load(atlas)
+    atlasImgData = atlasimg.get_data()
+    regionIndices = np.unique(atlasImgData)
+    regionMasks = []
+    for index in regionIndices:
+        regionMasks.append(atlasImgData == index)
+
+    tabledata = np.full([len(regionIndices), len(images)],np.nan)
+    for i, image in enumerate(images):
+        print('Loading image {0} of {1}..'.format(i+1, len(images)))
+        statsimg = nib.load(image)
+        if not statsimg.shape == atlasimg.shape:
+            raise ValueError("Input image and atlas must', have same dimensions")
+        statsImgData = statsimg.get_data()
+
+        for r, regionMask in enumerate(regionMasks):
+            regionData = statsImgData[regionMask]
+            kSignificant = (regionData > threshold).sum()
+            tabledata[r, i] = kSignificant
+    # Create table
+    table.setData(tabledata)
+    if regionnames:
+        table.setRowHeaders(regionnames)
+    table.setColumnHeaders(cols)
+    table.publish()
+
+def atlaslabels(atlasfilename):
+    return str(mmimproc_atlaslabelsdir/'{0}.txt'.format(atlasfilename))
+
+def make_mask_fm_atlas_parts(atlas, roi_list, mask_fname, makenrrd=False):
+    if not Path(mmimproc_atlasdir/atlas).is_file():
+        raise IOError(atlas + " atlas file File Does not Exist. Please check.")
+    img = nib.load(str(atlas))
+    img_data = img.get_data()
+    mask = np.zeros(img_data.shape).astype('int16')
+    for roi in roi_list:
+        mask[img_data == roi] = 1
+    savenii(mask, img.affine, mask_fname, minmax=(0, 1))
+    if makenrrd:
+        nii2nrrd(mask_fname, replacesuffix(mask_fname, '.nrrd'), ismask=True)
+    roi_list_dict = {'roi_list': roi_list}
+    provenance.log(str(mask_fname), 'extract roi_list regions from atlas into mask', str(atlas), script=__file__, provenance=roi_list_dict)
+    return
+
+def isolate_atlas_regions(atlas, roi_list, newatlas_fname, makenrrd=False):   #  lut_fname=None,
+    if not Path(mmimproc_atlasdir/atlas).is_file():
+        raise IOError(atlas + " atlas file File Does not Exist. Please check.")
+    img = nib.load(str(atlas))
+    img_data = img.get_data()
+    newatlas = np.zeros(img_data.shape).astype('int16')
+    for roi in roi_list:
+        newatlas[img_data == roi] = roi
+    savenii(newatlas, img.affine, newatlas_fname, minmax=(0, int(np.max(roi_list))))
+    if makenrrd:
+        nii2nrrd(newatlas_fname, replacesuffix(newatlas_fname, '.nrrd'), ismask=True)
+    roi_list_dict = {'roi_list': roi_list}
+    provenance.log(str(newatlas_fname), 'extract roi_list regions from atlas into mask', str(atlas), script=__file__, provenance=roi_list_dict)
+    return
+
+def make_mask_fm_tracts(atlas, volidx, thresh, mask_fname):
+    if not Path(mmimproc_atlasdir/atlas).is_file():
+        raise IOError(atlas + " atlas file File Doesn't', Exist. Please check.")
+    img = nib.load(atlas)
+    img_data = img.get_data()
+    if len(img_data.shape) != 4:
+        raise IOError(atlas + " atlas file File Doesn't', have 4: 'Dims. must', be a 4D tract', probability Vol.")
+    mask = np.zeros(img_data.shape[:3]).astype('int16')
+    mask[img_data[..., volidx - 1] > thresh['thr']] = 1
+    mask_img = nib.Nifti1Image(mask, img.affine)
+    mask_img.set_qform(img.affine, code=1)
+    mask_img.header['cal_max'] = 1
+    nib.save(mask_img, mask_fname)
+    provenance.log(mask_fname, 'extract roi_list regions from atlas into mask', atlas, script=__file__,
+                   provenance={'vol indx': volidx, 'thresh': thresh['thr']})
+    return
+
+def make_mask_fm_stats(stats, thresh, mask_fname):
+    if not stats.is_file():
+        raise IOError(str(stats) + " stats File not', found. Please check.")
+    img = nib.load(str(stats))
+    img_data = img.get_data()
+    mask = np.zeros(img_data.shape).astype('int16')
+    mask[img_data > thresh] = 1
+    mask_img = nib.Nifti1Image(mask, img.affine)
+    mask_img.set_qform(img.affine, code=1)
+    mask_img.header['cal_max'] = 1
+    nib.save(mask_img, str(mask_fname))
+    provenance.log(str(mask_fname), 'make stats above threshold into mask', str(stats), script=__file__, provenance={'thresh': thresh})
+    return
+
+def stats_in_roi(stats_file, atlas_file, roi_dict=mori_region_labels, roi_list=None):
+    # todo: test for files and if 4D stats file how to handle.
+    if not Path(stats_file).is_file():
+        raise ValueError('statistic file must exist or cannot be found. ' + stats_file)
+    if not Path(atlas_file).is_file():
+        raise ValueError('atlas file must exist or cannot be found. ' + atlas_file)
+    if not isinstance(roi_dict, dict):
+        raise TypeError('ROI dictionary supposed to be dictionary of the form atlas index as integer: region name')
+    stats_img = nib.load(stats_file)
+    stats_data = np.asanyarray(stats_img.dataobj).astype(np.float64)
+    if not stats_img.header.get_zooms() == nib.load(atlas_file).header.get_zooms():
+        _atlas_img = nib.load(atlas_file)
+        _atlas_data = np.asanyarray(_atlas_img.dataobj).astype(np.int64)
+        atlas_data, atlas_affine = reslice(_atlas_data, _atlas_img.affine, _atlas_img.header.get_zooms(),
+                                           stats_img.header.get_zooms())
+    else:
+        atlas_data = np.asanyarray(nib.load(atlas_file).dataobj).astype(np.int64)
+    sddf = pd.DataFrame(columns=(DescribeResult._fields + ('min', 'max', 'mori_idx')))
+    sddf.index.name = 'regions'
+    sddf.drop('minmax', axis=1, inplace=True)
+
+    for i, roi_label in roi_dict.items():
+        if roi_list == None or i in roi_list:
+            _descr_stats = stats.describe(stats_data[atlas_data == i], axis=None)._asdict()
+            descr_stats = {'min': _descr_stats['minmax'][0], 'max': _descr_stats['minmax'][1], 'mori_idx': i}
+            _descr_stats.__delitem__('minmax')
+            descr_stats.update(_descr_stats)
+            sddf.loc[roi_label, sddf.columns] = descr_stats
+
+    sddf = sddf.astype({'nobs': np.int64, 'mori_idx': np.int64, 'mean': np.float64, 'variance': np.float64,
+                'skewness': np.float64, 'kurtosis': np.float64, 'min': np.float64, 'max': np.float64})
+    sddf.drop('Background', axis=0, inplace=True)
+    return sddf
+
 # selected by todd for bbc network anaysis 7-12-2017 from mori_labels_without_cerebellum_or_whitematter.txt
 mori_network_regions = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26,
                         27, 40, 41, 57, 59, 60, 61, 62, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103,
@@ -405,6 +440,8 @@ JHUtracts_region_labels = {
         22: 'Cerebellum_L',
         23: 'Cerebellum_R',
                 }
+
+# from Slicer freesurfer label file
 freesurfer_idx2label = {
         0	: 'Unknown',
         1	: 'Left-Cerebral-Exterior',

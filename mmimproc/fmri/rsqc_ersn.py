@@ -39,16 +39,19 @@ def fslcluster2DF(fname, thresh, *argv):
     cluster_df = cluster_df.astype(cluster_df_dtypes, errors="ignore")
     return cluster_df
 
-
+# override bids directory structure if needed
+ip.mopts.bids = False
 ssvolnum = 10  # integer volume number where steady state is acheived
 thresh = 0.71  # zstat file fsl cluster threshold
-radius = 4  # radius of cylinder mask for zstat median calculation
+radius = 2  # radius of cylinder mask for zstat median calculation
 if radius > 4 or radius < 1:
     raise ValueError("Only radius values between 1 and 4 are allowed for now.")
 # set up file naming
 datadir = ip.fs_local  # enter pathlib or string for BIDS root data directory
 proj = 'toddandclark'  # enter BIDS project name
-subj = 'all_dpmean'
+subj = 'all_zstats'
+
+# add BIDS info here
 sess = 1  # BIDS session number
 mod = 'rest_1'  # BIDS modality of interest (here session number appended manually)
 stats_dir = 'stats'  # stats folder with stats output
@@ -152,8 +155,14 @@ fillthreeid = np.array([
        [0, -1, -3],
        [0, -2, -3]])
 
-# get cluster info from zstats file into dataframe
-cluster_df = fslcluster2DF('{datadir}/{proj}/{subj}/{sess}/{modality}/stats/{statsfile}'.format(**namedict), thresh)
+# get cluster info from zstats file into dataframe and memmap of nifti file for later
+if ip.mopts.bids:
+    cluster_df = fslcluster2DF('{datadir}/{proj}/{subj}/{sess}/{modality}/stats/{statsfile}'.format(**namedict), thresh)
+    zstat_img = nib.load('{datadir}/{proj}/{subj}/{sess}/{modality}/stats/{statsfile}'.format(**namedict))
+else:
+    cluster_df = fslcluster2DF('{datadir}/{proj}/{subj}/all_niak_zstats/{statsfile}'.format(**namedict), thresh)
+    zstat_img = nib.load('{datadir}/{proj}/{subj}/all_niak_zstats/{statsfile}'.format(**namedict))
+
 cluster_df.loc[cluster_df['MAX'].idxmax(axis=1), 'location'] = 'central'
 cluster_df.loc[cluster_df.loc[:, 'MAX X (vox)'] < cluster_df.loc[cluster_df.loc[:, 'location'] == 'central']
                 ['MAX X (vox)'][0], 'location'] = 'right'
@@ -247,7 +256,7 @@ for k, v in zip(left_xrange, left_roirange):
 for k, v in zip(right_xrange, right_roirange):
     right_coord2roi[k] = [v]
 
-zstat_img = nib.load('{datadir}/{proj}/{subj}/{sess}/{modality}/stats/{statsfile}'.format(**namedict))
+#zstat_img = nib.load('{datadir}/{proj}/{subj}/{sess}/{modality}/stats/{statsfile}'.format(**namedict))
 zstat_data = np.asanyarray(zstat_img.dataobj).astype(np.float64)
 cyl_mask_data = np.zeros(zstat_img.shape, dtype=np.int64)
 left_line, right_line = {}, {}
@@ -318,10 +327,39 @@ cluster_df = pd.concat([cluster_df, pd.DataFrame({'line_zcoords': [left_line, ri
                         'line_zmin_coord': [pd.Series(left_line).idxmin(), pd.Series(right_line).idxmin()]},
                                                  index=['left', 'right'])], axis=1)
 # save cylinder mask as nifi file
-nib.save(nib.Nifti1Image(cyl_mask_data, zstat_img.affine, zstat_img.header),
+if ip.mopts.bids:
+    nib.save(nib.Nifti1Image(cyl_mask_data, zstat_img.affine, zstat_img.header),
          '{datadir}/{proj}/{subj}/{sess}/{modality}/stats/masktestfile_radius{radius}.nii.gz'.format(**namedict))
+else:
+    nib.save(nib.Nifti1Image(cyl_mask_data, zstat_img.affine, zstat_img.header),
+             '{datadir}/{proj}/{subj}/all_niak_zstats/masktestfile_radius{radius}.nii.gz'.format(**namedict))
 
 # save cluster_df into h5 file
-df2h5(cluster_df, '{datadir}/{proj}/{resultsname}'.format(**namedict),
-      '/{subj}/{sess}/{modality}/DMN_qc_stats_rad{radius}'.format(**namedict), append=False)
+#df2h5(cluster_df, '{datadir}/{proj}/{resultsname}'.format(**namedict),
+#      '/{subj}/{sess}/{modality}/DMN_qc_stats_rad{radius}'.format(**namedict), append=False)
 
+## apply results to get zstats on all subj
+namedict['all_statsfile'] = 'all_niak_zstat_dmn.nii.gz'
+namedict['all_dpmeanfile'] = 'niak_cluster_individual_4d.nii.gz'
+all_zstat_img = nib.load('{datadir}/{proj}/{subj}/all_niak_zstats/{all_statsfile}'.format(**namedict))
+all_zstat_data = np.asanyarray(all_zstat_img.dataobj).astype(np.float64)
+all_dpmean_img = nib.load('{datadir}/{proj}/{subj}/all_niak_zstats/{all_dpmeanfile}'.format(**namedict))
+all_dpmean_data = np.asanyarray(all_dpmean_img.dataobj).astype(np.int64)
+all_subjdf = pd.read_csv('/Users/mrjeffs/projects/toddandclark/list905.txt', names=['subject_id'])
+
+all_subjdf['left_dp'] = all_dpmean_data[59, 31, 51, :].astype(int)
+all_subjdf['left_zstat'] = all_zstat_data[59, 31, 51, :]
+all_subjdf['right_dp'] = all_dpmean_data[29, 34, 51, :].astype(int)
+all_subjdf['right_zstat'] = all_zstat_data[29, 34, 51, :]
+all_subjdf.index.name = 'vol_num'
+both_sidesdf = all_subjdf[(all_subjdf.left_dp == 1) & (all_subjdf.right_dp == 1)]
+left_sidedf = all_subjdf[(all_subjdf.left_dp == 1)]
+right_sidedf = all_subjdf[(all_subjdf.right_dp == 1)]
+fname = '/Volumes/GoogleDrive/.shortcut-targets-by-id/1ee9AVkdfZRgrV35f9tioHRatEVRZDsGV/TCJ/default mode testing/sendtotoddandclark/both_dpmeanare1.csv'
+both_sidesdf.to_csv(fname, float_format='%.4f')
+fname = '/Volumes/GoogleDrive/.shortcut-targets-by-id/1ee9AVkdfZRgrV35f9tioHRatEVRZDsGV/TCJ/default mode testing/sendtotoddandclark/left_dpmeanis1.csv'
+left_sidedf.to_csv(fname, float_format='%.4f')
+fname = '/Volumes/GoogleDrive/.shortcut-targets-by-id/1ee9AVkdfZRgrV35f9tioHRatEVRZDsGV/TCJ/default mode testing/sendtotoddandclark/right_dpmeanis1.csv'
+right_sidedf.to_csv(fname, float_format='%.4f')
+fname = '/Volumes/GoogleDrive/.shortcut-targets-by-id/1ee9AVkdfZRgrV35f9tioHRatEVRZDsGV/TCJ/default mode testing/sendtotoddandclark/all_dpmean.csv'
+all_subjdf.to_csv(fname, float_format='%.4f')

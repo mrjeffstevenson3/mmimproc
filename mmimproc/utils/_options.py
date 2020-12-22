@@ -12,6 +12,7 @@ class MmimprocOptions(object):
     """
     verbose = True
     init_verbose = False
+    bids = True
     p_thresh = 0.95
     r_thresh_pos = 0.7
     r_thresh_neg = -0.7
