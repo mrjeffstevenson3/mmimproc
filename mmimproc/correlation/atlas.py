@@ -308,34 +308,39 @@ def make_mask_fm_stats(stats, thresh, mask_fname):
     provenance.log(str(mask_fname), 'make stats above threshold into mask', str(stats), script=__file__, provenance={'thresh': thresh})
     return
 
-def stats_in_roi(stats_file, atlas_file, roi_dict=mori_region_labels, roi_list=None):
-    # todo: test for files and if 4D stats file how to handle.
-    if not Path(stats_file).is_file():
-        raise ValueError('statistic file must exist or cannot be found. ' + stats_file)
-    if not Path(atlas_file).is_file():
-        raise ValueError('atlas file must exist or cannot be found. ' + atlas_file)
+def stats_in_roi(img_fname, atlas_fname, roi_dict=mori_region_labels, roi_list=None):
+    # todo: img_fname needs to be in MNI space to work. how to check? affine offsets?
+    if not Path(img_fname).is_file():
+        raise ValueError('statistic file must exist or cannot be found. ' + img_fname)
+    if not Path(atlas_fname).is_file():
+        raise ValueError('atlas file must exist or cannot be found. ' + atlas_fname)
     if not isinstance(roi_dict, dict):
         raise TypeError('ROI dictionary supposed to be dictionary of the form atlas index as integer: region name')
-    stats_img = nib.load(stats_file)
-    stats_data = np.asanyarray(stats_img.dataobj).astype(np.float64)
-    if not stats_img.header.get_zooms() == nib.load(atlas_file).header.get_zooms():
-        _atlas_img = nib.load(atlas_file)
+    _img = nib.load(img_fname)
+    img_data = np.asanyarray(_img.dataobj).astype(np.float64)
+    # if not len(img_data.shape) == 3:
+    #     raise ValueError('statistic file {} must be 3D only. Other dimentions not supported at this time'
+    #                      .format(img_fname))
+    if not _img.header.get_zooms()[:3] == nib.load(atlas_fname).header.get_zooms():
+        _atlas_img = nib.load(atlas_fname)
         _atlas_data = np.asanyarray(_atlas_img.dataobj).astype(np.int64)
         atlas_data, atlas_affine = reslice(_atlas_data, _atlas_img.affine, _atlas_img.header.get_zooms(),
-                                           stats_img.header.get_zooms())
+                                           _img.header.get_zooms()[:3])
     else:
-        atlas_data = np.asanyarray(nib.load(atlas_file).dataobj).astype(np.int64)
+        atlas_data = np.asanyarray(nib.load(atlas_fname).dataobj).astype(np.int64)
     sddf = pd.DataFrame(columns=(DescribeResult._fields + ('min', 'max', 'mori_idx')))
     sddf.index.name = 'regions'
     sddf.drop('minmax', axis=1, inplace=True)
-
-    for i, roi_label in roi_dict.items():
-        if roi_list == None or i in roi_list:
-            _descr_stats = stats.describe(stats_data[atlas_data == i], axis=None)._asdict()
-            descr_stats = {'min': _descr_stats['minmax'][0], 'max': _descr_stats['minmax'][1], 'mori_idx': i}
-            _descr_stats.__delitem__('minmax')
-            descr_stats.update(_descr_stats)
-            sddf.loc[roi_label, sddf.columns] = descr_stats
+    # todo: add 4D stats file option and how to handle masking.
+    if len(img_data.shape) == 3:
+        for i, roi_label in roi_dict.items():
+            if roi_list == None or i in roi_list:
+                _descr_stats = stats.describe(img_data[atlas_data == i], axis=None)._asdict()
+                descr_stats = {'min': _descr_stats['minmax'][0], 'max': _descr_stats['minmax'][1], 'mori_idx': i}
+                _descr_stats.__delitem__('minmax')
+                descr_stats.update(_descr_stats)
+                sddf.loc[roi_label, sddf.columns] = descr_stats
+    # if len(img_data.shape) == 4:
 
     sddf = sddf.astype({'nobs': np.int64, 'mori_idx': np.int64, 'mean': np.float64, 'variance': np.float64,
                 'skewness': np.float64, 'kurtosis': np.float64, 'min': np.float64, 'max': np.float64})
