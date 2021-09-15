@@ -1,11 +1,5 @@
 .. -*- mode: rst -*-
 
-.. image:: https://magnum.travis-ci.com/ilabsbrainteam/pylabs.svg?token=aHq2kykzNqPpTyYNZ3a9
-  :target: https://magnum.travis-ci.com/ilabsbrainteam/pylabs
-
-.. image:: https://coveralls.io/repos/ilabsbrainteam/pylabs/badge.png
-  :target: https://coveralls.io/r/ilabsbrainteam/pylabs
-
 `mmimproc`_
 =========
 
